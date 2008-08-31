@@ -1,0 +1,13 @@
+#include <math.h>
+
+namespace std
+  {
+  using ::exp;
+  using ::pow;
+  using ::sqrt;
+  using ::log;
+  using ::atan2;
+  using ::floor;
+  using ::abs;
+  using ::ldexp;
+  }

@@ -1,0 +1,67 @@
+SRCROOT = $(LEVELS_SRC)
+BUILDDIR= $(SRCROOT)/build.$(HEALPIX_TARGET)
+PREFIX  = $(SRCROOT)/$(HEALPIX_TARGET)
+BINDIR	= $(PREFIX)/bin
+INCDIR	= $(PREFIX)/include
+LIBDIR	= $(PREFIX)/lib
+DOCDIR	= $(SRCROOT)/doc
+
+# do not use any suffix rules
+.SUFFIXES:
+
+%.o : %.c
+	$(CC) $(CCFLAGS) $<
+
+%.o : %.cc
+	$(CXX) $(CXXCFLAGS) $<
+
+default: active_all
+
+SUBCLEAN=$(SUBDIRS:=.clean)
+SUBALL=$(SUBDIRS:=.all)
+SUBDOC=$(SUBDIRS:=.doc)
+ACTIVE_SUBALL=$(ACTIVE_SUBDIRS:=.all)
+
+.PHONY: subdir_all subdir_clean $(SUBDIRS) $(SUBALL) $(SUBCLEAN) prep
+
+prep:
+	@if [ ! -d $(PREFIX)   ]; then mkdir $(PREFIX)  ; fi
+	@if [ ! -d $(BUILDDIR) ]; then mkdir $(BUILDDIR); fi
+	@if [ ! -d $(BINDIR)   ]; then mkdir $(BINDIR)  ; fi
+	@if [ ! -d $(LIBDIR)   ]; then mkdir $(LIBDIR)  ; fi
+	@if [ ! -d $(INCDIR)   ]; then mkdir $(INCDIR)  ; fi
+	@if [ ! -d $(DOCDIR)   ]; then mkdir $(DOCDIR)  ; fi
+
+$(SUBCLEAN):
+	@if [ -d $(BUILDDIR)/$(@:.clean=) ]; then \
+	   cd $(BUILDDIR)/$(@:.clean=); \
+	   $(MAKE) -f $(SRCROOT)/$(@:.clean=)/planck.make clean; \
+	fi
+$(SUBALL): prep
+	@if [ ! -d $(BUILDDIR)/$(@:.all=) ]; \
+	   then mkdir $(BUILDDIR)/$(@:.all=); fi
+	@cd $(BUILDDIR)/$(@:.all=); \
+	  $(MAKE) -f $(SRCROOT)/$(@:.all=)/planck.make all
+
+subdir_all: $(SUBALL)
+
+active_subdir_all: $(ACTIVE_SUBALL)
+
+subdir_clean: $(SUBCLEAN)
+
+install:
+	@if [ "$(HEADERS)"   ]; then cp -p $(HEADERS)   $(INCDIR); fi
+	@if [ "$(BINARIES)"  ]; then cp -p $(BINARIES)  $(BINDIR); fi
+	@if [ "$(LIBRARIES)" ]; then cp -p $(LIBRARIES) $(LIBDIR); fi
+
+install: $(BINARIES) $(LIBRARIES)
+$(BINARIES) $(LIBRARIES): $(OBJECTS)
+active_all: active_subdir_all $(OBJECTS) $(LIBRARIES) $(BINARIES) install
+
+all:	subdir_all $(OBJECTS) $(LIBRARIES) $(BINARIES) install
+
+clean:	subdir_clean
+	rm -f *.o *.a $(BINARIES)
+
+distclean:
+	rm -rf $(BUILDDIR) $(PREFIX)

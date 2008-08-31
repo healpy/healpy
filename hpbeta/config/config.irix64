@@ -1,0 +1,18 @@
+export SGI_ABI=-64
+
+CC= cc
+CCFLAGS_NO_C= -O3 -64 -I$(INCDIR)
+CCFLAGS = $(CCFLAGS_NO_C) -c
+
+CXX= CC
+CXXL= CC
+CXX_EXTRAFLAGS=
+
+CXXCFLAGS_NO_C= -O3 -64 -mp -I$(SRCROOT)/cxxsupport/compat_headers -I$(INCDIR) $(CXX_EXTRAFLAGS) -LANG:std -ptused
+CXXCFLAGS= $(CXXCFLAGS_NO_C) -c
+CXXLFLAGS= -LANG:std -O3 -64 -mp -L. -L$(LIBDIR) $(CXX_EXTRAFLAGS)
+CXX_EXTRALIBS=-lm
+
+ARCREATE= ar crv
+
+include $(LEVELS_SRC)/config/rules.common

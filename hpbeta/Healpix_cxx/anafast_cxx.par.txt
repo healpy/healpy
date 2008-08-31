@@ -1,0 +1,35 @@
+Parameters read by anafast_cxx:
+
+nlmax (integer):
+  maximum order of l
+
+nmmax (integer):
+  maximum order of m (must not be larger than nlmax, default=nlmax)
+
+infile (string):
+  input file containing the Healpix map
+
+outfile (string, default=""):
+  output file name for power spectrum; if empty, no spectrum is written
+
+outfile_alms (string, default=""):
+  output file name for the a_lm; if empty, no a_lm are written
+
+polarisation (bool):
+  if false, only the intensity a_lm are generated,
+  if true, a_lm for T, G and C component are generated
+
+weighted (bool, default=false):
+  if true, weighted quadrature is used
+
+if (weighted)
+  healpix_data (string):
+    directory containing the Healpix data files
+endif
+
+iter_order (integer, default=0)
+  number of iterations for the analysis (0: standard analysis)
+
+double_precision (bool, default=false):
+  if false, maps and a_lm are read/written in single precision,
+  otherwise in double precision.

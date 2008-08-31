@@ -1,0 +1,17 @@
+export OBJECT_MODE=64
+
+CC= cc_r -qthreaded
+
+CCFLAGS_NO_C= -I$(INCDIR) -DRS6000 -O3
+CCFLAGS	= $(CCFLAGS_NO_C) -c
+
+CXX= xlC_r
+CXXL= xlC_r
+CXXCFLAGS_NO_C= -I$(INCDIR) -O3 -qthreaded -qsmp=omp:noauto
+CXXCFLAGS= $(CXXCFLAGS_NO_C) -c
+CXXLFLAGS= -L. -L$(LIBDIR) -qthreaded -qsmp=omp:noauto -O3
+
+
+ARCREATE= ar crv
+
+include $(LEVELS_SRC)/config/rules.common

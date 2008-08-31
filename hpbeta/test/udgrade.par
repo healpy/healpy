@@ -1,0 +1,4 @@
+infile=test2.fits
+outfile=!test3.fits
+polarisation=true
+nside=8

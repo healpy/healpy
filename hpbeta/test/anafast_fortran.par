@@ -1,0 +1,5 @@
+nlmax=512
+infile=test.fits
+outfile_alms=!test_fortran.alm
+simul_type=2
+iter_order=3

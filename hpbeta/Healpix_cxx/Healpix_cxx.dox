@@ -1,0 +1,133 @@
+/*! \mainpage HEALPix C++ documentation
+  <ul>
+  <li>\ref components "Programming interface"
+  <li>\ref facilities "Facilities"
+  </ul>
+ */
+
+/*! \page components Code components
+
+  Classes:
+   - Healpix_Base contains all functionality related to the HEALPix
+     pixelisation which does not require actual map data.
+   - Healpix_Base2 is analogous to Healpix_Base, but allows for much
+     higher resolutions.
+   - Healpix_Map is derived from Healpix_Base and implements
+     additional functionality like change of the ordering scheme, up- and
+     degrading and interpolation.
+   - Alm is used to store spherical harmonic coefficients.
+   - PowSpec is used to store \f$C_l\f$ coefficients.
+
+  Conversions between different data types:
+   - \ref alm_healpix_group "HEALPix maps <-> a_lm".
+   - \ref alm_ps_group "power spectra <-> a_lm".
+
+  FITS I/O:
+   - for \ref healpix_map_fitsio_group "HEALPix Maps"
+   - for \ref alm_fitsio_group "spherical harmonic coefficients"
+   - for \ref powspec_fitsio_group "power spectra"
+*/
+
+/*! \page facilities HEALPix C++ facilities
+
+  \section syn_alm_cxx
+    This program reads a set of \f$C_l\f$ from disk and converts it to
+    a set of \f$a_{lm}\f$.
+
+    \verbinclude syn_alm_cxx.par.txt
+
+  \section alm2map_cxx
+    This program reads a set of \f$a_{lm}\f$ from disk and converts them to
+    a HEALPix map.
+
+    \verbinclude alm2map_cxx.par.txt
+
+  \section anafast_cxx
+    This program performs harmonic analysis of a HEALPix map up to a
+    user-specified maximum spherical harmonic order \f$l_{\mbox{max}}\f$.
+    The integrals are computed on the whole sphere.
+    Scalar, or scalar and tensor, spherical harmonic coefficients are evaluated
+    from the map(s) if the input provides, respectively, only the temperature,
+    or temperature and polarisation maps.
+    The total operation count scales as  \f${\cal {O}}(N_{\mbox{pix}}^{3/2})\f$
+    with a prefactor depending on \f$l_{\mbox{max}}\f$.
+
+    Anafast_cxx reads a file containing the map(s) and produces a file
+    containing the temperature power spectrum \f$C^T_l\f$ and, if requested,
+    also the polarisation power spectra \f$C^E_l\f$, \f$C^B_l\f$ and
+    \f$C^{T\times E}_l\f$. The \f$a_{lm}\f$ coefficients computed during the
+    execution also can be written to a file if requested.
+
+    Anafast_cxx executes an approximate, discrete point-set quadrature on
+    a sphere sampled at the HEALPix pixel centers.
+    Spherical harmonic transforms are computed using recurrence relations for
+    Legendre polynomials on co-latitude (\f$\vartheta\f$) and Fast Fourier
+    transforms on longitude (\f$\varphi\f$).
+
+    Anafast permits two execution options which allow a significant
+    improvement of accuracy of the approximate quadrature performed by
+    this facility:
+
+    - An improved analysis using the provided ring weights, which correct the
+      quadrature on latitude, and/or
+    - An iterative scheme using in succession several backward and forward
+      harmonic transforms of the maps.
+
+    \verbinclude anafast_cxx.par.txt
+
+  \section map2tga
+    This program reads in a HEALPix sky map in FITS format and generates an
+    image in TGA format. map2tga allows the selection of the projection
+    scheme (Mollweide or Gnomonic for small patches of the sky), color
+    table, color bar inclusion, linear or log scaling, maximum and
+    minimum range for the plot and plot-title. The facility provides
+    a command-line interface, but can also read a parameter file.
+
+    \verbinclude map2tga.par.txt
+
+  \section rotalm_cxx
+    Performs a coordinate transformation on a set of \f$a_{lm}\f$.
+
+    \verbatim
+Usage: rotalm_cxx <infile> <outfile> <itransform> <pol>
+Transform 1: Equatorial (2000) -> Galactic   (2000)
+          2: Galactic   (2000) -> Equatorial (2000)
+          3: Equatorial (2000) -> Ecliptic   (2000)
+          4: Ecliptic   (2000) -> Equatorial (2000)
+          5: Ecliptic   (2000) -> Galactic   (2000)
+          6: Galactic   (2000) -> Ecliptic   (2000)
+          7: Equatorial (1950) -> Galactic   (1950)
+          8: Galactic   (1950) -> Equatorial (1950)
+          9: Equatorial (1950) -> Ecliptic   (1950)
+         10: Ecliptic   (1950) -> Equatorial (1950)
+         11: Ecliptic   (1950) -> Galactic   (1950)
+         12: Galactic   (1950) -> Ecliptic   (1950)
+    \endverbatim
+
+  \section mult_alm
+    This program reads a set of (unpolarised or polarised) \f$a_{lm}\f$,
+    removes pixel window functions and/or Gaussian beams, applies different
+    pixel window functions or Gaussian beams, and outputs the result.
+
+    \verbinclude mult_alm.par.txt
+
+  \section smoothing_cxx
+    This program reads a (unpolarised or polarised) HEALPix map, converts it
+    to \f$a_{lm}\f$, performs a smoothing operation with a Gaussian beam,
+    converts the \f$a_{lm}\f$ back to a map and outputs the result.
+
+    \verbinclude smoothing_cxx.par.txt
+
+  \section calc_powspec
+    This program reads one or two sets of \f$a_{lm}\f$, extracts the
+    (unpolarised or polarised) power spectrum or the unpolarised cross power
+    spectrum, and outputs the result.
+
+    \verbatim Usage: calc_powspec <almfile1> [<almfile2>] <powspec_file>\endverbatim 
+
+  \section median_filter
+    This program inputs a HEALPix map, runs a median filter with the desired
+    radius on it and saves the result to another file.
+
+    \verbatim Usage: median_filter <input map> <output map> <radius in arcmin>\endverbatim
+*/

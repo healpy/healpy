@@ -1,0 +1,13 @@
+#!/bin/bash
+
+cd ../hpbeta
+HEALPIX_TARGET=generic_gcc make
+cd -
+HEALPIX_DATA=../hpdata/ HEALPIX_CXX=../hpbeta/generic_gcc python setup.py build
+cat > script.sh <<EOF
+HEALPIX_DATA=../hpdata/ HEALPIX_CXX=../hpbeta/generic_gcc python setup.py install
+EOF
+chmod a+x script.sh
+sudo ./script.sh
+rm script.sh
+

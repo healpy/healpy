@@ -1,0 +1,63 @@
+To install healpy:
+
+
+======== New install instruction >= 0.9.0 ==============
+
+- get healpy:
+
+svn co https://svn.lal.in2p3.fr/users/rosset/healpy/trunk healpy-trunk
+
+or, for a tagged version (recommended)
+
+svn co https://svn.lal.in2p3.fr/users/rosset/healpy/tags/healpy-0.9.0 healpy-0.9.0
+
+- install it
+
+cd healpy-trunk && python setup.py install
+
+If you don't want to install it in the system directory (or don't have 
+the rights to write there), you can build it and then copy the 
+build/lib.xxx/healpy directory where you want. You will need to have the 
+parent dirctory in sys.path.
+
+Then, test it with :
+import healpy as H
+import numpy
+H.mollview(numpy.arange(12))
+
+======== Instruction for version < 0.9.0  ==============
+
+- first you must get hpdata and hpbeta (just beside healpy in svn tree)
+
+svn co https://svn.lal.in2p3.fr/users/rosset/healpy/tags/healpy-0.8.3 healpy-0.8.3
+svn co https://svn.lal.in2p3.fr/users/rosset/hpdata hpdata
+svn co https://svn.lal.in2p3.fr/users/rosset/hpbeta hpbeta
+
+- Then, compile hpbeta
+
+cd hpbeta
+export HEALPIX_TARGET=generic_gcc
+gmake
+
+- then, compile healpy:
+
+cd ../healpy-0.8.2
+export HEALPIX_DATA=../hpdata
+export HEALPIX_CXX=../hpbeta/generic_gcc
+python setup.py build
+
+- install healpy
+
+python setup.py install [--prefix=/a/path/to/local]
+
+(use the prefix option if you dont have the rights to write in standard python
+package place)
+
+- if you haven't put healpy in a standard place, don't forget to update your
+  PYTHONPATH environment variable
+
+Now you should be able to use healply
+
+import healpy as H
+m=arange(12)
+H.mollview(m)

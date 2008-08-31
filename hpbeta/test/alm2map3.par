@@ -1,0 +1,5 @@
+nlmax=512
+infile=test.alm
+outfile=!test4.fits
+nside=317
+polarisation=true

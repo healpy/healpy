@@ -1,0 +1,6 @@
+nlmax=512
+infile=test.fits
+outfile_alms=!test2.alm
+outfile=!test_cl.fits
+polarisation=true
+iter_order=3
