@@ -4,10 +4,13 @@ import numpy as npy
 import matplotlib
 import matplotlib.colors as colors
 import matplotlib.cbook as cbook
+import pixelfunc
 
 def mollview(map,fig=None,rot=None,coord=None,unit='',
              xsize=800,title='Mollweide view',nest=False,
-             min=None,max=None,format='%g',cbar=True,cmap=None,
+             min=None,max=None,remove_dip=False,remove_mono=False,
+             gal_cut=0,
+             format='%g',cbar=True,cmap=None,
              norm=None):
     """Plot an healpix map (given as an array) in Mollweide projection.
     
@@ -27,6 +30,9 @@ def mollview(map,fig=None,rot=None,coord=None,unit='',
       - nest: if True, ordering scheme is NEST. Default: False (RING)
       - min: the minimum range value
       - max: the maximum range value
+      - remove_dip: if True, remove the dipole+monopole
+      - remove_mono: if True, remove the monopole
+      - gal_cut: galactic cut for the dipole/monopole fit
       - format: the format of the scale. Default: '%g'
     """
     # Starting to draw : turn interactive off
@@ -37,6 +43,13 @@ def mollview(map,fig=None,rot=None,coord=None,unit='',
         ax=PA.HpxMollweideAxes(f,(0.02,0.05,0.96,0.9),coord=coord,rot=rot,
                                format=format)
         f.add_axes(ax)
+        if remove_dip:
+            map=pixelfunc.remove_dipole(map,gal_cut=gal_cut,
+                                        nest=nest,copy=True,
+                                        verbose=True)
+        elif remove_mono:
+            map=pixelfunc.remove_monopole(map,gal_cut=gal_cut,nest=nest,
+                                          copy=True,verbose=True)
         ax.projmap(map,nest=nest,xsize=xsize,coord=coord,vmin=min,vmax=max,
                    cmap=cmap,norm=norm)
         if cbar:
@@ -69,7 +82,8 @@ def mollview(map,fig=None,rot=None,coord=None,unit='',
 
 def gnomview(map,fig=None,rot=None,coord=None,unit='',
              xsize=200,ysize=None,reso=1.5,degree=False,
-             title='Gnomonic view',nest=False,
+             title='Gnomonic view',nest=False,remove_dip=False,
+             remove_mono=False,gal_cut=0,
              min=None,max=None,format='%g',cbar=True,
              cmap=None, norm=None):
     """Plot an healpix map (given as an array) in Gnomonic projection.
@@ -93,6 +107,9 @@ def gnomview(map,fig=None,rot=None,coord=None,unit='',
       - nest: if True, ordering scheme is NEST. Default: False (RING)
       - min: the minimum range value
       - max: the maximum range value
+      - remove_dip: if True, remove the dipole+monopole
+      - remove_mono: if True, remove the monopole
+      - gal_cut: galactic cut for the dipole/monopole fit
       - format: the format of the scale. Default: '%.3g'
     """
     # Starting to draw : turn interactive off
@@ -103,6 +120,10 @@ def gnomview(map,fig=None,rot=None,coord=None,unit='',
         ax=PA.HpxGnomonicAxes(f,(0.0,0.05,1.0,0.85),coord=coord,rot=rot,
                               format=format)
         f.add_axes(ax)
+        if remove_dip:
+            map=pixelfunc.remove_dipole(map,gal_cut=gal_cut,nest=nest,copy=True)
+        elif remove_mono:
+            map=pixelfunc.remove_monopole(map,gal_cut=gal_cut,nest=nest,copy=True)
         ax.projmap(map,nest=nest,coord=coord,vmin=min,vmax=max,
                    xsize=xsize,ysize=ysize,reso=reso,cmap=cmap,norm=norm)
         if cbar:

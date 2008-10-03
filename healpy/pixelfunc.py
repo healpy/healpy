@@ -150,3 +150,174 @@ def get_neighbours(nside,theta,phi=None,nest=False):
     w=npy.array(r[4:8])
     return (p,w)
 
+def fit_dipole(m,nest=False,bad=pixlib.UNSEEN,gal_cut=0):
+    """Fit a dipole and a monopole to the map, excluding unseen pixels.
+    Input:
+      - m: the map from which a dipole is fitted and subtracted
+      - nest: False if m is in RING scheme, True if it is NESTED
+      - bad: bad values of pixel, default to UNSEEN.
+      - gal_cut: latitude below which pixel are not taken into account
+    Return:
+      - the monopole value  and the dipole vector
+    """
+    m=npy.asarray(m)
+    npix = m.size
+    nside = npix2nside(npix)
+    if nside>128:
+        bunchsize = npix/24
+    else:
+        bunchsize = npix
+    aa = npy.zeros((4,4),dtype=npy.float64)
+    v = npy.zeros(4,dtype=npy.float64)
+    for ibunch in range(npix/bunchsize):
+        ipix = npy.arange(ibunch*bunchsize,
+                          (ibunch+1)*bunchsize)
+        ipix = ipix[m.flat[ipix]!=bad]
+        x,y,z = pix2vec(nside, ipix, nest)
+        if gal_cut>0:
+            w = (npy.abs(z)>=npy.sin(gal_cut*npy.pi/180))
+            ipix=ipix[w]
+            x=x[w]
+            y=y[w]
+            z=z[w]
+            del w
+        aa[0,0] += ipix.size
+        aa[1,0] += x.sum()
+        aa[2,0] += y.sum()
+        aa[3,0] += z.sum()
+        aa[1,1] += (x**2).sum()
+        aa[2,1] += (x*y).sum()
+        aa[3,1] += (x*z).sum()
+        aa[2,2] += (y**2).sum()
+        aa[3,2] += (y*z).sum()
+        aa[3,3] += (z**2).sum()
+        v[0] += m.flat[ipix].sum()
+        v[1] += (m.flat[ipix]*x).sum()
+        v[2] += (m.flat[ipix]*y).sum()
+        v[3] += (m.flat[ipix]*z).sum()
+    aa[0,1] = aa[1,0]
+    aa[0,2] = aa[2,0]
+    aa[0,3] = aa[3,0]
+    aa[1,2] = aa[2,1]
+    aa[1,3] = aa[3,1]
+    aa[2,3] = aa[3,2]
+    res = npy.dot(npy.linalg.inv(aa),v)
+    mono = res[0]
+    dipole = res[1:4]
+    return mono,dipole
+
+def remove_dipole(m,nest=False,bad=pixlib.UNSEEN,gal_cut=0,fitval=False,
+                  copy=True,verbose=False):
+    """Fit and subtract the dipole and the monopole from the given map m.
+    Input:
+      - m: the map from which a dipole is fitted and subtracted
+      - nest: False if m is in RING scheme, True if it is NESTED
+      - bad: bad values of pixel, default to UNSEEN.
+      - gal_cut: latitude below which pixel are not taken into account
+      - fitval: whether to return or not the fitted values of monopole and dipole
+    Return:
+      if fitval is False:
+      - the map with monopole and dipole subtracted
+      if fitval is True:
+      - the map, the monopole value  and the dipole vector
+    """
+    m=npy.array(m,copy=copy)
+    npix = m.size
+    nside = npix2nside(npix)
+    if nside>128:
+        bunchsize = npix/24
+    else:
+        bunchsize = npix
+    mono,dipole = fit_dipole(m,nest=nest,bad=bad,gal_cut=gal_cut)
+    for ibunch in range(npix/bunchsize):
+        ipix = npy.arange(ibunch*bunchsize,
+                          (ibunch+1)*bunchsize)
+        ipix = ipix[m.flat[ipix]!=bad]
+        x,y,z = pix2vec(nside, ipix, nest)
+        m.flat[ipix] -= (dipole[0]*x)
+        m.flat[ipix] -= dipole[1]*y
+        m.flat[ipix] -= dipole[2]*z
+        m.flat[ipix] -= mono
+    if verbose:
+        import rotator as R
+        lon,lat = R.vec2dir(dipole,lonlat=True)
+        amp = npy.sqrt((dipole**2).sum())
+        print 'monopole: %g  dipole: lon: %g, lat: %g, amp: %g'%(mono,
+                                                                 lon,
+                                                                 lat,
+                                                                 amp)
+    if fitval:
+        return m,mono,dipole
+    else:
+        return m
+
+def fit_monopole(m,nest=False,bad=pixlib.UNSEEN,gal_cut=0):
+    """Fit a monopole to the map, excluding unseen pixels.
+    Input:
+      - m: the map from which a dipole is fitted and subtracted
+      - nest: False if m is in RING scheme, True if it is NESTED
+      - bad: bad values of pixel, default to UNSEEN.
+      - gal_cut: latitude below which pixel are not taken into account
+    Return:
+      - the monopole value
+    """
+    m=npy.asarray(m)
+    npix=m.size
+    nside = npix2nside(npix)
+    if nside>128:
+        bunchsize=npix/24
+    else:
+        bunchsize=npix
+    for ibunch in range(npix/bunchsize):
+        ipix = npy.arange(ibunch*bunchsize,
+                          (ibunch+1)*bunchsize)
+        ipix = ipix[m.flat[ipix]!=bad]
+        x,y,z = pix2vec(nside, ipix, nest)
+        aa = v = 0.0
+        if gal_cut>0:
+            w = (npy.abs(z)>=npy.sin(gal_cut*npy.pi/180))
+            ipix=ipix[w]
+            x=x[w]
+            y=y[w]
+            z=z[w]
+            del w
+        aa += ipix.size
+        v += m.flat[ipix].sum()
+    mono = v/aa
+    return mono
+
+def remove_monopole(m,nest=False,bad=pixlib.UNSEEN,gal_cut=0,fitval=False,
+                    copy=True,verbose=False):
+    """Fit and subtract the monopole from the given map m.
+    Input:
+      - m: the map from which a dipole is fitted and subtracted
+      - nest: False if m is in RING scheme, True if it is NESTED
+      - bad: bad values of pixel, default to UNSEEN.
+      - gal_cut: latitude below which pixel are not taken into account
+      - fitval: whether to return or not the fitted values of monopole
+    Return:
+      if fitval is False:
+      - the map with monopole subtracted
+      if fitval is True:
+      - the map with monopole subtracted and the monopole value
+    """
+    m=npy.array(m,copy=copy)
+    npix = m.size
+    nside = npix2nside(npix)
+    if nside>128:
+        bunchsize = npix/24
+    else:
+        bunchsize = npix
+    mono = fit_monopole(m,nest=nest,bad=bad,gal_cut=gal_cut)
+    for ibunch in range(npix/bunchsize):
+        ipix = npy.arange(ibunch*bunchsize,
+                          (ibunch+1)*bunchsize)
+        ipix = ipix[m.flat[ipix]!=bad]
+        x,y,z = pix2vec(nside, ipix, nest)
+        m.flat[ipix] -= mono
+    if verbose:
+        print 'monopole: %g'%mono
+    if fitval:
+        return m,mono
+    else:
+        return m

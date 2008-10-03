@@ -9,6 +9,7 @@ GnomonicProj : Gnomonic projection
 
 import rotator as R
 import numpy as npy
+import pixelfunc
 
 pi = npy.pi
 dtor = npy.pi/180.
