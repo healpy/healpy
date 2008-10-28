@@ -2,7 +2,7 @@ ifndef HEALPIX_TARGET
   HEALPIX_TARGET:=$(error HEALPIX_TARGET undefined)UNDEFINED
 endif
 
-ACTIVE_SUBDIRS := Healpix_cxx
+ACTIVE_SUBDIRS := Healpix_cxx alice
 
 SUBDIRS	:= $(ACTIVE_SUBDIRS) libcfitsio cxxsupport libfftpack
 
@@ -16,6 +16,7 @@ include $(PARAMFILE)
 
 cxxsupport.all: libcfitsio.all
 Healpix_cxx.all: cxxsupport.all libfftpack.all
+alice.all: Healpix_cxx.all
 
 .PHONY: doc
 doc:

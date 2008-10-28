@@ -32,7 +32,7 @@
  */
 
 #include "trafos.h"
-#include "constants.h"
+#include "lsconstants.h"
 
 using namespace std;
 

@@ -25,7 +25,7 @@
  */
 
 /*
- *  Copyright (C) 2003, 2004, 2005 Max-Planck-Society
+ *  Copyright (C) 2003, 2004, 2005, 2006, 2007 Max-Planck-Society
  *  Author: Martin Reinecke
  */
 

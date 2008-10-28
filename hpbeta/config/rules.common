@@ -17,12 +17,13 @@ DOCDIR	= $(SRCROOT)/doc
 
 default: active_all
 
-SUBCLEAN=$(SUBDIRS:=.clean)
-SUBALL=$(SUBDIRS:=.all)
-SUBDOC=$(SUBDIRS:=.doc)
-ACTIVE_SUBALL=$(ACTIVE_SUBDIRS:=.all)
+SUBCLEAN=$(addsuffix .clean,$(SUBDIRS))
+SUBALL=$(addsuffix .all,$(SUBDIRS))
+SUBDOC=$(addsuffix .doc,$(SUBDIRS))
+ACTIVE_SUBALL=$(addsuffix .all,$(ACTIVE_SUBDIRS))
 
-.PHONY: subdir_all subdir_clean $(SUBDIRS) $(SUBALL) $(SUBCLEAN) prep
+.PHONY: subdir_all subdir_clean $(SUBDIRS) $(SUBALL) $(SUBCLEAN) prep all \
+	active_subdir_all subdir_clean install active_all clean distclean
 
 prep:
 	@if [ ! -d $(PREFIX)   ]; then mkdir $(PREFIX)  ; fi
@@ -33,15 +34,15 @@ prep:
 	@if [ ! -d $(DOCDIR)   ]; then mkdir $(DOCDIR)  ; fi
 
 $(SUBCLEAN):
-	@if [ -d $(BUILDDIR)/$(@:.clean=) ]; then \
-	   cd $(BUILDDIR)/$(@:.clean=); \
-	   $(MAKE) -f $(SRCROOT)/$(@:.clean=)/planck.make clean; \
+	@if [ -d $(BUILDDIR)/$(basename $@) ]; then \
+	   cd $(BUILDDIR)/$(basename $@) && \
+	   $(MAKE) -f $(SRCROOT)/$(basename $@)/planck.make clean; \
 	fi
 $(SUBALL): prep
-	@if [ ! -d $(BUILDDIR)/$(@:.all=) ]; \
-	   then mkdir $(BUILDDIR)/$(@:.all=); fi
-	@cd $(BUILDDIR)/$(@:.all=); \
-	  $(MAKE) -f $(SRCROOT)/$(@:.all=)/planck.make all
+	@if [ ! -d $(BUILDDIR)/$(basename $@) ]; \
+	   then mkdir $(BUILDDIR)/$(basename $@); fi
+	@cd $(BUILDDIR)/$(basename $@) && \
+	  $(MAKE) -f $(SRCROOT)/$(basename $@)/planck.make all
 
 subdir_all: $(SUBALL)
 

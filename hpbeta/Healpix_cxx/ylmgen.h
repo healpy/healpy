@@ -36,7 +36,7 @@
 
 #include <cmath>
 #include "arr.h"
-#include "constants.h"
+#include "lsconstants.h"
 
 /*! Class for efficient calculation of Y_lm(theta,phi=0) */
 class Ylmgen

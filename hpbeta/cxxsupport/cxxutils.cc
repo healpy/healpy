@@ -107,12 +107,16 @@ template<> string dataToString (const double &x)
   return trim(strstrm.str());
   }
 
+template string dataToString (const signed char &x);
+template string dataToString (const unsigned char &x);
+template string dataToString (const short &x);
+template string dataToString (const unsigned short &x);
 template string dataToString (const int &x);
 template string dataToString (const unsigned int &x);
 template string dataToString (const long &x);
-template string dataToString (const unsigned long long &x);
-template string dataToString (const long long &x);
 template string dataToString (const unsigned long &x);
+template string dataToString (const long long &x);
+template string dataToString (const unsigned long long &x);
 
 string intToString(int x, int width)
   {
@@ -155,14 +159,18 @@ template<> void stringToData (const string &x, bool &value)
     }
   }
 
+template void stringToData (const string &x, signed char &value);
+template void stringToData (const string &x, unsigned char &value);
+template void stringToData (const string &x, short &value);
+template void stringToData (const string &x, unsigned short &value);
 template void stringToData (const string &x, int &value);
+template void stringToData (const string &x, unsigned int &value);
 template void stringToData (const string &x, long &value);
+template void stringToData (const string &x, unsigned long &value);
+template void stringToData (const string &x, long long &value);
+template void stringToData (const string &x, unsigned long long &value);
 template void stringToData (const string &x, float &value);
 template void stringToData (const string &x, double &value);
-template void stringToData (const string &x, unsigned long long &value);
-template void stringToData (const string &x, long long &value);
-template void stringToData (const string &x, unsigned long &value);
-template void stringToData (const string &x, unsigned int &value);
 
 bool equal_nocase (const string &a, const string &b)
   {
@@ -259,6 +267,8 @@ void parse_file (const string &filename, map<string,string> &dict)
     string line;
     getline(inp, line);
     ++lineno;
+    // remove potential carriage returns at the end of the line
+    line=line.substr(0,line.find_first_of("\r"));
     line=line.substr(0,line.find_first_of("#"));
     line=trim(line);
     if (line.size()>0)

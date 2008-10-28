@@ -33,7 +33,7 @@
 
 #include "rotmatrix.h"
 #include "vec3.h"
-#include "constants.h"
+#include "lsconstants.h"
 #include <algorithm>
 
 using namespace std;

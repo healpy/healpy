@@ -35,6 +35,7 @@
 #define PLANCK_PARAMFILE_H
 
 #include <map>
+#include <set>
 #include <string>
 #include <iostream>
 #include "simparams.h"
@@ -45,6 +46,7 @@ class paramfile
   private:
     typedef std::map<std::string,std::string> params_type;
     params_type params;
+    mutable std::set<std::string> read_params;
     bool verbose;
 
     std::string get_valstr(const std::string &key) const
@@ -63,6 +65,16 @@ class paramfile
       : params (par), verbose(true)
       {}
 
+    ~paramfile ()
+      {
+      if (verbose)
+        for (params_type::const_iterator loc=params.begin();
+             loc!=params.end(); ++loc)
+          if (read_params.find(loc->first)==read_params.end())
+            std::cout << "Parser warning: unused parameter "
+                      << loc->first << std::endl;
+      }
+
     bool param_present(const std::string &key) const
       { return (params.find(key)!=params.end()); }
 
@@ -73,6 +85,7 @@ class paramfile
       if (verbose)
         std::cout << "Parser: " << key << " = " << dataToString(result)
                   << std::endl;
+      read_params.insert(key);
       return result;
       }
     template<typename T> T find
@@ -83,6 +96,7 @@ class paramfile
         std::cout << "Parser: " << key << " = " << dataToString(deflt)
                   << " <default>" << std::endl;
       params[key]=dataToString(deflt);
+      read_params.insert(key);
       return deflt;
       }
 

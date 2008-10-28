@@ -24,7 +24,7 @@
  *  (DLR).
  */
 
-/*! \file constants.h
+/*! \file lsconstants.h
  *  Mathematical, physical and technical constants for LevelS.
  */
 

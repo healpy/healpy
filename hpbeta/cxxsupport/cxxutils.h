@@ -39,7 +39,7 @@
 #include <map>
 #include <cmath>
 #include "message_error.h"
-#include "constants.h"
+#include "lsconstants.h"
 
 /*! \defgroup mathutilsgroup Mathematical helper functions */
 /*! \{ */

@@ -34,7 +34,7 @@
 
 #include <vector>
 #include "cxxutils.h"
-#include "constants.h"
+#include "lsconstants.h"
 #include "pointing.h"
 template<typename T, unsigned int sz> class fix_arr;
 

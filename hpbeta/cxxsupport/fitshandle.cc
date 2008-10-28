@@ -39,6 +39,7 @@
 #include <map>
 #include <cstdlib>
 #include <cctype>
+#include <cstring>
 #include "fitsio.h"
 #include "fitshandle.h"
 #include "cxxutils.h"

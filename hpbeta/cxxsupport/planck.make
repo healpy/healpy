@@ -5,7 +5,7 @@ LIBRARIES= libcxxsupport.a
 
 HEADERS=$(TEMP1)/cxxutils.h $(TEMP1)/arr.h $(TEMP1)/paramfile.h \
 	$(TEMP1)/fitshandle.h $(TEMP1)/message_error.h $(TEMP1)/vec3.h \
-	$(TEMP1)/constants.h $(TEMP1)/rotmatrix.h $(TEMP1)/pointing.h \
+	$(TEMP1)/lsconstants.h $(TEMP1)/rotmatrix.h $(TEMP1)/pointing.h \
 	$(TEMP1)/planck_rng.h $(TEMP1)/geom_utils.h $(TEMP1)/simparams.h \
 	$(TEMP1)/tga_image.h $(TEMP1)/xcomplex.h $(TEMP1)/trafos.h \
 	$(TEMP1)/fftpack_support.h $(TEMP1)/datatypes.h \
@@ -14,9 +14,9 @@ HEADERS=$(TEMP1)/cxxutils.h $(TEMP1)/arr.h $(TEMP1)/paramfile.h \
 include $(PARAMFILE)
 
 MESSAGE_ERROR_H := message_error.h
-CONSTANTS_H := constants.h
+LSCONSTANTS_H := lsconstants.h
 DATATYPES_H := datatypes.h $(MESSAGE_ERROR_H)
-CXXUTILS_H := cxxutils.h $(MESSAGE_ERROR_H) $(CONSTANTS_H)
+CXXUTILS_H := cxxutils.h $(MESSAGE_ERROR_H) $(LSCONSTANTS_H)
 SIMPARAMS_H := simparams.h $(CXXUTILS_H)
 PARAMFILE_H := paramfile.h $(SIMPARAMS_H) $(CXXUTILS_H)
 ARR_H := arr.h $(CXXUTILS_H)
@@ -36,10 +36,10 @@ SUPPORT_OBJ= cxxutils.o fitshandle.o rotmatrix.o simparams.o tga_image.o \
 
 cxxutils.o: $(CXXUTILS_H)
 fitshandle.o: $(FITSHANDLE_H) $(CXXUTILS_H)
-rotmatrix.o: $(ROTMATRIX_H) $(VEC3_H) $(CONSTANTS_H)
+rotmatrix.o: $(ROTMATRIX_H) $(VEC3_H) $(LSCONSTANTS_H)
 simparams.o: $(SIMPARAMS_H) $(FITSHANDLE_H)
 tga_image.o: $(TGA_IMAGE_H) font_data.inc
-trafos.o: $(TRAFOS_H) $(CONSTANTS_H)
+trafos.o: $(TRAFOS_H) $(LSCONSTANTS_H)
 
 libcxxsupport.a: $(SUPPORT_OBJ) $(HEADERS)
 	$(ARCREATE) libcxxsupport.a $(SUPPORT_OBJ)

@@ -53,7 +53,7 @@ Candidates for testing the validity of the Healpix routines:
 #include "healpix_map.h"
 #include "arr.h"
 #include "planck_rng.h"
-#include "constants.h"
+#include "lsconstants.h"
 #include "alm.h"
 #include "alm_healpix_tools.h"
 #include "alm_powspec_tools.h"
