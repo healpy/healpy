@@ -150,6 +150,19 @@ def get_neighbours(nside,theta,phi=None,nest=False):
     w=npy.array(r[4:8])
     return (p,w)
 
+def reorder(map_in, inp=None, out=None, r2n=None, n2r=None):
+    """Reorder an healpix map from RING/NESTED ordering to NESTED/RING
+
+    Input:
+      - map_in: the input map (can be a sequence of maps)
+    Parameters:
+      - inp: the ordering of the input map 'RING' or 'NESTED'
+      - out: the ordering of the output map 'RING' or 'NRSTED'
+    Output:
+      - map_out: the reordered map
+    """
+    pass
+    
 def fit_dipole(m,nest=False,bad=pixlib.UNSEEN,gal_cut=0):
     """Fit a dipole and a monopole to the map, excluding unseen pixels.
     Input:

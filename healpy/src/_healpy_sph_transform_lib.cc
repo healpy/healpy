@@ -50,6 +50,9 @@ static PyObject *healpy_map2alm(PyObject *self, PyObject *args,
 static PyObject *healpy_alm2map(PyObject *self, PyObject *args, 
 				PyObject *kwds);
 
+static PyObject *healpy_alm2map_der1(PyObject *self, PyObject *args, 
+				PyObject *kwds);
+
 static PyObject *healpy_synalm(PyObject *self, PyObject *args, 
 			       PyObject *kwds);
 
@@ -71,6 +74,10 @@ static PyMethodDef SphtMethods[] = {
    "Compute a map from alm.\n"
    "The output map is ordered in RING scheme.\n"
    "alm2map(alm,nside=64,lmax=-1,mmax=-1)"},
+  {"_alm2map_der1", (PyCFunction)healpy_alm2map_der1, METH_VARARGS | METH_KEYWORDS, 
+   "Compute a map and derivatives from alm.\n"
+   "The output map is ordered in RING scheme.\n"
+   "alm2map_der1(alm,nside=64,lmax=-1,mmax=-1)"},
   {"_synalm", (PyCFunction)healpy_synalm, METH_VARARGS | METH_KEYWORDS,
    "Compute alm's given cl's and unit variance random arrays.\n"},
   {"_getn", healpy_getn, METH_VARARGS,
@@ -715,6 +722,131 @@ static PyObject *healpy_alm2map(PyObject *self, PyObject *args,
     return Py_BuildValue("N",mapIout);
   else
     return Py_BuildValue("NNN",mapIout,mapQout,mapUout);
+}
+
+/***********************************************************************
+    alm2map_der1
+
+       input: alm, nside, 
+
+       output: map in RING scheme
+*/
+static PyObject *healpy_alm2map_der1(PyObject *self, PyObject *args, 
+        PyObject *kwds) {
+  PyArrayObject *almIin = NULL;
+  int nside = 64;
+  int lmax = -1;
+  int mmax = -1;
+  
+  static char* kwlist[] = {"","nside", "lmax", "mmax", NULL};
+
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!|iii", kwlist,
+           &PyArray_Type, &almIin,
+           &nside,
+           &lmax, 
+           &mmax)) {
+    return NULL;
+  } 
+    
+  /* Check array is contiguous */
+  if( !(almIin->flags & NPY_C_CONTIGUOUS) ) {
+      PyErr_SetString(PyExc_ValueError,
+          "Array must be C contiguous for this operation.");
+      return NULL;      
+  }
+  
+  /* Check type of data : must be double, real ('d') or complex ('D') */
+  if( almIin->descr->type != 'D' )  {
+      PyErr_SetString(PyExc_TypeError,
+          "Type must be Complex for this function");
+      return NULL;
+  }
+
+  /* Check number of dimension : must be 1 */
+  if( almIin->nd != 1 ) {
+      PyErr_SetString(PyExc_ValueError,
+          "The map must be a 1D array");
+      return NULL;
+    }
+  
+  /* Need to have lmax and mmax defined */
+  if( lmax < 0 ) {
+      /* Check that the dimension is compatible with lmax=mmax */
+      long imax = almIin->dimensions[0] - 1;
+      double ell;
+      ell = (-3.+sqrt(9.+8.*imax))/2.;
+      if( ell != floor(ell) ) {
+        PyErr_SetString(PyExc_ValueError, "Wrong alm size "
+          "(or give lmax and mmax).\n");
+        return NULL;
+      }
+      lmax=(int)floor(ell);
+      mmax = lmax;
+  }
+  if( mmax < 0 || mmax > lmax) {
+    mmax = lmax;
+  }
+  
+  /* Check lmax and mmax are ok compared to alm.size */
+  int szalm = Alm< xcomplex<double> >::Num_Alms(lmax,mmax);
+  if( almIin->dimensions[0] != szalm ) {
+      PyErr_SetString(PyExc_ValueError, "Wrong alm size.\n");
+      return NULL;
+  }
+  
+  /* Now we can build an Alm and give it to alm2map_iter */
+  Alm< xcomplex<double> > almIalm;
+  {
+    arr< xcomplex<double> > alm_arr((xcomplex<double>*)almIin->data, szalm);
+    almIalm.Set(alm_arr, lmax, mmax);
+  }
+  
+  /* We must prepare the map */
+  
+  npy_intp npix = nside2npix(nside);
+
+  PyArrayObject *mapIout = NULL;
+  mapIout = (PyArrayObject*)PyArray_SimpleNew(1, (npy_intp*)&npix, 
+                PyArray_DOUBLE);
+  if( !mapIout ) 
+    return NULL;
+  Healpix_Map<double> mapI;
+  {
+    arr<double> arr_map((double*)mapIout->data, npix);
+    mapI.Set(arr_map, RING);
+  }
+
+  PyArrayObject *mapDtheta = NULL;
+  mapDtheta = (PyArrayObject*)PyArray_SimpleNew(1, (npy_intp*)&npix, 
+                PyArray_DOUBLE);
+  if( !mapDtheta ) 
+    return NULL;
+  Healpix_Map<double> mapDt;
+  {
+    arr<double> arr_map((double*)mapDtheta->data, npix);
+    mapDt.Set(arr_map, RING);
+  }
+
+  PyArrayObject *mapDphi = NULL;
+  mapDphi = (PyArrayObject*)PyArray_SimpleNew(1, (npy_intp*)&npix, 
+                PyArray_DOUBLE);
+  if( !mapDphi ) 
+    return NULL;
+  Healpix_Map<double> mapDp;
+  {
+    arr<double> arr_map((double*)mapDphi->data, npix);
+    mapDp.Set(arr_map, RING);
+  }
+
+
+  /* We now call alm2map_der1 */
+
+  double offset = almIalm(0,0).real()/sqrt(fourpi);
+  almIalm(0,0) = 0;
+  alm2map_der1(almIalm,mapI,mapDt,mapDp);
+  mapI.add(offset);
+  
+  return Py_BuildValue("NNN",mapIout,mapDtheta,mapDphi);
 }
 
 long nside2npix(long nside)

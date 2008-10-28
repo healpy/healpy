@@ -13,7 +13,7 @@ from pixelfunc import (ang2pix,pix2ang,pix2vec,vec2pix,
 from sphtfunc import (anafast,map2alm,
                       alm2map,Alm,synalm,synfast,
                       smoothing,smoothalm,almxfl,alm2cl,
-                      pixwin,alm2signal,getylm)
+                      pixwin,alm2signal,getylm,alm2map_der1)
 
 from _healpy_sph_transform_lib import _alm2signal
 from _healpy_pixel_lib import UNSEEN

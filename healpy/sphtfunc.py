@@ -466,6 +466,24 @@ def getylm(lmax, m, theta):
     ylm = sphtlib._getylm(lmax,m,m,theta)
     return ylm
 
+def alm2map_der1(alm, nside, lmax=-1, mmax=-1):
+   """Computes an Healpix map and its first derivatives given the alm.
+
+   The alm are given as a complex array. You can specitify lmax
+   and mmax, or they will be computed from array size (assuming
+   lmax==mmax).
+
+   Parameters:
+   - alm: a complex array of alm. Size must be of the form
+          size=mmax(lmax-mmax+1)/2+lmax
+   - nside: the nside of the output map.
+   - lmax: explicitly define lmax (needed if mmax!=lmax)
+   - mmax: explicitly define mmax (needed if mmax!=lmax)
+
+   Return: an Healpix map in RING scheme at nside.
+   """
+   return sphtlib._alm2map_der1(alm,nside,lmax=lmax,mmax=mmax)
+
 # Helper function : get nside from m, an array or a sequence
 # of arrays
 def _get_nside(m):
