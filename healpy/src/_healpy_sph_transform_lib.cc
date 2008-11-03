@@ -705,16 +705,20 @@ static PyObject *healpy_alm2map(PyObject *self, PyObject *args,
   if( !polarisation )
     {
       double offset = almIalm(0,0).real()/sqrt(fourpi);
+      xcomplex<double> almI00 = almIalm(0,0);
       almIalm(0,0) = 0;
       alm2map(almIalm,mapI);
       mapI.add(offset);
+      almIalm(0,0) = almI00;
     }
   else
     {
       double offset = almIalm(0,0).real()/sqrt(fourpi);
+      xcomplex<double> almI00 = almIalm(0,0);
       almIalm(0,0) = 0;
       alm2map_pol(almIalm,almGalm,almCalm,mapI,mapQ,mapU);
       mapI.add(offset);      
+      almIalm(0,0) = almI00;
     }
 
   /* We now return the map */

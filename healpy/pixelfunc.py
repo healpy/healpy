@@ -1,5 +1,6 @@
 import numpy as npy
 import _healpy_pixel_lib as pixlib
+from _healpy_pixel_lib import UNSEEN
 
 def ang2pix(nside,theta,phi,nest=False):
     """ang2pix : nside,theta,phi,nest=False -> ipix (default:RING)
@@ -161,8 +162,57 @@ def reorder(map_in, inp=None, out=None, r2n=None, n2r=None):
     Output:
       - map_out: the reordered map
     """
-    pass
-    
+    typ = maptype(map_in)
+    if typ < 0:
+        raise TypeError('map_in is not a map nor a sequence of maps')
+    if typ == 0:
+        npix = len(map_in)
+    else:
+        npix = len(map_in[0])
+    nside = npix2nside(npix)
+    if nside>128:
+        bunchsize = npix/24
+    else:
+        bunchsize = npix
+    if r2n:
+        inp='RING'
+        out='NEST'
+    if n2r:
+        inp='NEST'
+        out='RING'
+    inp = str(inp).upper()[0:4]
+    out = str(out).upper()[0:4]
+    if inp not in ['RING','NEST'] or out not in ['RING','NEST']:
+        raise ValueError('inp and out must be either RING or NEST')
+    if typ == 0:
+        mapin = [map_in]
+    else:
+        mapin = map_in
+    mapout = []
+    for m_in in mapin:
+        if inp == out:
+            mapout.append(m_in)
+        elif inp == 'RING':
+            m_out = npy.zeros(npix,dtype=type(m_in[0]))
+            for ibunch in range(npix/bunchsize):
+                ipix_n = npy.arange(ibunch*bunchsize,
+                                    (ibunch+1)*bunchsize)
+                ipix_r = nest2ring(nside, ipix_n)
+                m_out[ipix_n] = m_in[ipix_r]
+            mapout.append(m_out)
+        elif inp == 'NEST':
+            m_out = npy.zeros(npix,dtype=type(m_in[0]))
+            for ibunch in range(npix/bunchsize):
+                ipix_r = npy.arange(ibunch*bunchsize,
+                                    (ibunch+1)*bunchsize)
+                ipix_n = ring2nest(nside, ipix_r)
+                m_out[ipix_r] = m_in[ipix_n]
+            mapout.append(m_out)
+    if typ == 0:
+        return mapout[0]
+    else:
+        return mapout
+
 def fit_dipole(m,nest=False,bad=pixlib.UNSEEN,gal_cut=0):
     """Fit a dipole and a monopole to the map, excluding unseen pixels.
     Input:
@@ -334,3 +384,121 @@ def remove_monopole(m,nest=False,bad=pixlib.UNSEEN,gal_cut=0,fitval=False,
         return m,mono
     else:
         return m
+
+def maptype(m):
+    """Return -1 if the given object is not a map.
+    Return 0 if it is a map.
+    Return k>0 if it is a list of map (k: number of maps in the sequence)
+    """
+    if not hasattr(m, '__len__'):
+        return -1
+    if len(m) == 0:
+        return -1
+    if hasattr(m[0], '__len__'):
+        npix=len(m[0])
+        for mm in m[1:]:
+            if len(mm) != npix:
+                return -1
+        if isnpixok(len(m[0])):
+            return len(m)
+    else:
+        if isnpixok(len(m)):
+            return 0
+        else:
+            return -1
+
+def get_nside(m):
+    """Return the nside of the given map.
+    Can be a single map or a list of maps.
+    """
+    typ = maptype(m)
+    if typ < 0:
+        raise TypeError('m is not a map nor a sequence of maps of same size')
+    if typ == 0:
+        return npix2nside(len(m))
+    else:
+        return npix2nside(len(m[0]))
+
+def _ud_grade_core(m,nside_out,pess=False,power=None):
+    """Internal routine used by ud_grade. It assumes that the map is NESTED
+    and single (not a list of maps)
+    """
+    nside_in = get_nside(m)
+    if not isnsideok(nside_out):
+        raise ValueError('invalid nside_out value')
+    npix_in = nside2npix(nside_in)
+    npix_out = nside2npix(nside_out)
+
+    if power:
+        power = float(power)
+        ratio = (float(nside_out)/float(nside_in))**power
+    else:
+        ratio = 1
+    
+    if nside_out > nside_in:
+        rat2 = npix_out/npix_in
+        fact = ones(rat2,dtype=type(m[0]))*ratio
+        map_out = outer(m,fact).reshape(npix_out)
+    elif nside_out < nside_in:
+        try:
+            bad_data_val = type(m[0])(UNSEEN)
+        except OverflowError:
+            bad_data_present = False
+        else:
+            bad_data_present = True
+        rat2 = npix_in/npix_out
+        bads = npy.where(m==UNSEEN)
+        hit = npy.ones(npix_in,dtype=npy.int16)
+        hit[bads] = 0
+        m[bads] = 0
+        mr = m.reshape(npix_out,rat2)
+        hit = hit.reshape(npix_out,rat2)
+        map_out = mr.sum(axis=1)
+        nhit = hit.sum(axis=1)
+        if pess:
+            badout = npy.where(nhit != rat2)
+        else:
+            badout = npy.where(nhit == 0)
+        if power: nhit /= ratio
+        map_out /= nhit
+        if bad_data_present:
+            map_out[badout] = UNSEEN
+            m[bads] = UNSEEN
+    else:
+        map_out = m
+    return map_out
+
+def ud_grade(map_in,nside_out,pess=False,order_in='RING',order_out=None,
+             power=None):
+    """Upgrade or degrade resolution of a map (or list of maps).
+
+    Input:
+     - map_in: the input map(s)
+     - nside_out: the desired nside of the output
+    Parameters:
+     - pess: if True, pessismistic, in degrading, reject pixels which contains
+             a bad sub_pixel. Otherwise, estimate average with other pixels
+    Output:
+     - the upgraded or degraded map(s)
+    """
+    if not isnsideok(nside_out):
+        raise ValueError('Invalid nside for output')
+    typ = maptype(map_in)
+    if typ<0:
+        raise TypeError('Invalid map')
+    if typ == 0:
+        m_in = [map_in]
+    else:
+        m_in = map_in
+    mapout = []
+    for m in m_in:
+        if str(order_in).upper()[0:4] == 'RING':
+            m = reorder(m,r2n=True)
+        mout = _ud_grade_core(m,nside_out,pess=pess)
+        if str(order_out).upper()[0:4] == 'RING':
+            mout = reorder(mout,n2r=True)
+        mapout.append(mout)
+    if typ == 0:
+        return mapout[0]
+    else:
+        return mapout

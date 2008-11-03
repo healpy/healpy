@@ -729,7 +729,7 @@ template<typename T> void alm2map_der1 (const Alm<xcomplex<T> > &alm,
             xcomplex<double> p1=0, pth1=0, pph1=0;
 
             double lam_lm = 0;
-            for(;l<lmax;)
+            for(;l<=lmax;)
               ALM2MAP_DER1_MACRO(p1,pth1,pph1)
 
             phas1[ith][m] = p1;
