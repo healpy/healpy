@@ -846,10 +846,12 @@ static PyObject *healpy_alm2map_der1(PyObject *self, PyObject *args,
   /* We now call alm2map_der1 */
 
   double offset = almIalm(0,0).real()/sqrt(fourpi);
+  xcomplex<double> almI00 = almIalm(0,0);
   almIalm(0,0) = 0;
   alm2map_der1(almIalm,mapI,mapDt,mapDp);
   mapI.add(offset);
-  
+  almIalm(0,0) = almI00;
+
   return Py_BuildValue("NNN",mapIout,mapDtheta,mapDphi);
 }
 
