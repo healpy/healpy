@@ -16,6 +16,8 @@ from sphtfunc import (anafast,map2alm,
                       smoothing,smoothalm,almxfl,alm2cl,
                       pixwin,alm2signal,getylm,alm2map_der1)
 
+from query_disc_func import *
+
 from _healpy_sph_transform_lib import _alm2signal
 from _healpy_pixel_lib import UNSEEN
 
