@@ -227,7 +227,7 @@ def rotateDirection(rotmat,theta,phi=None,do_rot=True,lonlat=False):
    Return: theta_rot,phi_rot
    """
    vx,vy,vz=rotateVector(rotmat,dir2vec(theta,phi,lonlat=lonlat),do_rot=do_rot)
-   return vec2dir(vx,vy,vz)
+   return vec2dir(vx,vy,vz,lonlat=lonlat)
 
 def vec2dir(vec,vy=None,vz=None,lonlat=False):
    """Transform a vector to a direction given by theta,phi.
