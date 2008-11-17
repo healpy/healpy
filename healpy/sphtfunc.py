@@ -7,7 +7,7 @@ import pixelfunc
 pi = npy.pi
 
 # Spherical harmonics transformation
-def anafast(m,lmax=None,mmax=None,iter=3,alm=False, use_weights=False):
+def anafast(m,lmax=None,mmax=None,iter=1,alm=False, use_weights=False):
     """Computes the power spectrum of an Healpix map.
 
     Input:
@@ -16,7 +16,7 @@ def anafast(m,lmax=None,mmax=None,iter=3,alm=False, use_weights=False):
     Parameters:
       - lmax : maximum l of the power spectrum (default: 3*nside-1)
       - mmax : maximum m of the alm (default: lmax)
-      - iter : number of iteration (default: 3)
+      - iter : number of iteration (default: 1)
       - alm : (boolean) whether to return alm or not (if True, both are
                returned in a tuple)
     Return:
@@ -42,7 +42,7 @@ def anafast(m,lmax=None,mmax=None,iter=3,alm=False, use_weights=False):
     else:
         return clout
 
-def map2alm(m,lmax=None,mmax=None,iter=3,use_weights=False):
+def map2alm(m,lmax=None,mmax=None,iter=1,use_weights=False):
     """Computes the alm of an Healpix map.
 
     Input:
@@ -50,7 +50,7 @@ def map2alm(m,lmax=None,mmax=None,iter=3,use_weights=False):
     Parameters:
       - lmax : maximum l of the power spectrum. Default: 3*nside-1
       - mmax : maximum m of the alm. Default: lmax
-      - iter : number of iteration (default: 3)
+      - iter : number of iteration (default: 1)
       - use_weights: whether to use ring weights or not. Default: False.
     Return:
       - alm as one ndarray or a tuple of 3 ndarrays
