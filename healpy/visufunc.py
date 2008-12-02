@@ -6,16 +6,18 @@ import matplotlib.colors as colors
 import matplotlib.cbook as cbook
 import pixelfunc
 
-def mollview(map,fig=None,rot=None,coord=None,unit='',
+def mollview(map=None,fig=None,rot=None,coord=None,unit='',
              xsize=800,title='Mollweide view',nest=False,
              min=None,max=None,remove_dip=False,remove_mono=False,
              gal_cut=0,
              format='%g',cbar=True,cmap=None,
-             norm=None):
+             norm=None,hold=False,sub=None):
     """Plot an healpix map (given as an array) in Mollweide projection.
     
     Input:
       - map : an ndarray containing the map
+              if None, use map with inf value (white map), useful for
+              overplotting
     Parameters:
       - fig: a figure number. Default: create a new figure
       - rot: rotation, either 1,2 or 3 angles describing the rotation
@@ -34,13 +36,41 @@ def mollview(map,fig=None,rot=None,coord=None,unit='',
       - remove_mono: if True, remove the monopole
       - gal_cut: galactic cut for the dipole/monopole fit
       - format: the format of the scale. Default: '%g'
+      - hold: if True, replace the current Axes by a MollweideAxes.
+              use this if you want to have multiple maps on the same
+              figure. Default: False
+      - sub: use a part of the current figure (same syntax as subplot).
+             Default: None
     """
     # Starting to draw : turn interactive off
     wasinteractive = pylab.isinteractive()
     pylab.ioff()
     try:
-        f=pylab.figure(fig,figsize=(8.5,5.4))
-        ax=PA.HpxMollweideAxes(f,(0.02,0.05,0.96,0.9),coord=coord,rot=rot,
+        if map is None:
+            map = npy.zeros(12)+npy.inf
+            cbar=False
+        if not (hold or sub):
+            f=pylab.figure(fig,figsize=(8.5,5.4))
+            extent = (0.02,0.05,0.96,0.9)
+        elif hold:
+            f=pylab.gcf()
+            left,bottom,right,top = npy.array(f.gca().get_position()).ravel()
+            extent = (left,bottom,right-left,top-bottom)
+            f.delaxes(f.gca())
+        else: # using subplot syntax
+            f=pylab.gcf()
+            if hasattr(sub,'__len__'):
+                ncols, nrows, idx = sub
+            else:
+                ncols, nrows, idx = sub/100, (sub%100)/10, (sub%10)
+            if idx < 1 or idx > ncols*nrows:
+                raise ValueError('Wrong values for sub: %d, %d, %d'%(ncols,
+                                                                     nrows,
+                                                                     idx))
+            c,r = (idx-1)%ncols,(idx-1)/ncols
+            extent = (c*1./ncols, 1.-(r+1)*1./nrows,1./ncols,1./nrows)
+        #f=pylab.figure(fig,figsize=(8.5,5.4))
+        ax=PA.HpxMollweideAxes(f,extent,coord=coord,rot=rot,
                                format=format)
         f.add_axes(ax)
         if remove_dip:
@@ -80,16 +110,19 @@ def mollview(map,fig=None,rot=None,coord=None,unit='',
             pylab.show()
 
 
-def gnomview(map,fig=None,rot=None,coord=None,unit='',
+def gnomview(map=None,fig=None,rot=None,coord=None,unit='',
              xsize=200,ysize=None,reso=1.5,degree=False,
              title='Gnomonic view',nest=False,remove_dip=False,
              remove_mono=False,gal_cut=0,
              min=None,max=None,format='%g',cbar=True,
-             cmap=None, norm=None):
+             cmap=None, norm=None,
+             hold=False,sub=None,margins=None,notext=False):
     """Plot an healpix map (given as an array) in Gnomonic projection.
 
     Input:
-      - map : an ndarray containing the map
+      - map : an ndarray containing the map.
+              if None, use map with inf value (white map), useful for
+              overplotting
     Parameters:
       - fig: a figure number. Default: create a new figure
       - rot: rotation, either 1,2 or 3 angles describing the rotation
@@ -111,13 +144,60 @@ def gnomview(map,fig=None,rot=None,coord=None,unit='',
       - remove_mono: if True, remove the monopole
       - gal_cut: galactic cut for the dipole/monopole fit
       - format: the format of the scale. Default: '%.3g'
+      - hold: if True, replace the current Axes by a MollweideAxes.
+              use this if you want to have multiple maps on the same
+              figure. Default: False
+      - sub: use a part of the current figure (same syntax as subplot).
+             Default: None
+      - margins: either None, or a sequence (left,bottom,right,top)
+                 giving the margins on left,bottom,right and top
+                 of the axes. Values are relative to figure (0-1).
+                 Default: None
+      - notext: True: do not add resolution info text
+                Default=False
     """
     # Starting to draw : turn interactive off
     wasinteractive = pylab.isinteractive()
     pylab.ioff()
     try:
-        f=pylab.figure(fig,figsize=(5.5,6))
-        ax=PA.HpxGnomonicAxes(f,(0.0,0.05,1.0,0.85),coord=coord,rot=rot,
+        if map is None:
+            map = npy.zeros(12)+npy.inf
+            cbar=False
+        if not (hold or sub):
+            f=pylab.figure(fig,figsize=(5.5,6))
+            if not margins:
+                    margins = (0.075,0.05,0.075,0.05)
+            extent = (0.0,0.0,1.0,1.0)
+        elif hold:
+            f=pylab.gcf()
+            left,bottom,right,top = npy.array(pylab.gca().get_position()).ravel()
+            if not margins:
+                margins = (0.0,0.0,0.0,0.0)
+            extent = (left,bottom,right-left,top-bottom)
+            f.delaxes(pylab.gca())
+        else: # using subplot syntax
+            f=pylab.gcf()
+            if hasattr(sub,'__len__'):
+                ncols, nrows, idx = sub
+            else:
+                ncols, nrows, idx = sub/100, (sub%100)/10, (sub%10)
+            if idx < 1 or idx > ncols*nrows:
+                raise ValueError('Wrong values for sub: %d, %d, %d'%(ncols,
+                                                                     nrows,
+                                                                     idx))
+            c,r = (idx-1)%ncols,(idx-1)/ncols
+            if not margins:
+                margins = (0.01,0.0,0.0,0.02)
+            extent = (c*1./ncols+margins[0], 
+                      1.-(r+1)*1./nrows+margins[1],
+                      1./ncols-margins[2]-margins[0],
+                      1./nrows-margins[3]-margins[1])
+        extent = (extent[0]+margins[0],
+                  extent[1]+margins[1],
+                  extent[2]-margins[2]-margins[0],
+                  extent[3]-margins[3]-margins[1])
+        #f=pylab.figure(fig,figsize=(5.5,6))
+        ax=PA.HpxGnomonicAxes(f,extent,coord=coord,rot=rot,
                               format=format)
         f.add_axes(ax)
         if remove_dip:
@@ -137,18 +217,19 @@ def gnomview(map,fig=None,rot=None,coord=None,unit='',
                               shrink=0.5,aspect=25,ticks=PA.BoundaryLocator(),
                               pad=0.08,fraction=0.1)
         ax.set_title(title)
-        ax.text(-0.07,0.02,
-                "%g '/pix,   %dx%d pix"%(ax.proj.arrayinfo['reso'],
-                                         ax.proj.arrayinfo['xsize'],
-                                         ax.proj.arrayinfo['ysize']),
-                fontsize=12,verticalalignment='bottom',
-                transform=ax.transAxes,rotation=90)
-        ax.text(-0.07,0.6,ax.proj.coordsysstr,fontsize=14,
-                fontweight='bold',rotation=90,transform=ax.transAxes)
-        lon,lat = npy.around(ax.proj.get_center(lonlat=True),ax._coordprec)
-        ax.text(0.5,-0.03,'on (%g,%g)'%(lon,lat),
-                verticalalignment='center', horizontalalignment='center',
-                transform=ax.transAxes)
+        if not notext:
+            ax.text(-0.07,0.02,
+                     "%g '/pix,   %dx%d pix"%(ax.proj.arrayinfo['reso'],
+                                              ax.proj.arrayinfo['xsize'],
+                                              ax.proj.arrayinfo['ysize']),
+                     fontsize=12,verticalalignment='bottom',
+                     transform=ax.transAxes,rotation=90)
+            ax.text(-0.07,0.6,ax.proj.coordsysstr,fontsize=14,
+                     fontweight='bold',rotation=90,transform=ax.transAxes)
+            lon,lat = npy.around(ax.proj.get_center(lonlat=True),ax._coordprec)
+            ax.text(0.5,-0.03,'on (%g,%g)'%(lon,lat),
+                    verticalalignment='center', horizontalalignment='center',
+                    transform=ax.transAxes)
         if cbar:
             cb.ax.text(1.05,0.30,unit,fontsize=14,fontweight='bold',
                        transform=cb.ax.transAxes,ha='left',va='center')
@@ -209,46 +290,52 @@ delgraticules.__doc__ = PA.SphericalProjAxes.delgraticules.__doc__
 def projplot(*args,**kwds):
     wasinteractive = pylab.isinteractive()
     pylab.ioff()
+    ret = None
     try:
         f = pylab.gcf()
         for ax in f.get_axes():
             if isinstance(ax,PA.SphericalProjAxes):
-                ax.projplot(*args,**kwds)
+                ret = ax.projplot(*args,**kwds)
     finally:
         if wasinteractive:
             pylab.ion()
             pylab.draw()
             pylab.show()
+    return ret
 projplot.__doc__ = PA.SphericalProjAxes.projplot.__doc__
     
 def projscatter(*args,**kwds):
     wasinteractive = pylab.isinteractive()
     pylab.ioff()
+    ret=None
     try:
         f = pylab.gcf()
         for ax in f.get_axes():
             if isinstance(ax,PA.SphericalProjAxes):
-                ax.projscatter(*args,**kwds)
+                ret = ax.projscatter(*args,**kwds)
     finally:
         if wasinteractive:
             pylab.ion()
             pylab.draw()
             pylab.show()
+    return ret
 projscatter.__doc__ = PA.SphericalProjAxes.projscatter.__doc__
 
 def projtext(*args,**kwds):
     wasinteractive = pylab.isinteractive()
     pylab.ioff()
+    ret = None
     try:
         f = pylab.gcf()
         for ax in f.get_axes():
             if isinstance(ax,PA.SphericalProjAxes):
-                ax.projtext(*args,**kwds)
+                ret = ax.projtext(*args,**kwds)
     finally:
         if wasinteractive:
             pylab.ion()
             pylab.draw()
             pylab.show()
+    return ret
 projtext.__doc__ = PA.SphericalProjAxes.projtext.__doc__
 
 
