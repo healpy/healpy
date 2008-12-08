@@ -119,11 +119,11 @@ def read_map(filename,field=0,dtype=npy.float64,nest=False,hdu=1,h=False):
             print 'nside=%d, sz=%d, m.size=%d'%(nside,sz,m.size)
             raise ValueError('Wrong nside parameter.')
         if nest and ordering == 'RING':
-            idx = pixelfunc.nest2ring(nside,npy.arange(m.size,dtype=npy.int64))
+            idx = pixelfunc.nest2ring(nside,npy.arange(m.size,dtype=npy.int32))
             m = m[idx]
             print 'Ordering converted to NEST'
         elif (not nest) and ordering == 'NESTED':
-            idx = pixelfunc.ring2nest(nside,npy.arange(m.size,dtype=npy.int64))
+            idx = pixelfunc.ring2nest(nside,npy.arange(m.size,dtype=npy.int32))
             m = m[idx]
             print 'Ordering converted to RING'
         ret.append(m)

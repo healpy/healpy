@@ -119,7 +119,7 @@ class Rotator:
     
     def __rmul__(self,b):
         if not isinstance(b,Rotator):
-            raise TypeError("A Rotator can only be multiplied another Rotator "
+            raise TypeError("A Rotator can only be multiplied by another Rotator "
                             "(composition of rotations)")
         rots = b._rots + self._rots
         coords = b._coords + self._coords
@@ -178,6 +178,31 @@ class Rotator:
     
     def do_rot(self,i):
         return not allclose(self.rots[i],zeros(3),rtol=0.,atol=1.e-15)
+
+    def angle_ref(self,*args,**kwds):
+        R = self
+        lonlat = kwds.get('lonlat',False)
+        inv = kwds.get('inv',False)
+        if len(args) == 1:
+            arg=args[0]
+            if not hasattr(arg,'__len__') or len(arg) < 2 or len(arg) > 3:
+                raise TypeError('Argument must be a sequence of 2 or 3 '
+                                'elements')
+            if len(arg) == 2:
+                v = dir2vec(arg[0],arg[1],lonlat=lonlat)
+            else:
+                v = arg
+        elif len(args) == 2:
+            v = dir2vec(args[0],args[1],lonlat=lonlat)
+        elif len(args) == 3:
+            v = args
+        else:
+            raise TypeError('Either 1, 2 or 3 arguments accepted')
+        v = R(v,inv=inv)
+        north_pole = R([0.,0.,1.],inv=inv)
+        sinalpha = north_pole[0]*vp[1]-north_pole[1]*vp[0]
+        cosalpha = north_pol[2] - vp[2]*npy.dot(vp,north_pole)
+        return npy.arctan2(sinalpha,cosalpha)
 
     def __repr__(self):
         return str(self._coords)+'\n'+str(self._rots)+'\n'+str(self._invs)
