@@ -774,7 +774,8 @@ class LinNorm2(colors.Normalize):
             vtype = 'scalar'
             val = npy.ma.array([value]).astype(npy.float)
 
-        val = npy.ma.masked_where(npy.isinf(val.data),val)
+        winf = npy.isinf(val.data)
+        val = npy.ma.masked_where(winf,val)
 
         self.autoscale_None(val)
         vmin, vmax = float(self.vmin), float(self.vmax)
@@ -787,12 +788,12 @@ class LinNorm2(colors.Normalize):
                 mask = npy.ma.getmask(val)
                 val = npy.ma.array(npy.clip(val.filled(vmax), vmin, vmax),
                                    mask=mask)
-            result = (val-vmin)/(vmax-vmin)
+            result = (val-vmin) * (1./(vmax-vmin))
             result.data[result.data<0]=0.0
             result.data[result.data>1]=1.0
-            result[npy.isinf(val.data)] = -npy.inf
+            result[winf] = -npy.inf
             if result.mask is not npy.ma.nomask:
-                result.mask[npy.isinf(val.data)] = False
+                result.mask[winf] = False
         if vtype == 'scalar':
             result = result[0]
         return result
@@ -815,5 +816,3 @@ class LinNorm2(colors.Normalize):
             return vmin + (vmax-vmin) * value
 
 
-
-        
