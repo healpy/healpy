@@ -37,18 +37,17 @@ healpy_fitsio_src = ['_healpy_fitsio_lib.cc']
 ################################################
 #
 #    Healpix data (pixel window and ring files
-compile_healpix_cxx(HEALPIX_TARGET)
-
 healpix_cxx_dir='hpbeta/%s'%HEALPIX_TARGET
-
-###############################################
-
-if not ( isdir(healpix_cxx_dir+'/include') and
-         isdir(healpix_cxx_dir+'/lib') ):
-    raise IOError("No inlcude and lib directory : needed for healpy !")
-
 healpix_cxx_inc = healpix_cxx_dir+'/include'
 healpix_cxx_lib = healpix_cxx_dir+'/lib'
+
+if sys.argv[1] != 'sdist':
+    compile_healpix_cxx(HEALPIX_TARGET)
+
+    if not ( isdir(healpix_cxx_dir+'/include') and
+             isdir(healpix_cxx_dir+'/lib') ):
+        raise IOError("No inlcude and lib directory : needed for healpy !")
+
 ###############################################
 
 # start with base extension
@@ -82,6 +81,7 @@ setup(name='healpy',
       description='Healpix tools package for Python',
       author='C. Rosset',
       author_email='rosset@lal.in2p3.fr',
+      url='http://code.google.com/p/healpy',
       packages=['healpy'],
       py_modules=['healpy.pixelfunc','healpy.sphtfunc',
                   'healpy.visufunc','healpy.fitsfunc',
