@@ -9,7 +9,7 @@ from pixelfunc import (ang2pix,pix2ang,pix2vec,vec2pix,
                        ring2nest, nest2ring, get_neighbours,
                        get_interp_val,fit_dipole,fit_monopole,
                        remove_dipole,remove_monopole,
-                       get_nside,maptype,ud_grade)
+                       get_nside,maptype,ud_grade,reorder)
 
 from sphtfunc import (anafast,map2alm,
                       alm2map,Alm,synalm,synfast,

@@ -491,6 +491,7 @@ def ud_grade(map_in,nside_out,pess=False,order_in='RING',order_out=None,
     else:
         m_in = map_in
     mapout = []
+    if order_out is None: order_out = order_in
     for m in m_in:
         if str(order_in).upper()[0:4] == 'RING':
             m = reorder(m,r2n=True)
