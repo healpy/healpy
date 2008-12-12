@@ -654,8 +654,18 @@ class HistEqNorm(colors.Normalize):
         data2 = data.data[~w]
         bins = long(min(data2.size/20, 5000))
         if bins < 3: bins=data2.size
-        hist, bins = npy.histogram(data2,bins=bins,
-                                   range=(self.vmin,self.vmax))
+        try:
+            # for numpy 1.1, use new bins format (left and right edges)
+            hist, bins = npy.histogram(data2,bins=bins,
+                                       range=(self.vmin,self.vmax),
+                                       new=True)
+        except TypeError:
+            # for numpy <= 1.0 or numpy >= 1.2, no new keyword
+            hist, bins = npy.histogram(data2,bins=bins,
+                                       range=(self.vmin,self.vmax))
+        if bins.size == hist.size+1:
+            # new bins format, remove last point
+            bins = bins[:-1]
         hist = hist.astype(npy.float)/npy.float(hist.sum())
         self.yval = npy.concatenate([0., hist.cumsum(), 1.], None)
         self.xval = npy.concatenate([self.vmin,
