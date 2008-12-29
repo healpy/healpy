@@ -1,17 +1,16 @@
 2008-12-12 08:03  cyrille.rosset
 
-	* [r19] healpy/projaxes.py: Adapt HistEqNorm to numpy 1.2 (change
-	  in histogram bins format)
+	* healpy/projaxes.py: Adapt HistEqNorm to numpy 1.2 (change in
+	  histogram bins format)
 
 2008-12-11 22:45  cyrille.rosset
 
-	* [r17] healpy/projaxes.py: Correct bug in LinNorm2 giving
-	  incorrect color scale with some version of numpy (masked array
-	  problem?)
+	* healpy/projaxes.py: Correct bug in LinNorm2 giving incorrect
+	  color scale with some version of numpy (masked array problem?)
 
 2008-12-08 18:54  cyrille.rosset
 
-	* [r15] doc, doc/Makefile, doc/conf.py, doc/healpy_fits.rst,
+	* doc, doc/Makefile, doc/conf.py, doc/healpy_fits.rst,
 	  doc/healpy_pix.rst, doc/healpy_projaxes.rst,
 	  doc/healpy_projector.rst, doc/healpy_rotator.rst,
 	  doc/healpy_spht.rst, doc/healpy_visu.rst, doc/index.rst, test,
@@ -19,44 +18,43 @@
 
 2008-12-08 18:33  cyrille.rosset
 
-	* [r14] healpy/fitsfunc.py, healpy/rotator.py: Add reference
-	  direction rotation in rotator (for polarisation). Not yet tested.
+	* healpy/fitsfunc.py, healpy/rotator.py: Add reference direction
+	  rotation in rotator (for polarisation). Not yet tested.
 
 2008-12-02 18:25  cyrille.rosset
 
-	* [r13] healpy/visufunc.py: modify gnomview and mollview to make
-	  blank maps (for overplotting), to replace current axes (option
-	  hold), or to make subplots on the current figure (option sub)
+	* healpy/visufunc.py: modify gnomview and mollview to make blank
+	  maps (for overplotting), to replace current axes (option hold),
+	  or to make subplots on the current figure (option sub)
 
 2008-11-26 12:04  cyrille.rosset
 
-	* [r12] hpbeta/config/config.generic_gcc: Add -fPIC into compiler
-	  option
+	* hpbeta/config/config.generic_gcc: Add -fPIC into compiler option
 
 2008-11-17 13:40  cyrille.rosset
 
-	* [r11] healpy/sphtfunc.py: default for number of iteration set to
-	  1 instead of 3
+	* healpy/sphtfunc.py: default for number of iteration set to 1
+	  instead of 3
 
 2008-11-07 09:24  cyrille.rosset
 
-	* [r10] healpy/rotator.py: correct issue 4: lonlat keyword not
-	  taken into account for output
+	* healpy/rotator.py: correct issue 4: lonlat keyword not taken into
+	  account for output
 
 2008-11-05 11:58  cyrille.rosset
 
-	* [r9] healpy/__init__.py, healpy/query_disc_func.py: add
-	  query_disc function and related functions
+	* healpy/__init__.py, healpy/query_disc_func.py: add query_disc
+	  function and related functions
 
 2008-11-03 13:45  cyrille.rosset
 
-	* [r8] healpy/src/_healpy_sph_transform_lib.cc: - correct bug in
+	* healpy/src/_healpy_sph_transform_lib.cc: - correct bug in
 	  healpy.alm2map_der1 : was setting almI(0,0) to zero (same bug as
 	  in alm2map)
 
 2008-11-03 13:43  cyrille.rosset
 
-	* [r7] healpy/__init__.py, healpy/pixelfunc.py,
+	* healpy/__init__.py, healpy/pixelfunc.py,
 	  healpy/src/_healpy_sph_transform_lib.cc,
 	  hpbeta/Healpix_cxx/alm_map_tools.cc: - correct bug in
 	  alm_map_tools.cc for alm2map_der1\n- correct bug in
@@ -64,12 +62,12 @@
 
 2008-10-28 09:21  cyrille.rosset
 
-	* [r6] healpy/__init__.py, healpy/pixelfunc.py, healpy/sphtfunc.py,
+	* healpy/__init__.py, healpy/pixelfunc.py, healpy/sphtfunc.py,
 	  healpy/src/_healpy_sph_transform_lib.cc: add alm2map_der1
 
 2008-10-28 09:20  cyrille.rosset
 
-	* [r5] hpbeta/Healpix_cxx/alm_map_tools.cc,
+	* hpbeta/Healpix_cxx/alm_map_tools.cc,
 	  hpbeta/Healpix_cxx/healpix_base.h, hpbeta/Healpix_cxx/hpxtest.cc,
 	  hpbeta/Healpix_cxx/ylmgen.h, hpbeta/Makefile,
 	  hpbeta/README.compilation, hpbeta/alice,
@@ -101,15 +99,13 @@
 
 2008-10-03 12:24  cyrille.rosset
 
-	* [r4] healpy/__init__.py, healpy/pixelfunc.py,
-	  healpy/projector.py, healpy/visufunc.py: Add
-	  fit/remove_dipole/monopole
+	* healpy/__init__.py, healpy/pixelfunc.py, healpy/projector.py,
+	  healpy/visufunc.py: Add fit/remove_dipole/monopole
 
 2008-08-31 16:56  cyrille.rosset@gmail.com
 
-	* [r2] INSTALL, MANIFEST.in, TODO, do_inst, healpy,
-	  healpy/__init__.py, healpy/data,
-	  healpy/data/pixel_window_n0002.fits,
+	* INSTALL, MANIFEST.in, TODO, do_inst, healpy, healpy/__init__.py,
+	  healpy/data, healpy/data/pixel_window_n0002.fits,
 	  healpy/data/pixel_window_n0004.fits,
 	  healpy/data/pixel_window_n0008.fits,
 	  healpy/data/pixel_window_n0016.fits,
@@ -223,5 +219,5 @@
 
 2008-08-29 09:32  
 
-	* [r1] .: Initial directory structure.
+	* .: Initial directory structure.
 
