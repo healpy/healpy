@@ -11,7 +11,7 @@ def mollview(map=None,fig=None,rot=None,coord=None,unit='',
              min=None,max=None,remove_dip=False,remove_mono=False,
              gal_cut=0,
              format='%g',cbar=True,cmap=None,
-             norm=None,hold=False,sub=None):
+             norm=None,hold=False,margins=None,sub=None):
     """Plot an healpix map (given as an array) in Mollweide projection.
     
     Input:
@@ -41,6 +41,10 @@ def mollview(map=None,fig=None,rot=None,coord=None,unit='',
               figure. Default: False
       - sub: use a part of the current figure (same syntax as subplot).
              Default: None
+      - margins: either None, or a sequence (left,bottom,right,top)
+                 giving the margins on left,bottom,right and top
+                 of the axes. Values are relative to figure (0-1).
+                 Default: None
     """
     # Starting to draw : turn interactive off
     wasinteractive = pylab.isinteractive()
@@ -60,15 +64,25 @@ def mollview(map=None,fig=None,rot=None,coord=None,unit='',
         else: # using subplot syntax
             f=pylab.gcf()
             if hasattr(sub,'__len__'):
-                ncols, nrows, idx = sub
+                nrows, ncols, idx = sub
             else:
-                ncols, nrows, idx = sub/100, (sub%100)/10, (sub%10)
+                nrows, ncols, idx = sub/100, (sub%100)/10, (sub%10)
             if idx < 1 or idx > ncols*nrows:
-                raise ValueError('Wrong values for sub: %d, %d, %d'%(ncols,
-                                                                     nrows,
+                raise ValueError('Wrong values for sub: %d, %d, %d'%(nrows,
+                                                                     ncols,
                                                                      idx))
             c,r = (idx-1)%ncols,(idx-1)/ncols
-            extent = (c*1./ncols, 1.-(r+1)*1./nrows,1./ncols,1./nrows)
+            if not margins:
+                margins = (0.01,0.0,0.0,0.02)
+            extent = (c*1./ncols+margins[0], 
+                      1.-(r+1)*1./nrows+margins[1],
+                      1./ncols-margins[2]-margins[0],
+                      1./nrows-margins[3]-margins[1])
+            extent = (extent[0]+margins[0],
+                      extent[1]+margins[1],
+                      extent[2]-margins[2]-margins[0],
+                      extent[3]-margins[3]-margins[1])
+            #extent = (c*1./ncols, 1.-(r+1)*1./nrows,1./ncols,1./nrows)
         #f=pylab.figure(fig,figsize=(8.5,5.4))
         ax=PA.HpxMollweideAxes(f,extent,coord=coord,rot=rot,
                                format=format)
@@ -178,12 +192,12 @@ def gnomview(map=None,fig=None,rot=None,coord=None,unit='',
         else: # using subplot syntax
             f=pylab.gcf()
             if hasattr(sub,'__len__'):
-                ncols, nrows, idx = sub
+                nrows, ncols, idx = sub
             else:
-                ncols, nrows, idx = sub/100, (sub%100)/10, (sub%10)
+                nrows, ncols, idx = sub/100, (sub%100)/10, (sub%10)
             if idx < 1 or idx > ncols*nrows:
-                raise ValueError('Wrong values for sub: %d, %d, %d'%(ncols,
-                                                                     nrows,
+                raise ValueError('Wrong values for sub: %d, %d, %d'%(nrows,
+                                                                     ncols,
                                                                      idx))
             c,r = (idx-1)%ncols,(idx-1)/ncols
             if not margins:
