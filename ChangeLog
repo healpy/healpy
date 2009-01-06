@@ -1,3 +1,14 @@
+2009-01-06 13:04  cyrille.rosset
+
+	* [r30] healpy/__init__.py, healpy/projaxes.py, healpy/visufunc.py:
+	  Add flip keyword to mollview/gnomview (solve issue 13); correct
+	  graticule paramters (solve issue 12); extend xlim/ylim for
+	  mollview (solve issue 14)
+
+2008-12-29 14:02  cyrille.rosset
+
+	* [r29] ChangeLog: Update ChangeLog
+
 2008-12-29 13:48  cyrille.rosset
 
 	* [r28] ChangeLog: Add margins keyword to mollview; invert cols and
