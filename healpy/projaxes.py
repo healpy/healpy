@@ -439,7 +439,7 @@ class SphericalProjAxes(axes.Axes,object):
             dpar = set_prec((pmax-pmin)/dtor,max_n_par/2)*dtor
         if n_mer > max_n_mer:
             dmer = set_prec((mmax-mmin)/dtor,max_n_mer/2,nn=1)*dtor
-        if dmer/dpar > 0.2 and dmer/dpar < 5.:
+        if dmer/dpar < 0.2 or dmer/dpar > 5.:
             dmer = dpar = max(dmer,dpar)
         vdeg = npy.floor(npy.around(dpar/dtor,10))
         varcmin = (dpar/dtor-vdeg)*60.
@@ -494,10 +494,14 @@ class MollweideAxes(SphericalProjAxes):
     def __init__(self,*args,**kwds):
         kwds.setdefault('coordprec',2)
         super(MollweideAxes,self).__init__(P.MollweideProj, *args,**kwds)
+        self.set_xlim(-2.01,2.01)
+        self.set_ylim(-1.01,1.01)
 
     def projmap(self,map,vec2pix_func,xsize=800,**kwds):
         self.proj.set_proj_plane_info(xsize=xsize)
         super(MollweideAxes,self).projmap(map,vec2pix_func,**kwds)
+        self.set_xlim(-2.01,2.01)
+        self.set_ylim(-1.01,1.01)
         
 class HpxMollweideAxes(MollweideAxes):
     def projmap(self,map,nest=False,**kwds):

@@ -8,7 +8,8 @@ import pixelfunc
 
 def mollview(map=None,fig=None,rot=None,coord=None,unit='',
              xsize=800,title='Mollweide view',nest=False,
-             min=None,max=None,remove_dip=False,remove_mono=False,
+             min=None,max=None,flip='astro',
+             remove_dip=False,remove_mono=False,
              gal_cut=0,
              format='%g',cbar=True,cmap=None,
              norm=None,hold=False,margins=None,sub=None):
@@ -32,6 +33,7 @@ def mollview(map=None,fig=None,rot=None,coord=None,unit='',
       - nest: if True, ordering scheme is NEST. Default: False (RING)
       - min: the minimum range value
       - max: the maximum range value
+      - flip: 'astro' (default, east towards left, west towards right) or 'geo'
       - remove_dip: if True, remove the dipole+monopole
       - remove_mono: if True, remove the monopole
       - gal_cut: galactic cut for the dipole/monopole fit
@@ -85,7 +87,7 @@ def mollview(map=None,fig=None,rot=None,coord=None,unit='',
             #extent = (c*1./ncols, 1.-(r+1)*1./nrows,1./ncols,1./nrows)
         #f=pylab.figure(fig,figsize=(8.5,5.4))
         ax=PA.HpxMollweideAxes(f,extent,coord=coord,rot=rot,
-                               format=format)
+                               format=format,flipconv=flip)
         f.add_axes(ax)
         if remove_dip:
             map=pixelfunc.remove_dipole(map,gal_cut=gal_cut,
@@ -128,7 +130,8 @@ def gnomview(map=None,fig=None,rot=None,coord=None,unit='',
              xsize=200,ysize=None,reso=1.5,degree=False,
              title='Gnomonic view',nest=False,remove_dip=False,
              remove_mono=False,gal_cut=0,
-             min=None,max=None,format='%g',cbar=True,
+             min=None,max=None,flip='astro',
+             format='%g',cbar=True,
              cmap=None, norm=None,
              hold=False,sub=None,margins=None,notext=False):
     """Plot an healpix map (given as an array) in Gnomonic projection.
@@ -154,6 +157,7 @@ def gnomview(map=None,fig=None,rot=None,coord=None,unit='',
       - nest: if True, ordering scheme is NEST. Default: False (RING)
       - min: the minimum range value
       - max: the maximum range value
+      - flip: 'astro' (default, east towards left, west towards right) or 'geo'
       - remove_dip: if True, remove the dipole+monopole
       - remove_mono: if True, remove the monopole
       - gal_cut: galactic cut for the dipole/monopole fit
@@ -212,7 +216,7 @@ def gnomview(map=None,fig=None,rot=None,coord=None,unit='',
                   extent[3]-margins[3]-margins[1])
         #f=pylab.figure(fig,figsize=(5.5,6))
         ax=PA.HpxGnomonicAxes(f,extent,coord=coord,rot=rot,
-                              format=format)
+                              format=format,flipconv=flip)
         f.add_axes(ax)
         if remove_dip:
             map=pixelfunc.remove_dipole(map,gal_cut=gal_cut,nest=nest,copy=True)

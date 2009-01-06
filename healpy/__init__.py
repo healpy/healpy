@@ -2,6 +2,8 @@
 compute spherical harmonics tranforms on them.
 """
 
+import warnings
+
 from version import __version__
 #try:
 from pixelfunc import (ang2pix,pix2ang,pix2vec,vec2pix,
@@ -31,11 +33,17 @@ try:
 ##                              remove_graticules,gnomview,blink,
 ##                              create_moll_image,create_gnom_image,
 ##                              mollzoom,get_cursor_coord)
+    if visufunc.matplotlib.__version__ == '0.98,3':
+        warnings.warn("Bug in matplotlib 0.98.3 prevents mollview to work\n"+
+                      "You should upgrade to matplotlib 0.98.4",
+                      category=warnings.ImportWarning)
 except ImportError:
-    print "Warning: Cannot import visualisation tools (needs matplotlib)"
+    warnings.warn("Warning: Cannot import visualisation tools (needs matplotlib)",
+                  category=warnings.ImportWarning)
 
 try:
     from fitsfunc import write_map,read_map,mrdfits,mwrfits,read_alm
 except:
-    print "Warning: Cannot import fits i/o tools (needs pyfits)"
+    warnings.warn("Warning: Cannot import fits i/o tools (needs pyfits)",
+                  category=warnings.ImportWarning)
 
