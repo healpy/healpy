@@ -1,3 +1,16 @@
+2009-01-08 18:14  cyrille.rosset
+
+	* [r33] healpy/__init__.py, healpy/rotator.py: Add documentation to
+	  the Rotator class; makes it available as healpy.Rotator
+
+2009-01-06 13:35  cyrille.rosset
+
+	* [r32] healpy/version.py: update version number
+
+2009-01-06 13:19  cyrille.rosset
+
+	* [r31] ChangeLog: update ChangeLog
+
 2009-01-06 13:04  cyrille.rosset
 
 	* [r30] healpy/__init__.py, healpy/projaxes.py, healpy/visufunc.py:
