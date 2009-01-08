@@ -1,63 +1,23 @@
-To install healpy:
+Installation procedure for Healpy:
+---------------------------------
 
+* Note: Healpix is included, so you don't need to get it separately
 
-======== New install instruction >= 0.9.0 ==============
+The installation procedure is very simple:
 
-- get healpy:
+> cd healpy-0.9.3.1
+> python setup.py build
 
-svn co https://svn.lal.in2p3.fr/users/rosset/healpy/trunk healpy-trunk
+If everything goes fine, you can give a test:
+> cd build/lib*
+> ipython -pylab
+>>> import healpy as H
+>>> H.mollview(arange(12))
 
-or, for a tagged version (recommended)
+If the plot looks good, you can install:
+> sudo python setup.py install  # install in default location, need root rights
+or
+> python setup.py install --install-lib=~/Softs/Python # will install healpy in directory ~/Softs/Python, which then must be in your PYTHONPATH
 
-svn co https://svn.lal.in2p3.fr/users/rosset/healpy/tags/healpy-0.9.0 healpy-0.9.0
+That's it !
 
-- install it
-
-cd healpy-trunk && python setup.py install
-
-If you don't want to install it in the system directory (or don't have 
-the rights to write there), you can build it and then copy the 
-build/lib.xxx/healpy directory where you want. You will need to have the 
-parent dirctory in sys.path.
-
-Then, test it with :
-import healpy as H
-import numpy
-H.mollview(numpy.arange(12))
-
-======== Instruction for version < 0.9.0  ==============
-
-- first you must get hpdata and hpbeta (just beside healpy in svn tree)
-
-svn co https://svn.lal.in2p3.fr/users/rosset/healpy/tags/healpy-0.8.3 healpy-0.8.3
-svn co https://svn.lal.in2p3.fr/users/rosset/hpdata hpdata
-svn co https://svn.lal.in2p3.fr/users/rosset/hpbeta hpbeta
-
-- Then, compile hpbeta
-
-cd hpbeta
-export HEALPIX_TARGET=generic_gcc
-gmake
-
-- then, compile healpy:
-
-cd ../healpy-0.8.2
-export HEALPIX_DATA=../hpdata
-export HEALPIX_CXX=../hpbeta/generic_gcc
-python setup.py build
-
-- install healpy
-
-python setup.py install [--prefix=/a/path/to/local]
-
-(use the prefix option if you dont have the rights to write in standard python
-package place)
-
-- if you haven't put healpy in a standard place, don't forget to update your
-  PYTHONPATH environment variable
-
-Now you should be able to use healply
-
-import healpy as H
-m=arange(12)
-H.mollview(m)
