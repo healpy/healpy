@@ -1,15 +1,42 @@
-from numpy import (array,dot,pi,cos,sin,zeros,
-                   tensordot,sqrt,arctan2,arccos,identity,
-                   allclose,float64,matrix)
 import numpy as npy
+import warnings
 
 coordname = {'G': 'Galactic', 'E': 'Ecliptic', 'C': 'Equatorial'}
 
+class ConsistencyWarning(Warning):
+    """Warns for a problem in the consistency of data
+    """
+    pass
+
+if __name__ != '__main__':
+    warnings.filterwarnings("always", category=ConsistencyWarning, module=__name__)
+
 class Rotator:
-    ErrMessWrongPar = ("rot and coord must be singla elements or "
+    """This class provides tools for spherical rotations. It is meant to be used 
+    in the healpy library for plotting, and for this reason reflects the
+    convention used in the Healpix IDL library.
+
+    Example:
+      >>> r = Rotator(coord=['G','E'])
+      >>> theta_ecl, phi_ecl = r(theta_gal, phi_gal)
+    or in a shorter way:
+      >>> theta_ecl, phi_ecl = Rotator(coord=['G','E'])(theta_gal, phi_gal)
+    """
+    ErrMessWrongPar = ("rot and coord must be single elements or "
                        "sequence of same size.")
 
-    def __init__(self,rot=None,coord=None,inv=None,deg=True,eulertype='ZYX'):
+    def __init__(self,rot=None,coord=None,inv=None,deg=True,
+                 eulertype='ZYX'):
+        """Create a rotator with given parameters.
+        - rot: a float, a tuple of 1,2 or 3 floats or a sequence of tuples.
+               If it is a sequence of tuple, it must have the same length as coord.
+        - coord: a string or a tuple of 1 or 2 strings or a sequence of tuple
+                 If it is a sequence of tuple, it must have same length as rot.
+        - inv: whether to use inverse rotation or not
+        - deg: if True, angles in rot are assumed in degree (default: True)
+        - eulertype: the convention for euler angles in rot.
+        Note: the coord system conversion is applied first, then the rotation.
+        """
         rot_is_seq = (hasattr(rot,'__len__') 
                       and hasattr(rot[0], '__len__'))
         coord_is_seq = (hasattr(coord,'__len__') 
@@ -51,20 +78,20 @@ class Rotator:
             self._coords.append(cn) # append(cn) or insert(0, cn) ? 
             self._invs.append(bool(i))
         if not self.consistent:
-            print ("WARNING: The chain of coord system rotations is not"
-                   " consistent !")
+            warnings.warn("The chain of coord system rotations is not consistent",
+                          category=ConsistencyWarning)
         self._update_matrix()
 
     def _update_matrix(self):
-        self._matrix = identity(3)
+        self._matrix = npy.identity(3)
         self._do_rotation = False
         for r,c,i in zip(self._rots, self._coords,self._invs):
             rotmat,do_rot,rotnorm = get_rotation_matrix(r,
                                                         eulertype=self._eultype)
             convmat,do_conv,coordnorm = get_coordconv_matrix(c)
-            r = dot(rotmat,convmat)
+            r = npy.dot(rotmat,convmat)
             if i: r = r.T
-            self._matrix = dot(self._matrix, r)
+            self._matrix = npy.dot(self._matrix, r)
             self._do_rotation = self._do_rotation or (do_rot or do_conv)
 
     def _is_coords_consistent(self):
@@ -74,17 +101,30 @@ class Rotator:
                 return False
             c,i = cnext,inext
         return True
-    consistent = property(_is_coords_consistent)
+    consistent = property(_is_coords_consistent,
+                          doc="consistency of the coords transform chain")
 
     def __eq__(self,a):
         if type(a) is not type(self): return False
         # compare the _rots
-        v = [allclose(x,y,rtol=0,atol=1e-15) for x,y in zip(self._rots,a._rots)]
-        return ( array(v).all() and
+        v = [npy.allclose(x,y,rtol=0,atol=1e-15) for x,y in zip(self._rots,a._rots)]
+        return ( npy.array(v).all() and
                  (self._coords == a._coords) and
                  (self._invs == a._invs) )
     
     def __call__(self,*args,**kwds):
+        """Use the rotator to rotate either spherical coordinates (theta, phi)
+        or a vector (x,y,z). You can use lonla keyword to use longitude, latitude
+        (in degree) instead of theta, phi (in radian). In this case, returns 
+        longitude, latitude in degree.
+        Accepted forms:
+        >>> r = Rotator()
+        >>> r(x,y,z)  # x,y,z either scalars or arrays
+        >>> r(theta,phi) # theta, phi scalars or arrays 
+        >>> r(lon,lat,lonlat=True)  # lon, lat scalars or arrays
+        >>> r(vec) # vec 1-D array with 3 elements, or 2-D array 3xN
+        >>> r(direction) # direction 1-D array with 2 elements, or 2xN array
+        """
         if kwds.pop('inv',False): m=self._matrix.T
         else:                     m=self._matrix
         lonlat = kwds.pop('lonlat',False)
@@ -109,6 +149,8 @@ class Rotator:
             raise TypeError('Either 1, 2 or 3 arguments accepted')
 
     def __mul__(self,a):
+        """Composition of rotation.
+        """
         if not isinstance(a,Rotator):
             raise TypeError("A Rotator can only multiply another Rotator "
                             "(composition of rotations)")
@@ -145,39 +187,39 @@ class Rotator:
         return self.__call__(*args,**kwds)
     
     def get_matrix(self):
-        return matrix(self._matrix)
+        return npy.matrix(self._matrix)
     mat = property(get_matrix,doc='Return a matrix representing the rotation')
 
     def get_coordin(self):
         if not self.consistent: return None
         c,i = zip(self._coords,self._invs)[-1]
         return c[i]
-    coordin = property(get_coordin)
+    coordin = property(get_coordin, doc="the input coordinate system")
 
     def get_coordout(self):
         if not self.consistent: return None
         c,i = zip(self._coords,self._invs)[0]
         return c[not i]
-    coordout = property(get_coordout)
+    coordout = property(get_coordout, doc="the output coordinate system")
 
     def get_coordin_str(self):
         return coordname.get(self.coordin,'')
-    coordinstr = property(get_coordin_str)
+    coordinstr = property(get_coordin_str, doc="the input coordinate system in str")
 
     def get_coordout_str(self):
         return coordname.get(self.coordout,'')
-    coordoutstr = property(get_coordout_str)
+    coordoutstr = property(get_coordout_str, doc="the output coordinate system in str")
 
     def get_rots(self):
         return self._rots
-    rots = property(get_rots)
+    rots = property(get_rots, doc="the sequence of rots defining")
     
     def get_coords(self):
         return self._coords
-    coords = property(get_coords)
+    coords = property(get_coords, doc="the sequence of coords")
     
     def do_rot(self,i):
-        return not allclose(self.rots[i],zeros(3),rtol=0.,atol=1.e-15)
+        return not npy.allclose(self.rots[i],npy.zeros(3),rtol=0.,atol=1.e-15)
 
     def angle_ref(self,*args,**kwds):
         R = self
@@ -205,7 +247,9 @@ class Rotator:
         return npy.arctan2(sinalpha,cosalpha)
 
     def __repr__(self):
-        return str(self._coords)+'\n'+str(self._rots)+'\n'+str(self._invs)
+        return '[ '+', '.join([str(self._coords),
+                               str(self._rots),
+                               str(self._invs)]) +' ]'
     __str__ = __repr__
 
 
@@ -229,10 +273,10 @@ def rotateVector(rotmat,vec,vy=None,vz=None, do_rot=True):
     Return: vx,vy,vz
     """
     if vy is None and vz is None:
-       if do_rot: return tensordot(rotmat,vec,axes=(1,0))
+       if do_rot: return npy.tensordot(rotmat,vec,axes=(1,0))
        else: return vec
     elif vy is not None and vz is not None:
-       if do_rot: return tensordot(rotmat,array([vec,vy,vz]),axes=(1,0))
+       if do_rot: return npy.tensordot(rotmat,npy.array([vec,vy,vz]),axes=(1,0))
        else: return vec,vy,vz
     else:
        raise TypeError("You must give either vec only or vec,vy, "
@@ -263,11 +307,11 @@ def vec2dir(vec,vy=None,vz=None,lonlat=False):
       vx=vec
    else:
       raise TypeError("You must either give both vy and vz or none of them")
-   r = sqrt(vx**2+vy**2+vz**2)
-   theta = arccos(vz/r)
-   phi = arctan2(vy,vx)
+   r = npy.sqrt(vx**2+vy**2+vz**2)
+   theta = npy.arccos(vz/r)
+   phi = npy.arctan2(vy,vx)
    if lonlat:
-       return phi*180/pi,90-theta*180/pi
+       return phi*180/npy.pi,90-theta*180/npy.pi
    else:
        return theta,phi
 
@@ -278,8 +322,8 @@ def dir2vec(theta,phi=None,lonlat=False):
       theta,phi=theta
    if lonlat:
        lon,lat=theta,phi
-       theta,phi = pi/2.-lat*pi/180,lon*pi/180
-   ct,st,cp,sp = cos(theta),sin(theta),cos(phi),sin(phi)
+       theta,phi = npy.pi/2.-lat*npy.pi/180,lon*npy.pi/180
+   ct,st,cp,sp = npy.cos(theta),npy.sin(theta),npy.cos(phi),npy.sin(phi)
    return st*cp,st*sp,ct
 
 
@@ -290,13 +334,16 @@ def dir2vec(theta,phi=None,lonlat=False):
 #
 
 def check_coord(c):
+    """Check if parameter is a valid coord system.
+    Raise a TypeError exception if it is not, otherwise returns the normalised
+    coordinate system name.
+    """
     if c is None:
         return c
     if type(c) is not str:
         raise TypeError('Coordinate must be a string (G[alactic],'
                         ' E[cliptic], C[elestial]'
-                        ' or Equatorial=Celestial)'
-                        ' or a tuple of 2 strings')
+                        ' or Equatorial=Celestial)')
     if c[0].upper() == 'G':
         x='G'
     elif c[0].upper() == 'E' and c != 'Equatorial':
@@ -306,7 +353,7 @@ def check_coord(c):
     else:
         raise ValueError('Wrong coordinate (either G[alactic],'
                          ' E[cliptic], C[elestial]'
-                         ' or Equatorial=Celestial)')        
+                         ' or Equatorial=Celestial)')
     return x
 
 def normalise_coord(coord):
@@ -341,12 +388,12 @@ def normalise_rot(rot,deg=False):
    If deg is True, convert from degree to radian, otherwise assume input
    is in radian.
    """
-   if deg: convert=pi/180.
+   if deg: convert=npy.pi/180.
    else: convert=1.
    if rot is None:
-      rot=zeros(3)
+      rot=npy.zeros(3)
    else:
-      rot=array(rot,float64).flatten()*convert
+      rot=npy.array(rot,npy.float64).flatten()*convert
       rot.resize(3)
    return rot
 
@@ -364,7 +411,7 @@ def get_rotation_matrix(rot, deg=False, eulertype='ZYX'):
       - normrot: the normalised version of the input rot.
    """
    rot = normalise_rot(rot, deg=deg)
-   if not allclose(rot,zeros(3),rtol=0.,atol=1.e-15):
+   if not npy.allclose(rot,npy.zeros(3),rtol=0.,atol=1.e-15):
       do_rot = True
    else:
       do_rot = False
@@ -397,33 +444,33 @@ def get_coordconv_matrix(coord):
    coord_norm = normalise_coord(coord)
    
    if coord_norm[0] == coord_norm[1]:
-      matconv = identity(3)
+      matconv = npy.identity(3)
       do_conv = False        
    else:
       eps = 23.452294 - 0.0130125 - 1.63889E-6 + 5.02778E-7
-      eps = eps * pi / 180.
+      eps = eps * npy.pi / 180.
       
       # ecliptic to galactic
-      e2g = array([[-0.054882486, -0.993821033, -0.096476249],
+      e2g = npy.array([[-0.054882486, -0.993821033, -0.096476249],
                    [ 0.494116468, -0.110993846,  0.862281440],
                    [-0.867661702, -0.000346354,  0.497154957]])
       
       # ecliptic to equatorial
-      e2q = array([[1.,     0.    ,      0.         ],
-                   [0., cos( eps ), -1. * sin( eps )],
-                   [0., sin( eps ),    cos( eps )   ]])
+      e2q = npy.array([[1.,     0.    ,      0.         ],
+                   [0., npy.cos( eps ), -1. * npy.sin( eps )],
+                   [0., npy.sin( eps ),    npy.cos( eps )   ]])
       
       # galactic to ecliptic
       g2e = npy.linalg.inv(e2g)
       
       # galactic to equatorial                   
-      g2q = dot(e2q , g2e)
+      g2q = npy.dot(e2q , g2e)
       
       # equatorial to ecliptic
       q2e = npy.linalg.inv(e2q)
       
       # equatorial to galactic
-      q2g = dot(e2g , q2e)
+      q2g = npy.dot(e2g , q2e)
    
       if coord_norm == ('E','G'):
          matconv = e2g
@@ -504,9 +551,6 @@ def euler(ai, bi, select, FK4 = 0):
          Converted to python by K. Ganga December 2007
    """
 
-   # Imports
-   from numpy import arcsin, arctan2, cos, fmod, pi, sin
-
    # npar = N_params()
    #  if npar LT 2 then begin
    #     print,'Syntax - EULER, AI, BI, A0, B0, [ SELECT, /FK4, SELECT= ]'
@@ -516,7 +560,7 @@ def euler(ai, bi, select, FK4 = 0):
    #     return
    #  endif
 
-   PI = pi
+   PI = npy.pi
    twopi   =   2.0*PI
    fourpi  =   4.0*PI
    deg_to_rad = 180.0/PI
@@ -565,15 +609,15 @@ def euler(ai, bi, select, FK4 = 0):
    i  = select - 1                         # IDL offset
    a  = ai/deg_to_rad - phi[i]
    b = bi/deg_to_rad
-   sb = sin(b)
-   cb = cos(b)
-   cbsa = cb * sin(a)
+   sb = npy.sin(b)
+   cb = npy.cos(b)
+   cbsa = cb * npy.sin(a)
    b  = -stheta[i] * cbsa + ctheta[i] * sb
    #bo    = math.asin(where(b<1.0, b, 1.0)*deg_to_rad)
-   bo    = arcsin(b)*deg_to_rad
+   bo    = npy.arcsin(b)*deg_to_rad
    #
-   a = arctan2( ctheta[i] * cbsa + stheta[i] * sb, cb * cos(a) )
-   ao = fmod( (a+psi[i]+fourpi), twopi) * deg_to_rad
+   a = npy.arctan2( ctheta[i] * cbsa + stheta[i] * sb, cb * npy.cos(a) )
+   ao = npy.fmod( (a+psi[i]+fourpi), twopi) * deg_to_rad
    return ao, bo
 
 
@@ -643,55 +687,55 @@ def euler_matrix_new(a1,a2,a3,X=True,Y=False,ZYX=False,deg=False):
    
    convert = 1.0
    if deg:
-      convert = pi/180.
+      convert = npy.pi/180.
       
-   c1 = cos(a1*convert)
-   s1 = sin(a1*convert)
-   c2 = cos(a2*convert)
-   s2 = sin(a2*convert)
-   c3 = cos(a3*convert)
-   s3 = sin(a3*convert)
+   c1 = npy.cos(a1*convert)
+   s1 = npy.sin(a1*convert)
+   c2 = npy.cos(a2*convert)
+   s2 = npy.sin(a2*convert)
+   c3 = npy.cos(a3*convert)
+   s3 = npy.sin(a3*convert)
         
    if ZYX:
-      m1 = array([[ c1,-s1,  0],
+      m1 = npy.array([[ c1,-s1,  0],
                   [ s1, c1,  0],
                   [  0,  0,  1]]) # around   z
 
-      m2 = array([[ c2,  0, s2],
+      m2 = npy.array([[ c2,  0, s2],
                   [  0,  1,  0],
                   [-s2,  0, c2]]) # around   y
 
-      m3 = array([[  1,  0,  0],
+      m3 = npy.array([[  1,  0,  0],
                   [  0, c3,-s3],
                   [  0, s3, c3]]) # around   x
 
    elif Y:
-      m1 = array([[ c1,-s1,  0],
+      m1 = npy.array([[ c1,-s1,  0],
                   [ s1, c1,  0],
                   [  0,  0,  1]]) # around   z
 
-      m2 = array([[ c2,  0, s2],
+      m2 = npy.array([[ c2,  0, s2],
                   [  0,  1,  0],
                   [-s2,  0, c2]]) # around   y
 
-      m3 = array([[ c3,-s3,  0],
+      m3 = npy.array([[ c3,-s3,  0],
                   [ s3, c3,  0],
                   [  0,  0,  1]]) # around   z
 
    else:
-      m1 = array([[ c1,-s1,  0],
+      m1 = npy.array([[ c1,-s1,  0],
                   [ s1, c1,  0],
                   [  0,  0,  1]]) # around   z
 
-      m2 = array([[  1,  0,  0],
+      m2 = npy.array([[  1,  0,  0],
                   [  0, c2,-s2],
                   [  0, s2, c2]]) # around   x
 
-      m3 = array([[ c3,-s3,  0],
+      m3 = npy.array([[ c3,-s3,  0],
                   [ s3, c3,  0],
                   [  0,  0,  1]]) # around   z
 
-   M = dot(m3.T,dot(m2.T,m1.T)) 
+   M = npy.dot(m3.T,npy.dot(m2.T,m1.T)) 
 
    return M
 
