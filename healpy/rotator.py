@@ -222,6 +222,18 @@ class Rotator:
         return not npy.allclose(self.rots[i],npy.zeros(3),rtol=0.,atol=1.e-15)
 
     def angle_ref(self,*args,**kwds):
+        """Compute the angle between transverse reference direction of initial and final frames
+        For example, if angle of polarisation is psi in initial frame, it will be psi+angle_ref in final
+        frame.
+        Input:
+          - direction or vector (see Rotator.__call__)
+        Keywords:
+          - lonlat: if True, assume input is longitude,latitude in degrees. Otherwise,
+                    theta,phi in radian. Default: False
+          - inv: if True, use the inverse transforms. Default: False
+        Return:
+          - angle in radian (a scalar or an array if input is a sequence of direction/vector)
+        """
         R = self
         lonlat = kwds.get('lonlat',False)
         inv = kwds.get('inv',False)
@@ -240,10 +252,10 @@ class Rotator:
             v = args
         else:
             raise TypeError('Either 1, 2 or 3 arguments accepted')
-        v = R(v,inv=inv)
+        vp = R(v,inv=inv)
         north_pole = R([0.,0.,1.],inv=inv)
         sinalpha = north_pole[0]*vp[1]-north_pole[1]*vp[0]
-        cosalpha = north_pol[2] - vp[2]*npy.dot(vp,north_pole)
+        cosalpha = north_pole[2] - vp[2]*npy.dot(north_pole,vp)
         return npy.arctan2(sinalpha,cosalpha)
 
     def __repr__(self):
@@ -311,9 +323,9 @@ def vec2dir(vec,vy=None,vz=None,lonlat=False):
    theta = npy.arccos(vz/r)
    phi = npy.arctan2(vy,vx)
    if lonlat:
-       return phi*180/npy.pi,90-theta*180/npy.pi
+       return npy.asarray([phi*180/npy.pi,90-theta*180/npy.pi])
    else:
-       return theta,phi
+       return npy.asarray([theta,phi])
 
 def dir2vec(theta,phi=None,lonlat=False):
    """Transform a direction theta,phi to a unit vector.
@@ -324,7 +336,7 @@ def dir2vec(theta,phi=None,lonlat=False):
        lon,lat=theta,phi
        theta,phi = npy.pi/2.-lat*npy.pi/180,lon*npy.pi/180
    ct,st,cp,sp = npy.cos(theta),npy.sin(theta),npy.cos(phi),npy.sin(phi)
-   return st*cp,st*sp,ct
+   return npy.asarray([st*cp,st*sp,ct])
 
 
 
