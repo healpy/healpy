@@ -1,3 +1,17 @@
+2009-01-11 03:04  cyrille.rosset
+
+	* [r36] healpy/rotator.py: correct bug in Rotator.angle_ref
+
+2009-01-08 19:24  cyrille.rosset
+
+	* [r35] INSTALL, TODO, do_inst: update the INSTALL, TODO files;
+	  remove obsolete do_inst script
+
+2009-01-08 18:47  cyrille.rosset
+
+	* [r34] ., ChangeLog, healpy/version.py, hpbeta: Add svn:ignore
+	  properties ; update version
+
 2009-01-08 18:14  cyrille.rosset
 
 	* [r33] healpy/__init__.py, healpy/rotator.py: Add documentation to
