@@ -3,7 +3,7 @@ import _healpy_pixel_lib as pixlib
 from _healpy_pixel_lib import UNSEEN
 
 def ang2pix(nside,theta,phi,nest=False):
-    """ang2pix : nside,theta,phi,nest=False -> ipix (default:RING)
+    """ang2pix : nside,theta[rad],phi[rad],nest=False -> ipix (default:RING)
     """
     if nest:
         return pixlib._ang2pix_nest(nside,theta,phi)
@@ -11,7 +11,7 @@ def ang2pix(nside,theta,phi,nest=False):
         return pixlib._ang2pix_ring(nside,theta,phi)
 
 def pix2ang(nside,ipix,nest=False):
-    """pix2ang : nside,ipix,nest=False -> theta,phi (default RING)
+    """pix2ang : nside,ipix,nest=False -> theta[rad],phi[rad] (default RING)
     """
     if nest:
         return pixlib._pix2ang_nest(nside, ipix)
@@ -109,7 +109,7 @@ def get_interp_val(m,theta,phi,nest=False):
 
     Input:
       - m: a map (an ndarray)
-      - theta, phi : the direction (either scalar or arrays of same size)
+      - theta, phi : the direction [rad] (either scalar or arrays of same size)
     Parameters:
       - nest: if True, the map is in NEST scheme. Default: False (ie RING)
     Return:
@@ -133,7 +133,7 @@ def get_neighbours(nside,theta,phi=None,nest=False):
     Input:
       - nside: the nside to work with
       - theta, phi: if phi is not given, theta is actually a pixel number
-                    if phi is given, theta,phi is a direction
+                    if phi is given, theta[rad],phi[rad] is a direction
     Parameters:
       - nest: if True, NEST scheme. Default: False (RING)
     Return:

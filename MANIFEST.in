@@ -2,4 +2,4 @@ recursive-include hpbeta *
 recursive-include healpy/data *.fits
 prune hpbeta/generic_gcc
 prune hpbeta/build.generic_gcc
-include INSTALL MANIFEST.in
+include INSTALL MANIFEST.in ChangeLog

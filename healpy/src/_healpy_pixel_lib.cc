@@ -127,7 +127,7 @@ init_healpy_pixel_lib(void)
   f = PyUFunc_FromFuncAndData(ang2pix_ring_functions, blank_data,
 			      ang2pix_signatures, 1,
 			      3, 1, PyUFunc_None, "_ang2pix_ring",
-			      "nside,theta,phi -> ipix (RING)",0);
+			      "nside,theta,phi [rad] -> ipix (RING)",0);
 
   PyDict_SetItemString(d, "_ang2pix_ring", f);
   Py_DECREF(f);
@@ -135,7 +135,7 @@ init_healpy_pixel_lib(void)
   f = PyUFunc_FromFuncAndData(ang2pix_nest_functions, blank_data,
 			      ang2pix_signatures, 1,
 			      3, 1, PyUFunc_None, "_ang2pix_nest",
-			      "nside,theta,phi -> ipix (NEST)",0);
+			      "nside,theta,phi [rad] -> ipix (NEST)",0);
 
   PyDict_SetItemString(d, "_ang2pix_nest", f);
   Py_DECREF(f);
@@ -143,7 +143,7 @@ init_healpy_pixel_lib(void)
   f = PyUFunc_FromFuncAndData(pix2ang_ring_functions, blank_data,
 			      pix2ang_signatures, 1,
 			      2, 2, PyUFunc_None, "_pix2ang_ring",
-			      "nside,ipix -> theta,phi (RING)",0);
+			      "nside,ipix -> theta,phi [rad] (RING)",0);
 
   PyDict_SetItemString(d, "_pix2ang_ring", f);
   Py_DECREF(f);
@@ -151,7 +151,7 @@ init_healpy_pixel_lib(void)
   f = PyUFunc_FromFuncAndData(pix2ang_nest_functions, blank_data,
 			      pix2ang_signatures, 1,
 			      2, 2, PyUFunc_None, "_pix2ang_nest",
-			      "nside,ipix -> theta,phi (NEST)",0);
+			      "nside,ipix -> theta,phi [rad] (NEST)",0);
 
   PyDict_SetItemString(d, "_pix2ang_nest", f);
   Py_DECREF(f);
