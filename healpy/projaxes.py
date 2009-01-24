@@ -38,7 +38,8 @@ class SphericalProjAxes(axes.Axes,object):
         self.set_xlim(xmin,xmax)
         self.set_ylim(ymin,ymax)
         dx,dy = self.proj.ang2xy(pi/2.,1.*dtor,direct=True)
-        self._segment_threshold = npy.sqrt(dx**2+dy**2)
+        self._segment_threshold = 16.*npy.sqrt(dx**2+dy**2)
+        self._segment_step_rad = 0.1*pi/180
         self._do_border = True
         self._gratdef = {}
         self._gratdef['local'] = False
@@ -131,7 +132,7 @@ class SphericalProjAxes(axes.Axes,object):
         ext = self.proj.get_extent()
         img = npy.ma.masked_values(img, badval)
         aximg = self.imshow(img,extent = ext,cmap=cm,norm=nn,
-                            interpolation='nearest',origin='upper',
+                            interpolation='nearest',origin='lower',
                             vmin=vmin,vmax=vmax,**kwds)
         xmin,xmax,ymin,ymax = self.proj.get_extent()
         self.set_xlim(xmin,xmax)
@@ -277,7 +278,7 @@ class SphericalProjAxes(axes.Axes,object):
         if threshold is None:
             threshold = self._segment_threshold
         x,y=npy.atleast_1d(x),npy.atleast_1d(y)
-        d2 = (npy.roll(x,1)-x)**2+(npy.roll(y,1)-y)**2
+        d2 = npy.sqrt((npy.roll(x,1)-x)**2+(npy.roll(y,1)-y)**2)
         w=npy.where(d2 > threshold)[0]
         #w=w[w!=0]
         xx=[]
@@ -346,7 +347,7 @@ class SphericalProjAxes(axes.Axes,object):
 
     def graticule(self,dpar=None,dmer=None,coord=None,local=None,**kwds):
         """Draw a graticule.
-
+        
         Input:
          - dpar: angular separation between parallels in degree
          - dmer: angular separation between meridians in degree
@@ -364,16 +365,28 @@ class SphericalProjAxes(axes.Axes,object):
         else:
             vec = (1,0,0)
             vec0 = (1,0,0)
+        u_pmin,u_pmax = kwds.pop('pmax',None),kwds.pop('pmin',None)
+        u_mmin,u_mmax = kwds.pop('mmin',None),kwds.pop('mmax',None)
+        if u_pmin: u_pmin = (pi/2.-u_pmin*dtor)%pi
+        if u_pmax: u_pmax = (pi/2.-u_pmax*dtor)%pi
+        if u_mmin: u_mmin = ( ((u_mmin+180.)%360)-180)*dtor
+        if u_mmax: u_mmax = ( ((u_mmax+180.)%360)-180)*dtor
         pmin,pmax = self.get_parallel_interval(vec0)
         mmin,mmax = self.get_meridian_interval(vec0)
-        dpar,dmer = self._get_interv_graticule(pmin,pmax,dpar,
-                                               mmin,mmax,dmer)        
-        theta_list = npy.around(npy.arange(pmin,pmax,dpar)/dpar)*dpar
-        phi_list = npy.around(npy.arange(mmin,mmax,dmer)/dmer)*dmer
+        if u_pmin: pmin = u_pmin
+        if u_pmax: pmax = u_pmax
+        if u_mmin: mmin = u_mmin
+        if u_mmax: mmax = u_pmax
+        print pmin/dtor,pmax/dtor,mmin/dtor,mmax/dtor
+        if not kwds.pop('force',False):
+            dpar,dmer = self._get_interv_graticule(pmin,pmax,dpar,
+                                                   mmin,mmax,dmer)
+        theta_list = npy.around(npy.arange(pmin,pmax+0.5*dpar,dpar)/dpar)*dpar
+        phi_list = npy.around(npy.arange(mmin,mmax+0.5*dmer,dmer)/dmer)*dmer
         theta = npy.arange(pmin,pmax,min((pmax-pmin)/100.,
-                                         self._segment_threshold))
+                                         self._segment_step_rad))
         phi = npy.arange(mmin,mmax,min((mmax-mmin)/100.,
-                                       self._segment_threshold))
+                                       self._segment_step_rad))
         equator = False
         gratlines = []
         kwds.setdefault('lw',1)
@@ -382,7 +395,14 @@ class SphericalProjAxes(axes.Axes,object):
             if abs(t-pi/2.)<1.e-10:
                 fmt = '-'
                 equator=True
-            else: fmt =':'
+            elif abs(t) < 1.e-10: # special case: north pole
+                t = 1.e-10 
+                fmt = '-'
+            elif abs(t-pi) < 1.e-10: # special case: south pole
+                t = pi-1.e-10 
+                fmt = '-'
+            else:
+                fmt =':'
             gratlines.append(self.projplot(phi*0.+t, phi,fmt,
                                            coord=coord,
                                            direct=local,**kwds))
@@ -403,6 +423,11 @@ class SphericalProjAxes(axes.Axes,object):
                                            lw=1,direct=True))
             gratlines.append(self.projplot(theta, theta*0+0.9999*pi,'-k',
                                            lw=1,direct=True))
+            phi = npy.arange(-180,180)*dtor
+            gratlines.append(self.projplot(phi*0+1.e-10, phi,'-k',
+                                           lw=1,direct=True))
+            gratlines.append(self.projplot(phi*0+pi-1.e-10, phi,'-k',
+                                           lw=1,direct=True))            
         if hasattr(self,'_graticules'):
             self._graticules.append(gratlines)
         else:
@@ -509,6 +534,28 @@ class HpxMollweideAxes(MollweideAxes):
         f = lambda x,y,z: pixelfunc.vec2pix(nside,x,y,z,nest=nest)
         super(HpxMollweideAxes,self).projmap(map,f,**kwds)
 
+
+class CartesianAxes(SphericalProjAxes):
+    """Define a cylindrical Axes to handle cylindrical projection.
+    """
+    def __init__(self,*args,**kwds):
+        kwds.setdefault('coordprec',2)
+        super(CartesianAxes,self).__init__(P.CartesianProj, *args, **kwds)
+        self._segment_threshold = 180
+        self._segment_step_rad = 0.1*pi/180
+        self._do_border = True
+        
+    def projmap(self,map,vec2pix_func,xsize=800,ysize=None,lonra=None,latra=None,**kwds):
+        self.proj.set_proj_plane_info(xsize=xsize,ysize=ysize,lonra=lonra,latra=latra)
+        super(CartesianAxes,self).projmap(map,vec2pix_func,**kwds)
+        
+class HpxCartesianAxes(CartesianAxes):
+    def projmap(self,map,nest=False,**kwds):
+        nside = pixelfunc.npix2nside(len(map))
+        f = lambda x,y,z: pixelfunc.vec2pix(nside,x,y,z,nest=nest)
+        super(HpxCartesianAxes,self).projmap(map,f,**kwds)
+
+        
 
 ###################################################################
 #
