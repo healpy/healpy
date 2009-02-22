@@ -437,8 +437,8 @@ def _ud_grade_core(m,nside_out,pess=False,power=None):
     
     if nside_out > nside_in:
         rat2 = npix_out/npix_in
-        fact = ones(rat2,dtype=type(m[0]))*ratio
-        map_out = outer(m,fact).reshape(npix_out)
+        fact = npy.ones(rat2,dtype=type(m[0]))*ratio
+        map_out = npy.outer(m,fact).reshape(npix_out)
     elif nside_out < nside_in:
         try:
             bad_data_val = type(m[0])(UNSEEN)
