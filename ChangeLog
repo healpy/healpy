@@ -1,3 +1,33 @@
+2009-03-12 14:55  cyrille.rosset
+
+	* [r43] hpbeta/cxxsupport/fitshandle.cc: Add #include <cstring> for
+	  compatibility with some new compilers
+
+2009-02-22 22:41  cyrille.rosset
+
+	* [r42] healpy/pixelfunc.py: Correct missing npy. in _ud_grade_core
+
+2009-01-24 16:19  cyrille.rosset
+
+	* [r41] healpy/version.py: Update version.py
+
+2009-01-24 16:19  cyrille.rosset
+
+	* [r40] healpy/projaxes.py, healpy/projector.py,
+	  healpy/visufunc.py: Add cartwiew, CartesianAxes, CartesianProj;
+	  tweak _segment_threshold, add _segment_step_rad, some new
+	  keywords to graticule...
+
+2009-01-18 20:51  cyrille.rosset
+
+	* [r39] MANIFEST.in, healpy/pixelfunc.py,
+	  healpy/src/_healpy_pixel_lib.cc: update documentation for
+	  ang2pix, etc to precise dimension of theta,phi [rad]
+
+2009-01-12 18:09  cyrille.rosset
+
+	* [r37] ChangeLog: Add tag version 0.9.4
+
 2009-01-11 03:04  cyrille.rosset
 
 	* [r36] healpy/rotator.py: correct bug in Rotator.angle_ref
