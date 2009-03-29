@@ -62,7 +62,7 @@ def in_ring(nside,iz,phi0,dphi,nest=False):
 	 - list of pixel numbers
 	"""
 	from numpy import pi,arange,concatenate,hstack,fabs,round
-	from pixelfunc import nside2npix
+	from pixelfunc import nside2npix,ring2nest
 	
 	npix = nside2npix(nside)
 	take_all = 0
