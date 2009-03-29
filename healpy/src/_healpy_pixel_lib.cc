@@ -30,6 +30,10 @@ static void
 ufunc_get_interpol_ring(char **args, intp *dimension, intp *steps, void *funv);
 static void
 ufunc_get_interpol_nest(char **args, intp *dimension, intp *steps, void *funv);
+static void
+ufunc_get_neighbors_ring(char **args, intp *dimension, intp *steps, void *funv);
+static void
+ufunc_get_neighbors_nest(char **args, intp *dimension, intp *steps, void *funv);
 
 
 static void
@@ -42,8 +46,8 @@ static void
 ufunc_vec2pix_nest(char **args, intp *dimensions, intp *steps, void *func);
 
 
-static char *docstring = 
-  "This module conatains basic ufunc related to healpix pixellisation\n"
+static const char *docstring = 
+  "This module contains basic ufunc related to healpix pixelisation\n"
   "scheme, such as ang2pix, ring<->nest swapping, etc.\n"
   "\n"
   "Available ufunc: _ang2pix_ring, _ang2pix_nest, _pix2ang_ring,\n"
@@ -87,6 +91,12 @@ static PyUFuncGenericFunction get_interpol_ring_functions[] = {
 static PyUFuncGenericFunction get_interpol_nest_functions[] = {
   ufunc_get_interpol_nest
 };
+static PyUFuncGenericFunction get_neighbors_ring_functions[] = {
+  ufunc_get_neighbors_ring
+};
+static PyUFuncGenericFunction get_neighbors_nest_functions[] = {
+  ufunc_get_neighbors_nest
+};
 
 
 static void * blank_data[] = { (void *)NULL };
@@ -110,6 +120,16 @@ static char get_interpol_signatures[] = {
   PyArray_LONG, PyArray_DOUBLE, PyArray_DOUBLE,
   PyArray_LONG, PyArray_LONG, PyArray_LONG, PyArray_LONG,
   PyArray_DOUBLE, PyArray_DOUBLE, PyArray_DOUBLE, PyArray_DOUBLE
+};
+static char get_neighbors_ring_signatures[] = {
+  PyArray_LONG, PyArray_LONG, // input
+  PyArray_LONG, PyArray_LONG, PyArray_LONG, PyArray_LONG, // output
+  PyArray_LONG, PyArray_LONG, PyArray_LONG, PyArray_LONG // output
+};
+static char get_neighbors_nest_signatures[] = {
+  PyArray_LONG, PyArray_LONG, // input
+  PyArray_LONG, PyArray_LONG, PyArray_LONG, PyArray_LONG, // output
+  PyArray_LONG, PyArray_LONG, PyArray_LONG, PyArray_LONG // output
 };
 
 PyMODINIT_FUNC
@@ -223,7 +243,22 @@ init_healpy_pixel_lib(void)
 
   PyDict_SetItemString(d, "_get_interpol_nest", f);
   Py_DECREF(f);
+  
+  f = PyUFunc_FromFuncAndData(get_neighbors_ring_functions, blank_data,
+			      get_neighbors_ring_signatures, 1,
+			      2, 8, PyUFunc_None, "_get_neigbors_ring",
+			      "nside, ipix [rad] -> 8 neighbors",0);
 
+  PyDict_SetItemString(d, "_get_neighbors_ring", f);
+  Py_DECREF(f);
+
+  f = PyUFunc_FromFuncAndData(get_neighbors_nest_functions, blank_data,
+			      get_neighbors_nest_signatures, 1,
+			      2, 8, PyUFunc_None, "_get_neigbors_nest",
+			      "nside, ipix [rad] -> 8 neighbors",0);
+
+  PyDict_SetItemString(d, "_get_neighbors_nest", f);
+  Py_DECREF(f);
   
   f = PyFloat_FromDouble(Healpix_undef);
 
@@ -524,5 +559,72 @@ ufunc_get_interpol_nest(char **args, intp *dimensions, intp *steps, void *func)
       *(double*)op6 = wgt[1];
       *(double*)op7 = wgt[2];
       *(double*)op8 = wgt[3];
+    }
+}
+
+
+/*
+  get_neighbors_ring
+*/
+static void
+ufunc_get_neighbors_ring(char **args, intp *dimensions, intp *steps, void *func)
+{
+  register intp i, n=dimensions[0];
+  register intp is1=steps[0],is2=steps[1],
+    os1=steps[2],os2=steps[3],os3=steps[4],os4=steps[5],
+    os5=steps[6],os6=steps[7],os7=steps[8],os8=steps[9];
+  char *ip1=args[0], *ip2=args[1],
+    *op1=args[2],*op2=args[3],*op3=args[4],*op4=args[5],
+    *op5=args[6],*op6=args[7],*op7=args[8],*op8=args[9];
+
+  Healpix_Base hb;
+  for(i=0; i<n; i++, ip1+=is1, ip2+=is2,
+	op1+=os1,op2+=os2,op3+=os3,op4+=os4,
+	op5+=os5,op6+=os6,op7+=os7,op8+=os8 ) 
+    {
+      fix_arr<int,8> pix;
+      hb.SetNside(*(long*)ip1,RING);
+      hb.neighbors(*(long*)ip2, pix);
+      *(long*)op1 = (long)pix[0];
+      *(long*)op2 = (long)pix[1];
+      *(long*)op3 = (long)pix[2];
+      *(long*)op4 = (long)pix[3];
+      *(long*)op5 = (long)pix[4];
+      *(long*)op6 = (long)pix[5];
+      *(long*)op7 = (long)pix[6];
+      *(long*)op8 = (long)pix[7];
+    }
+}
+
+/*
+  get_neighbors_nest
+*/
+static void
+ufunc_get_neighbors_nest(char **args, intp *dimensions, intp *steps, void *func)
+{
+  register intp i, n=dimensions[0];
+  register intp is1=steps[0],is2=steps[1],
+    os1=steps[2],os2=steps[3],os3=steps[4],os4=steps[5],
+    os5=steps[6],os6=steps[7],os7=steps[8],os8=steps[9];
+  char *ip1=args[0], *ip2=args[1],
+    *op1=args[2],*op2=args[3],*op3=args[4],*op4=args[5],
+    *op5=args[6],*op6=args[7],*op7=args[8],*op8=args[9];
+
+  Healpix_Base hb;
+  for(i=0; i<n; i++, ip1+=is1, ip2+=is2,
+	op1+=os1,op2+=os2,op3+=os3,op4+=os4,
+	op5+=os5,op6+=os6,op7+=os7,op8+=os8 ) 
+    {
+      fix_arr<int,8> pix;
+      hb.SetNside(*(long*)ip1,NEST);
+      hb.neighbors(*(long*)ip2, pix);
+      *(long*)op1 = (long)pix[0];
+      *(long*)op2 = (long)pix[1];
+      *(long*)op3 = (long)pix[2];
+      *(long*)op4 = (long)pix[3];
+      *(long*)op5 = (long)pix[4];
+      *(long*)op6 = (long)pix[5];
+      *(long*)op7 = (long)pix[6];
+      *(long*)op8 = (long)pix[7];
     }
 }

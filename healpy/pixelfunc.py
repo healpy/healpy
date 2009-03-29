@@ -151,6 +151,28 @@ def get_neighbours(nside,theta,phi=None,nest=False):
     w=npy.array(r[4:8])
     return (p,w)
 
+def get_all_neighbours(nside, theta, phi=None, nest=False):
+    """Return the 8 nearest pixels
+    Input:
+      - nside: the nside to work with
+      - ipix: the pixel number (can be an array) in nest scheme
+
+    Parameters:
+      - nest: if True, NEST scheme. Default: False (RING)
+    Return:
+      - tuple of pixels
+    """
+    if not isnsideok(nside):
+        raise ValueError('Wrong nside value. Must be a power of 2.')
+    if not (phi is None):
+        theta = ang2pix(nside,theta, phi)    
+    if nest:
+        r=pixlib._get_neighbors_nest(nside,theta)
+    else:
+        r=pixlib._get_neighbors_ring(nside,theta)
+    res=npy.array(r[0:8])
+    return res
+
 def reorder(map_in, inp=None, out=None, r2n=None, n2r=None):
     """Reorder an healpix map from RING/NESTED ordering to NESTED/RING
 
