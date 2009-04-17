@@ -1,3 +1,24 @@
+2009-03-29 17:46  cyrille.rosset
+
+	* [r48] healpy/__init__.py, healpy/pixelfunc.py,
+	  healpy/src/_healpy_pixel_lib.cc: Add get_all_neighbours function
+	  (contribution from Sergey E. Koposov). Solve issue 17.
+
+2009-03-29 16:24  cyrille.rosset
+
+	* [r47] healpy/query_disc_func.py: add ring2nest import in
+	  query_disc_func, so it works with nest=True; solve issue 18.
+
+2009-03-25 16:10  cyrille.rosset
+
+	* [r46] healpy/__init__.py: change warnings.ImportWarning to
+	  ImportWarning, and define ImportWarning if it does not exist
+	  (solve issue 16)
+
+2009-03-12 16:51  cyrille.rosset
+
+	* [r45] ChangeLog: Update ChangeLog
+
 2009-03-12 14:55  cyrille.rosset
 
 	* [r43] hpbeta/cxxsupport/fitshandle.cc: Add #include <cstring> for
