@@ -1,3 +1,17 @@
+2009-06-17 07:18  cyrille.rosset
+
+	* [r58] MANIFEST.in: Add version 0.9.6.2, correcting MANIFEST.in
+	  file to add COPYING in tarball
+
+2009-06-16 21:46  cyrille.rosset
+
+	* [r57] test/test_fit_dipole.py: add license information at top of
+	  test_fit_dipole.py
+
+2009-06-09 13:55  cyrille.rosset
+
+	* [r55] ChangeLog: Update ChangeLog
+
 2009-06-09 13:47  cyrille.rosset
 
 	* [r53] COPYING: Add COPYING file at top. Also add missing
