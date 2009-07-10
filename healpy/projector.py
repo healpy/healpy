@@ -342,8 +342,8 @@ class GnomonicProj(SphericalProj):
 
     def get_extent(self):
         xsize,ysize = self.arrayinfo['xsize'],self.arrayinfo['ysize']
-        left,top = self.ij2xy(0,0)
-        right,bottom = self.ij2xy(xsize-1,ysize-1)
+        left,bottom = self.ij2xy(0,0)
+        right,top = self.ij2xy(xsize-1,ysize-1)
         return (left,right,bottom,top)
 
     def get_fov(self):

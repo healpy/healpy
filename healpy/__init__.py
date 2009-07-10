@@ -53,7 +53,7 @@ from _healpy_pixel_lib import UNSEEN
 
 try:
     from visufunc import (mollview,graticule,delgraticules,gnomview,
-                          projplot,projscatter, projtext)
+                          projplot,projscatter, projtext, cartview)
     if visufunc.matplotlib.__version__ == '0.98,3':
         warnings.warn("Bug in matplotlib 0.98.3 prevents mollview to work\n"+
                       "You should upgrade to matplotlib 0.98.4 or above",
