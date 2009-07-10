@@ -1,3 +1,13 @@
+2009-07-10 00:11  cyrille.rosset
+
+	* [r60] healpy/__init__.py, healpy/projector.py, setup.py: correct
+	  error in gnomview (was indicating wrong latitude/map value in the
+	  status bar). Cartview is available as healpy.cartview
+
+2009-06-17 07:21  cyrille.rosset
+
+	* [r59] ChangeLog: Update Changelog
+
 2009-06-17 07:18  cyrille.rosset
 
 	* [r58] MANIFEST.in: Add version 0.9.6.2, correcting MANIFEST.in
