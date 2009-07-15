@@ -373,6 +373,8 @@ class SphericalProjAxes(axes.Axes,object):
          - coord: coordinate system of the graticule ('G', 'E' or 'C')
          - local: if True, no rotation performed at all
         """
+        gratargs = (dpar,dmer,coord,local)
+        gratkwds = kwds
         if dpar is None: dpar=self._gratdef['dpar']
         if local is None: local=self._gratdef['local']
         if dmer is None: dmer = dpar
@@ -448,15 +450,15 @@ class SphericalProjAxes(axes.Axes,object):
             gratlines.append(self.projplot(phi*0+pi-1.e-10, phi,'-k',
                                            lw=1,direct=True))            
         if hasattr(self,'_graticules'):
-            self._graticules.append(gratlines)
+            self._graticules.append((gratargs,gratkwds,gratlines))
         else:
-            self._graticules = [gratlines]
-
+            self._graticules = [(gratargs,gratkwds,gratlines)]
+    
     def delgraticules(self):
         """Delete all graticules previously created on the Axes.
         """
         if hasattr(self,'_graticules'):
-            for g in self._graticules:
+            for dum1,dum2,g in self._graticules:
                 for gl in g:
                     for l in gl: self.lines.remove(l)
             del self._graticules
