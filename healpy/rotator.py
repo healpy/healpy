@@ -357,6 +357,28 @@ def dir2vec(theta,phi=None,lonlat=False):
    ct,st,cp,sp = npy.cos(theta),npy.sin(theta),npy.cos(phi),npy.sin(phi)
    return npy.asarray([st*cp,st*sp,ct])
 
+def angdist(dir1,dir2,lonlat=False):
+    """Return the angular distance between dir1 and dir2.
+    """
+    if hasattr(lonlat,'__len__') and len(lonlat) == 2:
+        lonlat1,lonlat2 = lonlat
+    else:
+        lonlat1=lonlat2=lonlat
+    if len(dir1) == 2: # theta,phi or lonlat, convert to vec
+        vec1 = npy.asarray(dir2vec(dir1,lonlat=lonlat1))
+    else:
+        vec1 = npy.asarray(dir1)
+    if vec1.ndim == 1:
+        vec1 = expand_dims(vec1,-1)
+    if len(dir2) == 2:
+        vec2 = npy.asarray(dir2vec(dir2,lonlat=lonlat1)).T
+    else:
+        vec2 = npy.asarray(dir2)
+    if vec2.ndim == 1:
+        vec2 = expand_dims(vec2,-1)
+    # compute scalar product
+    pscal = (vec1*vec2).sum(axis=0)
+    return npy.arccos(pscal)
 
 
 #######################################################

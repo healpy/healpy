@@ -186,7 +186,7 @@ class SphericalProj(object):
     def set_flip(self, flipconv):
         """flipconv is either 'astro' or 'geo'. None will be default.
         
-        With 'astro', east if is toward left and west toward right. 
+        With 'astro', east is toward left and west toward right. 
         It is the opposite for 'geo'
         """
         if flipconv is None:

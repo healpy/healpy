@@ -46,6 +46,8 @@ from sphtfunc import (anafast,map2alm,
 
 from query_disc_func import *
 
+from zoomtool import mollzoom,set_glim
+
 from rotator import Rotator
 
 from _healpy_sph_transform_lib import _alm2signal
