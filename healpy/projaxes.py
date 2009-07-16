@@ -364,7 +364,7 @@ class SphericalProjAxes(axes.Axes,object):
         phi0 = npy.arctan2(vy,vx)
         return phi0 - fov/sth/2., phi0 + fov/sth/2.
 
-    def graticule(self,dpar=None,dmer=None,coord=None,local=None,**kwds):
+    def graticule(self,dpar=None,dmer=None,coord=None,local=None,verbose=True,**kwds):
         """Draw a graticule.
         
         Input:
@@ -398,7 +398,7 @@ class SphericalProjAxes(axes.Axes,object):
         if u_pmax: pmax = u_pmax
         if u_mmin: mmin = u_mmin
         if u_mmax: mmax = u_pmax
-        print pmin/dtor,pmax/dtor,mmin/dtor,mmax/dtor
+        if verbose: print pmin/dtor,pmax/dtor,mmin/dtor,mmax/dtor
         if not kwds.pop('force',False):
             dpar,dmer = self._get_interv_graticule(pmin,pmax,dpar,
                                                    mmin,mmax,dmer)
@@ -489,10 +489,10 @@ class SphericalProjAxes(axes.Axes,object):
             dmer = dpar = max(dmer,dpar)
         vdeg = npy.floor(npy.around(dpar/dtor,10))
         varcmin = (dpar/dtor-vdeg)*60.
-        print "The interval between parallels is %d deg %.2f'."%(vdeg,varcmin)
+        if verbose: print "The interval between parallels is %d deg %.2f'."%(vdeg,varcmin)
         vdeg = npy.floor(npy.around(dmer/dtor,10))
         varcmin = (dmer/dtor-vdeg)*60.
-        print "The interval between meridians is %d deg %.2f'."%(vdeg,varcmin)
+        if verbose: print "The interval between meridians is %d deg %.2f'."%(vdeg,varcmin)
         return dpar,dmer
         
 class GnomonicAxes(SphericalProjAxes):

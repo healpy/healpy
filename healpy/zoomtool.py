@@ -111,7 +111,7 @@ def mollzoom(map=None,fig=None,rot=None,coord=None,unit='',
 
         ## Gnomonic axes
         #extent = (0.02,0.25,0.56,0.72)
-        g_xsize=250
+        g_xsize=600
         g_reso = 1.
         extent = (0.60,0.04,0.38,0.94)
         g_ax=PA.HpxGnomonicAxes(f,extent,coord=coord,rot=rot,
@@ -161,10 +161,10 @@ def mollzoom(map=None,fig=None,rot=None,coord=None,unit='',
             pylab.draw()
             pylab.show()
 
-def set_glim(vmin,vmax):
+def set_g_clim(vmin,vmax):
     """Set min/max value of the gnomview part of a mollzoom.
     """
-    f=gcf()
+    f=pylab.gcf()
     if not hasattr(f,'zoomtool'):
         raise TypeError('The current figure has no zoomtool')
     f.zoomtool.save_min = vmin
@@ -294,48 +294,58 @@ class ZoomTool(object):
             self.zoomcenter.set_visible(visible)
 
     def draw_gnom(self,lon=None,lat=None):
-        # modify rot of the gnom_ax
-        if lon is None:
-            lon = self._lon
-        else:
-            self._lon = lon
-        if lat is None:
-            lat = self._lat
-        else:
-            self._lat = lat
-        self._gnom_ax.proj.rotator._rots.pop()
-        self._gnom_ax.proj.rotator._rots.append(R.normalise_rot((lon,lat),deg=True))
-        self._gnom_ax.proj.rotator._update_matrix()
-        if   self._range_status == 0:
-            vmin=vmax = None
-        elif self._range_status == 1:
-            vmin,vmax = self._mapmin,self._mapmax
-        elif self._range_status == 2:
-            vmin,vmax = self.save_min, self.save_max
-        self._gnom_ax.images.pop()
-        self._gnom_ax.projmap(self._map,nest=self._nest,coord=self._coord,
-                              vmin=vmin,vmax=vmax,
-                              xsize=self._xsize,ysize=self._ysize,
-                              reso=self.get_reso(),
-                              cmap=self._cmap,
-                              norm=self._norm)
-        if hasattr(self._gnom_ax,'_graticules'):
-            allgratinfo = [(ga,gk) for ga,gk,gl in self._gnom_ax._graticules]
-            self._gnom_ax.delgraticules()
-            for ga,gk in allgratinfo:
-                self._gnom_ax.graticule(*ga,**gk)
-        self._gnom_cb_ax.cla()
-        im = self._gnom_ax.images[0]
-        if matplotlib.__version__ >= '0.91.0':
-            cb=self.f.colorbar(im,ax=self._gnom_ax,
-                               cax=self._gnom_cb_ax,orientation='horizontal',
-                               ticks=PA.BoundaryLocator())
-        else:
-            cb=self.f.colorbar(im,cax=self._gnom_cb_ax,
-                               orientation='horizontal',ticks=PA.BoundaryLocator())
-        lon,lat = npy.around(self._gnom_ax.proj.get_center(lonlat=True),
-                             self._gnom_ax._coordprec)
-        self._gnom_ax.texts[-1].set_text('on (%g,%g)'%(lon,lat))
-        self.lon,self.lat = lon,lat
-        pylab.draw_if_interactive()
+        wasinteractive = pylab.isinteractive()
+        pylab.ioff()
+        try:
+            # modify rot of the gnom_ax
+            if lon is None:
+                lon = self._lon
+            else:
+                self._lon = lon
+            if lat is None:
+                lat = self._lat
+            else:
+                self._lat = lat
+            self._gnom_ax.proj.rotator._rots.pop()
+            self._gnom_ax.proj.rotator._rots.append(R.normalise_rot((lon,lat),deg=True))
+            self._gnom_ax.proj.rotator._update_matrix()
+            if   self._range_status == 0:
+                vmin=vmax = None
+            elif self._range_status == 1:
+                vmin,vmax = self._mapmin,self._mapmax
+            elif self._range_status == 2:
+                vmin,vmax = self.save_min, self.save_max
+            self._gnom_ax.images.pop()
+            self._gnom_ax.projmap(self._map,nest=self._nest,coord=self._coord,
+                                  vmin=vmin,vmax=vmax,
+                                  xsize=self._xsize,ysize=self._ysize,
+                                  reso=self.get_reso(),
+                                  cmap=self._cmap,
+                                  norm=self._norm)
+            if hasattr(self._gnom_ax,'_graticules'):
+                allgratinfo = [(ga,gk) for ga,gk,gl in self._gnom_ax._graticules]
+                self._gnom_ax.delgraticules()
+                for ga,gk in allgratinfo:
+                    gk['verbose'] = False
+                    dpar,dmer = self._gnom_ax.graticule(*ga,**gk)
+                    # TODO: print parallel/meridians interval
+            self._gnom_cb_ax.cla()
+            im = self._gnom_ax.images[0]
+            if matplotlib.__version__ >= '0.91.0':
+                cb=self.f.colorbar(im,ax=self._gnom_ax,
+                                   cax=self._gnom_cb_ax,orientation='horizontal',
+                                   ticks=PA.BoundaryLocator())
+            else:
+                cb=self.f.colorbar(im,cax=self._gnom_cb_ax,
+                                   orientation='horizontal',ticks=PA.BoundaryLocator())
+            lon,lat = npy.around(self._gnom_ax.proj.get_center(lonlat=True),
+                                 self._gnom_ax._coordprec)
+            self._gnom_ax.texts[-1].set_text('on (%g,%g)'%(lon,lat))
+            self.lon,self.lat = lon,lat
+        finally:
+            if wasinteractive:
+                pylab.ion()
+                pylab.draw()
+                pylab.show()
+
 
