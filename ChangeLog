@@ -1,3 +1,32 @@
+2009-07-21 15:14  cyrille.rosset
+
+	* [r68] healpy/__init__.py, hpbeta/alice/testMollweideSkyMap.cc,
+	  hpbeta/alice/testOrthogonalSkyMap.cc: correct bug in __init__;
+	  add cstdio in some files of hpbeta
+
+2009-07-16 15:22  cyrille.rosset
+
+	* [r67] healpy/projaxes.py, healpy/zoomtool.py: update zoomtool
+
+2009-07-16 15:05  cyrille.rosset
+
+	* [r66] healpy/__init__.py, healpy/projector.py, healpy/rotator.py,
+	  healpy/zoomtool.py: add zoomtool capabilities
+
+2009-07-15 13:16  cyrille.rosset
+
+	* [r65] healpy/version.py: addinformation for graticule, to easily
+	  rebuild it if needed (for mollzoom)
+
+2009-07-15 13:14  cyrille.rosset
+
+	* [r64] healpy/projaxes.py: addinformation for graticule, to easily
+	  rebuild it if needed (for mollzoom)
+
+2009-07-10 00:31  cyrille.rosset
+
+	* [r63] ChangeLog: set version number and modify ChangeLog
+
 2009-07-10 00:23  cyrille.rosset
 
 	* [r61] ChangeLog: svn cleaning
