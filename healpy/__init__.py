@@ -46,7 +46,7 @@ from sphtfunc import (anafast,map2alm,
 
 from query_disc_func import *
 
-from zoomtool import mollzoom,set_glim
+from zoomtool import mollzoom,set_g_clim
 
 from rotator import Rotator
 
