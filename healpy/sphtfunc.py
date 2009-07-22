@@ -113,7 +113,7 @@ def alm2map(alm, nside, lmax=-1, mmax=-1,pixwin=False,
     smoothalm(alm,fwhm=fwhm,sigma=sigma,degree=degree,arcmin=arcmin)
     if pixwin:
         pw=globals()['pixwin'](nside,True)
-        if type(alm[0]) is ndarray:
+        if type(alm[0]) is npy.ndarray:
             if len(alm) != 3:
                 raise TypeError("alm must be a sequence of 3 ndarray "
                                 "or a 1D ndarray")
