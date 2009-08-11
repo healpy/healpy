@@ -65,7 +65,7 @@ static void
 ufunc_vec2pix_nest(char **args, intp *dimensions, intp *steps, void *func);
 
 
-static const char *docstring = 
+static char *docstring = 
   "This module contains basic ufunc related to healpix pixelisation\n"
   "scheme, such as ang2pix, ring<->nest swapping, etc.\n"
   "\n"
