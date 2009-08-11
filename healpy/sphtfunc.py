@@ -308,7 +308,7 @@ def alm2cl(alm,mmax=-1,nspec=4):
         ctb_est = npy.zeros(lmax+1)
         ceb_est = npy.zeros(lmax+1)
         for l in range(lmax+1):
-            i=Alm.getidx(lmax,l,arange(min(mmax,l)+1))
+            i=Alm.getidx(lmax,l,npy.arange(min(mmax,l)+1))
             ctt_est[l] = (npy.abs(almT[i[0]])**2
                           +2.*npy.sum(npy.abs(almT[i[1:]])**2))/(2*l+1)
             cee_est[l] = (npy.abs(almE[i[0]])**2
