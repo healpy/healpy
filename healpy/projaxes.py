@@ -401,7 +401,8 @@ class SphericalProjAxes(axes.Axes,object):
         if verbose: print pmin/dtor,pmax/dtor,mmin/dtor,mmax/dtor
         if not kwds.pop('force',False):
             dpar,dmer = self._get_interv_graticule(pmin,pmax,dpar,
-                                                   mmin,mmax,dmer)
+                                                   mmin,mmax,dmer,
+                                                   verbose=verbose)
         theta_list = npy.around(npy.arange(pmin,pmax+0.5*dpar,dpar)/dpar)*dpar
         phi_list = npy.around(npy.arange(mmin,mmax+0.5*dmer,dmer)/dmer)*dmer
         theta = npy.arange(pmin,pmax,min((pmax-pmin)/100.,
@@ -453,6 +454,7 @@ class SphericalProjAxes(axes.Axes,object):
             self._graticules.append((gratargs,gratkwds,gratlines))
         else:
             self._graticules = [(gratargs,gratkwds,gratlines)]
+        return dpar,dmer
     
     def delgraticules(self):
         """Delete all graticules previously created on the Axes.
@@ -463,7 +465,7 @@ class SphericalProjAxes(axes.Axes,object):
                     for l in gl: self.lines.remove(l)
             del self._graticules
 
-    def _get_interv_graticule(self,pmin,pmax,dpar,mmin,mmax,dmer):
+    def _get_interv_graticule(self,pmin,pmax,dpar,mmin,mmax,dmer,verbose=True):
         def set_prec(d,n,nn=2):
             arcmin=False
             if d/n < 1.:

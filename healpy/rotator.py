@@ -369,13 +369,13 @@ def angdist(dir1,dir2,lonlat=False):
     else:
         vec1 = npy.asarray(dir1)
     if vec1.ndim == 1:
-        vec1 = expand_dims(vec1,-1)
+        vec1 = npy.expand_dims(vec1,-1)
     if len(dir2) == 2:
         vec2 = npy.asarray(dir2vec(dir2,lonlat=lonlat1)).T
     else:
         vec2 = npy.asarray(dir2)
     if vec2.ndim == 1:
-        vec2 = expand_dims(vec2,-1)
+        vec2 = npy.expand_dims(vec2,-1)
     # compute scalar product
     pscal = (vec1*vec2).sum(axis=0)
     return npy.arccos(pscal)
