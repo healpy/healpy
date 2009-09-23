@@ -36,7 +36,7 @@ def mollzoom(map=None,fig=None,rot=None,coord=None,unit='',
              min=None,max=None,flip='astro',
              remove_dip=False,remove_mono=False,
              gal_cut=0,
-             format='%g',cbar=True,cmap=None,
+             format='%g',cmap=None,
              norm=None,hold=False,margins=None,sub=None):
     """Plot an healpix map (given as an array) in Mollweide projection,
     with a gnomview zone showing a zoomed region.
@@ -71,7 +71,6 @@ def mollzoom(map=None,fig=None,rot=None,coord=None,unit='',
     try:
         if map is None:
             map = npy.zeros(12)+npy.inf
-            cbar=False
         f=pylab.figure(fig,figsize=(10.5,5.4))
         extent = (0.02,0.25,0.56,0.72)
         #f=pylab.figure(fig,figsize=(8.5,5.4))
@@ -87,26 +86,24 @@ def mollzoom(map=None,fig=None,rot=None,coord=None,unit='',
                                           copy=True,verbose=True)
         ax.projmap(map,nest=nest,xsize=xsize,coord=coord,vmin=min,vmax=max,
                    cmap=cmap,norm=norm)
-        if cbar:
-            im = ax.get_images()[0]
-            b = im.norm.inverse(npy.linspace(0,1,im.cmap.N+1))
-            v = npy.linspace(im.norm.vmin,im.norm.vmax,im.cmap.N)
-            if matplotlib.__version__ >= '0.91.0':
-                cb=f.colorbar(ax.get_images()[0],ax=ax,
-                              orientation='horizontal',
-                              shrink=0.5,aspect=25,ticks=PA.BoundaryLocator(),
-                              pad=0.05,fraction=0.1,boundaries=b,values=v)
-            else:
-                # for older matplotlib versions, no ax kwarg
-                cb=f.colorbar(ax.get_images()[0],orientation='horizontal',
-                              shrink=0.5,aspect=25,ticks=PA.BoundaryLocator(),
-                              pad=0.05,fraction=0.1,boundaries=b,values=v)
+        im = ax.get_images()[0]
+        b = im.norm.inverse(npy.linspace(0,1,im.cmap.N+1))
+        v = npy.linspace(im.norm.vmin,im.norm.vmax,im.cmap.N)
+        if matplotlib.__version__ >= '0.91.0':
+            cb=f.colorbar(ax.get_images()[0],ax=ax,
+                          orientation='horizontal',
+                          shrink=0.5,aspect=25,ticks=PA.BoundaryLocator(),
+                          pad=0.05,fraction=0.1,boundaries=b,values=v)
+        else:
+            # for older matplotlib versions, no ax kwarg
+            cb=f.colorbar(ax.get_images()[0],orientation='horizontal',
+                          shrink=0.5,aspect=25,ticks=PA.BoundaryLocator(),
+                          pad=0.05,fraction=0.1,boundaries=b,values=v)
         ax.set_title(title)
         ax.text(0.86,0.05,ax.proj.coordsysstr,fontsize=14,
                 fontweight='bold',transform=ax.transAxes)
-        if cbar:
-            cb.ax.text(1.05,0.30,unit,fontsize=14,fontweight='bold',
-                       transform=cb.ax.transAxes,ha='left',va='center')
+        cb.ax.text(1.05,0.30,unit,fontsize=14,fontweight='bold',
+                   transform=cb.ax.transAxes,ha='left',va='center')
         f.sca(ax)
 
         ## Gnomonic axes
@@ -123,19 +120,18 @@ def mollzoom(map=None,fig=None,rot=None,coord=None,unit='',
             map=pixelfunc.remove_monopole(map,gal_cut=gal_cut,nest=nest,copy=True)
         g_ax.projmap(map,nest=nest,coord=coord,vmin=min,vmax=max,
                    xsize=g_xsize,ysize=g_xsize,reso=g_reso,cmap=cmap,norm=norm)
-        if cbar:
-            im = g_ax.get_images()[0]
-            b = im.norm.inverse(npy.linspace(0,1,im.cmap.N+1))
-            v = npy.linspace(im.norm.vmin,im.norm.vmax,im.cmap.N)
-            if matplotlib.__version__ >= '0.91.0':
-                cb=f.colorbar(g_ax.get_images()[0],ax=g_ax,
-                              orientation='horizontal',
-                              shrink=0.5,aspect=25,ticks=PA.BoundaryLocator(),
-                              pad=0.08,fraction=0.1,boundaries=b,values=v)
-            else:
-                cb=f.colorbar(g_ax.get_images()[0],orientation='horizontal',
-                              shrink=0.5,aspect=25,ticks=PA.BoundaryLocator(),
-                              pad=0.08,fraction=0.1,boundaries=b,values=v)
+        im = g_ax.get_images()[0]
+        b = im.norm.inverse(npy.linspace(0,1,im.cmap.N+1))
+        v = npy.linspace(im.norm.vmin,im.norm.vmax,im.cmap.N)
+        if matplotlib.__version__ >= '0.91.0':
+            cb=f.colorbar(g_ax.get_images()[0],ax=g_ax,
+                          orientation='horizontal',
+                          shrink=0.5,aspect=25,ticks=PA.BoundaryLocator(),
+                          pad=0.08,fraction=0.1,boundaries=b,values=v)
+        else:
+            cb=f.colorbar(g_ax.get_images()[0],orientation='horizontal',
+                          shrink=0.5,aspect=25,ticks=PA.BoundaryLocator(),
+                          pad=0.08,fraction=0.1,boundaries=b,values=v)
         g_ax.set_title(title)
         g_ax.text(-0.07,0.02,
                    "%g '/pix,   %dx%d pix"%(g_ax.proj.arrayinfo['reso'],
@@ -143,15 +139,28 @@ def mollzoom(map=None,fig=None,rot=None,coord=None,unit='',
                                             g_ax.proj.arrayinfo['ysize']),
                    fontsize=12,verticalalignment='bottom',
                    transform=g_ax.transAxes,rotation=90)
-        g_ax.text(-0.07,0.6,g_ax.proj.coordsysstr,fontsize=14,
+        g_ax.text(-0.07,0.8,g_ax.proj.coordsysstr,fontsize=14,
                    fontweight='bold',rotation=90,transform=g_ax.transAxes)
         lon,lat = npy.around(g_ax.proj.get_center(lonlat=True),g_ax._coordprec)
         g_ax.text(0.5,-0.03,'on (%g,%g)'%(lon,lat),
                   verticalalignment='center', horizontalalignment='center',
                   transform=g_ax.transAxes)
-        if cbar:
-            cb.ax.text(1.05,0.30,unit,fontsize=14,fontweight='bold',
-                       transform=cb.ax.transAxes,ha='left',va='center')
+        cb.ax.text(1.05,0.30,unit,fontsize=14,fontweight='bold',
+                   transform=cb.ax.transAxes,ha='left',va='center')
+        # Add graticule info axes
+        grat_ax = pylab.axes([0.25, 0.02, 0.22,0.25])
+        grat_ax.axis('off')
+        # Add help text
+        help_ax = pylab.axes([0.02,0.02,0.22,0.25])
+        help_ax.axis('off')
+        t = help_ax.transAxes
+        help_ax.text(0.1, 0.8, 'r/t .... zoom out/in',transform=t,va='bottom')
+        help_ax.text(0.1, 0.65,'p/v .... print coord/val',transform=t,va='bottom')
+        help_ax.text(0.1, 0.5, 'c ...... go to center',transform=t,va='bottom')
+        help_ax.text(0.1, 0.35,'f ...... next color scale',transform=t,va='bottom')
+        help_ax.text(0.1, 0.2, 'k ...... save current scale',transform=t,
+                     va='bottom')
+        help_ax.text(0.1, 0.05,'g ...... toggle graticule',transform=t,va='bottom')
         f.sca(g_ax)
         # Set up the zoom capability
         zt=ZoomTool(map,fig=f.number,nest=nest,cmap=cmap,norm=norm,coord=coord)
@@ -188,16 +197,23 @@ class ZoomTool(object):
         self._cmap = cmap
         self._norm = norm
         self._coord = coord
-        self._range_status = 0 #0:normal, 1:global map min,max
+        self._range_status = 0 #0:normal, 1:global map min,max, 2: saved
         self.save_min = self.save_max = None
+        self._graton = False
         mgood = m[m!=UNSEEN]
-        self._mapmin,self._mapmax = mgood.min(),mgood.max()
+        if mgood.size == 0:
+            self._mapmin, self._mapmax = -1., 1.
+        else:
+            self._mapmin,self._mapmax = mgood.min(),mgood.max()
         del mgood
         if fig is None: f=pylab.gcf()
         else: f=pylab.figure(fig)
         self.f = f
         f.zoomtool = self
-        self._moll_ax, self._moll_cb_ax, self._gnom_ax, self._gnom_cb_ax = f.get_axes()
+        (self._moll_ax, self._moll_cb_ax,
+         self._gnom_ax, self._gnom_cb_ax) = f.get_axes()[:4]
+        self._grat_ax = f.get_axes()[4]
+        self._text_reso, self._text_coord, self._text_loc = self._gnom_ax.texts
         self._xsize = self._gnom_ax.proj.arrayinfo['xsize']
         self._ysize = self._gnom_ax.proj.arrayinfo['ysize']
         try:
@@ -206,6 +222,11 @@ class ZoomTool(object):
             raise ValueError('Resolution not in %s'%self.reso_list)
         self.zoomcenter, = self._moll_ax.plot([0],[0],'ok',
                                               mew=1,ms=15,alpha=0.1)
+        self._text_range = self._gnom_ax.text(-0.4, -0.2, 'scale mode: loc',
+                                               transform=
+                                               self._gnom_ax.transAxes,
+                                               va='baseline',
+                                               ha='left')
         self.draw_gnom(0,0)
         self._connected = False
         self.connect_callbacks()
@@ -251,11 +272,40 @@ class ZoomTool(object):
                 self._moll_ax.delgraticules()
                 self._graton = False
             else:
-                self._gnom_ax.graticule(local=False)
-                self._moll_ax.graticule()
+                (self._g_dpar, 
+                 self._g_dmer) = self._gnom_ax.graticule(local=False,
+                                                         verbose=False)
+                (self._m_dpar, 
+                 self._m_dmer) = self._moll_ax.graticule(verbose=False)
                 self._graton = True
             self.draw_gnom()
-            
+
+    def _update_grat_info(self):
+        self._grat_ax.cla()
+        self._grat_ax.axis('off')
+        if self._graton:
+            a = self._grat_ax
+            t = a.transAxes
+            a.text(0.1, 0.8,  'moll. grat.:',transform=t,weight='bold')
+            vdeg = npy.floor(npy.around(self._m_dpar/dtor,10))
+            varcmin = (self._m_dpar/dtor-vdeg)*60.
+            a.text(0.1, 0.65, "   -par: %d d %.2f '"%(vdeg,varcmin),
+                   transform=t)
+            vdeg = npy.floor(npy.around(self._m_dmer/dtor,10))
+            varcmin = (self._m_dmer/dtor-vdeg)*60.
+            a.text(0.1, 0.5,  "   -mer: %d d %.2f '"%(vdeg,varcmin),
+                   transform=t)
+            a.text(0.1, 0.35,  'gnom. grat.:',transform=t,weight='bold')
+            vdeg = npy.floor(npy.around(self._g_dpar/dtor,10))
+            varcmin = (self._g_dpar/dtor-vdeg)*60.
+            a.text(0.1, 0.2,  "   -par: %d d %.2f '"%(vdeg,varcmin),
+                   transform=t)
+            vdeg = npy.floor(npy.around(self._g_dmer/dtor,10))
+            varcmin = (self._g_dmer/dtor-vdeg)*60.
+            a.text(0.1, 0.05, "   -mer: %d d %.2f '"%(vdeg,varcmin),
+                   transform=t)
+        
+        
     def _increase_reso(self):
         if self._reso_idx > 0:
             self._reso_idx -= 1
@@ -322,13 +372,11 @@ class ZoomTool(object):
                                   reso=self.get_reso(),
                                   cmap=self._cmap,
                                   norm=self._norm)
-            if hasattr(self._gnom_ax,'_graticules'):
-                allgratinfo = [(ga,gk) for ga,gk,gl in self._gnom_ax._graticules]
+            if self._graton:
                 self._gnom_ax.delgraticules()
-                for ga,gk in allgratinfo:
-                    gk['verbose'] = False
-                    dpar,dmer = self._gnom_ax.graticule(*ga,**gk)
-                    # TODO: print parallel/meridians interval
+                (self._g_dpar, 
+                 self._g_dmer) = self._gnom_ax.graticule(local=False,
+                                                         verbose=False)
             self._gnom_cb_ax.cla()
             im = self._gnom_ax.images[0]
             if matplotlib.__version__ >= '0.91.0':
@@ -340,8 +388,16 @@ class ZoomTool(object):
                                    orientation='horizontal',ticks=PA.BoundaryLocator())
             lon,lat = npy.around(self._gnom_ax.proj.get_center(lonlat=True),
                                  self._gnom_ax._coordprec)
-            self._gnom_ax.texts[-1].set_text('on (%g,%g)'%(lon,lat))
+            self._text_loc.set_text('on (%g,%g)'%(lon,lat))
+            reso = self._gnom_ax.proj.arrayinfo['reso']
+            xsize = self._gnom_ax.proj.arrayinfo['xsize']
+            ysize  = self._gnom_ax.proj.arrayinfo['ysize']
+            self._text_reso.set_text("%g '/pix,   %dx%d pix"%
+                                     (reso, xsize, ysize))
+            mode = ['loc','map','sav'][self._range_status]
+            self._text_range.set_text('scale mode: %s'%mode)
             self.lon,self.lat = lon,lat
+            self._update_grat_info()
         finally:
             if wasinteractive:
                 pylab.ion()

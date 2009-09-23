@@ -358,7 +358,9 @@ class SphericalProjAxes(axes.Axes,object):
             raise ValueError("Both vy and vz must be given or both not given")
         fov = self.proj.get_fov()
         th = npy.arccos(vz)
-        if th <= fov/2.:
+        if th <= fov/2.: # test whether north pole is visible
+            return -npy.pi,npy.pi
+        if abs(th-pi) <= fov/2.: # test whether south pole is visible
             return -npy.pi,npy.pi
         sth = npy.sin(th)
         phi0 = npy.arctan2(vy,vx)
