@@ -154,13 +154,13 @@ def mollzoom(map=None,fig=None,rot=None,coord=None,unit='',
         help_ax = pylab.axes([0.02,0.02,0.22,0.25])
         help_ax.axis('off')
         t = help_ax.transAxes
-        help_ax.text(0.1, 0.8, 'r/t .... zoom out/in',transform=t,va='bottom')
-        help_ax.text(0.1, 0.65,'p/v .... print coord/val',transform=t,va='bottom')
-        help_ax.text(0.1, 0.5, 'c ...... go to center',transform=t,va='bottom')
-        help_ax.text(0.1, 0.35,'f ...... next color scale',transform=t,va='bottom')
+        help_ax.text(0.1, 0.8, 'r/t .... zoom out/in',transform=t,va='baseline')
+        help_ax.text(0.1, 0.65,'p/v .... print coord/val',transform=t,va='baseline')
+        help_ax.text(0.1, 0.5, 'c ...... go to center',transform=t,va='baseline')
+        help_ax.text(0.1, 0.35,'f ...... next color scale',transform=t,va='baseline')
         help_ax.text(0.1, 0.2, 'k ...... save current scale',transform=t,
-                     va='bottom')
-        help_ax.text(0.1, 0.05,'g ...... toggle graticule',transform=t,va='bottom')
+                     va='baseline')
+        help_ax.text(0.1, 0.05,'g ...... toggle graticule',transform=t,va='baseline')
         f.sca(g_ax)
         # Set up the zoom capability
         zt=ZoomTool(map,fig=f.number,nest=nest,cmap=cmap,norm=norm,coord=coord)
