@@ -460,11 +460,15 @@ def get_nside(m):
     else:
         return npix2nside(len(m[0]))
 
-def _ud_grade_core(m,nside_out,pess=False,power=None):
+def _ud_grade_core(m,nside_out,pess=False,power=None, dtype=None):
     """Internal routine used by ud_grade. It assumes that the map is NESTED
     and single (not a list of maps)
     """
     nside_in = get_nside(m)
+    if dtype:
+        type_out = dtype
+    else:
+        type_out = type(m[0])
     if not isnsideok(nside_out):
         raise ValueError('invalid nside_out value')
     npix_in = nside2npix(nside_in)
@@ -478,15 +482,9 @@ def _ud_grade_core(m,nside_out,pess=False,power=None):
     
     if nside_out > nside_in:
         rat2 = npix_out/npix_in
-        fact = npy.ones(rat2,dtype=type(m[0]))*ratio
+        fact = npy.ones(rat2, dtype=type_out)*ratio
         map_out = npy.outer(m,fact).reshape(npix_out)
     elif nside_out < nside_in:
-        try:
-            bad_data_val = type(m[0])(UNSEEN)
-        except OverflowError:
-            bad_data_present = False
-        else:
-            bad_data_present = True
         rat2 = npix_in/npix_out
         bads = npy.where(m==UNSEEN)
         hit = npy.ones(npix_in,dtype=npy.int16)
@@ -494,7 +492,7 @@ def _ud_grade_core(m,nside_out,pess=False,power=None):
         m[bads] = 0
         mr = m.reshape(npix_out,rat2)
         hit = hit.reshape(npix_out,rat2)
-        map_out = mr.sum(axis=1)
+        map_out = mr.sum(axis=1).astype(type_out)
         nhit = hit.sum(axis=1)
         if pess:
             badout = npy.where(nhit != rat2)
@@ -502,15 +500,17 @@ def _ud_grade_core(m,nside_out,pess=False,power=None):
             badout = npy.where(nhit == 0)
         if power: nhit /= ratio
         map_out /= nhit
-        if bad_data_present:
+        try:
             map_out[badout] = UNSEEN
             m[bads] = UNSEEN
+        except OverflowError:
+            pass
     else:
         map_out = m
-    return map_out
+    return map_out.astype(type_out)
 
 def ud_grade(map_in,nside_out,pess=False,order_in='RING',order_out=None,
-             power=None):
+             power=None, dtype=None):
     """Upgrade or degrade resolution of a map (or list of maps).
 
     Input:
@@ -536,7 +536,7 @@ def ud_grade(map_in,nside_out,pess=False,order_in='RING',order_out=None,
     for m in m_in:
         if str(order_in).upper()[0:4] == 'RING':
             m = reorder(m,r2n=True)
-        mout = _ud_grade_core(m,nside_out,pess=pess)
+        mout = _ud_grade_core(m,nside_out,pess=pess, dtype=dtype)
         if str(order_out).upper()[0:4] == 'RING':
             mout = reorder(mout,n2r=True)
         mapout.append(mout)
