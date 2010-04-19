@@ -207,7 +207,8 @@ def query_disc(nside,v0,radius,nest=False,deg=True):
 	
 	irmax = min(ring_num(nside,zmin) + 1,4*nside-1)
 	
-	first = 1
+	#first = 1
+        work = [[]]
 	for iz in xrange(irmin,irmax+1):
 		skip = 0
 		z = ring2z(nside,iz)
@@ -217,19 +218,15 @@ def query_disc(nside,v0,radius,nest=False,deg=True):
 		if ((x0 == 0)&(y0==0)):
 			cosdphi = -1.0
 			dphi = pi
-		if (fabs(cosdphi) <= 1): dphi = arccos(cosdphi)
+		if (fabs(cosdphi) <= 1): 
+                        dphi = arccos(cosdphi)
 		else: 
-			if (cosphi0 < cosdphi): skip = 1
+			if (cosphi0 < cosdphi): 
+                                skip = 1
 			dphi = pi
 		if (skip == 0):
 	    		listir = in_ring(nside, iz, phi0, dphi,nest=nest)
 			nir = size(listir)
 			if (nir>0):
-				if (first==1):
-					work = listir.copy()
-					first = 0
-				else:
-					work = concatenate((work,listir))
-		
-
-	return work
+                                work.append(listir)
+	return concatenate(work)
