@@ -46,7 +46,7 @@ def mollview(map=None,fig=None,rot=None,coord=None,unit='',
       - rot: rotation, either 1,2 or 3 angles describing the rotation
              Default: None
       - coord: either one of 'G', 'E' or 'C' to describe the coordinate
-               systm of the map, or a sequence of 2 of these to make
+               system of the map, or a sequence of 2 of these to make
                rotation from the first to the second coordinate system.
                Default: None
       - unit: a text describing the unit. Default: ''
@@ -169,7 +169,7 @@ def gnomview(map=None,fig=None,rot=None,coord=None,unit='',
       - rot: rotation, either 1,2 or 3 angles describing the rotation
              Default: None
       - coord: either one of 'G', 'E' or 'C' to describe the coordinate
-               systm of the map, or a sequence of 2 of these to make
+               system of the map, or a sequence of 2 of these to make
                rotation from the first to the second coordinate system.
                Default: None
       - unit: a text describing the unit. Default: ''
@@ -302,7 +302,7 @@ def cartview(map=None,fig=None,rot=None,zat=None,coord=None,unit='',
       - rot: rotation, either 1,2 or 3 angles describing the rotation
              Default: None
       - coord: either one of 'G', 'E' or 'C' to describe the coordinate
-               systm of the map, or a sequence of 2 of these to make
+               system of the map, or a sequence of 2 of these to make
                rotation from the first to the second coordinate system.
                Default: None
       - unit: a text describing the unit. Default: ''

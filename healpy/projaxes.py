@@ -123,7 +123,7 @@ class SphericalProjAxes(axes.Axes,object):
 
         Input:
           - map: a map
-          - vec2pix_func: the function describing the pixellisation
+          - vec2pix_func: the function describing the pixelisation
           - vmin, vmax: min and max value to use instead of min max of the map
           - badval: the value of the bad pixels
           - cmapname: the name of the color map to use (see cm.datad.keys())
@@ -325,7 +325,7 @@ class SphericalProjAxes(axes.Axes,object):
         field of view.
 
         Input:
-          - the normalised vector of the direction of the center of the
+          - the normalized vector of the direction of the center of the
             projection, in the reference frame of the graticule.
         Return:
           - vmin,vmax : between 0 and pi, vmin<vmax, the interval of theta
@@ -346,7 +346,7 @@ class SphericalProjAxes(axes.Axes,object):
         of view.
 
         Input:
-          - the normalised vector of the direction of the center of the
+          - the normalized vector of the direction of the center of the
             projection, in the reference frame of the graticule.
         Return:
           - vmin,vmax : the interval of phi for the
@@ -777,7 +777,7 @@ class HistEqNorm(colors.Normalize):
 
 ##################################################################
 #
-#   A normalization class to get logathmic color table
+#   A normalization class to get logarithmic color table
 #
 
 class LogNorm2(colors.Normalize):

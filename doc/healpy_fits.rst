@@ -1,6 +1,6 @@
 .. fitsfunc:
 
-:mod:`fitsfunc` -- Fite file manipulation
+:mod:`fitsfunc` -- Fits file manipulation
 =========================================
 
 .. automodule:: healpy.fitsfunc

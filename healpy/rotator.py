@@ -53,7 +53,7 @@ class Rotator:
                  If it is a sequence of tuple, it must have same length as rot.
         - inv: whether to use inverse rotation or not
         - deg: if True, angles in rot are assumed in degree (default: True)
-        - eulertype: the convention for euler angles in rot.
+        - eulertype: the convention for Euler angles in rot.
         Note: the coord system conversion is applied first, then the rotation.
         """
         rot_is_seq = (hasattr(rot,'__len__') 
@@ -80,7 +80,7 @@ class Rotator:
             invs = inv
         else:
             invs = [inv]*len(rots)
-        # check the argument and normalise them
+        # check the argument and normalize them
         if eulertype in ['ZYX','X','Y']:
             self._eultype = eulertype
         else:
@@ -388,7 +388,7 @@ def angdist(dir1,dir2,lonlat=False):
 
 def check_coord(c):
     """Check if parameter is a valid coord system.
-    Raise a TypeError exception if it is not, otherwise returns the normalised
+    Raise a TypeError exception if it is not, otherwise returns the normalized
     coordinate system name.
     """
     if c is None:
@@ -457,11 +457,11 @@ def get_rotation_matrix(rot, deg=False, eulertype='ZYX'):
    
    Input:
       - rot: either None, an angle or a tuple of 1,2 or 3 angles
-             corresponding to euler angles.
+             corresponding to Euler angles.
    Output:
       - matrot: 3x3 rotation matrix
       - do_rot: True if rotation is not identity, False otherwise
-      - normrot: the normalised version of the input rot.
+      - normrot: the normalized version of the input rot.
    """
    rot = normalise_rot(rot, deg=deg)
    if not npy.allclose(rot,npy.zeros(3),rtol=0.,atol=1.e-15):

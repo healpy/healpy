@@ -36,7 +36,7 @@ def write_map(filename,m,nest=False,dtype=npy.float32):
       - filename: the fits file name
       - m: the map to write. Possibly a sequence of 3 maps of same size.
            They will be considered as I, Q, U maps
-      - nest=False: orgering scheme
+      - nest=False: ordering scheme
     """
     if not hasattr(m, '__len__'):
         raise TypeError('The map must be a sequence')
@@ -202,7 +202,7 @@ def mrdfits(filename,hdu=1):
     return val
 
 def mwrfits(filename,data,hdu=1,colnames=None,keys=None):
-    """Writse columns to a fits file in a table extension.
+    """Write columns to a fits file in a table extension.
 
     Input:
       - filename: the fits file name

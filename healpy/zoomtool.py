@@ -50,7 +50,7 @@ def mollzoom(map=None,fig=None,rot=None,coord=None,unit='',
       - rot: rotation, either 1,2 or 3 angles describing the rotation
              Default: None
       - coord: either one of 'G', 'E' or 'C' to describe the coordinate
-               systm of the map, or a sequence of 2 of these to make
+               system of the map, or a sequence of 2 of these to make
                rotation from the first to the second coordinate system.
                Default: None
       - unit: a text describing the unit. Default: ''
@@ -188,7 +188,7 @@ class ZoomTool(object):
     def __init__(self,m,fig=None,nest=False,cmap=None,norm=None,
                  coord=None):
         """m: the map to be zoomed (already plotted in Mollweide view)
-        fig: the figure to intrument (None->gcf())
+        fig: the figure to instrument (None->gcf())
         """
         self.reso_list = [0.05,0.1,0.2,0.3,0.5,0.75,1.,1.5,3.,5.,10.,15.,
                           30.,45.,60.]

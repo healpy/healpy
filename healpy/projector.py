@@ -38,8 +38,8 @@ class SphericalProj(object):
     This class defines functions for spherical projection.
     
     This class contains class method for spherical projection computation. It 
-    should not be instanciated. It should be inherited from and methods should
-    be overloaded for desirated projection.
+    should not be instantiated. It should be inherited from and methods should
+    be overloaded for desired projection.
     """
 
     name = "None"
@@ -158,7 +158,7 @@ class SphericalProj(object):
         Input:
           - vec2pix_func: a function taking theta,phi and returning pixel number
           - map: an array containing the spherical map to project,
-                 the pixellisation is described by ang2pix_func
+                 the pixelisation is described by ang2pix_func
         Return:
           - a 2D array with the projection of the map.
 

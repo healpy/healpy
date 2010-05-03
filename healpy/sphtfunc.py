@@ -65,7 +65,7 @@ def map2alm(m,lmax=None,mmax=None,iter=1,use_weights=False):
     """Computes the alm of an Healpix map.
 
     Input:
-      - m: a ndarray (not polarised) or a list of 3 ndarray (polarised)
+      - m: a ndarray (not polarized) or a list of 3 ndarray (polarized)
     Parameters:
       - lmax : maximum l of the power spectrum. Default: 3*nside-1
       - mmax : maximum m of the alm. Default: lmax
@@ -95,7 +95,7 @@ def alm2map(alm, nside, lmax=-1, mmax=-1,pixwin=False,
             fwhm=0.0,sigma=None,degree=False,arcmin=False):
     """Computes an Healpix map given the alm.
 
-    The alm are given as a complex array. You can specitify lmax
+    The alm are given as a complex array. You can specify lmax
     and mmax, or they will be computed from array size (assuming
     lmax==mmax).
 
@@ -105,7 +105,7 @@ def alm2map(alm, nside, lmax=-1, mmax=-1,pixwin=False,
     - nside: the nside of the output map.
     - lmax: explicitly define lmax (needed if mmax!=lmax)
     - mmax: explicitly define mmax (needed if mmax!=lmax)
-    - fwhm, sigma, degree and arcmin (as in smoothalm): smooth by a gaussian
+    - fwhm, sigma, degree and arcmin (as in smoothalm): smooth by a Gaussian
       symmetric beam
 
     Return: an Healpix map in RING scheme at nside.
@@ -199,7 +199,7 @@ def synfast(cls,nside,lmax=-1,mmax=-1,alm=False,
       - alm : if True, return also alm(s). Default: False.
       - pixwin: convolve the alm by the pixel window function. Default: False.
       - fwhm,sigma,degree,arcmin: see smoothalm. Convolve the map(s)
-        by a symmetric gaussian beam
+        by a symmetric Gaussian beam
     Output:
       - if alm==False: return a map or a tuple of maps
       - if alm==True: return a tuple of map(s) and alm(s)
@@ -352,13 +352,13 @@ def almxfl(alm,fl,mmax=-1,inplace=False):
 
 def smoothalm(alm,fwhm=0.0,sigma=None,degree=False,
               arcmin=False,mmax=-1):
-    """Smooth alm with a gaussian symmetric beam function in place.
+    """Smooth alm with a Gaussian symmetric beam function in place.
 
     Input:
       - alm: either an array representing one alm, or a sequence of
              3 arrays representing 3 alm
     Parameters:
-      - fwhm: the full width half max parameter of the gaussian. Default:0.0
+      - fwhm: the full width half max parameter of the Gaussian. Default:0.0
       - sigma: the sigma of the Gaussian. Override fwhm.
       - degree: if True, parameter given in degree. Override arcmin.
                 Default: False
@@ -404,13 +404,13 @@ def smoothalm(alm,fwhm=0.0,sigma=None,degree=False,
 
 def smoothing(m,fwhm=0.0,sigma=None,degree=False,
               arcmin=False):
-    """Smooth a map with a gaussian symmetric beam.
+    """Smooth a map with a Gaussian symmetric beam.
 
     Input:
       - map: either an array representing one map, or a sequence of
              3 arrays representing 3 maps
     Parameters:
-      - fwhm: the full width half max parameter of the gaussian. Default:0.0
+      - fwhm: the full width half max parameter of the Gaussian. Default:0.0
       - sigma: the sigma of the Gaussian. Override fwhm.
       - degree: if True, parameter given in degree. Override arcmin.
                 Default: False
@@ -460,8 +460,8 @@ def alm2signal(alm, theta, phi, lmax=-1, mmax=-1):
     Input:
      - alm: a vector containing alm
      - theta, phi : a direction on the sky
-     - lmax, mmax (optionnal): the lmax, mmax of the alm. If not given, assume
-                               mmax=lmax and find lmax from alm size 
+     - lmax, mmax (optional): the lmax, mmax of the alm. If not given, assume
+                              mmax=lmax and find lmax from alm size 
     Return:
      - a scalar (double) = sum alm Ylm
     """
@@ -488,7 +488,7 @@ def getylm(lmax, m, theta):
 def alm2map_der1(alm, nside, lmax=-1, mmax=-1):
    """Computes an Healpix map and its first derivatives given the alm.
 
-   The alm are given as a complex array. You can specitify lmax
+   The alm are given as a complex array. You can specify lmax
    and mmax, or they will be computed from array size (assuming
    lmax==mmax).
 
