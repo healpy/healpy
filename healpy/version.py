@@ -18,6 +18,7 @@
 #  For more information about Healpy, see http://code.google.com/p/healpy
 # 
 
+
 rev  = "$Revision$"
 revnumber = int(rev.strip('$')[9:])
 date = "$Date$"
