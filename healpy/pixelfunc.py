@@ -85,7 +85,7 @@ def nside2npix(nside):
     Raise a ValueError exception if nside is not valid.
     """
     if not isnsideok(nside):
-        raise ValueError("Given number is not a valid mside parameter "
+        raise ValueError("Given number is not a valid nside parameter "
                          "(must be a power of 2)")
     return 12*nside**2
 
@@ -101,10 +101,10 @@ def npix2nside(npix):
     """
     nside = npy.sqrt(npix/12.)
     if nside != npy.floor(nside):
-        raise ValueError("Wrong pixel number (it is not 12*n**2)")
+        raise ValueError("Wrong pixel number (it is not 12*nside**2)")
     nside=int(npy.floor(nside))
     if not isnsideok(nside):
-        raise ValueError("Wrong pixel number (it is not 12*n**2)")
+        raise ValueError("Wrong nside value (it is not 2**N)")
     return nside
 
 def isnsideok(nside):
