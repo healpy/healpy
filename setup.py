@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 
-
+## use 'gcc_omp' to use openmp
 HEALPIX_TARGET='generic_gcc'
 
 from distutils.core import setup, Extension
@@ -19,7 +19,6 @@ def compile_healpix_cxx(target):
     if compil_result != 0:
         raise Exception('Error while compiling healpix_cxx')
 
-
 def get_version():
     try:
         for line in file('healpy/version.py'):
@@ -28,6 +27,7 @@ def get_version():
         raise ValueError('Error getting revision number from '
                          'healpy/version.py')
     return __version__
+
 
 healpy_pixel_lib_src = ['_healpy_pixel_lib.cc']
 healpy_spht_src = ['_healpy_sph_transform_lib.cc']
@@ -43,27 +43,35 @@ healpix_cxx_lib = healpix_cxx_dir+'/lib'
 
 if sys.argv[1] != 'sdist':
     compile_healpix_cxx(HEALPIX_TARGET)
-
+    
     if not ( isdir(healpix_cxx_dir+'/include') and
              isdir(healpix_cxx_dir+'/lib') ):
         raise IOError("No inlcude and lib directory : needed for healpy !")
 
 ###############################################
 
-# start with base extension
+healpix_libs=['healpix_cxx','fftpack','cxxsupport','cfitsio']
+healpix_args=[]
+if HEALPIX_TARGET=='gcc_omp':
+    healpix_libs.append('gomp')
+    healpix_args.append('-fopenmp')
+
+#start with base extension
 pixel_lib = Extension('healpy._healpy_pixel_lib',
                       sources=[join('healpy','src',s)
                                for s in healpy_pixel_lib_src],
                       include_dirs=[numpy_inc,healpix_cxx_inc],
                       library_dirs=[healpix_cxx_lib],
-                      libraries=['healpix_cxx','fftpack','cxxsupport','cfitsio']
+                      libraries=healpix_libs,
+                      extra_compile_args=healpix_args
                       )
 
 spht_lib = Extension('healpy._healpy_sph_transform_lib',
                      sources=[join('healpy','src',s) for s in healpy_spht_src],
                      include_dirs=[numpy_inc,healpix_cxx_inc],
                      library_dirs=[healpix_cxx_lib],
-                     libraries=['healpix_cxx','fftpack','cxxsupport','cfitsio']
+                     libraries=healpix_libs,
+                     extra_compile_args=healpix_args
                      )
 
 hfits_lib = Extension('healpy._healpy_fitsio_lib',
@@ -71,8 +79,8 @@ hfits_lib = Extension('healpy._healpy_fitsio_lib',
                                for s in healpy_fitsio_src],
                       include_dirs=[numpy_inc,healpix_cxx_inc],
                       library_dirs=[healpix_cxx_lib],
-                      libraries=['healpix_cxx','fftpack',
-                                 'cxxsupport','cfitsio']
+                      libraries=healpix_libs,
+                      extra_compile_args=healpix_args
                       )
 
 # 
@@ -88,8 +96,7 @@ setup(name='healpy',
                   'healpy.projector','healpy.rotator',
                   'healpy.projaxes','healpy.version'],
       ext_modules=[pixel_lib,spht_lib,hfits_lib],
-      package_data={'healpy': ['data/*.fits']},
-      license='GPLv2'
+      package_data={'healpy': ['data/*.fits']}
       )
 
 
