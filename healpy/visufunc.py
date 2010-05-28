@@ -61,6 +61,8 @@ def mollview(map=None,fig=None,rot=None,coord=None,unit='',
       - gal_cut: galactic cut for the dipole/monopole fit
       - format: the format of the scale. Default: '%g'
       - notext: if True, no text is printed around the map
+      - norm: color normalization, hist= histogram equalized color mapping, log=
+      logarithmic color mapping, default: None (linear color mapping)
       - hold: if True, replace the current Axes by a MollweideAxes.
               use this if you want to have multiple maps on the same
               figure. Default: False
