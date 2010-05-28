@@ -103,6 +103,8 @@ def read_map(filename,field=0,dtype=npy.float64,nest=False,hdu=1,h=False):
       - filename: the fits file name
     Parameters:
       - field: the column to read Default: 0
+               by convention 0 is temperature, 1 is Q, 2 is U
+               field can be a tuple to read multiple columns (0,1,2)
       - dtype: force the conversion to some type. Default: npy.float64
       - nest=False: if True return the map in NEST ordering; use fits keyword
                     ORDERING to decide whether conversion is needed or not
