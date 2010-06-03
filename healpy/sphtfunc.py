@@ -24,6 +24,7 @@ import os.path
 import pixelfunc
 
 pi = npy.pi
+DATAPATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data')
 
 # Spherical harmonics transformation
 def anafast(m,lmax=None,mmax=None,iter=1,alm=False, use_weights=False):
@@ -43,7 +44,7 @@ def anafast(m,lmax=None,mmax=None,iter=1,alm=False, use_weights=False):
       - if alm==True: return a tuple with cl or a list of cl's and alm
                       or a list of alm's
     """
-    datapath=os.path.dirname(__file__)+'/data'
+    datapath = DATAPATH #os.path.dirname(__file__)+'/data'
     nside = _get_nside(m)
     if lmax is None:
         lmax = 3*nside-1
@@ -74,7 +75,7 @@ def map2alm(m,lmax=None,mmax=None,iter=1,use_weights=False):
     Return:
       - alm as one ndarray or a tuple of 3 ndarrays
     """
-    datapath=os.path.dirname(__file__)+'/data'
+    datapath = DATAPATH #os.path.dirname(__file__)+'/data'
     nside = _get_nside(m)
     if lmax is None:
         lmax = 3*nside-1
@@ -445,13 +446,27 @@ def pixwin(nside,pol=False):
       - the temperature pixel window function, or a tuple with both
         temperature and polarisation pixel window functions.
     """
-    datapath=os.path.dirname(__file__)+'/data'
+    datapath = DATAPATH
     if not pixelfunc.isnsideok(nside):
         raise ValueError("Wrong nside value (must be a power of two).")
-    if not os.path.isfile(datapath+'/pixel_window_n%04d.fits'%nside):
+    fname = os.path.join(datapath, 'pixel_window_n%04d.fits'%nside)
+    if not os.path.isfile(fname):
         raise ValueError("No pixel window for this nside "
                          "or data files missing")
-    return hfitslib._pixwin(nside,datapath,pol)
+    # return hfitslib._pixwin(nside,datapath,pol)  ## BROKEN -> seg fault...
+    try:
+        import pyfits
+    except ImportError:
+        print "*********************************************************"
+        print "**   You need to install pyfits to use this function   **"
+        print "*********************************************************"
+        raise
+    pw = pyfits.getdata(fname)
+    pw_temp, pw_pol = pw.field(0), pw.field(1)
+    if pol:
+        return pw_temp, pw_pol
+    else:
+        return pw_temp
 
 def alm2signal(alm, theta, phi, lmax=-1, mmax=-1):
     """This function use alm (temperature only) to compute the signal at

@@ -74,14 +74,15 @@ static PyObject *healpy_pixwin(PyObject *self, PyObject *args,
 				   &nside, &datapath,
 				   &polarisation))
     return NULL;
-  
+
   double x = log(nside)/log(2.);
   if( x != floor(x) )
     {
       PyErr_SetString(PyExc_ValueError,
-		      "Wring nside value (must be a power of 2)");
+		      "Wrong nside value (must be a power of 2)");
       return NULL;
     }
+
   /*
   void read_pixwin (const std::string &dir, int nside, arr<double> &temp);
   void read_pixwin (const std::string &dir, int nside, arr<double> &temp,
@@ -89,7 +90,8 @@ static PyObject *healpy_pixwin(PyObject *self, PyObject *args,
   */
   arr<double> pw_temp;
   arr<double> pw_pol;
-  read_pixwin(std::string(datapath), nside, pw_temp, pw_pol);
+
+  read_pixwin(datapath, nside, pw_temp, pw_pol);
   
   PyArrayObject *pixwin_temp = NULL;
   PyArrayObject *pixwin_pol = NULL;
@@ -97,6 +99,7 @@ static PyObject *healpy_pixwin(PyObject *self, PyObject *args,
   npy_intp szpw;
   
   szpw = pw_temp.size();
+
   pixwin_temp = (PyArrayObject*)PyArray_SimpleNew(1, (npy_intp*)&szpw, 
 						  PyArray_DOUBLE);
   if( !pixwin_temp )

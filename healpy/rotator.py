@@ -310,7 +310,7 @@ def rotateVector(rotmat,vec,vy=None,vz=None, do_rot=True):
        if do_rot: return npy.tensordot(rotmat,npy.array([vec,vy,vz]),axes=(1,0))
        else: return vec,vy,vz
     else:
-       raise TypeError("You must give either vec only or vec,vy, "
+       raise TypeError("You must give either vec only or vec, vy "
                        "and vz parameters")
 
 def rotateDirection(rotmat,theta,phi=None,do_rot=True,lonlat=False):
