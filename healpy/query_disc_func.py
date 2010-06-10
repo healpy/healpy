@@ -229,4 +229,11 @@ def query_disc(nside,v0,radius,nest=False,deg=True):
 			nir = size(listir)
 			if (nir>0):
                                 work.append(listir)
-	return concatenate(work)
+
+	if len(work) > 1:  
+		work = concatenate(work[1:])
+	else:    
+		work = asarray([], dtype=int)
+
+	return work
+		
