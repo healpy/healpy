@@ -18,7 +18,6 @@
 #  For more information about Healpy, see http://code.google.com/p/healpy
 # 
 import numpy as npy
-import math
 import _healpy_pixel_lib as pixlib
 from _healpy_pixel_lib import UNSEEN
 
