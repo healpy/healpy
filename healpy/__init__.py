@@ -31,7 +31,7 @@ except NameError:
 
 from version import __version__
 
-from pixelfunc import (ang2pix,pix2ang,pix2vec,vec2pix,
+from pixelfunc import (ang2pix,pix2ang,pix2vec,vec2pix,ang2vec,
                        nside2npix,npix2nside,isnsideok,
                        ring2nest, nest2ring, get_neighbours,
                        get_all_neighbours,

@@ -18,6 +18,7 @@
 #  For more information about Healpy, see http://code.google.com/p/healpy
 # 
 import numpy as npy
+import math
 import _healpy_pixel_lib as pixlib
 from _healpy_pixel_lib import UNSEEN
 
@@ -52,6 +53,18 @@ def pix2vec(nside,ipix,nest=False):
         return pixlib._pix2vec_nest(nside,ipix)
     else:
         return pixlib._pix2vec_ring(nside,ipix)
+
+def ang2vec(theta, phi):
+    """ang2vec : convert angles to 3D position vector
+    
+    theta: colatitude in radians measured southward from north pole (in [0,pi]). 
+    phi: longitude in radians measured eastward (in [0, 2*pi]). 
+
+    if theta and phi are vectors, the result is a 2D array with a vector per row
+    """
+    return npy.array([npy.sin(theta)*npy.cos(phi),
+                      npy.sin(theta)*npy.sin(phi),
+                      npy.cos(theta)]).T
 
 def ring2nest(nside, ipix):
     """Convert pixel number from ring scheme number to nest scheme number.
