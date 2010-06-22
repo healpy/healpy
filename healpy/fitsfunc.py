@@ -116,7 +116,7 @@ def read_map(filename,field=0,dtype=npy.float64,nest=False,hdu=1,h=False):
     """
     hdulist=pyf.open(filename)
     #print hdulist[1].header
-    nside = hdulist[hdu].header.get('NSIDE')
+    nside = int(hdulist[hdu].header.get('NSIDE'))
     if nside is None:
         warnings.warn("No NSIDE in the header file : will use length of array",
                       HealpixFitsWarning)
