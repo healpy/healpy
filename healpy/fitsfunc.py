@@ -25,6 +25,7 @@ import numpy as npy
 import pixelfunc
 from sphtfunc import Alm
 import warnings
+from _healpy_pixel_lib import UNSEEN
 
 class HealpixFitsWarning(Warning):
     pass
@@ -147,6 +148,7 @@ def read_map(filename,field=0,dtype=npy.float64,nest=False,hdu=1,h=False):
             idx = pixelfunc.ring2nest(nside,npy.arange(m.size,dtype=npy.int32))
             m = m[idx]
             print 'Ordering converted to RING'
+        m[m<-1.637e30] = UNSEEN
         ret.append(m)
     
     if len(ret) == 1:
