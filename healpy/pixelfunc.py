@@ -21,6 +21,10 @@ import numpy as npy
 import _healpy_pixel_lib as pixlib
 from _healpy_pixel_lib import UNSEEN
 
+def ma(map):
+    """Return map as a masked array"""
+    return npy.ma.masked_values(map, UNSEEN)
+
 def ang2pix(nside,theta,phi,nest=False):
     """ang2pix : nside,theta[rad],phi[rad],nest=False -> ipix (default:RING)
     """
