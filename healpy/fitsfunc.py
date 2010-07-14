@@ -107,8 +107,9 @@ def read_map(filename,field=0,dtype=npy.float64,nest=False,hdu=1,h=False):
                by convention 0 is temperature, 1 is Q, 2 is U
                field can be a tuple to read multiple columns (0,1,2)
       - dtype: force the conversion to some type. Default: npy.float64
-      - nest=False: if True return the map in NEST ordering; use fits keyword
-                    ORDERING to decide whether conversion is needed or not
+      - nest=False: if True return the map in NEST ordering, otherwise in RING ordering; 
+                    use fits keyword ORDERING to decide whether conversion is needed or not
+                    if None, no conversion is performed
       - hdu=1: the header number to look at (start at 0)
       - h=False: if True, return also the header
     Return:
@@ -140,14 +141,15 @@ def read_map(filename,field=0,dtype=npy.float64,nest=False,hdu=1,h=False):
         if not pixelfunc.isnpixok(m.size) or (sz>0 and sz != m.size):
             print 'nside=%d, sz=%d, m.size=%d'%(nside,sz,m.size)
             raise ValueError('Wrong nside parameter.')
-        if nest and ordering == 'RING':
-            idx = pixelfunc.nest2ring(nside,npy.arange(m.size,dtype=npy.int32))
-            m = m[idx]
-            print 'Ordering converted to NEST'
-        elif (not nest) and ordering == 'NESTED':
-            idx = pixelfunc.ring2nest(nside,npy.arange(m.size,dtype=npy.int32))
-            m = m[idx]
-            print 'Ordering converted to RING'
+        if nest != None: # no conversion with None
+            if nest and ordering == 'RING':
+                idx = pixelfunc.nest2ring(nside,npy.arange(m.size,dtype=npy.int32))
+                m = m[idx]
+                print 'Ordering converted to NEST'
+            elif (not nest) and ordering == 'NESTED':
+                idx = pixelfunc.ring2nest(nside,npy.arange(m.size,dtype=npy.int32))
+                m = m[idx]
+                print 'Ordering converted to RING'
         m[m<-1.637e30] = UNSEEN
         ret.append(m)
     
