@@ -133,7 +133,9 @@ class SphericalProjAxes(axes.Axes,object):
           other keywords given to Axes.imshow
         """
         img = self.proj.projmap(map,vec2pix_func,rot=rot,coord=coord)
-        w = ~( npy.isnan(img) | npy.isinf(img) | (img==badval))
+        w = ~( npy.isnan(img) | 
+               npy.isinf(img) | 
+               pixelfunc.mask_bad(img, badval = badval) )
         try:
             if vmin is None: vmin = img[w].min()
         except ValueError:

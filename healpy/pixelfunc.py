@@ -21,6 +21,22 @@ import numpy as npy
 import _healpy_pixel_lib as pixlib
 from _healpy_pixel_lib import UNSEEN
 
+def mask_bad(m, badval = UNSEEN, rtol = 1.e-5, atol = 1.e-8):
+    """Return a boolean array with True where m is close to badval
+    and False elsewhere
+    [absolute(m - badval) <= atol + rtol * absolute(badval)]"""
+    atol = npy.absolute(atol)
+    rtol = npy.absolute(rtol)
+    return npy.absolute(m - badval) <= atol + rtol * npy.absolute(badval)
+
+def mask_good(m, badval = UNSEEN, rtol = 1.e-5, atol = 1.e-8):
+    """Return a mask with False where m is close to badval
+    and True elsewhere
+    [absolute(m - badval) > atol + rtol * absolute(badval)]"""
+    atol = npy.absolute(atol)
+    rtol = npy.absolute(rtol)
+    return npy.absolute(m - badval) > atol + rtol * npy.absolute(badval)
+
 def ma(map):
     """Return map as a masked array"""
     return npy.ma.masked_values(map, UNSEEN)
