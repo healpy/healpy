@@ -88,7 +88,7 @@ static PyMethodDef SphtMethods[] = {
    "Compute alm or cl from an input map.\n"
    "The input map is assumed to be ordered in RING.\n"
    "anafast(map,lmax=3*nside-1,mmax=lmax,cl=False,\n"
-   "        iter=3,use_weights=False,data_path=None)"},
+   "        iter=3,use_weights=False,data_path=None,regression=True)"},
   {"_alm2map", (PyCFunction)healpy_alm2map, METH_VARARGS | METH_KEYWORDS, 
    "Compute a map from alm.\n"
    "The output map is ordered in RING scheme.\n"
@@ -142,22 +142,23 @@ static PyObject *healpy_map2alm(PyObject *self, PyObject *args,
   int use_weights=0;
   char * datapath=NULL;
   int polarisation = 0; /* not polarised by default */
+  int regression=1;
 
   static char* kwlist[] = {"","lmax", "mmax","cl","iter", 
-			   "use_weights", "data_path", NULL};
+			   "use_weights", "data_path", "regression", NULL};
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!|iiiiis", kwlist,
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!|iiiiisi", kwlist,
 				   &PyArray_Type, &mapIin,
 				   &lmax, &mmax, &docl,
-				   &num_iter,&use_weights,&datapath))
+				   &num_iter,&use_weights,&datapath,&regression))
     {
       PyErr_Clear(); /* I want to try the other calling way */
 
       PyObject *t = NULL;
-      if( !PyArg_ParseTupleAndKeywords(args, kwds, "O|iiiiis", kwlist,
+      if( !PyArg_ParseTupleAndKeywords(args, kwds, "O|iiiiisi", kwlist,
 				   &t,
 				   &lmax, &mmax, &docl,
-				   &num_iter,&use_weights,&datapath) )	
+				       &num_iter,&use_weights,&datapath,&regression) )	
 	return NULL;
       else
 	{
@@ -386,9 +387,11 @@ static PyObject *healpy_map2alm(PyObject *self, PyObject *args,
       weight.fill(1.);
     }
 
-  double avg;
-  avg = mapI.average();
-  mapI.add(-avg);
+  double avg = 0.0;
+  if( regression ) {
+    avg = mapI.average();
+    mapI.add(-avg);
+  }
 
   if( !polarisation )
     map2alm_iter(mapI,almIalm,num_iter,weight);
@@ -396,9 +399,10 @@ static PyObject *healpy_map2alm(PyObject *self, PyObject *args,
     map2alm_pol_iter(mapI, mapQ, mapU, almIalm, almGalm, almCalm, num_iter,
 		     weight);
 
-  almIalm(0,0) += avg*sqrt(fourpi);
-
-  mapI.add(avg);
+  if( regression ) {
+    almIalm(0,0) += avg*sqrt(fourpi);
+    mapI.add(avg);
+  }
 
   if( !docl )
     {

@@ -27,7 +27,7 @@ pi = npy.pi
 DATAPATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data')
 
 # Spherical harmonics transformation
-def anafast(m,lmax=None,mmax=None,iter=1,alm=False, use_weights=False):
+def anafast(m,lmax=None,mmax=None,iter=1,alm=False, use_weights=False, regression=True):
     """Computes the power spectrum of an Healpix map.
 
     Input:
@@ -39,6 +39,7 @@ def anafast(m,lmax=None,mmax=None,iter=1,alm=False, use_weights=False):
       - iter : number of iteration (default: 1)
       - alm : (boolean) whether to return alm or not (if True, both are
                returned in a tuple)
+      - regression : if True, map average is removed before computing alm. Default: True.
     Return:
       - if alm==False: return cl or a list of cl's (TT,TE,EE,BB)
       - if alm==True: return a tuple with cl or a list of cl's and alm
@@ -56,13 +57,13 @@ def anafast(m,lmax=None,mmax=None,iter=1,alm=False, use_weights=False):
         if not os.path.isfile(datapath+'/'+weightfile):
             raise IOError('File not found : '+datapath+'/'+weightfile)
     clout,almout = sphtlib._map2alm(m,lmax=lmax,mmax=mmax,iter=iter,cl=True,
-                                    use_weights=use_weights,data_path=datapath)
+                                    use_weights=use_weights,data_path=datapath,regression=regression)
     if alm:
         return (clout,almout)
     else:
         return clout
 
-def map2alm(m,lmax=None,mmax=None,iter=1,use_weights=False):
+def map2alm(m,lmax=None,mmax=None,iter=1,use_weights=False,regression=True):
     """Computes the alm of an Healpix map.
 
     Input:
@@ -72,6 +73,7 @@ def map2alm(m,lmax=None,mmax=None,iter=1,use_weights=False):
       - mmax : maximum m of the alm. Default: lmax
       - iter : number of iteration (default: 1)
       - use_weights: whether to use ring weights or not. Default: False.
+      - regression: if True, subtract map average before computing alm. Default: True.
     Return:
       - alm as one ndarray or a tuple of 3 ndarrays
     """
@@ -88,7 +90,7 @@ def map2alm(m,lmax=None,mmax=None,iter=1,use_weights=False):
             raise IOError('File not found : '+datapath+'/'+weightfile)
     alm = sphtlib._map2alm(m,lmax=lmax,mmax=mmax,cl=False,
                            iter=iter,
-                           use_weights=use_weights,data_path=datapath)
+                           use_weights=use_weights,data_path=datapath,regression=regression)
     return alm
 
 
