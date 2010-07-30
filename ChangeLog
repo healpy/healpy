@@ -1,9 +1,43 @@
+2010-07-30 09:27  cyrille.rosset
+
+	* [r110]
+	  healpy/version.py:
+	  update
+	  version
+	  number
+
+2010-07-30 09:25  cyrille.rosset
+
+	* [r109]
+	  .:
+	  new
+	  version
+	  0.9.11
+
+2010-07-29 16:37  cyrille.rosset
+
+	* [r108]
+	  Add
+	  an
+	  option
+	  to
+	  map2alm
+	  and
+	  anafast
+	  not
+	  to
+	  subtract
+	  map
+	  average
+	  before
+	  computing
+	  alm
+	  (issue
+	  40)
+
 2010-07-29 16:28  cyrille.rosset
 
 	* [r107]
-	  healpy/pixelfunc.py,
-	  healpy/projaxes.py,
-	  healpy/version.py:
 	  UNSEEN
 	  is
 	  now
@@ -20,7 +54,6 @@
 2010-07-14 18:30  andrea.zonca@gmail.com
 
 	* [r106]
-	  healpy/fitsfunc.py:
 	  nest=None
 	  for
 	  reading
@@ -37,7 +70,6 @@
 2010-06-22 20:54  andrea.zonca@gmail.com
 
 	* [r105]
-	  healpy/fitsfunc.py:
 	  fix
 	  if
 	  the
@@ -55,8 +87,6 @@
 2010-06-22 20:08  andrea.zonca@gmail.com
 
 	* [r104]
-	  healpy/__init__.py,
-	  healpy/pixelfunc.py:
 	  create
 	  a
 	  masked
@@ -76,7 +106,6 @@
 2010-06-22 19:48  andrea.zonca@gmail.com
 
 	* [r103]
-	  healpy/fitsfunc.py:
 	  fix
 	  in
 	  case
@@ -93,7 +122,6 @@
 2010-06-17 22:46  andrea.zonca@gmail.com
 
 	* [r102]
-	  healpy/pixelfunc.py:
 	  removed
 	  import
 	  math,
@@ -104,8 +132,6 @@
 2010-06-17 22:44  andrea.zonca@gmail.com
 
 	* [r101]
-	  healpy/__init__.py,
-	  healpy/pixelfunc.py:
 	  implementation
 	  of
 	  ang2vec
@@ -119,7 +145,6 @@
 2010-06-10 15:12  cyrille.rosset@gmail.com
 
 	* [r98]
-	  healpy/query_disc_func.py:
 	  query_disc
 	  now
 	  returns
@@ -129,7 +154,6 @@
 2010-06-07 12:54  lejeune@apc.univ-paris7.fr
 
 	* [r96]
-	  setup.py:
 	  omp
 	  compilation
 	  affects
@@ -139,9 +163,6 @@
 2010-06-03 10:00  cyrille.rosset@gmail.com
 
 	* [r93]
-	  healpy/rotator.py,
-	  healpy/sphtfunc.py,
-	  healpy/src/_healpy_fitsio_lib.cc:
 	  use
 	  pyfits
 	  to
@@ -156,7 +177,6 @@
 2010-05-28 23:27  andrea.zonca@gmail.com
 
 	* [r92]
-	  healpy:
 	  ignore
 	  pyc
 	  and
@@ -166,7 +186,6 @@
 2010-05-28 23:11  andrea.zonca@gmail.com
 
 	* [r91]
-	  healpy/visufunc.py:
 	  added
 	  norm
 	  documentation
@@ -176,7 +195,6 @@
 2010-05-28 23:05  andrea.zonca@gmail.com
 
 	* [r90]
-	  healpy/fitsfunc.py:
 	  added
 	  documentation
 	  to
@@ -188,7 +206,6 @@
 2010-05-27 10:31  lejeune@apc.univ-paris7.fr
 
 	* [r89]
-	  setup.py:
 	  license
 	  option
 	  restored
@@ -196,30 +213,18 @@
 2010-05-27 10:27  lejeune@apc.univ-paris7.fr
 
 	* [r88]
-	  hpbeta/config/config.gcc_omp,
-	  setup.py:
 	  +
 	  openmp
 
 2010-05-03 10:33  cyrille.rosset@gmail.com
 
 	* [r87]
-	  healpy/version.py:
 	  change
 	  version.py
 
 2010-05-03 10:30  cyrille.rosset@gmail.com
 
 	* [r86]
-	  doc/healpy_fits.rst,
-	  healpy/__init__.py,
-	  healpy/fitsfunc.py,
-	  healpy/projaxes.py,
-	  healpy/projector.py,
-	  healpy/rotator.py,
-	  healpy/sphtfunc.py,
-	  healpy/visufunc.py,
-	  healpy/zoomtool.py:
 	  Correct
 	  doc
 	  typos
@@ -227,7 +232,6 @@
 2010-05-03 10:11  cyrille.rosset@gmail.com
 
 	* [r85]
-	  healpy/pixelfunc.py:
 	  correct
 	  error
 	  message
@@ -239,7 +243,6 @@
 2010-04-19 17:00  cyrille.rosset@gmail.com
 
 	* [r84]
-	  healpy/query_disc_func.py:
 	  Correct
 	  bug
 	  in
@@ -257,7 +260,6 @@
 2010-04-19 16:33  cyrille.rosset@gmail.com
 
 	* [r83]
-	  healpy/pixelfunc.py:
 	  Correct
 	  bug
 	  in
@@ -269,7 +271,6 @@
 2009-09-24 05:41  cyrille.rosset
 
 	* [r79]
-	  healpy/zoomtool.py:
 	  adjust
 	  position
 	  of
@@ -279,8 +280,6 @@
 2009-09-23 17:51  cyrille.rosset
 
 	* [r78]
-	  healpy/projaxes.py,
-	  healpy/zoomtool.py:
 	  add
 	  info
 	  display
@@ -297,7 +296,6 @@
 2009-08-11 20:14  cyrille.rosset
 
 	* [r77]
-	  healpy/src/_healpy_pixel_lib.cc:
 	  remove
 	  const
 	  qualifier
@@ -312,7 +310,6 @@
 2009-08-11 13:52  cyrille.rosset
 
 	* [r76]
-	  healpy/sphtfunc.py:
 	  add
 	  npy.
 	  in
@@ -324,8 +321,6 @@
 2009-08-11 13:50  cyrille.rosset
 
 	* [r75]
-	  healpy/projaxes.py,
-	  healpy/rotator.py:
 	  correct
 	  bug
 	  in
@@ -342,8 +337,6 @@
 2009-07-22 16:21  cyrille.rosset
 
 	* [r74]
-	  healpy/sphtfunc.py,
-	  healpy/version.py:
 	  correctionf
 	  for
 	  issue
@@ -352,8 +345,6 @@
 2009-07-21 15:41  cyrille.rosset
 
 	* [r70]
-	  ChangeLog,
-	  healpy/version.py:
 	  new
 	  tag
 	  0.9.8
@@ -361,9 +352,6 @@
 2009-07-21 15:14  cyrille.rosset
 
 	* [r68]
-	  healpy/__init__.py,
-	  hpbeta/alice/testMollweideSkyMap.cc,
-	  hpbeta/alice/testOrthogonalSkyMap.cc:
 	  correct
 	  bug
 	  in
@@ -379,18 +367,12 @@
 2009-07-16 15:22  cyrille.rosset
 
 	* [r67]
-	  healpy/projaxes.py,
-	  healpy/zoomtool.py:
 	  update
 	  zoomtool
 
 2009-07-16 15:05  cyrille.rosset
 
 	* [r66]
-	  healpy/__init__.py,
-	  healpy/projector.py,
-	  healpy/rotator.py,
-	  healpy/zoomtool.py:
 	  add
 	  zoomtool
 	  capabilities
@@ -398,7 +380,6 @@
 2009-07-15 13:16  cyrille.rosset
 
 	* [r65]
-	  healpy/version.py:
 	  addinformation
 	  for
 	  graticule,
@@ -414,7 +395,6 @@
 2009-07-15 13:14  cyrille.rosset
 
 	* [r64]
-	  healpy/projaxes.py:
 	  addinformation
 	  for
 	  graticule,
@@ -430,7 +410,6 @@
 2009-07-10 00:31  cyrille.rosset
 
 	* [r63]
-	  ChangeLog:
 	  set
 	  version
 	  number
@@ -441,16 +420,12 @@
 2009-07-10 00:23  cyrille.rosset
 
 	* [r61]
-	  ChangeLog:
 	  svn
 	  cleaning
 
 2009-07-10 00:11  cyrille.rosset
 
 	* [r60]
-	  healpy/__init__.py,
-	  healpy/projector.py,
-	  setup.py:
 	  correct
 	  error
 	  in
@@ -473,14 +448,12 @@
 2009-06-17 07:21  cyrille.rosset
 
 	* [r59]
-	  ChangeLog:
 	  Update
 	  Changelog
 
 2009-06-17 07:18  cyrille.rosset
 
 	* [r58]
-	  MANIFEST.in:
 	  Add
 	  version
 	  0.9.6.2,
@@ -496,7 +469,6 @@
 2009-06-16 21:46  cyrille.rosset
 
 	* [r57]
-	  test/test_fit_dipole.py:
 	  add
 	  license
 	  information
@@ -508,14 +480,12 @@
 2009-06-09 13:55  cyrille.rosset
 
 	* [r55]
-	  ChangeLog:
 	  Update
 	  ChangeLog
 
 2009-06-09 13:47  cyrille.rosset
 
 	* [r53]
-	  COPYING:
 	  Add
 	  COPYING
 	  file
@@ -529,19 +499,6 @@
 2009-06-09 13:43  cyrille.rosset
 
 	* [r52]
-	  healpy/__init__.py,
-	  healpy/fitsfunc.py,
-	  healpy/pixelfunc.py,
-	  healpy/projaxes.py,
-	  healpy/projector.py,
-	  healpy/query_disc_func.py,
-	  healpy/rotator.py,
-	  healpy/sphtfunc.py,
-	  healpy/src/_healpy_fitsio_lib.cc,
-	  healpy/src/_healpy_pixel_lib.cc,
-	  healpy/src/_healpy_sph_transform_lib.cc,
-	  healpy/version.py,
-	  healpy/visufunc.py:
 	  Add
 	  license
 	  information
@@ -561,14 +518,12 @@
 2009-04-17 02:45  cyrille.rosset
 
 	* [r51]
-	  ChangeLog:
 	  Update
 	  ChangeLog
 
 2009-04-17 02:40  cyrille.rosset
 
 	* [r49]
-	  ChangeLog:
 	  Update
 	  ChangeLog;
 	  tag
@@ -578,9 +533,6 @@
 2009-03-29 17:46  cyrille.rosset
 
 	* [r48]
-	  healpy/__init__.py,
-	  healpy/pixelfunc.py,
-	  healpy/src/_healpy_pixel_lib.cc:
 	  Add
 	  get_all_neighbours
 	  function
@@ -596,7 +548,6 @@
 2009-03-29 16:24  cyrille.rosset
 
 	* [r47]
-	  healpy/query_disc_func.py:
 	  add
 	  ring2nest
 	  import
@@ -614,7 +565,6 @@
 2009-03-25 16:10  cyrille.rosset
 
 	* [r46]
-	  healpy/__init__.py:
 	  change
 	  warnings.ImportWarning
 	  to
@@ -634,14 +584,12 @@
 2009-03-12 16:51  cyrille.rosset
 
 	* [r45]
-	  ChangeLog:
 	  Update
 	  ChangeLog
 
 2009-03-12 14:55  cyrille.rosset
 
 	* [r43]
-	  hpbeta/cxxsupport/fitshandle.cc:
 	  Add
 	  #include
 	  <cstring>
@@ -655,7 +603,6 @@
 2009-02-22 22:41  cyrille.rosset
 
 	* [r42]
-	  healpy/pixelfunc.py:
 	  Correct
 	  missing
 	  npy.
@@ -665,16 +612,12 @@
 2009-01-24 16:19  cyrille.rosset
 
 	* [r41]
-	  healpy/version.py:
 	  Update
 	  version.py
 
 2009-01-24 16:19  cyrille.rosset
 
 	* [r40]
-	  healpy/projaxes.py,
-	  healpy/projector.py,
-	  healpy/visufunc.py:
 	  Add
 	  cartwiew,
 	  CartesianAxes,
@@ -692,9 +635,6 @@
 2009-01-18 20:51  cyrille.rosset
 
 	* [r39]
-	  MANIFEST.in,
-	  healpy/pixelfunc.py,
-	  healpy/src/_healpy_pixel_lib.cc:
 	  update
 	  documentation
 	  for
@@ -710,7 +650,6 @@
 2009-01-12 18:09  cyrille.rosset
 
 	* [r37]
-	  ChangeLog:
 	  Add
 	  tag
 	  version
@@ -719,7 +658,6 @@
 2009-01-11 03:04  cyrille.rosset
 
 	* [r36]
-	  healpy/rotator.py:
 	  correct
 	  bug
 	  in
@@ -728,9 +666,6 @@
 2009-01-08 19:24  cyrille.rosset
 
 	* [r35]
-	  INSTALL,
-	  TODO,
-	  do_inst:
 	  update
 	  the
 	  INSTALL,
@@ -744,10 +679,6 @@
 2009-01-08 18:47  cyrille.rosset
 
 	* [r34]
-	  .,
-	  ChangeLog,
-	  healpy/version.py,
-	  hpbeta:
 	  Add
 	  svn:ignore
 	  properties
@@ -758,8 +689,6 @@
 2009-01-08 18:14  cyrille.rosset
 
 	* [r33]
-	  healpy/__init__.py,
-	  healpy/rotator.py:
 	  Add
 	  documentation
 	  to
@@ -775,7 +704,6 @@
 2009-01-06 13:35  cyrille.rosset
 
 	* [r32]
-	  healpy/version.py:
 	  update
 	  version
 	  number
@@ -783,16 +711,12 @@
 2009-01-06 13:19  cyrille.rosset
 
 	* [r31]
-	  ChangeLog:
 	  update
 	  ChangeLog
 
 2009-01-06 13:04  cyrille.rosset
 
 	* [r30]
-	  healpy/__init__.py,
-	  healpy/projaxes.py,
-	  healpy/visufunc.py:
 	  Add
 	  flip
 	  keyword
@@ -818,14 +742,12 @@
 2008-12-29 14:02  cyrille.rosset
 
 	* [r29]
-	  ChangeLog:
 	  Update
 	  ChangeLog
 
 2008-12-29 13:48  cyrille.rosset
 
 	* [r28]
-	  ChangeLog:
 	  Add
 	  margins
 	  keyword
@@ -845,7 +767,6 @@
 2008-12-29 13:38  cyrille.rosset
 
 	* [r27]
-	  healpy/visufunc.py:
 	  Add
 	  margins
 	  keyword
@@ -865,7 +786,6 @@
 2008-12-17 17:01  cyrille.rosset
 
 	* [r26]
-	  ChangeLog:
 	  Add
 	  ChangeLog
 	  file
@@ -873,7 +793,6 @@
 2008-12-12 14:00  cyrille.rosset
 
 	* [r25]
-	  healpy/version.py:
 	  add
 	  property
 	  on
@@ -882,7 +801,6 @@
 2008-12-12 13:48  cyrille.rosset
 
 	* [r23]
-	  setup.py:
 	  minor
 	  bug
 	  corrected
@@ -907,8 +825,6 @@
 2008-12-12 13:27  cyrille.rosset
 
 	* [r21]
-	  healpy/__init__.py,
-	  healpy/pixelfunc.py:
 	  order_out=order_in
 	  if
 	  not
@@ -924,7 +840,6 @@
 2008-12-12 08:03  cyrille.rosset
 
 	* [r19]
-	  healpy/projaxes.py:
 	  Adapt
 	  HistEqNorm
 	  to
@@ -939,7 +854,6 @@
 2008-12-11 22:45  cyrille.rosset
 
 	* [r17]
-	  healpy/projaxes.py:
 	  Correct
 	  bug
 	  in
@@ -960,19 +874,6 @@
 2008-12-08 18:54  cyrille.rosset
 
 	* [r15]
-	  doc,
-	  doc/Makefile,
-	  doc/conf.py,
-	  doc/healpy_fits.rst,
-	  doc/healpy_pix.rst,
-	  doc/healpy_projaxes.rst,
-	  doc/healpy_projector.rst,
-	  doc/healpy_rotator.rst,
-	  doc/healpy_spht.rst,
-	  doc/healpy_visu.rst,
-	  doc/index.rst,
-	  test,
-	  test/test_fit_dipole.py:
 	  Add
 	  test
 	  directory
@@ -983,8 +884,6 @@
 2008-12-08 18:33  cyrille.rosset
 
 	* [r14]
-	  healpy/fitsfunc.py,
-	  healpy/rotator.py:
 	  Add
 	  reference
 	  direction
@@ -1000,7 +899,6 @@
 2008-12-02 18:25  cyrille.rosset
 
 	* [r13]
-	  healpy/visufunc.py:
 	  modify
 	  gnomview
 	  and
@@ -1031,7 +929,6 @@
 2008-11-26 12:04  cyrille.rosset
 
 	* [r12]
-	  hpbeta/config/config.generic_gcc:
 	  Add
 	  -fPIC
 	  into
@@ -1041,7 +938,6 @@
 2008-11-17 13:40  cyrille.rosset
 
 	* [r11]
-	  healpy/sphtfunc.py:
 	  default
 	  for
 	  number
@@ -1057,7 +953,6 @@
 2008-11-07 09:24  cyrille.rosset
 
 	* [r10]
-	  healpy/rotator.py:
 	  correct
 	  issue
 	  4:
@@ -1073,8 +968,6 @@
 2008-11-05 11:58  cyrille.rosset
 
 	* [r9]
-	  healpy/__init__.py,
-	  healpy/query_disc_func.py:
 	  add
 	  query_disc
 	  function
@@ -1085,7 +978,6 @@
 2008-11-03 13:45  cyrille.rosset
 
 	* [r8]
-	  healpy/src/_healpy_sph_transform_lib.cc:
 	  -
 	  correct
 	  bug
@@ -1106,10 +998,6 @@
 2008-11-03 13:43  cyrille.rosset
 
 	* [r7]
-	  healpy/__init__.py,
-	  healpy/pixelfunc.py,
-	  healpy/src/_healpy_sph_transform_lib.cc,
-	  hpbeta/Healpix_cxx/alm_map_tools.cc:
 	  -
 	  correct
 	  bug
@@ -1131,63 +1019,12 @@
 2008-10-28 09:21  cyrille.rosset
 
 	* [r6]
-	  healpy/__init__.py,
-	  healpy/pixelfunc.py,
-	  healpy/sphtfunc.py,
-	  healpy/src/_healpy_sph_transform_lib.cc:
 	  add
 	  alm2map_der1
 
 2008-10-28 09:20  cyrille.rosset
 
 	* [r5]
-	  hpbeta/Healpix_cxx/alm_map_tools.cc,
-	  hpbeta/Healpix_cxx/healpix_base.h,
-	  hpbeta/Healpix_cxx/hpxtest.cc,
-	  hpbeta/Healpix_cxx/ylmgen.h,
-	  hpbeta/Makefile,
-	  hpbeta/README.compilation,
-	  hpbeta/alice,
-	  hpbeta/alice/MollweideSkyMap.cc,
-	  hpbeta/alice/MollweideSkyMap.h,
-	  hpbeta/alice/OrthogonalSkyMap.h,
-	  hpbeta/alice/PolarizationHolder.cc,
-	  hpbeta/alice/PolarizationHolder.h,
-	  hpbeta/alice/RectSkyMap.h,
-	  hpbeta/alice/SkyMap.h,
-	  hpbeta/alice/SoSSkyMap.cc,
-	  hpbeta/alice/SoSSkyMap.h,
-	  hpbeta/alice/TextureHolder.cc,
-	  hpbeta/alice/TextureHolder.h,
-	  hpbeta/alice/alice2.cc,
-	  hpbeta/alice/alice_usage.h,
-	  hpbeta/alice/alice_usage.txt,
-	  hpbeta/alice/alice_utils.h,
-	  hpbeta/alice/color.cc,
-	  hpbeta/alice/color.h,
-	  hpbeta/alice/generateTexture.cc,
-	  hpbeta/alice/makeusage.sh,
-	  hpbeta/alice/planck.make,
-	  hpbeta/alice/test.cc,
-	  hpbeta/alice/testMollweideSkyMap.cc,
-	  hpbeta/alice/testOrthogonalSkyMap.cc,
-	  hpbeta/alice/testSoSSkyMap.cc,
-	  hpbeta/alice/wmap_ilc_3yr_v2_r6_sim.fits,
-	  hpbeta/config/config.generic_gcc,
-	  hpbeta/config/rules.common,
-	  hpbeta/cxxsupport/constants.h,
-	  hpbeta/cxxsupport/cxxutils.cc,
-	  hpbeta/cxxsupport/cxxutils.h,
-	  hpbeta/cxxsupport/fitshandle.cc,
-	  hpbeta/cxxsupport/lsconstants.h,
-	  hpbeta/cxxsupport/paramfile.h,
-	  hpbeta/cxxsupport/planck.make,
-	  hpbeta/cxxsupport/rotmatrix.cc,
-	  hpbeta/cxxsupport/trafos.cc,
-	  hpbeta/libcfitsio/cfitsio3040.tar.gz,
-	  hpbeta/libcfitsio/cfitsio3100.tar.gz,
-	  hpbeta/libcfitsio/planck.make,
-	  hpbeta/libfftpack/README:
 	  Update
 	  to
 	  Healpix_2.10
@@ -1196,181 +1033,12 @@
 2008-10-03 12:24  cyrille.rosset
 
 	* [r4]
-	  healpy/__init__.py,
-	  healpy/pixelfunc.py,
-	  healpy/projector.py,
-	  healpy/visufunc.py:
 	  Add
 	  fit/remove_dipole/monopole
 
 2008-08-31 16:56  cyrille.rosset@gmail.com
 
 	* [r2]
-	  INSTALL,
-	  MANIFEST.in,
-	  TODO,
-	  do_inst,
-	  healpy,
-	  healpy/__init__.py,
-	  healpy/data,
-	  healpy/data/pixel_window_n0002.fits,
-	  healpy/data/pixel_window_n0004.fits,
-	  healpy/data/pixel_window_n0008.fits,
-	  healpy/data/pixel_window_n0016.fits,
-	  healpy/data/pixel_window_n0032.fits,
-	  healpy/data/pixel_window_n0064.fits,
-	  healpy/data/pixel_window_n0128.fits,
-	  healpy/data/pixel_window_n0256.fits,
-	  healpy/data/pixel_window_n0512.fits,
-	  healpy/data/pixel_window_n1024.fits,
-	  healpy/data/pixel_window_n2048.fits,
-	  healpy/data/pixel_window_n4096.fits,
-	  healpy/data/pixel_window_n8192.fits,
-	  healpy/data/weight_ring_n00002.fits,
-	  healpy/data/weight_ring_n00004.fits,
-	  healpy/data/weight_ring_n00008.fits,
-	  healpy/data/weight_ring_n00016.fits,
-	  healpy/data/weight_ring_n00032.fits,
-	  healpy/data/weight_ring_n00064.fits,
-	  healpy/data/weight_ring_n00128.fits,
-	  healpy/data/weight_ring_n00256.fits,
-	  healpy/data/weight_ring_n00512.fits,
-	  healpy/data/weight_ring_n01024.fits,
-	  healpy/data/weight_ring_n02048.fits,
-	  healpy/data/weight_ring_n04096.fits,
-	  healpy/data/weight_ring_n08192.fits,
-	  healpy/fitsfunc.py,
-	  healpy/pixelfunc.py,
-	  healpy/projaxes.py,
-	  healpy/projector.py,
-	  healpy/rotator.py,
-	  healpy/sphtfunc.py,
-	  healpy/src,
-	  healpy/src/_healpy_fitsio_lib.cc,
-	  healpy/src/_healpy_pixel_lib.cc,
-	  healpy/src/_healpy_sph_transform_lib.cc,
-	  healpy/version.py,
-	  healpy/visufunc.py,
-	  hpbeta,
-	  hpbeta/COPYING,
-	  hpbeta/Healpix_cxx,
-	  hpbeta/Healpix_cxx/Healpix_cxx.dox,
-	  hpbeta/Healpix_cxx/alm.h,
-	  hpbeta/Healpix_cxx/alm2map_cxx.cc,
-	  hpbeta/Healpix_cxx/alm2map_cxx.par.txt,
-	  hpbeta/Healpix_cxx/alm_fitsio.cc,
-	  hpbeta/Healpix_cxx/alm_fitsio.h,
-	  hpbeta/Healpix_cxx/alm_healpix_tools.cc,
-	  hpbeta/Healpix_cxx/alm_healpix_tools.h,
-	  hpbeta/Healpix_cxx/alm_map_tools.cc,
-	  hpbeta/Healpix_cxx/alm_map_tools.h,
-	  hpbeta/Healpix_cxx/alm_powspec_tools.cc,
-	  hpbeta/Healpix_cxx/alm_powspec_tools.h,
-	  hpbeta/Healpix_cxx/anafast_cxx.cc,
-	  hpbeta/Healpix_cxx/anafast_cxx.par.txt,
-	  hpbeta/Healpix_cxx/calc_powspec.cc,
-	  hpbeta/Healpix_cxx/healpix_base.cc,
-	  hpbeta/Healpix_cxx/healpix_base.h,
-	  hpbeta/Healpix_cxx/healpix_base2.cc,
-	  hpbeta/Healpix_cxx/healpix_base2.h,
-	  hpbeta/Healpix_cxx/healpix_data_io.cc,
-	  hpbeta/Healpix_cxx/healpix_data_io.h,
-	  hpbeta/Healpix_cxx/healpix_map.cc,
-	  hpbeta/Healpix_cxx/healpix_map.h,
-	  hpbeta/Healpix_cxx/healpix_map_fitsio.cc,
-	  hpbeta/Healpix_cxx/healpix_map_fitsio.h,
-	  hpbeta/Healpix_cxx/hotspots_cxx.cc,
-	  hpbeta/Healpix_cxx/hpxtest.cc,
-	  hpbeta/Healpix_cxx/map2tga.cc,
-	  hpbeta/Healpix_cxx/map2tga.par.txt,
-	  hpbeta/Healpix_cxx/median_filter.cc,
-	  hpbeta/Healpix_cxx/mult_alm.cc,
-	  hpbeta/Healpix_cxx/mult_alm.par.txt,
-	  hpbeta/Healpix_cxx/planck.make,
-	  hpbeta/Healpix_cxx/powspec.cc,
-	  hpbeta/Healpix_cxx/powspec.h,
-	  hpbeta/Healpix_cxx/powspec_fitsio.cc,
-	  hpbeta/Healpix_cxx/powspec_fitsio.h,
-	  hpbeta/Healpix_cxx/rotalm_cxx.cc,
-	  hpbeta/Healpix_cxx/smoothing_cxx.cc,
-	  hpbeta/Healpix_cxx/smoothing_cxx.par.txt,
-	  hpbeta/Healpix_cxx/syn_alm_cxx.cc,
-	  hpbeta/Healpix_cxx/syn_alm_cxx.par.txt,
-	  hpbeta/Healpix_cxx/udgrade_cxx.cc,
-	  hpbeta/Healpix_cxx/ylmgen.h,
-	  hpbeta/Makefile,
-	  hpbeta/README.compilation,
-	  hpbeta/config,
-	  hpbeta/config/config.aix64,
-	  hpbeta/config/config.generic_gcc,
-	  hpbeta/config/config.irix64,
-	  hpbeta/config/config.linux_icc,
-	  hpbeta/config/config.osx,
-	  hpbeta/config/rules.common,
-	  hpbeta/cxxsupport,
-	  hpbeta/cxxsupport/arr.h,
-	  hpbeta/cxxsupport/compat_headers,
-	  hpbeta/cxxsupport/compat_headers/cmath,
-	  hpbeta/cxxsupport/compat_headers/cstdio,
-	  hpbeta/cxxsupport/constants.h,
-	  hpbeta/cxxsupport/cxxsupport.dox,
-	  hpbeta/cxxsupport/cxxutils.cc,
-	  hpbeta/cxxsupport/cxxutils.h,
-	  hpbeta/cxxsupport/datatypes.h,
-	  hpbeta/cxxsupport/fftpack_support.h,
-	  hpbeta/cxxsupport/fitshandle.cc,
-	  hpbeta/cxxsupport/fitshandle.h,
-	  hpbeta/cxxsupport/font_data.inc,
-	  hpbeta/cxxsupport/geom_utils.h,
-	  hpbeta/cxxsupport/message_error.h,
-	  hpbeta/cxxsupport/openmp_support.h,
-	  hpbeta/cxxsupport/paramfile.h,
-	  hpbeta/cxxsupport/planck.make,
-	  hpbeta/cxxsupport/planck_rng.h,
-	  hpbeta/cxxsupport/pointing.h,
-	  hpbeta/cxxsupport/rotmatrix.cc,
-	  hpbeta/cxxsupport/rotmatrix.h,
-	  hpbeta/cxxsupport/simparams.cc,
-	  hpbeta/cxxsupport/simparams.h,
-	  hpbeta/cxxsupport/tga_image.cc,
-	  hpbeta/cxxsupport/tga_image.h,
-	  hpbeta/cxxsupport/trafos.cc,
-	  hpbeta/cxxsupport/trafos.h,
-	  hpbeta/cxxsupport/vec3.h,
-	  hpbeta/cxxsupport/xcomplex.h,
-	  hpbeta/doc,
-	  hpbeta/docsrc,
-	  hpbeta/docsrc/Healpix_cxx.dox,
-	  hpbeta/docsrc/cxxsupport.dox,
-	  hpbeta/docsrc/footer.html,
-	  hpbeta/docsrc/header.html,
-	  hpbeta/docsrc/index_cxx.html,
-	  hpbeta/docsrc/libfftpack.dox,
-	  hpbeta/docsrc/planck.make,
-	  hpbeta/docsrc/sheet.css,
-	  hpbeta/libcfitsio,
-	  hpbeta/libcfitsio/cfitsio3040.tar.gz,
-	  hpbeta/libcfitsio/planck.make,
-	  hpbeta/libfftpack,
-	  hpbeta/libfftpack/bluestein.c,
-	  hpbeta/libfftpack/bluestein.h,
-	  hpbeta/libfftpack/fftpack.c,
-	  hpbeta/libfftpack/fftpack.h,
-	  hpbeta/libfftpack/libfftpack.dox,
-	  hpbeta/libfftpack/ls_fft.c,
-	  hpbeta/libfftpack/ls_fft.h,
-	  hpbeta/libfftpack/planck.make,
-	  hpbeta/test,
-	  hpbeta/test/alm2map.par,
-	  hpbeta/test/alm2map2.par,
-	  hpbeta/test/alm2map3.par,
-	  hpbeta/test/anafast.par,
-	  hpbeta/test/anafast_fortran.par,
-	  hpbeta/test/cl.fits,
-	  hpbeta/test/runtest.sh,
-	  hpbeta/test/syn_alm.par,
-	  hpbeta/test/udgrade.par,
-	  setup.py:
 	  First
 	  import
 	  of
@@ -1380,7 +1048,6 @@
 2008-08-29 09:32  
 
 	* [r1]
-	  .:
 	  Initial
 	  directory
 	  structure.
