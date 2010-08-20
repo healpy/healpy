@@ -44,6 +44,7 @@ def ma(map):
 
 def vec2ang(vectors):
     """vec2ang: vectors [x, y, z] -> theta[rad], phi[rad]"""
+    vectors = vectors.reshape(-1,3)
     dnorm = npy.sqrt(npy.sum(npy.square(vectors),axis=1))
     theta = npy.arccos(vectors[:,2]/dnorm)
     phi = npy.arctan2(vectors[:,1],vectors[:,0])
