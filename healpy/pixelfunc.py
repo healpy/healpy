@@ -20,6 +20,7 @@
 import numpy as npy
 import _healpy_pixel_lib as pixlib
 from _healpy_pixel_lib import UNSEEN
+import exceptions
 
 def mask_bad(m, badval = UNSEEN, rtol = 1.e-5, atol = 1.e-8):
     """Return a boolean array with True where m is close to badval
@@ -40,6 +41,14 @@ def mask_good(m, badval = UNSEEN, rtol = 1.e-5, atol = 1.e-8):
 def ma(map):
     """Return map as a masked array"""
     return npy.ma.masked_values(map, UNSEEN)
+
+def vec2ang(vectors):
+    """vec2ang: vectors [x, y, z] -> theta[rad], phi[rad]"""
+    dnorm = npy.sqrt(npy.sum(npy.square(vectors),axis=1))
+    theta = npy.arccos(vectors[:,2]/dnorm)
+    phi = npy.arctan2(vectors[:,1],vectors[:,0])
+    phi[phi < 0] += 2*npy.pi
+    return theta, phi
 
 def ang2pix(nside,theta,phi,nest=False):
     """ang2pix : nside,theta[rad],phi[rad],nest=False -> ipix (default:RING)
@@ -81,8 +90,11 @@ def ang2vec(theta, phi):
 
     if theta and phi are vectors, the result is a 2D array with a vector per row
     """
-    return npy.array([npy.sin(theta)*npy.cos(phi),
-                      npy.sin(theta)*npy.sin(phi),
+    if npy.any(theta < 0 or theta > npy.pi):
+        raise exceptions.ValueError('THETA is out of range [0,pi]')
+    sintheta = npy.sin(theta)
+    return npy.array([sintheta*npy.cos(phi),
+                      sintheta*npy.sin(phi),
                       npy.cos(theta)]).T
 
 def ring2nest(nside, ipix):
