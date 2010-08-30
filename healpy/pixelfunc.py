@@ -91,7 +91,7 @@ def ang2vec(theta, phi):
 
     if theta and phi are vectors, the result is a 2D array with a vector per row
     """
-    if npy.any(theta < 0 or theta > npy.pi):
+    if npy.any(theta < 0) or npy.any(theta > npy.pi):
         raise exceptions.ValueError('THETA is out of range [0,pi]')
     sintheta = npy.sin(theta)
     return npy.array([sintheta*npy.cos(phi),
