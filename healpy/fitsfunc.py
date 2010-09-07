@@ -26,9 +26,44 @@ import pixelfunc
 from sphtfunc import Alm
 import warnings
 from _healpy_pixel_lib import UNSEEN
+from exceptions import NotImplementedError
 
 class HealpixFitsWarning(Warning):
     pass
+
+def read_cl(filename,dtype=npy.float32,h=False):
+    """Reads Cl from an healpix file, as IDL fits2cl.
+
+    Input:
+      - filename: the fits file name
+
+    Return: 
+      - cl: the cl array, currently TT only
+    """
+    hdulist=pyf.open(filename)
+    return hdulist[1].data.field(0)
+
+def write_cl(filename,cl,dtype=npy.float32):
+    """Writes Cl into an healpix file, as IDL cl2fits.
+
+    Input:
+      - filename: the fits file name
+      - cl: the cl array to write to file, currently TT only
+    """
+    # check the dtype and convert it
+    fitsformat = getformat(dtype)
+    if isinstance(cl, list):
+        raise NotImplementedError('Currently it supports only temperature-only cls')
+    else: # we write only one TT
+        cols = [pyf.Column(name='TEMPERATURE',
+                               format='%s'%fitsformat,
+                               array=cl)]
+            
+    coldefs=pyf.ColDefs(cols)
+    tbhdu = pyf.new_table(coldefs)
+    # add needed keywords
+    tbhdu.header.update('CREATOR','healpy')
+    tbhdu.writeto(filename,clobber=True)
 
 def write_map(filename,m,nest=False,dtype=npy.float32):
     """Writes an healpix map into an healpix file.

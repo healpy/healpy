@@ -66,7 +66,7 @@ except ImportError:
                   category=ImportWarning)
 
 try:
-    from fitsfunc import write_map,read_map,mrdfits,mwrfits,read_alm
+    from fitsfunc import write_map,read_map,mrdfits,mwrfits,read_alm,write_cl,read_cl
 except:
     warnings.warn("Warning: Cannot import fits i/o tools (needs pyfits)",
                   category=ImportWarning)
