@@ -1,13 +1,14 @@
+PYTHON_CFLAGS := $(shell python-config --cflags)
 CC= gcc
-CCFLAGS_NO_C= -W -Wall -I$(INCDIR) -O2 -g0 -fno-strict-aliasing -fomit-frame-pointer -ffast-math
+CCFLAGS_NO_C= -W -Wall -I$(INCDIR) -O2 -g0 -fno-strict-aliasing -fomit-frame-pointer -ffast-math $(PYTHON_CFLAGS)
 CCFLAGS= $(CCFLAGS_NO_C) -c
 
 CXX= g++
 CXXL= g++
 CXXWARNFLAGS= -W -Wall -Wshadow -Wwrite-strings -Wredundant-decls -Woverloaded-virtual -Wcast-qual -Wcast-align -Wpointer-arith -Wconversion -Wold-style-cast -Wno-unknown-pragmas
-CXXCFLAGS_NO_C= $(CXXWARNFLAGS) -ansi -I$(INCDIR) -O2 -g0 -ffast-math -fomit-frame-pointer
+CXXCFLAGS_NO_C= $(CXXWARNFLAGS) -ansi -I$(INCDIR) -O2 -g0 -ffast-math -fomit-frame-pointer $(PYTHON_CFLAGS)
 CXXCFLAGS= $(CXXCFLAGS_NO_C) -c
-CXXLFLAGS= -L. -L$(LIBDIR) -ffast-math
+CXXLFLAGS= -L. -L$(LIBDIR) -ffast-math $(PYTHON_CFLAGS)
 
 ARCREATE= libtool -static -o
 

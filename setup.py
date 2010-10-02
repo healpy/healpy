@@ -1,7 +1,19 @@
 #!/usr/bin/env python
 
+import platform
 
-HEALPIX_TARGET='generic_gcc'
+TARGET_DICT = {
+    'linux': 'generic_gcc',
+    'darwin': 'osx'
+}
+
+SYSTEM_STRING = platform.system().lower ()
+try:
+    HEALPIX_TARGET=TARGET_DICT[SYSTEM_STRING]
+    print 'Using Healpix configuration "%s" for system "%s"' % \
+            (HEALPIX_TARGET, SYSTEM_STRING)
+except KeyError:
+    raise AssertionError ('Unsupported platform: %s' % SYSTEM_STRING)
 
 ## use 'gcc_omp' to use openmp for sht's
 HEALPIX_TARGET2=HEALPIX_TARGET

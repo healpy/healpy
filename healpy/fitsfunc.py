@@ -132,7 +132,8 @@ def write_map(filename,m,nest=False,dtype=npy.float32):
     tbhdu.writeto(filename,clobber=True)
 
 
-def read_map(filename,field=0,dtype=npy.float64,nest=False,hdu=1,h=False):
+def read_map(filename,field=0,dtype=npy.float64,nest=False,hdu=1,h=False,
+             verbose=False):
     """Read an healpix map from a fits file.
 
     Input:
@@ -147,6 +148,7 @@ def read_map(filename,field=0,dtype=npy.float64,nest=False,hdu=1,h=False):
                     if None, no conversion is performed
       - hdu=1: the header number to look at (start at 0)
       - h=False: if True, return also the header
+      - verbose=False: if True, print a number of diagnostic messages
     Return:
       - an array, a tuple of array, possibly with the header at the end if h
         is True
@@ -157,7 +159,8 @@ def read_map(filename,field=0,dtype=npy.float64,nest=False,hdu=1,h=False):
     if nside is None:
         warnings.warn("No NSIDE in the header file : will use length of array",
                       HealpixFitsWarning)
-    print 'NSIDE = %d'%nside
+    if verbose: print 'NSIDE = %d'%nside
+
     if not pixelfunc.isnsideok(nside):
         raise ValueError('Wrong nside parameter.')
     ordering = hdulist[hdu].header.get('ORDERING','UNDEF').strip()
@@ -165,7 +168,8 @@ def read_map(filename,field=0,dtype=npy.float64,nest=False,hdu=1,h=False):
         ordering = (nest and 'NESTED' or 'RING')
         warnings.warn("No ORDERING keyword in header file : "
                       "assume %s"%ordering)
-    print 'ORDERING = %s in fits file'%ordering
+    if verbose: print 'ORDERING = %s in fits file'%ordering
+
     sz=pixelfunc.nside2npix(nside)
     if not hasattr(field, '__len__'):
         field = (field,)
@@ -173,18 +177,18 @@ def read_map(filename,field=0,dtype=npy.float64,nest=False,hdu=1,h=False):
 
     for ff in field:
         m=hdulist[hdu].data.field(ff).astype(dtype).ravel()
-        if not pixelfunc.isnpixok(m.size) or (sz>0 and sz != m.size):
+        if (not pixelfunc.isnpixok(m.size) or (sz>0 and sz != m.size)) and verbose:
             print 'nside=%d, sz=%d, m.size=%d'%(nside,sz,m.size)
             raise ValueError('Wrong nside parameter.')
         if nest != None: # no conversion with None
             if nest and ordering == 'RING':
                 idx = pixelfunc.nest2ring(nside,npy.arange(m.size,dtype=npy.int32))
                 m = m[idx]
-                print 'Ordering converted to NEST'
+                if verbose: print 'Ordering converted to NEST'
             elif (not nest) and ordering == 'NESTED':
                 idx = pixelfunc.ring2nest(nside,npy.arange(m.size,dtype=npy.int32))
                 m = m[idx]
-                print 'Ordering converted to RING'
+                if verbose: print 'Ordering converted to RING'
         m[m<-1.637e30] = UNSEEN
         ret.append(m)
     

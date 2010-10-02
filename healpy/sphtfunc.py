@@ -354,7 +354,7 @@ def almxfl(alm,fl,mmax=-1,inplace=False):
     return almout
 
 def smoothalm(alm,fwhm=0.0,sigma=None,degree=False,
-              arcmin=False,mmax=-1):
+              arcmin=False,mmax=-1,verbose=False):
     """Smooth alm with a Gaussian symmetric beam function in place.
 
     Input:
@@ -367,6 +367,7 @@ def smoothalm(alm,fwhm=0.0,sigma=None,degree=False,
                 Default: False
       - arcmin: if True, parameter given in arcmin. Default: False
       - mmax: the maximum m for alm. Default: mmax=lmax
+      - verbose: if True prints diagnostic information. Default: False
     Return:
       None
     """
@@ -376,8 +377,9 @@ def smoothalm(alm,fwhm=0.0,sigma=None,degree=False,
         sigma *= (pi/180.)
     elif arcmin:
         sigma *= (pi/180./60.)
-    print "Sigma is %f arcmin (%f rad) " %  (sigma*60*180/pi,sigma)
-    print "-> fwhm is %f arcmin" % (sigma*60*180/pi*(2.*npy.sqrt(2.*npy.log(2.))))
+    if verbose:
+        print "Sigma is %f arcmin (%f rad) " %  (sigma*60*180/pi,sigma)
+        print "-> fwhm is %f arcmin" % (sigma*60*180/pi*(2.*npy.sqrt(2.*npy.log(2.))))
     if type(alm[0]) == npy.ndarray:
         if len(alm) != 3:
             raise ValueError("alm must be en array or a sequence of 3 arrays")
