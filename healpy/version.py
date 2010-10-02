@@ -18,8 +18,11 @@
 #  For more information about Healpy, see http://code.google.com/p/healpy
 # 
 
-
+import re
 rev  = "$Revision$"
-revnumber = int(rev.strip('$')[9:])
+revnumber = re.findall(': *(\d*) *\$',rev)
+if revnumber:
+    __version__='trunk-r%s' % revnumber[0]
+else:
+    __version__='github-devel'
 date = "$Date$"
-__version__='trunk-r%d'%(revnumber)
