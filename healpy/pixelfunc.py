@@ -135,12 +135,12 @@ def nside2npix(nside):
     return 12*nside**2
 
 def nside2resol(nside, arcmin=False):
-    """Give approximate resolution given nside, resolution is just the square root of the pixel area, which is a gross approximation given the different pixel shapes
+    """Give approximate resolution for nside, resolution is just the square root of the pixel area, which is a gross approximation given the different pixel shapes
 
     Input:
       - nside: nside paramater
     Return:
-      - pixarea: pixel area in radians
+      - resol: approximate pixel size in radians (or arcmin)
     Raise a ValueError exception if nside is not valid.
     """
     if not isnsideok(nside):
