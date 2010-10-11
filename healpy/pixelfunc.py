@@ -134,6 +134,47 @@ def nside2npix(nside):
                          "(must be a power of 2)")
     return 12*nside**2
 
+def nside2resol(nside, arcmin=False):
+    """Give approximate resolution given nside, resolution is just the square root of the pixel area, which is a gross approximation given the different pixel shapes
+
+    Input:
+      - nside: nside paramater
+    Return:
+      - pixarea: pixel area in radians
+    Raise a ValueError exception if nside is not valid.
+    """
+    if not isnsideok(nside):
+        raise ValueError("Given number is not a valid nside parameter "
+                         "(must be a power of 2)")
+    
+    resol = npy.sqrt(nside2pixarea(nside))
+
+    if arcmin:
+        resol = npy.rad2deg(resol) * 60
+        
+    return resol
+
+
+def nside2pixarea(nside, degrees=False):
+    """Give pixel area given nside
+
+    Input:
+      - nside: nside paramater
+    Return:
+      - pixarea: pixel area in radians
+    Raise a ValueError exception if nside is not valid.
+    """
+    if not isnsideok(nside):
+        raise ValueError("Given number is not a valid nside parameter "
+                         "(must be a power of 2)")
+    
+    pixarea = 4*npy.pi/nside2npix(nside)
+
+    if degrees:
+        pixarea = npy.rad2deg(npy.rad2deg(pixarea))
+        
+    return pixarea
+
 def npix2nside(npix):
     """Give the nside parameter for the given number of pixels.
 
