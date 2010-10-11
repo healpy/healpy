@@ -38,7 +38,7 @@ from pixelfunc import (ma,vec2ang,ang2vec,ang2pix,
                        get_all_neighbours,
                        get_interp_val,fit_dipole,fit_monopole,
                        remove_dipole,remove_monopole,
-                       get_nside,maptype,ud_grade,reorder)
+                       get_nside,maptype,ud_grade,reorder,nside2resol,nside2pixarea)
 
 from sphtfunc import (anafast,map2alm,
                       alm2map,Alm,synalm,synfast,
