@@ -222,6 +222,8 @@ class ZoomTool(object):
             raise ValueError('Resolution not in %s'%self.reso_list)
         self.zoomcenter, = self._moll_ax.plot([0],[0],'ok',
                                               mew=1,ms=15,alpha=0.1)
+        self.zoomcenter2, = self._moll_ax.plot([0], [0], 'xr',
+                                               ms=15, alpha=0.5, mew=3)
         self._text_range = self._gnom_ax.text(-0.4, -0.2, 'scale mode: loc',
                                                transform=
                                                self._gnom_ax.transAxes,
@@ -244,7 +246,7 @@ class ZoomTool(object):
         except Exception,s:
             self._move_zoom_center(0,0,False)
             pylab.draw_if_interactive()
-            print s
+            #print s
         return
 
     def _reso_on_key(self, ev):
@@ -342,6 +344,11 @@ class ZoomTool(object):
             self.zoomcenter.set_xdata([x])
             self.zoomcenter.set_ydata([y])
             self.zoomcenter.set_visible(visible)
+        if self.zoomcenter2:
+            x,y = self._moll_ax.proj.ang2xy(lon,lat,lonlat=True)
+            self.zoomcenter2.set_xdata([x])
+            self.zoomcenter2.set_ydata([y])
+            self.zoomcenter2.set_visible(visible)
 
     def draw_gnom(self,lon=None,lat=None):
         wasinteractive = pylab.isinteractive()
@@ -372,6 +379,17 @@ class ZoomTool(object):
                                   reso=self.get_reso(),
                                   cmap=self._cmap,
                                   norm=self._norm)
+            if hasattr(self._gnom_ax, '_scatter_data'):
+                l = [x for x in self._gnom_ax._scatter_data]
+                #print l
+                for sd in l:
+                    s, input_data = sd
+                    #print input_data
+                    self._gnom_ax.collections.remove(s)
+                    self._gnom_ax._scatter_data.remove(sd)
+                    theta, phi, args, kwds = input_data
+                    self._gnom_ax.projscatter(theta, phi = phi, *args, **kwds)
+                del l
             if self._graton:
                 self._gnom_ax.delgraticules()
                 (self._g_dpar, 
@@ -398,6 +416,8 @@ class ZoomTool(object):
             self._text_range.set_text('scale mode: %s'%mode)
             self.lon,self.lat = lon,lat
             self._update_grat_info()
+        except Exception, e:
+            pass #print e
         finally:
             if wasinteractive:
                 pylab.ion()

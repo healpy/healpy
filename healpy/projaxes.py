@@ -244,6 +244,9 @@ class SphericalProjAxes(axes.Axes,object):
         - direct: if True, the rotation to center the projection is not
                   taken into account
         """
+        save_input_data = hasattr(self.figure, 'zoomtool')
+        if save_input_data:
+            input_data = (theta, phi, args, kwds.copy())
         if phi is None:
             theta,phi = npy.asarray(theta)
         else:
@@ -258,7 +261,12 @@ class SphericalProjAxes(axes.Axes,object):
         vec = R.dir2vec(theta,phi,lonlat=lonlat)
         vec = (R.Rotator(rot=rot,coord=coord,eulertype='Y')).I(vec)
         x,y = self.proj.vec2xy(vec,direct=kwds.pop('direct',False))
-        return self.scatter(x,y,*args,**kwds)
+        s = self.scatter(x, y, *args, **kwds)
+        if save_input_data:
+            if not hasattr(self, '_scatter_data'):
+                self._scatter_data = []
+            self._scatter_data.append((s, input_data))
+        return s
 
     def projtext(self,theta,phi,s, *args,**kwds):
         """Projtext is a wrapper around Axes.text to take into account the
@@ -466,7 +474,11 @@ class SphericalProjAxes(axes.Axes,object):
         if hasattr(self,'_graticules'):
             for dum1,dum2,g in self._graticules:
                 for gl in g:
-                    for l in gl: self.lines.remove(l)
+                    for l in gl: 
+                        if l in self.lines:
+                            self.lines.remove(l)
+                        else:
+                            print 'line not in lines'
             del self._graticules
 
     def _get_interv_graticule(self,pmin,pmax,dpar,mmin,mmax,dmer,verbose=True):
