@@ -65,7 +65,7 @@ def write_cl(filename,cl,dtype=npy.float32):
     tbhdu.header.update('CREATOR','healpy')
     tbhdu.writeto(filename,clobber=True)
 
-def write_map(filename,m,nest=False,dtype=npy.float32):
+def write_map(filename,m,nest=False,dtype=npy.float32,fits_IDL=True):
     """Writes an healpix map into an healpix file.
 
     Input:
@@ -73,6 +73,8 @@ def write_map(filename,m,nest=False,dtype=npy.float32):
       - m: the map to write. Possibly a sequence of 3 maps of same size.
            They will be considered as I, Q, U maps
       - nest=False: ordering scheme
+      - fits_IDL = true reshapes columns in rows of 1024, otherwise all the data will 
+        go in one column
     """
     if not hasattr(m, '__len__'):
         raise TypeError('The map must be a sequence')
@@ -90,7 +92,7 @@ def write_map(filename,m,nest=False,dtype=npy.float32):
         cols=[]
         colnames=['I_STOKES','Q_STOKES','U_STOKES']
         for cn,mm in zip(colnames,m):
-            if len(mm) > 1024:
+            if len(mm) > 1024 and fits_IDL:
                 # I need an ndarray, for reshape:
                 mm2 = npy.asarray(mm)
                 cols.append(pyf.Column(name=cn,
@@ -104,7 +106,7 @@ def write_map(filename,m,nest=False,dtype=npy.float32):
         nside = pixelfunc.npix2nside(len(m))
         if nside < 0:
             raise ValueError('Invalid healpix map : wrong number of pixel')
-        if m.size > 1024:
+        if m.size > 1024 and fits_IDL:
             cols = [pyf.Column(name='I_STOKES',
                                format='1024%s'%fitsformat,
                                array=m.reshape(m.size/1024,1024))]
