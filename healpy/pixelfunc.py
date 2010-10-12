@@ -247,7 +247,7 @@ def get_neighbours(nside,theta,phi=None,nest=False):
     if not isnsideok(nside):
         raise ValueError('Wrong nside value. Must be a power of 2.')
     if phi == None:
-        theta,phi = pix2ang(nside,theta)    
+        theta,phi = pix2ang(nside,theta,nest=nest)
     if nest:
         r=pixlib._get_interpol_nest(nside,theta,phi)
     else:
@@ -260,7 +260,8 @@ def get_all_neighbours(nside, theta, phi=None, nest=False):
     """Return the 8 nearest pixels
     Input:
       - nside: the nside to work with
-      - ipix: the pixel number (can be an array) in nest scheme
+      - theta, phi: if phi is not given, theta is actually a pixel number
+                    if phi is given, theta[rad],phi[rad] is a direction
 
     Parameters:
       - nest: if True, NEST scheme. Default: False (RING)
@@ -270,7 +271,7 @@ def get_all_neighbours(nside, theta, phi=None, nest=False):
     if not isnsideok(nside):
         raise ValueError('Wrong nside value. Must be a power of 2.')
     if not (phi is None):
-        theta = ang2pix(nside,theta, phi)    
+        theta = ang2pix(nside,theta, phi,nest=nest)
     if nest:
         r=pixlib._get_neighbors_nest(nside,theta)
     else:
