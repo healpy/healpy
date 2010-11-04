@@ -1392,7 +1392,7 @@ double sky_signal_direct(Alm<xcomplex<double> >alm, double theta, double phi)
   int firstl = 0;
   ylmgen.get_Ylm(cth, sth, 0, ylm, firstl);
   double a = 0.0;
-  for( int l=0; l<=lmax; l++ )
+  for( int l=firstl; l<=lmax; l++ )
     {
       a += alm(l,0).real() * ylm[l];
     }
@@ -1401,9 +1401,8 @@ double sky_signal_direct(Alm<xcomplex<double> >alm, double theta, double phi)
   double b = 0.0;
   for( int m=1; m<=mmax; m++ )
     {
-      firstl = m;
       ylmgen.get_Ylm(cth, sth, m, ylm, firstl);      
-      for( int l=m; l<= lmax; l++ )
+      for( int l=firstl; l<= lmax; l++ )
 	{
 	  b += ( alm(l,m).real() * cos(m*phi) - 
 		 alm(l,m).imag() * sin(m*phi) )*ylm[l];
