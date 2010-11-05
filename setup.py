@@ -35,9 +35,9 @@ def compile_healpix_cxx(target):
 
 def get_version():
     try:
-        for line in file('healpy/version.py'):
-            exec line
-    except Exception:
+        exec(open('healpy/version.py'))
+    except Exception, e:
+        print e
         raise ValueError('Error getting revision number from '
                          'healpy/version.py')
     return __version__
