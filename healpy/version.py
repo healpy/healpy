@@ -17,6 +17,7 @@
 # 
 #  For more information about Healpy, see http://code.google.com/p/healpy
 # 
+
 import re
 rev  = "$Revision$"
 revnumber = re.findall(': *(\d*) *\$',rev)

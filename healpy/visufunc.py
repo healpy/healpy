@@ -33,7 +33,8 @@ def mollview(map=None,fig=None,rot=None,coord=None,unit='',
              min=None,max=None,flip='astro',
              remove_dip=False,remove_mono=False,
              gal_cut=0,
-             format='%g',cbar=True,cmap=None, notext=False,
+             format='%g',format2='%g',
+             cbar=True,cmap=None, notext=False,
              norm=None,hold=False,margins=None,sub=None):
     """Plot an healpix map (given as an array) in Mollweide projection.
     
@@ -59,10 +60,12 @@ def mollview(map=None,fig=None,rot=None,coord=None,unit='',
       - remove_dip: if True, remove the dipole+monopole
       - remove_mono: if True, remove the monopole
       - gal_cut: galactic cut for the dipole/monopole fit
-      - format: the format of the scale. Default: '%g'
+      - format: the format of the scale label. Default: '%g'
+      - format2: format of the pixel value under mouse. Default: '%g'
+      - cbar: display the colorbar. Default: True
       - notext: if True, no text is printed around the map
       - norm: color normalization, hist= histogram equalized color mapping, log=
-      logarithmic color mapping, default: None (linear color mapping)
+              logarithmic color mapping, default: None (linear color mapping)
       - hold: if True, replace the current Axes by a MollweideAxes.
               use this if you want to have multiple maps on the same
               figure. Default: False
@@ -112,7 +115,7 @@ def mollview(map=None,fig=None,rot=None,coord=None,unit='',
             #extent = (c*1./ncols, 1.-(r+1)*1./nrows,1./ncols,1./nrows)
         #f=pylab.figure(fig,figsize=(8.5,5.4))
         ax=PA.HpxMollweideAxes(f,extent,coord=coord,rot=rot,
-                               format=format,flipconv=flip)
+                               format=format2,flipconv=flip)
         f.add_axes(ax)
         if remove_dip:
             map=pixelfunc.remove_dipole(map,gal_cut=gal_cut,
@@ -131,25 +134,27 @@ def mollview(map=None,fig=None,rot=None,coord=None,unit='',
                 cb=f.colorbar(ax.get_images()[0],ax=ax,
                               orientation='horizontal',
                               shrink=0.5,aspect=25,ticks=PA.BoundaryLocator(),
-                              pad=0.05,fraction=0.1,boundaries=b,values=v)
+                              pad=0.05,fraction=0.1,boundaries=b,values=v,
+                              format=format)
             else:
                 # for older matplotlib versions, no ax kwarg
                 cb=f.colorbar(ax.get_images()[0],orientation='horizontal',
                               shrink=0.5,aspect=25,ticks=PA.BoundaryLocator(),
-                              pad=0.05,fraction=0.1,boundaries=b,values=v)
+                              pad=0.05,fraction=0.1,boundaries=b,values=v,
+                              format=format)
         ax.set_title(title)
         if not notext:
             ax.text(0.86,0.05,ax.proj.coordsysstr,fontsize=14,
                     fontweight='bold',transform=ax.transAxes)
         if cbar:
-            cb.ax.text(1.05,0.30,unit,fontsize=14,fontweight='bold',
-                       transform=cb.ax.transAxes,ha='left',va='center')
+            cb.ax.text(0.5,0.10,unit,fontsize=14,fontweight='bold',
+                       transform=cb.ax.transAxes,ha='center',va='center')
         f.sca(ax)
     finally:
         if wasinteractive:
             pylab.ion()
             pylab.draw()
-            pylab.show()
+            #pylab.show()
 
 
 def gnomview(map=None,fig=None,rot=None,coord=None,unit='',
@@ -282,7 +287,7 @@ def gnomview(map=None,fig=None,rot=None,coord=None,unit='',
         if wasinteractive:
             pylab.ion()
             pylab.draw()
-            pylab.show()
+            #pylab.show()
 
 
 def cartview(map=None,fig=None,rot=None,zat=None,coord=None,unit='',
@@ -411,7 +416,7 @@ def cartview(map=None,fig=None,rot=None,zat=None,coord=None,unit='',
         if wasinteractive:
             pylab.ion()
             pylab.draw()
-            pylab.show()
+            #pylab.show()
 
 def graticule(dpar=None,dmer=None,coord=None,local=None,**kwds):
     """Create a graticule, either on an existing mollweide map or not.
@@ -441,7 +446,7 @@ def graticule(dpar=None,dmer=None,coord=None,local=None,**kwds):
         if wasinteractive:
             pylab.ion()
             pylab.draw()
-            pylab.show()
+            #pylab.show()
 graticule.__doc__ = PA.SphericalProjAxes.graticule.__doc__
     
 def delgraticules():
@@ -456,7 +461,7 @@ def delgraticules():
         if wasinteractive:
             pylab.ion()
             pylab.draw()
-            pylab.show()
+            #pylab.show()
 delgraticules.__doc__ = PA.SphericalProjAxes.delgraticules.__doc__
 
 def projplot(*args,**kwds):
@@ -472,7 +477,7 @@ def projplot(*args,**kwds):
         if wasinteractive:
             pylab.ion()
             pylab.draw()
-            pylab.show()
+            #pylab.show()
     return ret
 projplot.__doc__ = PA.SphericalProjAxes.projplot.__doc__
     
@@ -489,7 +494,7 @@ def projscatter(*args,**kwds):
         if wasinteractive:
             pylab.ion()
             pylab.draw()
-            pylab.show()
+            #pylab.show()
     return ret
 projscatter.__doc__ = PA.SphericalProjAxes.projscatter.__doc__
 
@@ -506,7 +511,7 @@ def projtext(*args,**kwds):
         if wasinteractive:
             pylab.ion()
             pylab.draw()
-            pylab.show()
+            #pylab.show()
     return ret
 projtext.__doc__ = PA.SphericalProjAxes.projtext.__doc__
 
