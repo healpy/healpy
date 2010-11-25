@@ -33,3 +33,9 @@ iter_order (integer, default=0)
 double_precision (bool, default=false):
   if false, maps and a_lm are read/written in single precision,
   otherwise in double precision.
+
+if (polarisation==true && outfile!="")
+  full_powerspectrum (bool, default=false):
+    if true, write a 6-column power spectrum;
+    if false, write a 4-column power spectrum.
+endif

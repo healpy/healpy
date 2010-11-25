@@ -23,20 +23,11 @@
  */
 
 /*
- * This file was originally part of tela the Tensor Language.
- * Copyright (C) 1994-1995 Pekka Janhunen
- */
-
-/*
   fftpack.c : A set of FFT routines in C.
   Algorithmically based on Fortran-77 FFTPACK by Paul N. Swarztrauber
   (Version 4, 1985).
 
-  Pekka Janhunen 23.2.1995
-
-  (reformatted by joerg arndt)
-
-  reformatted and slightly enhanced by Martin Reinecke (2004)
+  C port by Martin Reinecke (2010)
  */
 
 #include <math.h>
@@ -44,1209 +35,235 @@
 #include <string.h>
 #include "fftpack.h"
 
-static void passf2(int ido, int l1, const double *cc, double *ch,
-  const double *wa1)
+#define WA(x,i) wa[(i)+(x)*ido]
+#define CH(a,b,c) ch[(a)+ido*((b)+l1*(c))]
+#define CC(a,b,c) cc[(a)+ido*((b)+cdim*(c))]
+#define PM(a,b,c,d) { a=c+d; b=c-d; }
+#define PMC(a,b,c,d) { a.r=c.r+d.r; a.i=c.i+d.i; b.r=c.r-d.r; b.i=c.i-d.i; }
+#define ADDC(a,b,c) { a.r=b.r+c.r; a.i=b.i+c.i; }
+#define SCALEC(a,b) { a.r*=b; a.i*=b; }
+#define CONJFLIPC(a) { double tmp_=a.r; a.r=-a.i; a.i=tmp_; }
+/* (a+ib) = conj(c+id) * (e+if) */
+#define MULPM(a,b,c,d,e,f) { a=c*e+d*f; b=c*f-d*e; }
+
+typedef struct {
+  double r,i;
+} cmplx;
+
+#define CONCAT(a,b) a ## b
+
+#define X(arg) CONCAT(passb,arg)
+#define BACKWARD
+#include "fftpack_inc.c"
+#undef BACKWARD
+#undef X
+
+#define X(arg) CONCAT(passf,arg)
+#include "fftpack_inc.c"
+#undef X
+
+#undef CC
+#undef CH
+#define CC(a,b,c) cc[(a)+ido*((b)+l1*(c))]
+#define CH(a,b,c) ch[(a)+ido*((b)+cdim*(c))]
+
+static void radf2 (size_t ido, size_t l1, const double *cc, double *ch,
+  const double *wa)
   {
-  int i, k, ah, ac;
+  const size_t cdim=2;
+  size_t i, k, ic;
   double ti2, tr2;
 
-  if(ido<=2)
-    {
-    for(k=0; k<l1; k++)
+  for (k=0; k<l1; k++)
+    PM (CH(0,0,k),CH(ido-1,1,k),CC(0,k,0),CC(0,k,1))
+  if ((ido&1)==0)
+    for (k=0; k<l1; k++)
       {
-      ah=k*ido;
-      ac=2*k*ido;
-      ch[ah]=cc[ac]+cc[ac+ido];
-      ch[ah+ido*l1]=cc[ac]-cc[ac+ido];
-      ch[ah+1]=cc[ac+1]+cc[ac+ido+1];
-      ch[ah+ido*l1+1]=cc[ac+1]-cc[ac+ido+1];
+      CH(    0,1,k) = -CC(ido-1,k,1);
+      CH(ido-1,0,k) =  CC(ido-1,k,0);
       }
-    }
-  else
-    {
-    for(k=0; k<l1; k++)
+  if (ido<=2) return;
+  for (k=0; k<l1; k++)
+    for (i=2; i<ido; i+=2)
       {
-      for(i=0; i<ido-1; i+=2)
-        {
-        ah=i+k*ido;
-        ac=i+2*k*ido;
-        ch[ah]=cc[ac]+cc[ac+ido];
-        tr2=cc[ac]-cc[ac+ido];
-        ch[ah+1]=cc[ac+1]+cc[ac+1+ido];
-        ti2=cc[ac+1]-cc[ac+1+ido];
-        ch[ah+l1*ido+1]=wa1[i]*ti2-wa1[i+1]*tr2;
-        ch[ah+l1*ido]=wa1[i]*tr2+wa1[i+1]*ti2;
-        }
+      ic=ido-i;
+      MULPM (tr2,ti2,WA(0,i-2),WA(0,i-1),CC(i-1,k,1),CC(i,k,1))
+      PM (CH(i-1,0,k),CH(ic-1,1,k),CC(i-1,k,0),tr2)
+      PM (CH(i  ,0,k),CH(ic  ,1,k),ti2,CC(i  ,k,0))
       }
-    }
   }
 
-static void passb2(int ido, int l1, const double *cc, double *ch,
-  const double *wa1)
+static void radf3(size_t ido, size_t l1, const double *cc, double *ch,
+  const double *wa)
   {
-  int i, k, ah, ac;
-  double ti2, tr2;
-
-  if(ido<=2)
-    {
-    for(k=0; k<l1; k++)
-      {
-      ah=k*ido;
-      ac=2*k*ido;
-      ch[ah]=cc[ac]+cc[ac+ido];
-      ch[ah+ido*l1]=cc[ac]-cc[ac+ido];
-      ch[ah+1]=cc[ac+1]+cc[ac+ido+1];
-      ch[ah+ido*l1+1]=cc[ac+1]-cc[ac+ido+1];
-      }
-    }
-  else
-    {
-    for(k=0; k<l1; k++)
-      {
-      for(i=0; i<ido-1; i+=2)
-        {
-        ah=i+k*ido;
-        ac=i+2*k*ido;
-        ch[ah]=cc[ac]+cc[ac+ido];
-        tr2=cc[ac]-cc[ac+ido];
-        ch[ah+1]=cc[ac+1]+cc[ac+1+ido];
-        ti2=cc[ac+1]-cc[ac+1+ido];
-        ch[ah+l1*ido+1]=wa1[i]*ti2+wa1[i+1]*tr2;
-        ch[ah+l1*ido]=wa1[i]*tr2-wa1[i+1]*ti2;
-        }
-      }
-    }
-  }
-
-static void passf3(int ido, int l1, const double *cc, double *ch,
-  const double *wa1, const double *wa2)
-  {
+  const size_t cdim=3;
   static const double taur=-0.5, taui=0.86602540378443864676;
-  int i, k, ac, ah;
-  double ci2, ci3, di2, di3, cr2, cr3, dr2, dr3, ti2, tr2;
-
-  if(ido==2)
-    {
-    for(k=1; k<=l1; k++)
-      {
-      ac=(3*k-2)*ido;
-      tr2=cc[ac]+cc[ac+ido];
-      cr2=cc[ac-ido]+taur*tr2;
-      ah=(k-1)*ido;
-      ch[ah]=cc[ac-ido]+tr2;
-
-      ti2=cc[ac+1]+cc[ac+ido+1];
-      ci2=cc[ac-ido+1]+taur*ti2;
-      ch[ah+1]=cc[ac-ido+1]+ti2;
-
-      cr3=-taui*(cc[ac]-cc[ac+ido]);
-      ci3=-taui*(cc[ac+1]-cc[ac+ido+1]);
-      ch[ah+l1*ido]=cr2-ci3;
-      ch[ah+2*l1*ido]=cr2+ci3;
-      ch[ah+l1*ido+1]=ci2+cr3;
-      ch[ah+2*l1*ido+1]=ci2-cr3;
-      }
-    }
-  else
-    {
-    for(k=1; k<=l1; k++)
-      {
-      for(i=0; i<ido-1; i+=2)
-        {
-        ac=i+(3*k-2)*ido;
-        tr2=cc[ac]+cc[ac+ido];
-        cr2=cc[ac-ido]+taur*tr2;
-        ah=i+(k-1)*ido;
-        ch[ah]=cc[ac-ido]+tr2;
-        ti2=cc[ac+1]+cc[ac+ido+1];
-        ci2=cc[ac-ido+1]+taur*ti2;
-        ch[ah+1]=cc[ac-ido+1]+ti2;
-        cr3=-taui*(cc[ac]-cc[ac+ido]);
-        ci3=-taui*(cc[ac+1]-cc[ac+ido+1]);
-        dr2=cr2-ci3;
-        dr3=cr2+ci3;
-        di2=ci2+cr3;
-        di3=ci2-cr3;
-        ch[ah+l1*ido+1]=wa1[i]*di2-wa1[i+1]*dr2;
-        ch[ah+l1*ido]=wa1[i]*dr2+wa1[i+1]*di2;
-        ch[ah+2*l1*ido+1]=wa2[i]*di3-wa2[i+1]*dr3;
-        ch[ah+2*l1*ido]=wa2[i]*dr3+wa2[i+1]*di3;
-        }
-      }
-    }
-  }
-
-static void passb3(int ido, int l1, const double *cc, double *ch,
-  const double *wa1, const double *wa2)
-  {
-  static const double taur=-0.5, taui=0.86602540378443864676;
-  int i, k, ac, ah;
-  double ci2, ci3, di2, di3, cr2, cr3, dr2, dr3, ti2, tr2;
-
-  if(ido==2)
-    {
-    for(k=1; k<=l1; k++)
-      {
-      ac=(3*k-2)*ido;
-      tr2=cc[ac]+cc[ac+ido];
-      cr2=cc[ac-ido]+taur*tr2;
-      ah=(k-1)*ido;
-      ch[ah]=cc[ac-ido]+tr2;
-
-      ti2=cc[ac+1]+cc[ac+ido+1];
-      ci2=cc[ac-ido+1]+taur*ti2;
-      ch[ah+1]=cc[ac-ido+1]+ti2;
-
-      cr3=taui*(cc[ac]-cc[ac+ido]);
-      ci3=taui*(cc[ac+1]-cc[ac+ido+1]);
-      ch[ah+l1*ido]=cr2-ci3;
-      ch[ah+2*l1*ido]=cr2+ci3;
-      ch[ah+l1*ido+1]=ci2+cr3;
-      ch[ah+2*l1*ido+1]=ci2-cr3;
-      }
-    }
-  else
-    {
-    for(k=1; k<=l1; k++)
-      {
-      for(i=0; i<ido-1; i+=2)
-        {
-        ac=i+(3*k-2)*ido;
-        tr2=cc[ac]+cc[ac+ido];
-        cr2=cc[ac-ido]+taur*tr2;
-        ah=i+(k-1)*ido;
-        ch[ah]=cc[ac-ido]+tr2;
-        ti2=cc[ac+1]+cc[ac+ido+1];
-        ci2=cc[ac-ido+1]+taur*ti2;
-        ch[ah+1]=cc[ac-ido+1]+ti2;
-        cr3=taui*(cc[ac]-cc[ac+ido]);
-        ci3=taui*(cc[ac+1]-cc[ac+ido+1]);
-        dr2=cr2-ci3;
-        dr3=cr2+ci3;
-        di2=ci2+cr3;
-        di3=ci2-cr3;
-        ch[ah+l1*ido+1]=wa1[i]*di2+wa1[i+1]*dr2;
-        ch[ah+l1*ido]=wa1[i]*dr2-wa1[i+1]*di2;
-        ch[ah+2*l1*ido+1]=wa2[i]*di3+wa2[i+1]*dr3;
-        ch[ah+2*l1*ido]=wa2[i]*dr3-wa2[i+1]*di3;
-        }
-      }
-    }
-  }
-
-static void passf4(int ido, int l1, const double *cc, double *ch,
-  const double *wa1, const double *wa2, const double *wa3)
-  {
-  int i, k, ac, ah;
-  double ci2, ci3, ci4, cr2, cr3, cr4, ti1, ti2, ti3, ti4, tr1, tr2, tr3, tr4;
-	
-  if(ido==2)
-    {
-    for(k=0; k<l1; k++)
-      {
-      ac=4*k*ido+1;
-      ti1=cc[ac]-cc[ac+2*ido];
-      ti2=cc[ac]+cc[ac+2*ido];
-      tr4=cc[ac+3*ido]-cc[ac+ido];
-      ti3=cc[ac+ido]+cc[ac+3*ido];
-      tr1=cc[ac-1]-cc[ac+2*ido-1];
-      tr2=cc[ac-1]+cc[ac+2*ido-1];
-      ti4=cc[ac+ido-1]-cc[ac+3*ido-1];
-      tr3=cc[ac+ido-1]+cc[ac+3*ido-1];
-      ah=k*ido;
-      ch[ah]=tr2+tr3;
-      ch[ah+2*l1*ido]=tr2-tr3;
-      ch[ah+1]=ti2+ti3;
-      ch[ah+2*l1*ido+1]=ti2-ti3;
-      ch[ah+l1*ido]=tr1-tr4;
-      ch[ah+3*l1*ido]=tr1+tr4;
-      ch[ah+l1*ido+1]=ti1-ti4;
-      ch[ah+3*l1*ido+1]=ti1+ti4;
-      }
-    }
-  else
-    {
-    for(k=0; k<l1; k++)
-      {
-      for(i=0; i<ido-1; i+=2)
-        {
-        ac=i+1+4*k*ido;
-        ti1=cc[ac]-cc[ac+2*ido];
-        ti2=cc[ac]+cc[ac+2*ido];
-        ti3=cc[ac+ido]+cc[ac+3*ido];
-        tr4=cc[ac+3*ido]-cc[ac+ido];
-        tr1=cc[ac-1]-cc[ac+2*ido-1];
-        tr2=cc[ac-1]+cc[ac+2*ido-1];
-        ti4=cc[ac+ido-1]-cc[ac+3*ido-1];
-        tr3=cc[ac+ido-1]+cc[ac+3*ido-1];
-        ah=i+k*ido;
-        ch[ah]=tr2+tr3;
-        cr3=tr2-tr3;
-        ch[ah+1]=ti2+ti3;
-        ci3=ti2-ti3;
-        cr2=tr1-tr4;
-        cr4=tr1+tr4;
-        ci2=ti1-ti4;
-        ci4=ti1+ti4;
-        ch[ah+l1*ido]=wa1[i]*cr2+wa1[i+1]*ci2;
-        ch[ah+l1*ido+1]=wa1[i]*ci2-wa1[i+1]*cr2;
-        ch[ah+2*l1*ido]=wa2[i]*cr3+wa2[i+1]*ci3;
-        ch[ah+2*l1*ido+1]=wa2[i]*ci3-wa2[i+1]*cr3;
-        ch[ah+3*l1*ido]=wa3[i]*cr4+wa3[i+1]*ci4;
-        ch[ah+3*l1*ido+1]=wa3[i]*ci4-wa3[i+1]*cr4;
-        }
-      }
-    }
-  }
-
-static void passb4(int ido, int l1, const double *cc, double *ch,
-  const double *wa1, const double *wa2, const double *wa3)
-  {
-  int i, k, ac, ah;
-  double ci2, ci3, ci4, cr2, cr3, cr4, ti1, ti2, ti3, ti4, tr1, tr2, tr3, tr4;
-	
-  if(ido==2)
-    {
-    for(k=0; k<l1; k++)
-      {
-      ac=4*k*ido+1;
-      ti1=cc[ac]-cc[ac+2*ido];
-      ti2=cc[ac]+cc[ac+2*ido];
-      tr4=cc[ac+3*ido]-cc[ac+ido];
-      ti3=cc[ac+ido]+cc[ac+3*ido];
-      tr1=cc[ac-1]-cc[ac+2*ido-1];
-      tr2=cc[ac-1]+cc[ac+2*ido-1];
-      ti4=cc[ac+ido-1]-cc[ac+3*ido-1];
-      tr3=cc[ac+ido-1]+cc[ac+3*ido-1];
-      ah=k*ido;
-      ch[ah]=tr2+tr3;
-      ch[ah+2*l1*ido]=tr2-tr3;
-      ch[ah+1]=ti2+ti3;
-      ch[ah+2*l1*ido+1]=ti2-ti3;
-      ch[ah+l1*ido]=tr1+tr4;
-      ch[ah+3*l1*ido]=tr1-tr4;
-      ch[ah+l1*ido+1]=ti1+ti4;
-      ch[ah+3*l1*ido+1]=ti1-ti4;
-      }
-    }
-  else
-    {
-    for(k=0; k<l1; k++)
-      {
-      for(i=0; i<ido-1; i+=2)
-        {
-        ac=i+1+4*k*ido;
-        ti1=cc[ac]-cc[ac+2*ido];
-        ti2=cc[ac]+cc[ac+2*ido];
-        ti3=cc[ac+ido]+cc[ac+3*ido];
-        tr4=cc[ac+3*ido]-cc[ac+ido];
-        tr1=cc[ac-1]-cc[ac+2*ido-1];
-        tr2=cc[ac-1]+cc[ac+2*ido-1];
-        ti4=cc[ac+ido-1]-cc[ac+3*ido-1];
-        tr3=cc[ac+ido-1]+cc[ac+3*ido-1];
-        ah=i+k*ido;
-        ch[ah]=tr2+tr3;
-        cr3=tr2-tr3;
-        ch[ah+1]=ti2+ti3;
-        ci3=ti2-ti3;
-        cr2=tr1+tr4;
-        cr4=tr1-tr4;
-        ci2=ti1+ti4;
-        ci4=ti1-ti4;
-        ch[ah+l1*ido]=wa1[i]*cr2-wa1[i+1]*ci2;
-        ch[ah+l1*ido+1]=wa1[i]*ci2+wa1[i+1]*cr2;
-        ch[ah+2*l1*ido]=wa2[i]*cr3-wa2[i+1]*ci3;
-        ch[ah+2*l1*ido+1]=wa2[i]*ci3+wa2[i+1]*cr3;
-        ch[ah+3*l1*ido]=wa3[i]*cr4-wa3[i+1]*ci4;
-        ch[ah+3*l1*ido+1]=wa3[i]*ci4+wa3[i+1]*cr4;
-        }
-      }
-    }
-  }
-
-static void passf5(int ido, int l1, const double *cc, double *ch,
-  const double *wa1, const double *wa2, const double *wa3,
-  const double *wa4)
-  {
-  static const double tr11= 0.3090169943749474241, ti11=0.95105651629515357212;
-  static const double tr12=-0.8090169943749474241, ti12=0.58778525229247312917;
-  int i, k, ac, ah;
-  double ci2, ci3, ci4, ci5, di3, di4, di5, di2, cr2, cr3, cr5, cr4,
-         ti2, ti3, ti4, ti5, dr3, dr4, dr5, dr2, tr2, tr3, tr4, tr5;
-
-  if(ido==2)
-    {
-    for(k=1; k<=l1;++k)
-      {
-      ac=(5*k-4)*ido+1;
-      ti5=cc[ac]-cc[ac+3*ido];
-      ti2=cc[ac]+cc[ac+3*ido];
-      ti4=cc[ac+ido]-cc[ac+2*ido];
-      ti3=cc[ac+ido]+cc[ac+2*ido];
-      tr5=cc[ac-1]-cc[ac+3*ido-1];
-      tr2=cc[ac-1]+cc[ac+3*ido-1];
-      tr4=cc[ac+ido-1]-cc[ac+2*ido-1];
-      tr3=cc[ac+ido-1]+cc[ac+2*ido-1];
-      ah=(k-1)*ido;
-      ch[ah]=cc[ac-ido-1]+tr2+tr3;
-      ch[ah+1]=cc[ac-ido]+ti2+ti3;
-      cr2=cc[ac-ido-1]+tr11*tr2+tr12*tr3;
-      ci2=cc[ac-ido]+tr11*ti2+tr12*ti3;
-      cr3=cc[ac-ido-1]+tr12*tr2+tr11*tr3;
-      ci3=cc[ac-ido]+tr12*ti2+tr11*ti3;
-      cr5=-(ti11*tr5+ti12*tr4);
-      ci5=-(ti11*ti5+ti12*ti4);
-      cr4=-(ti12*tr5-ti11*tr4);
-      ci4=-(ti12*ti5-ti11*ti4);
-      ch[ah+l1*ido]=cr2-ci5;
-      ch[ah+4*l1*ido]=cr2+ci5;
-      ch[ah+l1*ido+1]=ci2+cr5;
-      ch[ah+2*l1*ido+1]=ci3+cr4;
-      ch[ah+2*l1*ido]=cr3-ci4;
-      ch[ah+3*l1*ido]=cr3+ci4;
-      ch[ah+3*l1*ido+1]=ci3-cr4;
-      ch[ah+4*l1*ido+1]=ci2-cr5;
-      }
-    }
-  else
-    {
-    for(k=1; k<=l1; k++)
-      {
-      for(i=0; i<ido-1; i+=2)
-        {
-        ac=i+1+(k*5-4)*ido;
-        ti5=cc[ac]-cc[ac+3*ido];
-        ti2=cc[ac]+cc[ac+3*ido];
-        ti4=cc[ac+ido]-cc[ac+2*ido];
-        ti3=cc[ac+ido]+cc[ac+2*ido];
-        tr5=cc[ac-1]-cc[ac+3*ido-1];
-        tr2=cc[ac-1]+cc[ac+3*ido-1];
-        tr4=cc[ac+ido-1]-cc[ac+2*ido-1];
-        tr3=cc[ac+ido-1]+cc[ac+2*ido-1];
-        ah=i+(k-1)*ido;
-        ch[ah]=cc[ac-ido-1]+tr2+tr3;
-        ch[ah+1]=cc[ac-ido]+ti2+ti3;
-        cr2=cc[ac-ido-1]+tr11*tr2+tr12*tr3;
-
-        ci2=cc[ac-ido]+tr11*ti2+tr12*ti3;
-        cr3=cc[ac-ido-1]+tr12*tr2+tr11*tr3;
-
-        ci3=cc[ac-ido]+tr12*ti2+tr11*ti3;
-        cr5=-(ti11*tr5+ti12*tr4);
-        ci5=-(ti11*ti5+ti12*ti4);
-        cr4=-(ti12*tr5-ti11*tr4);
-        ci4=-(ti12*ti5-ti11*ti4);
-        dr3=cr3-ci4;
-        dr4=cr3+ci4;
-        di3=ci3+cr4;
-        di4=ci3-cr4;
-        dr5=cr2+ci5;
-        dr2=cr2-ci5;
-        di5=ci2-cr5;
-        di2=ci2+cr5;
-        ch[ah+l1*ido]=wa1[i]*dr2+wa1[i+1]*di2;
-        ch[ah+l1*ido+1]=wa1[i]*di2-wa1[i+1]*dr2;
-        ch[ah+2*l1*ido]=wa2[i]*dr3+wa2[i+1]*di3;
-        ch[ah+2*l1*ido+1]=wa2[i]*di3-wa2[i+1]*dr3;
-        ch[ah+3*l1*ido]=wa3[i]*dr4+wa3[i+1]*di4;
-        ch[ah+3*l1*ido+1]=wa3[i]*di4-wa3[i+1]*dr4;
-        ch[ah+4*l1*ido]=wa4[i]*dr5+wa4[i+1]*di5;
-        ch[ah+4*l1*ido+1]=wa4[i]*di5-wa4[i+1]*dr5;
-        }
-      }
-    }
-  }
-
-static void passb5(int ido, int l1, const double *cc, double *ch,
-  const double *wa1, const double *wa2, const double *wa3,
-  const double *wa4)
-  {
-  static const double tr11= 0.3090169943749474241, ti11=0.95105651629515357212;
-  static const double tr12=-0.8090169943749474241, ti12=0.58778525229247312917;
-  int i, k, ac, ah;
-  double ci2, ci3, ci4, ci5, di3, di4, di5, di2, cr2, cr3, cr5, cr4,
-         ti2, ti3, ti4, ti5, dr3, dr4, dr5, dr2, tr2, tr3, tr4, tr5;
-
-  if(ido==2)
-    {
-    for(k=1; k<=l1;++k)
-      {
-      ac=(5*k-4)*ido+1;
-      ti5=cc[ac]-cc[ac+3*ido];
-      ti2=cc[ac]+cc[ac+3*ido];
-      ti4=cc[ac+ido]-cc[ac+2*ido];
-      ti3=cc[ac+ido]+cc[ac+2*ido];
-      tr5=cc[ac-1]-cc[ac+3*ido-1];
-      tr2=cc[ac-1]+cc[ac+3*ido-1];
-      tr4=cc[ac+ido-1]-cc[ac+2*ido-1];
-      tr3=cc[ac+ido-1]+cc[ac+2*ido-1];
-      ah=(k-1)*ido;
-      ch[ah]=cc[ac-ido-1]+tr2+tr3;
-      ch[ah+1]=cc[ac-ido]+ti2+ti3;
-      cr2=cc[ac-ido-1]+tr11*tr2+tr12*tr3;
-      ci2=cc[ac-ido]+tr11*ti2+tr12*ti3;
-      cr3=cc[ac-ido-1]+tr12*tr2+tr11*tr3;
-      ci3=cc[ac-ido]+tr12*ti2+tr11*ti3;
-      cr5=ti11*tr5+ti12*tr4;
-      ci5=ti11*ti5+ti12*ti4;
-      cr4=ti12*tr5-ti11*tr4;
-      ci4=ti12*ti5-ti11*ti4;
-      ch[ah+l1*ido]=cr2-ci5;
-      ch[ah+4*l1*ido]=cr2+ci5;
-      ch[ah+l1*ido+1]=ci2+cr5;
-      ch[ah+2*l1*ido+1]=ci3+cr4;
-      ch[ah+2*l1*ido]=cr3-ci4;
-      ch[ah+3*l1*ido]=cr3+ci4;
-      ch[ah+3*l1*ido+1]=ci3-cr4;
-      ch[ah+4*l1*ido+1]=ci2-cr5;
-      }
-    }
-  else
-    {
-    for(k=1; k<=l1; k++)
-      {
-      for(i=0; i<ido-1; i+=2)
-        {
-        ac=i+1+(k*5-4)*ido;
-        ti5=cc[ac]-cc[ac+3*ido];
-        ti2=cc[ac]+cc[ac+3*ido];
-        ti4=cc[ac+ido]-cc[ac+2*ido];
-        ti3=cc[ac+ido]+cc[ac+2*ido];
-        tr5=cc[ac-1]-cc[ac+3*ido-1];
-        tr2=cc[ac-1]+cc[ac+3*ido-1];
-        tr4=cc[ac+ido-1]-cc[ac+2*ido-1];
-        tr3=cc[ac+ido-1]+cc[ac+2*ido-1];
-        ah=i+(k-1)*ido;
-        ch[ah]=cc[ac-ido-1]+tr2+tr3;
-        ch[ah+1]=cc[ac-ido]+ti2+ti3;
-        cr2=cc[ac-ido-1]+tr11*tr2+tr12*tr3;
-
-        ci2=cc[ac-ido]+tr11*ti2+tr12*ti3;
-        cr3=cc[ac-ido-1]+tr12*tr2+tr11*tr3;
-
-        ci3=cc[ac-ido]+tr12*ti2+tr11*ti3;
-        cr5=ti11*tr5+ti12*tr4;
-        ci5=ti11*ti5+ti12*ti4;
-        cr4=ti12*tr5-ti11*tr4;
-        ci4=ti12*ti5-ti11*ti4;
-        dr3=cr3-ci4;
-        dr4=cr3+ci4;
-        di3=ci3+cr4;
-        di4=ci3-cr4;
-        dr5=cr2+ci5;
-        dr2=cr2-ci5;
-        di5=ci2-cr5;
-        di2=ci2+cr5;
-        ch[ah+l1*ido]=wa1[i]*dr2-wa1[i+1]*di2;
-        ch[ah+l1*ido+1]=wa1[i]*di2+wa1[i+1]*dr2;
-        ch[ah+2*l1*ido]=wa2[i]*dr3-wa2[i+1]*di3;
-        ch[ah+2*l1*ido+1]=wa2[i]*di3+wa2[i+1]*dr3;
-        ch[ah+3*l1*ido]=wa3[i]*dr4-wa3[i+1]*di4;
-        ch[ah+3*l1*ido+1]=wa3[i]*di4+wa3[i+1]*dr4;
-        ch[ah+4*l1*ido]=wa4[i]*dr5-wa4[i+1]*di5;
-        ch[ah+4*l1*ido+1]=wa4[i]*di5+wa4[i+1]*dr5;
-        }
-      }
-    }
-  }
-
-static void passfg(int *nac, int ido, int ip, int l1, int idl1,
-  double *cc, double *ch, const double *wa)
-  {
-  int idij, idlj, ipph, i, j, k, l, jc, lc, ik, idj, idl, inc, idp, idx;
-  double wai, war;
-
-  ipph=(ip+1)/ 2;
-  idp=ip*ido;
-  for(j=1; j<ipph; j++)
-    {
-    jc=ip-j;
-    for(k=0; k<l1; k++)
-      {
-      for(i=0; i<ido; i++)
-        {
-        ch[i+(k+j*l1)*ido] = cc[i+(j+k*ip)*ido]+cc[i+(jc+k*ip)*ido];
-        ch[i+(k+jc*l1)*ido]= cc[i+(j+k*ip)*ido]-cc[i+(jc+k*ip)*ido];
-        }
-      }
-    }
-  for(k=0; k<l1; k++)
-    memcpy (ch+k*ido, cc+k*ip*ido, ido*sizeof(double));
-
-  idl=2-ido;
-  inc=0;
-  for(l=1; l<ipph; l++)
-    {
-    lc=ip-l;
-    idl+=ido;
-    for(ik=0; ik<idl1; ik++)
-      {
-      cc[ik+l*idl1]=ch[ik]+wa[idl-2]*ch[ik+idl1];
-      cc[ik+lc*idl1]=-wa[idl-1]*ch[ik+(ip-1)*idl1];
-      }
-    idlj=idl;
-    inc+=ido;
-    for(j=2; j<ipph; j++)
-      {
-      jc=ip-j;
-      idlj+=inc;
-      if(idlj>idp)
-        idlj-=idp;
-      war=wa[idlj-2];
-      wai=wa[idlj-1];
-      for(ik=0; ik<idl1; ik++)
-        {
-        cc[ik+l*idl1]+=war*ch[ik+j*idl1];
-        cc[ik+lc*idl1]-=wai*ch[ik+jc*idl1];
-        }
-      }
-    }
-  for(j=1; j<ipph; j++)
-    for(ik=0; ik<idl1; ik++)
-      ch[ik]+=ch[ik+j*idl1];
-  for(j=1; j<ipph; j++)
-    {
-    jc=ip-j;
-    for(ik=1; ik<idl1; ik+=2)
-      {
-      ch[ik-1+j *idl1]=cc[ik-1+j*idl1]-cc[ik  +jc*idl1];
-      ch[ik-1+jc*idl1]=cc[ik-1+j*idl1]+cc[ik  +jc*idl1];
-      ch[ik  +j *idl1]=cc[ik  +j*idl1]+cc[ik-1+jc*idl1];
-      ch[ik  +jc*idl1]=cc[ik  +j*idl1]-cc[ik-1+jc*idl1];
-      }
-    }
-  *nac=1;
-  if(ido==2)
-    return;
-  *nac=0;
-  for(ik=0; ik<idl1; ik++)
-    cc[ik]=ch[ik];
-  for(j=1; j<ip; j++)
-    {
-    for(k=0; k<l1; k++)
-      {
-      cc[(k+j*l1)*ido  ]=ch[(k+j*l1)*ido  ];
-      cc[(k+j*l1)*ido+1]=ch[(k+j*l1)*ido+1];
-      }
-    }
-
-  idj=2-ido;
-  for(j=1; j<ip; j++)
-    {
-    idj+=ido;
-    for(k=0; k<l1; k++)
-      {
-      idij=idj;
-      for(i=3; i<ido; i+=2)
-        {
-        idij+=2;
-        idx = (k+j*l1)*ido;
-        cc[i-1+idx] = wa[idij-2]*ch[i-1+idx]+wa[idij-1]*ch[i  +idx];
-        cc[i  +idx] = wa[idij-2]*ch[i  +idx]-wa[idij-1]*ch[i-1+idx];
-        }
-      }
-    }
-  }
-
-static void passbg(int *nac, int ido, int ip, int l1, int idl1,
-  double *cc, double *ch, const double *wa)
-  {
-  int idij, idlj, ipph, i, j, k, l, jc, lc, ik, idj, idl, inc, idp, idx;
-  double wai, war;
-
-  ipph=(ip+1)/ 2;
-  idp=ip*ido;
-  for(j=1; j<ipph; j++)
-    {
-    jc=ip-j;
-    for(k=0; k<l1; k++)
-      {
-      for(i=0; i<ido; i++)
-        {
-        ch[i+(k+j*l1)*ido] = cc[i+(j+k*ip)*ido]+cc[i+(jc+k*ip)*ido];
-        ch[i+(k+jc*l1)*ido]= cc[i+(j+k*ip)*ido]-cc[i+(jc+k*ip)*ido];
-        }
-      }
-    }
-  for(k=0; k<l1; k++)
-    memcpy (ch+k*ido, cc+k*ip*ido, ido*sizeof(double));
-
-  idl=2-ido;
-  inc=0;
-  for(l=1; l<ipph; l++)
-    {
-    lc=ip-l;
-    idl+=ido;
-    for(ik=0; ik<idl1; ik++)
-      {
-      cc[ik+l*idl1]=ch[ik]+wa[idl-2]*ch[ik+idl1];
-      cc[ik+lc*idl1]=wa[idl-1]*ch[ik+(ip-1)*idl1];
-      }
-    idlj=idl;
-    inc+=ido;
-    for(j=2; j<ipph; j++)
-      {
-      jc=ip-j;
-      idlj+=inc;
-      if(idlj>idp)
-        idlj-=idp;
-      war=wa[idlj-2];
-      wai=wa[idlj-1];
-      for(ik=0; ik<idl1; ik++)
-        {
-        cc[ik+l*idl1]+=war*ch[ik+j*idl1];
-        cc[ik+lc*idl1]+=wai*ch[ik+jc*idl1];
-        }
-      }
-    }
-  for(j=1; j<ipph; j++)
-    for(ik=0; ik<idl1; ik++)
-      ch[ik]+=ch[ik+j*idl1];
-  for(j=1; j<ipph; j++)
-    {
-    jc=ip-j;
-    for(ik=1; ik<idl1; ik+=2)
-      {
-      ch[ik-1+j *idl1]=cc[ik-1+j*idl1]-cc[ik  +jc*idl1];
-      ch[ik-1+jc*idl1]=cc[ik-1+j*idl1]+cc[ik  +jc*idl1];
-      ch[ik  +j *idl1]=cc[ik  +j*idl1]+cc[ik-1+jc*idl1];
-      ch[ik  +jc*idl1]=cc[ik  +j*idl1]-cc[ik-1+jc*idl1];
-      }
-    }
-  *nac=1;
-  if(ido==2)
-    return;
-  *nac=0;
-  for(ik=0; ik<idl1; ik++)
-    cc[ik]=ch[ik];
-  for(j=1; j<ip; j++)
-    {
-    for(k=0; k<l1; k++)
-      {
-      cc[(k+j*l1)*ido  ]=ch[(k+j*l1)*ido  ];
-      cc[(k+j*l1)*ido+1]=ch[(k+j*l1)*ido+1];
-      }
-    }
-
-  idj=2-ido;
-  for(j=1; j<ip; j++)
-    {
-    idj+=ido;
-    for(k=0; k<l1; k++)
-      {
-      idij=idj;
-      for(i=3; i<ido; i+=2)
-        {
-        idij+=2;
-        idx = (k+j*l1)*ido;
-        cc[i-1+idx] = wa[idij-2]*ch[i-1+idx]-wa[idij-1]*ch[i  +idx];
-        cc[i  +idx] = wa[idij-2]*ch[i  +idx]+wa[idij-1]*ch[i-1+idx];
-        }
-      }
-    }
-  }
-
-
-static void radf2 (int ido, int l1, const double *cc, double *ch,
-  const double *wa1)
-  {
-  int i, k, ic;
-  double ti2, tr2;
-
-  for(k=0; k<l1; k++)
-    {
-    ch[2*k*ido] = cc[k*ido]+cc[(k+l1)*ido];
-    ch[(2*k+1)*ido+ido-1] = cc[k*ido]-cc[(k+l1)*ido];
-    }
-  if(ido<2)
-    return;
-  if(ido !=2)
-    {
-    for(k=0; k<l1; k++)
-      {
-      for(i=2; i<ido; i+=2)
-        {
-        ic=ido-i;
-        tr2=wa1[i-2]*cc[i-1+(k+l1)*ido]+wa1[i-1]*cc[i+(k+l1)*ido];
-        ti2=wa1[i-2]*cc[i+(k+l1)*ido]-wa1[i-1]*cc[i-1+(k+l1)*ido];
-        ch[i+2*k*ido]=cc[i+k*ido]+ti2;
-        ch[ic+(2*k+1)*ido]=ti2-cc[i+k*ido];
-        ch[i-1+2*k*ido]=cc[i-1+k*ido]+tr2;
-        ch[ic-1+(2*k+1)*ido]=cc[i-1+k*ido]-tr2;
-        }
-      }
-    if(ido%2==1)
-      return;
-    }
-  for(k=0; k<l1; k++)
-    {
-    ch[(2*k+1)*ido] = -cc[ido-1+(k+l1)*ido];
-    ch[ido-1+2*k*ido] = cc[ido-1+k*ido];
-    }
-  }
-
-static void radb2(int ido, int l1, const double *cc, double *ch,
-  const double *wa1)
-  {
-  int i, k, ic;
-  double ti2, tr2;
-
-  for(k=0; k<l1; k++)
-    {
-    ch[k*ido] = cc[2*k*ido]+cc[ido-1+(2*k+1)*ido];
-    ch[(k+l1)*ido] = cc[2*k*ido]-cc[ido-1+(2*k+1)*ido];
-    }
-  if(ido<2)
-    return;
-  if(ido !=2)
-    {
-    for(k=0; k<l1;++k)
-      {
-      for(i=2; i<ido; i+=2)
-        {
-        ic=ido-i;
-        ch[i-1+k*ido] = cc[i-1+2*k*ido]+cc[ic-1+(2*k+1)*ido];
-        tr2 = cc[i-1+2*k*ido]-cc[ic-1+(2*k+1)*ido];
-        ch[i+k*ido] = cc[i+2*k*ido]-cc[ic+(2*k+1)*ido];
-        ti2 = cc[i+(2*k)*ido]+cc[ic+(2*k+1)*ido];
-        ch[i-1+(k+l1)*ido] = wa1[i-2]*tr2-wa1[i-1]*ti2;
-        ch[i+(k+l1)*ido] = wa1[i-2]*ti2+wa1[i-1]*tr2;
-        }
-      }
-    if(ido%2==1)
-      return;
-    }
-  for(k=0; k<l1; k++)
-    {
-    ch[ido-1+k*ido]=2*cc[ido-1+2*k*ido];
-    ch[ido-1+(k+l1)*ido]=-2*cc[(2*k+1)*ido];
-    }
-  }
-
-static void radf3(int ido, int l1, const double *cc, double *ch,
-  const double *wa1, const double *wa2)
-  {
-  static const double taur=-0.5, taui=0.86602540378443864676;
-  int i, k, ic;
+  size_t i, k, ic;
   double ci2, di2, di3, cr2, dr2, dr3, ti2, ti3, tr2, tr3;
 
-  for(k=0; k<l1; k++)
+  for (k=0; k<l1; k++)
     {
-    cr2=cc[(k+l1)*ido]+cc[(k+2*l1)*ido];
-    ch[3*k*ido]=cc[k*ido]+cr2;
-    ch[(3*k+2)*ido]=taui*(cc[(k+l1*2)*ido]-cc[(k+l1)*ido]);
-    ch[ido-1+(3*k+1)*ido]=cc[k*ido]+taur*cr2;
+    cr2=CC(0,k,1)+CC(0,k,2);
+    CH(0,0,k) = CC(0,k,0)+cr2;
+    CH(0,2,k) = taui*(CC(0,k,2)-CC(0,k,1));
+    CH(ido-1,1,k) = CC(0,k,0)+taur*cr2;
     }
-  if(ido==1)
-    return;
-  for(k=0; k<l1; k++)
-    {
-    for(i=2; i<ido; i+=2)
+  if (ido==1) return;
+  for (k=0; k<l1; k++)
+    for (i=2; i<ido; i+=2)
       {
       ic=ido-i;
-      dr2=wa1[i-2]*cc[i-1+(k+l1)*ido]+
-          wa1[i-1]*cc[i+(k+l1)*ido];
-      di2=wa1[i-2]*cc[i+(k+l1)*ido]-wa1[i-1]*cc[i-1+(k+l1)*ido];
-      dr3=wa2[i-2]*cc[i-1+(k+l1*2)*ido]+wa2[i-1]*cc[i+(k+l1*2)*ido];
-      di3=wa2[i-2]*cc[i+(k+l1*2)*ido]-wa2[i-1]*cc[i-1+(k+l1*2)*ido];
+      MULPM (dr2,di2,WA(0,i-2),WA(0,i-1),CC(i-1,k,1),CC(i,k,1))
+      MULPM (dr3,di3,WA(1,i-2),WA(1,i-1),CC(i-1,k,2),CC(i,k,2))
       cr2=dr2+dr3;
       ci2=di2+di3;
-      ch[i-1+3*k*ido]=cc[i-1+k*ido]+cr2;
-      ch[i+3*k*ido]=cc[i+k*ido]+ci2;
-      tr2=cc[i-1+k*ido]+taur*cr2;
-      ti2=cc[i+k*ido]+taur*ci2;
-      tr3=taui*(di2-di3);
-      ti3=taui*(dr3-dr2);
-      ch[i-1+(3*k+2)*ido]=tr2+tr3;
-      ch[ic-1+(3*k+1)*ido]=tr2-tr3;
-      ch[i+(3*k+2)*ido]=ti2+ti3;
-      ch[ic+(3*k+1)*ido]=ti3-ti2;
+      CH(i-1,0,k) = CC(i-1,k,0)+cr2;
+      CH(i  ,0,k) = CC(i  ,k,0)+ci2;
+      tr2 = CC(i-1,k,0)+taur*cr2;
+      ti2 = CC(i  ,k,0)+taur*ci2;
+      tr3 = taui*(di2-di3);
+      ti3 = taui*(dr3-dr2);
+      PM(CH(i-1,2,k),CH(ic-1,1,k),tr2,tr3)
+      PM(CH(i  ,2,k),CH(ic  ,1,k),ti3,ti2)
       }
-    }
   }
 
-static void radb3(int ido, int l1, const double *cc, double *ch,
-  const double *wa1, const double *wa2)
+static void radf4(size_t ido, size_t l1, const double *cc, double *ch,
+  const double *wa)
   {
-  static const double taur=-0.5, taui=0.86602540378443864676;
-  int i, k, ic;
-  double ci2, ci3, di2, di3, cr2, cr3, dr2, dr3, ti2, tr2;
+  const size_t cdim=4;
+  static const double hsqt2=0.70710678118654752440;
+  size_t i, k, ic;
+  double ci2, ci3, ci4, cr2, cr3, cr4, ti1, ti2, ti3, ti4, tr1, tr2, tr3, tr4;
 
-  for(k=0; k<l1; k++)
+  for (k=0; k<l1; k++)
     {
-    tr2=2*cc[ido-1+(3*k+1)*ido];
-    cr2=cc[3*k*ido]+taur*tr2;
-    ch[k*ido]=cc[3*k*ido]+tr2;
-    ci3=2*taui*cc[(3*k+2)*ido];
-    ch[(k+l1)*ido]=cr2-ci3;
-    ch[(k+2*l1)*ido]=cr2+ci3;
+    PM (tr1,CH(0,2,k),CC(0,k,3),CC(0,k,1))
+    PM (tr2,CH(ido-1,1,k),CC(0,k,0),CC(0,k,2))
+    PM (CH(0,0,k),CH(ido-1,3,k),tr2,tr1)
     }
-  if(ido==1)
-    return;
-  for(k=0; k<l1; k++)
-    {
-    for(i=2; i<ido; i+=2)
+  if ((ido&1)==0)
+    for (k=0; k<l1; k++)
+      {
+      ti1=-hsqt2*(CC(ido-1,k,1)+CC(ido-1,k,3));
+      tr1= hsqt2*(CC(ido-1,k,1)-CC(ido-1,k,3));
+      PM (CH(ido-1,0,k),CH(ido-1,2,k),CC(ido-1,k,0),tr1)
+      PM (CH(    0,3,k),CH(    0,1,k),ti1,CC(ido-1,k,2))
+      }
+  if (ido<=2) return;
+  for (k=0; k<l1; k++)
+    for (i=2; i<ido; i+=2)
       {
       ic=ido-i;
-      tr2=cc[i-1+(3*k+2)*ido]+cc[ic-1+(3*k+1)*ido];
-      cr2=cc[i-1+3*k*ido]+taur*tr2;
-      ch[i-1+k*ido]=cc[i-1+3*k*ido]+tr2;
-      ti2=cc[i+(3*k+2)*ido]-cc[ic+(3*k+1)*ido];
-      ci2=cc[i+3*k*ido]+taur*ti2;
-      ch[i+k*ido]=cc[i+3*k*ido]+ti2;
-      cr3=taui*(cc[i-1+(3*k+2)*ido]-cc[ic-1+(3*k+1)*ido]);
-      ci3=taui*(cc[i+(3*k+2)*ido]+cc[ic+(3*k+1)*ido]);
-      dr2=cr2-ci3;
-      dr3=cr2+ci3;
-      di2=ci2+cr3;
-      di3=ci2-cr3;
-      ch[i-1+(k+l1)*ido]=wa1[i-2]*dr2-wa1[i-1]*di2;
-      ch[i+(k+l1)*ido]=wa1[i-2]*di2+wa1[i-1]*dr2;
-      ch[i-1+(k+2*l1)*ido]=wa2[i-2]*dr3-wa2[i-1]*di3;
-      ch[i+(k+2*l1)*ido]=wa2[i-2]*di3+wa2[i-1]*dr3;
+      MULPM(cr2,ci2,WA(0,i-2),WA(0,i-1),CC(i-1,k,1),CC(i,k,1))
+      MULPM(cr3,ci3,WA(1,i-2),WA(1,i-1),CC(i-1,k,2),CC(i,k,2))
+      MULPM(cr4,ci4,WA(2,i-2),WA(2,i-1),CC(i-1,k,3),CC(i,k,3))
+      PM(tr1,tr4,cr4,cr2)
+      PM(ti1,ti4,ci2,ci4)
+      PM(tr2,tr3,CC(i-1,k,0),cr3)
+      PM(ti2,ti3,CC(i  ,k,0),ci3)
+      PM(CH(i-1,0,k),CH(ic-1,3,k),tr2,tr1)
+      PM(CH(i  ,0,k),CH(ic  ,3,k),ti1,ti2)
+      PM(CH(i-1,2,k),CH(ic-1,1,k),tr3,ti4)
+      PM(CH(i  ,2,k),CH(ic  ,1,k),tr4,ti3)
       }
-    }
   }
 
-static void radf4(int ido, int l1, const double *cc, double *ch,
-  const double *wa1, const double *wa2, const double *wa3)
+static void radf5(size_t ido, size_t l1, const double *cc, double *ch,
+  const double *wa)
   {
-  static const double hsqt2=0.70710678118654752440;
-  int i, k, ic;
-  double ci2, ci3, ci4, cr2, cr3, cr4, ti1, ti2, ti3, ti4, tr1, tr2, tr3, tr4;
-
-  for(k=0; k<l1; k++)
-    {
-    tr1=cc[(k+l1)*ido]+cc[(k+3*l1)*ido];
-    tr2=cc[k*ido]+cc[(k+2*l1)*ido];
-    ch[4*k*ido]=tr1+tr2;
-    ch[ido-1+(4*k+3)*ido]=tr2-tr1;
-    ch[ido-1+(4*k+1)*ido]=cc[k*ido]-cc[(k+2*l1)*ido];
-    ch[(4*k+2)*ido]=cc[(k+3*l1)*ido]-cc[(k+l1)*ido];
-    }
-  if(ido<2)
-    return;
-  if(ido !=2)
-    {
-    for(k=0; k<l1; k++)
-      {
-      for(i=2; i<ido; i+=2)
-        {
-        ic=ido-i;
-        cr2=wa1[i-2]*cc[i-1+(k+l1)*ido]+wa1[i-1]*cc[i+(k+l1)*ido];
-        ci2=wa1[i-2]*cc[i+(k+l1)*ido]-wa1[i-1]*cc[i-1+(k+l1)*ido];
-        cr3=wa2[i-2]*cc[i-1+(k+2*l1)*ido]+wa2[i-1]*cc[i+(k+2*l1)*ido];
-        ci3=wa2[i-2]*cc[i+(k+2*l1)*ido]-wa2[i-1]*cc[i-1+(k+2*l1)*ido];
-        cr4=wa3[i-2]*cc[i-1+(k+3*l1)*ido]+wa3[i-1]*cc[i+(k+3*l1)*ido];
-        ci4=wa3[i-2]*cc[i+(k+3*l1)*ido]-wa3[i-1]*cc[i-1+(k+3*l1)*ido];
-        tr1=cr2+cr4;
-        tr4=cr4-cr2;
-        ti1=ci2+ci4;
-        ti4=ci2-ci4;
-        ti2=cc[i+k*ido]+ci3;
-        ti3=cc[i+k*ido]-ci3;
-        tr2=cc[i-1+k*ido]+cr3;
-        tr3=cc[i-1+k*ido]-cr3;
-        ch[i-1+4*k*ido]=tr1+tr2;
-        ch[ic-1+(4*k+3)*ido]=tr2-tr1;
-        ch[i+4*k*ido]=ti1+ti2;
-        ch[ic+(4*k+3)*ido]=ti1-ti2;
-        ch[i-1+(4*k+2)*ido]=ti4+tr3;
-        ch[ic-1+(4*k+1)*ido]=tr3-ti4;
-        ch[i+(4*k+2)*ido]=tr4+ti3;
-        ch[ic+(4*k+1)*ido]=tr4-ti3;
-        }
-      }
-    if(ido%2==1)
-      return;
-    }
-  for(k=0; k<l1; k++)
-    {
-    ti1=-hsqt2*(cc[ido-1+(k+l1)*ido]+cc[ido-1+(k+3*l1)*ido]);
-    tr1=hsqt2*(cc[ido-1+(k+l1)*ido]-cc[ido-1+(k+3*l1)*ido]);
-    ch[ido-1+4*k*ido]=tr1+cc[ido-1+k*ido];
-    ch[ido-1+(4*k+2)*ido]=cc[ido-1+k*ido]-tr1;
-    ch[(4*k+1)*ido]=ti1-cc[ido-1+(k+2*l1)*ido];
-    ch[(4*k+3)*ido]=ti1+cc[ido-1+(k+2*l1)*ido];
-    }
-  }
-
-static void radb4(int ido, int l1, const double *cc, double *ch,
-  const double *wa1, const double *wa2, const double *wa3)
-  {
-  static const double sqrt2=1.41421356237309504880;
-  int i, k, ic;
-  double ci2, ci3, ci4, cr2, cr3, cr4, ti1, ti2, ti3, ti4, tr1, tr2, tr3, tr4;
-
-  for(k=0; k<l1; k++)
-    {
-    tr1=cc[4*k*ido]-cc[ido-1+(4*k+3)*ido];
-    tr2=cc[4*k*ido]+cc[ido-1+(4*k+3)*ido];
-    tr3=cc[ido-1+(4*k+1)*ido]+cc[ido-1+(4*k+1)*ido];
-    tr4=cc[(4*k+2)*ido]+cc[(4*k+2)*ido];
-    ch[k*ido]=tr2+tr3;
-    ch[(k+l1)*ido]=tr1-tr4;
-    ch[(k+2*l1)*ido]=tr2-tr3;
-    ch[(k+3*l1)*ido]=tr1+tr4;
-    }
-  if(ido<2)
-    return;
-  if(ido !=2)
-    {
-    for(k=0; k<l1;++k)
-      {
-      for(i=2; i<ido; i+=2)
-        {
-        ic=ido-i;
-        ti1=cc[i+4*k*ido]+cc[ic+(4*k+3)*ido];
-        ti2=cc[i+4*k*ido]-cc[ic+(4*k+3)*ido];
-        ti3=cc[i+(4*k+2)*ido]-cc[ic+(4*k+1)*ido];
-        tr4=cc[i+(4*k+2)*ido]+cc[ic+(4*k+1)*ido];
-        tr1=cc[i-1+4*k*ido]-cc[ic-1+(4*k+3)*ido];
-        tr2=cc[i-1+4*k*ido]+cc[ic-1+(4*k+3)*ido];
-        ti4=cc[i-1+(4*k+2)*ido]-cc[ic-1+(4*k+1)*ido];
-        tr3=cc[i-1+(4*k+2)*ido]+cc[ic-1+(4*k+1)*ido];
-        ch[i-1+k*ido]=tr2+tr3;
-        cr3=tr2-tr3;
-        ch[i+k*ido]=ti2+ti3;
-        ci3=ti2-ti3;
-        cr2=tr1-tr4;
-        cr4=tr1+tr4;
-        ci2=ti1+ti4;
-        ci4=ti1-ti4;
-        ch[i-1+(k+l1)*ido]=wa1[i-2]*cr2-wa1[i-1]*ci2;
-        ch[i+(k+l1)*ido]=wa1[i-2]*ci2+wa1[i-1]*cr2;
-        ch[i-1+(k+2*l1)*ido]=wa2[i-2]*cr3-wa2[i-1]*ci3;
-        ch[i+(k+2*l1)*ido]=wa2[i-2]*ci3+wa2[i-1]*cr3;
-        ch[i-1+(k+3*l1)*ido]=wa3[i-2]*cr4-wa3[i-1]*ci4;
-        ch[i+(k+3*l1)*ido]=wa3[i-2]*ci4+wa3[i-1]*cr4;
-        }
-      }
-    if(ido%2==1)
-      return;
-    }
-  for(k=0; k<l1; k++)
-    {
-    ti1=cc[(4*k+1)*ido]+cc[(4*k+3)*ido];
-    ti2=cc[(4*k+3)*ido]-cc[(4*k+1)*ido];
-    tr1=cc[ido-1+4*k*ido]-cc[ido-1+(4*k+2)*ido];
-    tr2=cc[ido-1+4*k*ido]+cc[ido-1+(4*k+2)*ido];
-    ch[ido-1+k*ido]=tr2+tr2;
-    ch[ido-1+(k+l1)*ido]=sqrt2*(tr1-ti1);
-    ch[ido-1+(k+2*l1)*ido]=ti2+ti2;
-    ch[ido-1+(k+3*l1)*ido]=-sqrt2*(tr1+ti1);
-    }
-  }
-
-static void radf5(int ido, int l1, const double *cc, double *ch,
-  const double *wa1, const double *wa2, const double *wa3, const double *wa4)
-  {
-  static const double tr11=0.3090169943749474241;
-  static const double ti11=0.95105651629515357212;
-  static const double tr12=-0.8090169943749474241;
-  static const double ti12=0.58778525229247312917;
-  int i, k, ic;
+  const size_t cdim=5;
+  static const double tr11= 0.3090169943749474241, ti11=0.95105651629515357212,
+                      tr12=-0.8090169943749474241, ti12=0.58778525229247312917;
+  size_t i, k, ic;
   double ci2, di2, ci4, ci5, di3, di4, di5, ci3, cr2, cr3, dr2, dr3,
          dr4, dr5, cr5, cr4, ti2, ti3, ti5, ti4, tr2, tr3, tr4, tr5;
 
-  for(k=0; k<l1; k++)
+  for (k=0; k<l1; k++)
     {
-    cr2=cc[(k+4*l1)*ido]+cc[(k+l1)*ido];
-    ci5=cc[(k+4*l1)*ido]-cc[(k+l1)*ido];
-    cr3=cc[(k+3*l1)*ido]+cc[(k+2*l1)*ido];
-    ci4=cc[(k+3*l1)*ido]-cc[(k+2*l1)*ido];
-    ch[5*k*ido]=cc[k*ido]+cr2+cr3;
-    ch[ido-1+(5*k+1)*ido]=cc[k*ido]+tr11*cr2+tr12*cr3;
-    ch[(5*k+2)*ido]=ti11*ci5+ti12*ci4;
-    ch[ido-1+(5*k+3)*ido]=cc[k*ido]+tr12*cr2+tr11*cr3;
-    ch[(5*k+4)*ido]=ti12*ci5-ti11*ci4;
+    PM (cr2,ci5,CC(0,k,4),CC(0,k,1))
+    PM (cr3,ci4,CC(0,k,3),CC(0,k,2))
+    CH(0,0,k)=CC(0,k,0)+cr2+cr3;
+    CH(ido-1,1,k)=CC(0,k,0)+tr11*cr2+tr12*cr3;
+    CH(0,2,k)=ti11*ci5+ti12*ci4;
+    CH(ido-1,3,k)=CC(0,k,0)+tr12*cr2+tr11*cr3;
+    CH(0,4,k)=ti12*ci5-ti11*ci4;
     }
-  if(ido==1)
-    return;
-  for(k=0; k<l1;++k)
-    {
-    for(i=2; i<ido; i+=2)
+  if (ido==1) return;
+  for (k=0; k<l1;++k)
+    for (i=2; i<ido; i+=2)
       {
       ic=ido-i;
-      dr2=wa1[i-2]*cc[i-1+(k+l1)*ido]+wa1[i-1]*cc[i+(k+l1)*ido];
-      di2=wa1[i-2]*cc[i+(k+l1)*ido]-wa1[i-1]*cc[i-1+(k+l1)*ido];
-      dr3=wa2[i-2]*cc[i-1+(k+2*l1)*ido]+wa2[i-1]*cc[i+(k+2*l1)*ido];
-      di3=wa2[i-2]*cc[i+(k+2*l1)*ido]-wa2[i-1]*cc[i-1+(k+2*l1)*ido];
-      dr4=wa3[i-2]*cc[i-1+(k+3*l1)*ido]+wa3[i-1]*cc[i+(k+3*l1)*ido];
-      di4=wa3[i-2]*cc[i+(k+3*l1)*ido]-wa3[i-1]*cc[i-1+(k+3*l1)*ido];
-      dr5=wa4[i-2]*cc[i-1+(k+4*l1)*ido]+wa4[i-1]*cc[i+(k+4*l1)*ido];
-      di5=wa4[i-2]*cc[i+(k+4*l1)*ido]-wa4[i-1]*cc[i-1+(k+4*l1)*ido];
-      cr2=dr2+dr5;
-      ci5=dr5-dr2;
-      cr5=di2-di5;
-      ci2=di2+di5;
-      cr3=dr3+dr4;
-      ci4=dr4-dr3;
-      cr4=di3-di4;
-      ci3=di3+di4;
-      ch[i-1+5*k*ido]=cc[i-1+k*ido]+cr2+cr3;
-      ch[i+5*k*ido]=cc[i+k*ido]+ci2+ci3;
-      tr2=cc[i-1+k*ido]+tr11*cr2+tr12*cr3;
-      ti2=cc[i+k*ido]+tr11*ci2+tr12*ci3;
-      tr3=cc[i-1+k*ido]+tr12*cr2+tr11*cr3;
-      ti3=cc[i+k*ido]+tr12*ci2+tr11*ci3;
-      tr5=ti11*cr5+ti12*cr4;
-      ti5=ti11*ci5+ti12*ci4;
-      tr4=ti12*cr5-ti11*cr4;
-      ti4=ti12*ci5-ti11*ci4;
-      ch[i-1+(5*k+2)*ido]=tr2+tr5;
-      ch[ic-1+(5*k+1)*ido]=tr2-tr5;
-      ch[i+(5*k+2)*ido]=ti2+ti5;
-      ch[ic+(5*k+1)*ido]=ti5-ti2;
-      ch[i-1+(5*k+4)*ido]=tr3+tr4;
-      ch[ic-1+(5*k+3)*ido]=tr3-tr4;
-      ch[i+(5*k+4)*ido]=ti3+ti4;
-      ch[ic+(5*k+3)*ido]=ti4-ti3;
+      MULPM (dr2,di2,WA(0,i-2),WA(0,i-1),CC(i-1,k,1),CC(i,k,1))
+      MULPM (dr3,di3,WA(1,i-2),WA(1,i-1),CC(i-1,k,2),CC(i,k,2))
+      MULPM (dr4,di4,WA(2,i-2),WA(2,i-1),CC(i-1,k,3),CC(i,k,3))
+      MULPM (dr5,di5,WA(3,i-2),WA(3,i-1),CC(i-1,k,4),CC(i,k,4))
+      PM(cr2,ci5,dr5,dr2)
+      PM(ci2,cr5,di2,di5)
+      PM(cr3,ci4,dr4,dr3)
+      PM(ci3,cr4,di3,di4)
+      CH(i-1,0,k)=CC(i-1,k,0)+cr2+cr3;
+      CH(i  ,0,k)=CC(i  ,k,0)+ci2+ci3;
+      tr2=CC(i-1,k,0)+tr11*cr2+tr12*cr3;
+      ti2=CC(i  ,k,0)+tr11*ci2+tr12*ci3;
+      tr3=CC(i-1,k,0)+tr12*cr2+tr11*cr3;
+      ti3=CC(i  ,k,0)+tr12*ci2+tr11*ci3;
+      MULPM(tr5,tr4,cr5,cr4,ti11,ti12)
+      MULPM(ti5,ti4,ci5,ci4,ti11,ti12)
+      PM(CH(i-1,2,k),CH(ic-1,1,k),tr2,tr5)
+      PM(CH(i  ,2,k),CH(ic  ,1,k),ti5,ti2)
+      PM(CH(i-1,4,k),CH(ic-1,3,k),tr3,tr4)
+      PM(CH(i  ,4,k),CH(ic  ,3,k),ti4,ti3)
       }
-    }
   }
 
-static void radb5(int ido, int l1, const double *cc, double *ch,
-  const double *wa1, const double *wa2, const double *wa3, const double *wa4)
-  {
-  static const double tr11=0.3090169943749474241;
-  static const double ti11=0.95105651629515357212;
-  static const double tr12=-0.8090169943749474241;
-  static const double ti12=0.58778525229247312917;
-  int i, k, ic;
-  double ci2, ci3, ci4, ci5, di3, di4, di5, di2, cr2, cr3, cr5, cr4,
-          ti2, ti3, ti4, ti5, dr3, dr4, dr5, dr2, tr2, tr3, tr4, tr5;
-
-  for(k=0; k<l1; k++)
-    {
-    ti5=2*cc[(5*k+2)*ido];
-    ti4=2*cc[(5*k+4)*ido];
-    tr2=2*cc[ido-1+(5*k+1)*ido];
-    tr3=2*cc[ido-1+(5*k+3)*ido];
-    ch[k*ido]=cc[5*k*ido]+tr2+tr3;
-    cr2=cc[5*k*ido]+tr11*tr2+tr12*tr3;
-    cr3=cc[5*k*ido]+tr12*tr2+tr11*tr3;
-    ci5=ti11*ti5+ti12*ti4;
-    ci4=ti12*ti5-ti11*ti4;
-    ch[(k+l1)*ido]=cr2-ci5;
-    ch[(k+2*l1)*ido]=cr3-ci4;
-    ch[(k+3*l1)*ido]=cr3+ci4;
-    ch[(k+4*l1)*ido]=cr2+ci5;
-    }
-  if(ido==1)
-    return;
-  for(k=0; k<l1;++k)
-    {
-    for(i=2; i<ido; i+=2)
-      {
-      ic=ido-i;
-      ti5=cc[i+(5*k+2)*ido]+cc[ic+(5*k+1)*ido];
-      ti2=cc[i+(5*k+2)*ido]-cc[ic+(5*k+1)*ido];
-      ti4=cc[i+(5*k+4)*ido]+cc[ic+(5*k+3)*ido];
-      ti3=cc[i+(5*k+4)*ido]-cc[ic+(5*k+3)*ido];
-      tr5=cc[i-1+(5*k+2)*ido]-cc[ic-1+(5*k+1)*ido];
-      tr2=cc[i-1+(5*k+2)*ido]+cc[ic-1+(5*k+1)*ido];
-      tr4=cc[i-1+(5*k+4)*ido]-cc[ic-1+(5*k+3)*ido];
-      tr3=cc[i-1+(5*k+4)*ido]+cc[ic-1+(5*k+3)*ido];
-      ch[i-1+k*ido]=cc[i-1+5*k*ido]+tr2+tr3;
-      ch[i+k*ido]=cc[i+5*k*ido]+ti2+ti3;
-      cr2=cc[i-1+5*k*ido]+tr11*tr2+tr12*tr3;
-
-      ci2=cc[i+5*k*ido]+tr11*ti2+tr12*ti3;
-      cr3=cc[i-1+5*k*ido]+tr12*tr2+tr11*tr3;
-
-      ci3=cc[i+5*k*ido]+tr12*ti2+tr11*ti3;
-      cr5=ti11*tr5+ti12*tr4;
-      ci5=ti11*ti5+ti12*ti4;
-      cr4=ti12*tr5-ti11*tr4;
-      ci4=ti12*ti5-ti11*ti4;
-      dr3=cr3-ci4;
-      dr4=cr3+ci4;
-      di3=ci3+cr4;
-      di4=ci3-cr4;
-      dr5=cr2+ci5;
-      dr2=cr2-ci5;
-      di5=ci2-cr5;
-      di2=ci2+cr5;
-      ch[i-1+(k+l1)*ido]=wa1[i-2]*dr2-wa1[i-1]*di2;
-      ch[i+(k+l1)*ido]=wa1[i-2]*di2+wa1[i-1]*dr2;
-      ch[i-1+(k+2*l1)*ido]=wa2[i-2]*dr3-wa2[i-1]*di3;
-      ch[i+(k+2*l1)*ido]=wa2[i-2]*di3+wa2[i-1]*dr3;
-      ch[i-1+(k+3*l1)*ido]=wa3[i-2]*dr4-wa3[i-1]*di4;
-      ch[i+(k+3*l1)*ido]=wa3[i-2]*di4+wa3[i-1]*dr4;
-      ch[i-1+(k+4*l1)*ido]=wa4[i-2]*dr5-wa4[i-1]*di5;
-      ch[i+(k+4*l1)*ido]=wa4[i-2]*di5+wa4[i-1]*dr5;
-      }
-    }
-  }
-
-static void radfg(int ido, int ip, int l1, int idl1,
+#undef CH
+#undef CC
+#define CH(a,b,c) ch[(a)+ido*((b)+l1*(c))]
+#define CC(a,b,c) cc[(a)+ido*((b)+cdim*(c))]
+#define C1(a,b,c) cc[(a)+ido*((b)+l1*(c))]
+#define C2(a,b) cc[(a)+idl1*(b)]
+#define CH2(a,b) ch[(a)+idl1*(b)]
+static void radfg(size_t ido, size_t ip, size_t l1, size_t idl1,
   double *cc, double *ch, const double *wa)
   {
+  const size_t cdim=ip;
   static const double twopi=6.28318530717958647692;
-  int idij, ipph, i, j, k, l, j2, ic, jc, lc, ik, is;
+  size_t idij, ipph, i, j, k, l, j2, ic, jc, lc, ik;
   double ai1, ai2, ar1, ar2, arg;
   double *csarr;
-  int aidx;
+  size_t aidx;
 
   ipph=(ip+1)/ 2;
-  if(ido !=1)
+  if(ido!=1)
     {
-    for(ik=0; ik<idl1; ik++)
-      ch[ik]=cc[ik];
+    memcpy(ch,cc,idl1*sizeof(double));
+
     for(j=1; j<ip; j++)
       for(k=0; k<l1; k++)
-        ch[(k+j*l1)*ido]=cc[(k+j*l1)*ido];
-
-    is=-ido;
-    for(j=1; j<ip; j++)
-      {
-      is+=ido;
-      for(k=0; k<l1; k++)
         {
-        idij=is-1;
+        CH(0,k,j)=C1(0,k,j);
+        idij=(j-1)*ido+1;
+        for(i=2; i<ido; i+=2,idij+=2)
+          MULPM(CH(i-1,k,j),CH(i,k,j),wa[idij-1],wa[idij],C1(i-1,k,j),C1(i,k,j))
+        }
+
+    for(j=1,jc=ip-1; j<ipph; j++,jc--)
+      for(k=0; k<l1; k++)
         for(i=2; i<ido; i+=2)
           {
-          idij+=2;
-          ch[i-1+(k+j*l1)*ido]=
-            wa[idij-1]*cc[i-1+(k+j*l1)*ido]+wa[idij]*cc[i+(k+j*l1)*ido];
-          ch[i+(k+j*l1)*ido]=
-            wa[idij-1]*cc[i+(k+j*l1)*ido]-wa[idij]*cc[i-1+(k+j*l1)*ido];
+          PM(C1(i-1,k,j),C1(i  ,k,jc),CH(i-1,k,jc),CH(i-1,k,j ))
+          PM(C1(i  ,k,j),C1(i-1,k,jc),CH(i  ,k,j ),CH(i  ,k,jc))
           }
-        }
-      }
-
-    for(j=1; j<ipph; j++)
-      {
-      jc=ip-j;
-      for(k=0; k<l1; k++)
-        {
-        for(i=2; i<ido; i+=2)
-          {
-          cc[i-1+(k+j*l1)*ido]=ch[i-1+(k+j*l1)*ido]+ch[i-1+(k+jc*l1)*ido];
-          cc[i-1+(k+jc*l1)*ido]=ch[i+(k+j*l1)*ido]-ch[i+(k+jc*l1)*ido];
-          cc[i+(k+j*l1)*ido]=ch[i+(k+j*l1)*ido]+ch[i+(k+jc*l1)*ido];
-          cc[i+(k+jc*l1)*ido]=ch[i-1+(k+jc*l1)*ido]-ch[i-1+(k+j*l1)*ido];
-          }
-        }
-      }
     }
   else
-    {                           /*now ido==1*/
-    for(ik=0; ik<idl1; ik++)
-      cc[ik]=ch[ik];
-    }
-  for(j=1; j<ipph; j++)
-    {
-    jc=ip-j;
-    for(k=0; k<l1; k++)
-      {
-      cc[(k+j*l1)*ido]=ch[(k+j*l1)*ido]+ch[(k+jc*l1)*ido];
-      cc[(k+jc*l1)*ido]=ch[(k+jc*l1)*ido]-ch[(k+j*l1)*ido];
-      }
-    }
+    memcpy(cc,ch,idl1*sizeof(double));
 
-  csarr=(double *)malloc(2*ip*sizeof(double));
+  for(j=1,jc=ip-1; j<ipph; j++,jc--)
+    for(k=0; k<l1; k++)
+      PM(C1(0,k,j),C1(0,k,jc),CH(0,k,jc),CH(0,k,j))
+
+  csarr=RALLOC(double,2*ip);
   arg=twopi / ip;
   csarr[0]=1.;
   csarr[1]=0.;
@@ -1258,118 +275,262 @@ static void radfg(int ido, int ip, int l1, int idl1,
     csarr[2*i+1]=sin(i*arg);
     csarr[2*ip-2*i+1]=-csarr[2*i+1];
     }
-  for(l=1; l<ipph; l++)
+  for(l=1,lc=ip-1; l<ipph; l++,lc--)
     {
-    lc=ip-l;
     ar1=csarr[2*l];
     ai1=csarr[2*l+1];
     for(ik=0; ik<idl1; ik++)
       {
-      ch[ik+l*idl1]=cc[ik]+ar1*cc[ik+idl1];
-      ch[ik+lc*idl1]=ai1*cc[ik+(ip-1)*idl1];
+      CH2(ik,l)=C2(ik,0)+ar1*C2(ik,1);
+      CH2(ik,lc)=ai1*C2(ik,ip-1);
       }
     aidx=2*l;
-    for(j=2; j<ipph; j++)
+    for(j=2,jc=ip-2; j<ipph; j++,jc--)
       {
-      jc=ip-j;
       aidx+=2*l;
       if (aidx>=2*ip) aidx-=2*ip;
       ar2=csarr[aidx];
       ai2=csarr[aidx+1];
       for(ik=0; ik<idl1; ik++)
         {
-        ch[ik+l*idl1]+=ar2*cc[ik+j*idl1];
-        ch[ik+lc*idl1]+=ai2*cc[ik+jc*idl1];
+        CH2(ik,l )+=ar2*C2(ik,j );
+        CH2(ik,lc)+=ai2*C2(ik,jc);
         }
       }
     }
-  free(csarr);
+  DEALLOC(csarr);
 
   for(j=1; j<ipph; j++)
     for(ik=0; ik<idl1; ik++)
-      ch[ik]+=cc[ik+j*idl1];
+      CH2(ik,0)+=C2(ik,j);
 
   for(k=0; k<l1; k++)
-    for(i=0; i<ido; i++)
-      cc[i+k*ip*ido]=ch[i+k*ido];
+    memcpy(&CC(0,0,k),&CH(0,k,0),ido*sizeof(double));
   for(j=1; j<ipph; j++)
     {
     jc=ip-j;
     j2=2*j;
     for(k=0; k<l1; k++)
       {
-      cc[ido-1+(j2-1+k*ip)*ido] = ch[(k+j*l1)*ido];
-      cc[(j2+k*ip)*ido] = ch[(k+jc*l1)*ido];
+      CC(ido-1,j2-1,k) = CH(0,k,j );
+      CC(0    ,j2  ,k) = CH(0,k,jc);
       }
     }
-  if(ido==1)
-    return;
+  if(ido==1) return;
 
   for(j=1; j<ipph; j++)
     {
     jc=ip-j;
     j2=2*j;
     for(k=0; k<l1; k++)
-      {
       for(i=2; i<ido; i+=2)
         {
         ic=ido-i;
-        cc[i-1+(j2+k*ip)*ido]=ch[i-1+(k+j*l1)*ido]+ch[i-1+(k+jc*l1)*ido];
-        cc[ic-1+(j2-1+k*ip)*ido]=ch[i-1+(k+j*l1)*ido]-ch[i-1+(k+jc*l1)*ido];
-        cc[i+(j2+k*ip)*ido]=ch[i+(k+j*l1)*ido]+ch[i+(k+jc*l1)*ido];
-        cc[ic+(j2-1+k*ip)*ido]=ch[i+(k+jc*l1)*ido]-ch[i+(k+j*l1)*ido];
+        PM (CC(i-1,j2,k),CC(ic-1,j2-1,k),CH(i-1,k,j ),CH(i-1,k,jc))
+        PM (CC(i  ,j2,k),CC(ic  ,j2-1,k),CH(i  ,k,jc),CH(i  ,k,j ))
         }
-      }
     }
   }
 
-static void radbg(int ido, int ip, int l1, int idl1,
+#undef CC
+#undef CH
+#define CH(a,b,c) ch[(a)+ido*((b)+l1*(c))]
+#define CC(a,b,c) cc[(a)+ido*((b)+cdim*(c))]
+
+static void radb2(size_t ido, size_t l1, const double *cc, double *ch,
+  const double *wa)
+  {
+  const size_t cdim=2;
+  size_t i, k, ic;
+  double ti2, tr2;
+
+  for (k=0; k<l1; k++)
+    PM (CH(0,k,0),CH(0,k,1),CC(0,0,k),CC(ido-1,1,k))
+  if ((ido&1)==0)
+    for (k=0; k<l1; k++)
+      {
+      CH(ido-1,k,0) =  2*CC(ido-1,0,k);
+      CH(ido-1,k,1) = -2*CC(0    ,1,k);
+      }
+  if (ido<=2) return;
+  for (k=0; k<l1;++k)
+    for (i=2; i<ido; i+=2)
+      {
+      ic=ido-i;
+      PM (CH(i-1,k,0),tr2,CC(i-1,0,k),CC(ic-1,1,k))
+      PM (ti2,CH(i  ,k,0),CC(i  ,0,k),CC(ic  ,1,k))
+      MULPM (CH(i,k,1),CH(i-1,k,1),WA(0,i-2),WA(0,i-1),ti2,tr2)
+      }
+  }
+
+static void radb3(size_t ido, size_t l1, const double *cc, double *ch,
+  const double *wa)
+  {
+  const size_t cdim=3;
+  static const double taur=-0.5, taui=0.86602540378443864676;
+  size_t i, k, ic;
+  double ci2, ci3, di2, di3, cr2, cr3, dr2, dr3, ti2, tr2;
+
+  for (k=0; k<l1; k++)
+    {
+    tr2=2*CC(ido-1,1,k);
+    cr2=CC(0,0,k)+taur*tr2;
+    CH(0,k,0)=CC(0,0,k)+tr2;
+    ci3=2*taui*CC(0,2,k);
+    PM (CH(0,k,2),CH(0,k,1),cr2,ci3);
+    }
+  if (ido==1) return;
+  for (k=0; k<l1; k++)
+    for (i=2; i<ido; i+=2)
+      {
+      ic=ido-i;
+      tr2=CC(i-1,2,k)+CC(ic-1,1,k);
+      ti2=CC(i  ,2,k)-CC(ic  ,1,k);
+      cr2=CC(i-1,0,k)+taur*tr2;
+      ci2=CC(i  ,0,k)+taur*ti2;
+      CH(i-1,k,0)=CC(i-1,0,k)+tr2;
+      CH(i  ,k,0)=CC(i  ,0,k)+ti2;
+      cr3=taui*(CC(i-1,2,k)-CC(ic-1,1,k));
+      ci3=taui*(CC(i  ,2,k)+CC(ic  ,1,k));
+      PM(dr3,dr2,cr2,ci3)
+      PM(di2,di3,ci2,cr3)
+      MULPM(CH(i,k,1),CH(i-1,k,1),WA(0,i-2),WA(0,i-1),di2,dr2)
+      MULPM(CH(i,k,2),CH(i-1,k,2),WA(1,i-2),WA(1,i-1),di3,dr3)
+      }
+  }
+
+static void radb4(size_t ido, size_t l1, const double *cc, double *ch,
+  const double *wa)
+  {
+  const size_t cdim=4;
+  static const double sqrt2=1.41421356237309504880;
+  size_t i, k, ic;
+  double ci2, ci3, ci4, cr2, cr3, cr4, ti1, ti2, ti3, ti4, tr1, tr2, tr3, tr4;
+
+  for (k=0; k<l1; k++)
+    {
+    PM (tr2,tr1,CC(0,0,k),CC(ido-1,3,k))
+    tr3=2*CC(ido-1,1,k);
+    tr4=2*CC(0,2,k);
+    PM (CH(0,k,0),CH(0,k,2),tr2,tr3)
+    PM (CH(0,k,3),CH(0,k,1),tr1,tr4)
+    }
+  if ((ido&1)==0)
+    for (k=0; k<l1; k++)
+      {
+      PM (ti1,ti2,CC(0    ,3,k),CC(0    ,1,k))
+      PM (tr2,tr1,CC(ido-1,0,k),CC(ido-1,2,k))
+      CH(ido-1,k,0)=tr2+tr2;
+      CH(ido-1,k,1)=sqrt2*(tr1-ti1);
+      CH(ido-1,k,2)=ti2+ti2;
+      CH(ido-1,k,3)=-sqrt2*(tr1+ti1);
+      }
+  if (ido<=2) return;
+  for (k=0; k<l1;++k)
+    for (i=2; i<ido; i+=2)
+      {
+      ic=ido-i;
+      PM (tr2,tr1,CC(i-1,0,k),CC(ic-1,3,k))
+      PM (ti1,ti2,CC(i  ,0,k),CC(ic  ,3,k))
+      PM (tr4,ti3,CC(i  ,2,k),CC(ic  ,1,k))
+      PM (tr3,ti4,CC(i-1,2,k),CC(ic-1,1,k))
+      PM (CH(i-1,k,0),cr3,tr2,tr3)
+      PM (CH(i  ,k,0),ci3,ti2,ti3)
+      PM (cr4,cr2,tr1,tr4)
+      PM (ci2,ci4,ti1,ti4)
+      MULPM (CH(i,k,1),CH(i-1,k,1),WA(0,i-2),WA(0,i-1),ci2,cr2)
+      MULPM (CH(i,k,2),CH(i-1,k,2),WA(1,i-2),WA(1,i-1),ci3,cr3)
+      MULPM (CH(i,k,3),CH(i-1,k,3),WA(2,i-2),WA(2,i-1),ci4,cr4)
+      }
+  }
+
+static void radb5(size_t ido, size_t l1, const double *cc, double *ch,
+  const double *wa)
+  {
+  const size_t cdim=5;
+  static const double tr11= 0.3090169943749474241, ti11=0.95105651629515357212,
+                      tr12=-0.8090169943749474241, ti12=0.58778525229247312917;
+  size_t i, k, ic;
+  double ci2, ci3, ci4, ci5, di3, di4, di5, di2, cr2, cr3, cr5, cr4,
+         ti2, ti3, ti4, ti5, dr3, dr4, dr5, dr2, tr2, tr3, tr4, tr5;
+
+  for (k=0; k<l1; k++)
+    {
+    ti5=2*CC(0,2,k);
+    ti4=2*CC(0,4,k);
+    tr2=2*CC(ido-1,1,k);
+    tr3=2*CC(ido-1,3,k);
+    CH(0,k,0)=CC(0,0,k)+tr2+tr3;
+    cr2=CC(0,0,k)+tr11*tr2+tr12*tr3;
+    cr3=CC(0,0,k)+tr12*tr2+tr11*tr3;
+    MULPM(ci5,ci4,ti5,ti4,ti11,ti12)
+    PM(CH(0,k,4),CH(0,k,1),cr2,ci5)
+    PM(CH(0,k,3),CH(0,k,2),cr3,ci4)
+    }
+  if (ido==1) return;
+  for (k=0; k<l1;++k)
+    for (i=2; i<ido; i+=2)
+      {
+      ic=ido-i;
+      PM(tr2,tr5,CC(i-1,2,k),CC(ic-1,1,k))
+      PM(ti5,ti2,CC(i  ,2,k),CC(ic  ,1,k))
+      PM(tr3,tr4,CC(i-1,4,k),CC(ic-1,3,k))
+      PM(ti4,ti3,CC(i  ,4,k),CC(ic  ,3,k))
+      CH(i-1,k,0)=CC(i-1,0,k)+tr2+tr3;
+      CH(i  ,k,0)=CC(i  ,0,k)+ti2+ti3;
+      cr2=CC(i-1,0,k)+tr11*tr2+tr12*tr3;
+      ci2=CC(i  ,0,k)+tr11*ti2+tr12*ti3;
+      cr3=CC(i-1,0,k)+tr12*tr2+tr11*tr3;
+      ci3=CC(i  ,0,k)+tr12*ti2+tr11*ti3;
+      MULPM(cr5,cr4,tr5,tr4,ti11,ti12)
+      MULPM(ci5,ci4,ti5,ti4,ti11,ti12)
+      PM(dr4,dr3,cr3,ci4)
+      PM(di3,di4,ci3,cr4)
+      PM(dr5,dr2,cr2,ci5)
+      PM(di2,di5,ci2,cr5)
+      MULPM(CH(i,k,1),CH(i-1,k,1),WA(0,i-2),WA(0,i-1),di2,dr2)
+      MULPM(CH(i,k,2),CH(i-1,k,2),WA(1,i-2),WA(1,i-1),di3,dr3)
+      MULPM(CH(i,k,3),CH(i-1,k,3),WA(2,i-2),WA(2,i-1),di4,dr4)
+      MULPM(CH(i,k,4),CH(i-1,k,4),WA(3,i-2),WA(3,i-1),di5,dr5)
+      }
+  }
+
+static void radbg(size_t ido, size_t ip, size_t l1, size_t idl1,
   double *cc, double *ch, const double *wa)
   {
+  const size_t cdim=ip;
   static const double twopi=6.28318530717958647692;
-  int     idij, ipph, i, j, k, l, j2, ic, jc, lc, ik, is;
+  size_t idij, ipph, i, j, k, l, j2, ic, jc, lc, ik;
   double ai1, ai2, ar1, ar2, arg;
   double *csarr;
-  int aidx;
+  size_t aidx;
 
   ipph=(ip+1)/ 2;
   for(k=0; k<l1; k++)
-    for(i=0; i<ido; i++)
-      ch[i+k*ido]=cc[i+k*ip*ido];
+    memcpy(&CH(0,k,0),&CC(0,0,k),ido*sizeof(double));
   for(j=1; j<ipph; j++)
     {
     jc=ip-j;
     j2=2*j;
     for(k=0; k<l1; k++)
       {
-      ch[(k+j*l1)*ido]=cc[ido-1+(j2-1+k*ip)*ido]+cc[ido-1+(j2-1+k*ip)*ido];
-      ch[(k+jc*l1)*ido]=cc[(j2+k*ip)*ido]+cc[(j2+k*ip)*ido];
+      CH(0,k,j )=2*CC(ido-1,j2-1,k);
+      CH(0,k,jc)=2*CC(0    ,j2  ,k);
       }
     }
 
-  if(ido !=1)
-    {
-    for(j=1; j<ipph; j++)
-      {
-      jc=ip-j;
+  if(ido!=1)
+    for(j=1,jc=ip-1; j<ipph; j++,jc--)
       for(k=0; k<l1; k++)
-        {
         for(i=2; i<ido; i+=2)
           {
           ic=ido-i;
-          ch[i-1+(k+j*l1)*ido] =
-            cc[i-1+(2*j+k*ip)*ido]+cc[ic-1+(2*j-1+k*ip)*ido];
-          ch[i-1+(k+jc*l1)*ido] =
-            cc[i-1+(2*j+k*ip)*ido]-cc[ic-1+(2*j-1+k*ip)*ido];
-          ch[i+(k+j*l1)*ido]=cc[i+(2*j+k*ip)*ido]-cc[ic+(2*j-1+k*ip)*ido];
-          ch[i+(k+jc*l1)*ido]=cc[i+(2*j+k*ip)*ido]+cc[ic+(2*j-1+k*ip)*ido];
+          PM (CH(i-1,k,j ),CH(i-1,k,jc),CC(i-1,2*j,k),CC(ic-1,2*j-1,k))
+          PM (CH(i  ,k,jc),CH(i  ,k,j ),CC(i  ,2*j,k),CC(ic  ,2*j-1,k))
           }
-        }
-      }
-    }
 
-  csarr=(double *)malloc(2*ip*sizeof(double));
-  arg=twopi / ip;
+  csarr=RALLOC(double,2*ip);
+  arg=twopi/ip;
   csarr[0]=1.;
   csarr[1]=0.;
   csarr[2]=csarr[2*ip-2]=cos(arg);
@@ -1387,8 +548,8 @@ static void radbg(int ido, int ip, int l1, int idl1,
     ai1=csarr[2*l+1];
     for(ik=0; ik<idl1; ik++)
       {
-      cc[ik+l*idl1]=ch[ik]+ar1*ch[ik+idl1];
-      cc[ik+lc*idl1]=ai1*ch[ik+(ip-1)*idl1];
+      C2(ik,l)=CH2(ik,0)+ar1*CH2(ik,1);
+      C2(ik,lc)=ai1*CH2(ik,ip-1);
       }
     aidx=2*l;
     for(j=2; j<ipph; j++)
@@ -1400,428 +561,273 @@ static void radbg(int ido, int ip, int l1, int idl1,
       ai2=csarr[aidx+1];
       for(ik=0; ik<idl1; ik++)
         {
-        cc[ik+l*idl1]+=ar2*ch[ik+j*idl1];
-        cc[ik+lc*idl1]+=ai2*ch[ik+jc*idl1];
+        C2(ik,l )+=ar2*CH2(ik,j );
+        C2(ik,lc)+=ai2*CH2(ik,jc);
         }
       }
     }
-  free(csarr);
+  DEALLOC(csarr);
 
   for(j=1; j<ipph; j++)
     for(ik=0; ik<idl1; ik++)
-      ch[ik]+=ch[ik+j*idl1];
+      CH2(ik,0)+=CH2(ik,j);
 
-  for(j=1; j<ipph; j++)
-    {
-    jc=ip-j;
+  for(j=1,jc=ip-1; j<ipph; j++,jc--)
     for(k=0; k<l1; k++)
-      {
-      ch[(k+j*l1)*ido]=cc[(k+j*l1)*ido]-cc[(k+jc*l1)*ido];
-      ch[(k+jc*l1)*ido]=cc[(k+j*l1)*ido]+cc[(k+jc*l1)*ido];
-      }
-    }
+      PM (CH(0,k,jc),CH(0,k,j),C1(0,k,j),C1(0,k,jc))
 
   if(ido==1)
     return;
-  for(j=1; j<ipph; j++)
-    {
-    jc=ip-j;
+  for(j=1,jc=ip-1; j<ipph; j++,jc--)
     for(k=0; k<l1; k++)
-      {
       for(i=2; i<ido; i+=2)
         {
-        ch[i-1+(k+j*l1)*ido]=cc[i-1+(k+j*l1)*ido]-cc[i+(k+jc*l1)*ido];
-        ch[i-1+(k+jc*l1)*ido]=cc[i-1+(k+j*l1)*ido]+cc[i+(k+jc*l1)*ido];
-        ch[i+(k+j*l1)*ido]=cc[i+(k+j*l1)*ido]+cc[i-1+(k+jc*l1)*ido];
-        ch[i+(k+jc*l1)*ido]=cc[i+(k+j*l1)*ido]-cc[i-1+(k+jc*l1)*ido];
+        PM (CH(i-1,k,jc),CH(i-1,k,j ),C1(i-1,k,j),C1(i  ,k,jc))
+        PM (CH(i  ,k,j ),CH(i  ,k,jc),C1(i  ,k,j),C1(i-1,k,jc))
         }
-      }
-    }
-  for(ik=0; ik<idl1; ik++)
-    cc[ik]=ch[ik];
-  for(j=1; j<ip; j++)
-    for(k=0; k<l1; k++)
-      cc[(k+j*l1)*ido]=ch[(k+j*l1)*ido];
+  memcpy(cc,ch,idl1*sizeof(double));
 
-  is=-ido;
   for(j=1; j<ip; j++)
-    {
-    is+=ido;
     for(k=0; k<l1; k++)
       {
-      idij=is-1;
-      for(i=2; i<ido; i+=2)
-        {
-        idij+=2;
-        cc[i-1+(k+j*l1)*ido]=
-          wa[idij-1]*ch[i-1+(k+j*l1)*ido]-wa[idij]*ch[i+(k+j*l1)*ido];
-        cc[i+(k+j*l1)*ido]=
-          wa[idij-1]*ch[i+(k+j*l1)*ido]+wa[idij]*ch[i-1+(k+j*l1)*ido];
-        }
+      C1(0,k,j)=CH(0,k,j);
+      idij=(j-1)*ido+1;
+      for(i=2; i<ido; i+=2,idij+=2)
+        MULPM (C1(i,k,j),C1(i-1,k,j),wa[idij-1],wa[idij],CH(i,k,j),CH(i-1,k,j))
       }
-    }
   }
+
+#undef CC
+#undef CH
+#undef PM
+#undef MULPM
 
 
 /*----------------------------------------------------------------------
    cfftf1, cfftb1, cfftf, cfftb, cffti1, cffti. Complex FFTs.
   ----------------------------------------------------------------------*/
 
-static void cfftf1(int n, double c[], double ch[], const double wa[],
-  const int ifac[])
+static void cfft1(size_t n, cmplx c[], cmplx ch[], const cmplx wa[],
+  const size_t ifac[], int isign)
   {
-  int idot, k1, l1, l2, na, nf, ip, iw, nac, ido, idl1;
-  double *p1, *p2;
+  size_t k1, l1=1, nf=ifac[1], iw=0;
+  cmplx *p1=c, *p2=ch;
 
-  nf=ifac[1];
-  na=0;
-  l1=1;
-  iw=0;
-  for(k1=2; k1<=nf+1; k1++)
+  for(k1=0; k1<nf; k1++)
     {
-    ip=ifac[k1];
-    l2=ip*l1;
-    ido=n / l2;
-    idot=ido+ido;
-    idl1=idot*l1;
-    p1 = (na==0) ? c : ch;
-    p2 = (na==0) ? ch : c;
+    size_t ip=ifac[k1+2];
+    size_t l2=ip*l1;
+    size_t ido = n/l2;
     if(ip==4)
-      passf4(idot, l1, p1, p2, wa+iw, wa+iw+idot, wa+iw+2*idot);
+      (isign>0) ? passb4(ido, l1, p1, p2, wa+iw)
+                : passf4(ido, l1, p1, p2, wa+iw);
     else if(ip==2)
-      passf2(idot, l1, p1, p2, wa+iw);
+      (isign>0) ? passb2(ido, l1, p1, p2, wa+iw)
+                : passf2(ido, l1, p1, p2, wa+iw);
     else if(ip==3)
-      passf3(idot, l1, p1, p2, wa+iw, wa+iw+idot);
+      (isign>0) ? passb3(ido, l1, p1, p2, wa+iw)
+                : passf3(ido, l1, p1, p2, wa+iw);
     else if(ip==5)
-      passf5(idot, l1, p1, p2, wa+iw, wa+iw+idot, wa+iw+2*idot, wa+iw+3*idot);
+      (isign>0) ? passb5(ido, l1, p1, p2, wa+iw)
+                : passf5(ido, l1, p1, p2, wa+iw);
+    else if(ip==6)
+      (isign>0) ? passb6(ido, l1, p1, p2, wa+iw)
+                : passf6(ido, l1, p1, p2, wa+iw);
     else
-      {
-      passfg(&nac, idot, ip, l1, idl1, p1, p2, &wa[iw]);
-      if(nac==0)
-        na=1-na;
-      }
-    na=1-na;
+      (isign>0) ? passbg(ido, ip, l1, p1, p2, wa+iw)
+                : passfg(ido, ip, l1, p1, p2, wa+iw);
+    SWAP(p1,p2,cmplx *);
     l1=l2;
-    iw+=(ip-1)*idot;
+    iw+=(ip-1)*ido;
     }
-  if(na!=0)
-    memcpy (c,ch,2*n*sizeof(double));
+  if (p1!=c)
+    memcpy (c,p1,n*sizeof(cmplx));
   }
 
-static void cfftb1(int n, double c[], double ch[], const double wa[],
-  const int ifac[])
+void cfftf(size_t n, double c[], double wsave[])
   {
-  int idot, k1, l1, l2, na, nf, ip, iw, nac, ido, idl1;
-  double *p1, *p2;
-
-  nf=ifac[1];
-  na=0;
-  l1=1;
-  iw=0;
-  for(k1=2; k1<=nf+1; k1++)
-    {
-    ip=ifac[k1];
-    l2=ip*l1;
-    ido=n / l2;
-    idot=ido+ido;
-    idl1=idot*l1;
-    p1 = (na==0) ? c : ch;
-    p2 = (na==0) ? ch : c;
-    if(ip==4)
-      passb4(idot, l1, p1, p2, wa+iw, wa+iw+idot, wa+iw+2*idot);
-    else if(ip==2)
-      passb2(idot, l1, p1, p2, wa+iw);
-    else if(ip==3)
-      passb3(idot, l1, p1, p2, wa+iw, wa+iw+idot);
-    else if(ip==5)
-      passb5(idot, l1, p1, p2, wa+iw, wa+iw+idot, wa+iw+2*idot, wa+iw+3*idot);
-    else
-      {
-      passbg(&nac, idot, ip, l1, idl1, p1, p2, &wa[iw]);
-      if(nac==0)
-        na=1-na;
-      }
-    na=1-na;
-    l1=l2;
-    iw+=(ip-1)*idot;
-    }
-  if(na!=0)
-    memcpy (c,ch,2*n*sizeof(double));
+  if (n!=1)
+    cfft1(n, (cmplx*)c, (cmplx*)wsave, (cmplx*)(wsave+2*n),
+          (size_t*)(wsave+4*n),-1);
   }
 
-void cfftf(int n, double c[], double wsave[])
+void cfftb(size_t n, double c[], double wsave[])
   {
-  if(n!=1)
-    cfftf1(n, c, wsave, wsave+2*n,(int*)(wsave+4*n));
+  if (n!=1)
+    cfft1(n, (cmplx*)c, (cmplx*)wsave, (cmplx*)(wsave+2*n),
+          (size_t*)(wsave+4*n),+1);
   }
 
-void cfftb(int n, double c[], double wsave[])
+static void factorize (size_t n, const size_t *pf, size_t npf, size_t *ifac)
   {
-  if(n!=1)
-    cfftb1(n, c, wsave, wsave+2*n,(int*)(wsave+4*n));
-  }
+  size_t nl=n, nf=0, ntry=0, j=0, i;
 
-static void cffti1(int n, double wa[], int ifac[])
-  {
-  static const int ntryh[4]= {3, 4, 2, 5};
-  static const double twopi=6.28318530717958647692;
-  double argh, argld, arg, fi;
-  int idot, ntry=0, i, j, i1, k1, l1, l2, ib;
-  int ld, ii, nf, ip, nl, nq, nr, ido, ipm;
-
-  nl=n;
-  nf=0;
-  j=0;
 startloop:
   j++;
-  if(j<=4)
-    ntry=ntryh[j-1];
-  else
-    ntry+=2;
+  ntry = (j<=npf) ? pf[j-1] : ntry+2;
   do
     {
-    nq=nl / ntry;
-    nr=nl-ntry*nq;
-    if(nr !=0)
+    size_t nq=nl / ntry;
+    size_t nr=nl-ntry*nq;
+    if (nr!=0)
       goto startloop;
     nf++;
     ifac[nf+1]=ntry;
     nl=nq;
-    if(ntry==2 && nf !=1)
+    if ((ntry==2) && (nf!=1))
       {
-      for(i=2; i<=nf; i++)
-        {
-        ib=nf-i+2;
-        ifac[ib+1]=ifac[ib];
-        }
+      for (i=nf+1; i>2; --i)
+        ifac[i]=ifac[i-1];
       ifac[2]=2;
       }
     }
-  while(nl !=1);
+  while(nl!=1);
   ifac[0]=n;
   ifac[1]=nf;
-  argh=twopi /(double)n;
-  i=1;
-  l1=1;
-  for(k1=1; k1<=nf; k1++)
+  }
+
+static void cffti1(size_t n, double wa[], size_t ifac[])
+  {
+  static const size_t ntryh[5]={4,6,3,2,5};
+  static const double twopi=6.28318530717958647692;
+  size_t j, k, fi;
+
+  double argh=twopi/n;
+  size_t i=0, l1=1;
+  factorize (n,ntryh,5,ifac);
+  for(k=1; k<=ifac[1]; k++)
     {
-    ip=ifac[k1+1];
-    ld=0;
-    l2=l1*ip;
-    ido=n / l2;
-    idot=ido+ido+2;
-    ipm=ip-1;
-    for(j=1; j<=ipm; j++)
+    size_t ip=ifac[k+1];
+    size_t ido=n/(l1*ip);
+    for(j=1; j<ip; j++)
       {
-      i1=i;
-      wa[i-1]=1;
-      wa[i]=0;
-      ld+=l1;
-      fi=0;
-      argld=ld*argh;
-      for(ii=4; ii<=idot; ii+=2)
+      size_t is = i;
+      double argld=j*l1*argh;
+      wa[i  ]=1;
+      wa[i+1]=0;
+      for(fi=1; fi<=ido; fi++)
         {
+        double arg=fi*argld;
         i+=2;
-        fi+=1;
-        arg=fi*argld;
-        wa[i-1]=cos(arg);
-        wa[i]=sin(arg);
+        wa[i  ]=cos(arg);
+        wa[i+1]=sin(arg);
         }
-      if(ip>5)
+      if(ip>6)
         {
-        wa[i1-1]=wa[i-1];
-        wa[i1]=wa[i];
+        wa[is  ]=wa[i  ];
+        wa[is+1]=wa[i+1];
         }
       }
-    l1=l2;
+    l1*=ip;
     }
   }
 
-void cffti(int n, double wsave[])
-  {
-  if (n!=1)
-    cffti1(n, wsave+2*n,(int*)(wsave+4*n));
-  }
+void cffti(size_t n, double wsave[])
+  { if (n!=1) cffti1(n, wsave+2*n,(size_t*)(wsave+4*n)); }
 
 
 /*----------------------------------------------------------------------
    rfftf1, rfftb1, rfftf, rfftb, rffti1, rffti. Real FFTs.
   ----------------------------------------------------------------------*/
 
-static void rfftf1(int n, double c[], double ch[], const double wa[],
-  const int ifac[])
+static void rfftf1(size_t n, double c[], double ch[], const double wa[],
+  const size_t ifac[])
   {
-  int i, k1, l1, l2, na, kh, nf, ip, iw, ido, idl1;
-  double *p1, *p2;
+  size_t k1, l1=n, nf=ifac[1], iw=n-1;
+  double *p1=ch, *p2=c;
 
-  nf=ifac[1];
-  na=1;
-  l2=n;
-  iw=n-1;
   for(k1=1; k1<=nf;++k1)
     {
-    kh=nf-k1;
-    ip=ifac[kh+2];
-    l1=l2 / ip;
-    ido=n / l2;
-    idl1=ido*l1;
+    size_t ip=ifac[nf-k1+2];
+    size_t ido=n / l1;
+    l1 /= ip;
     iw-=(ip-1)*ido;
-    na=1-na;
-    p1 = (na==0) ? c : ch;
-    p2 = (na==0) ? ch : c;
+    SWAP (p1,p2,double *);
     if(ip==4)
-      radf4(ido, l1, p1, p2, wa+iw, wa+iw+ido, wa+iw+2*ido);
+      radf4(ido, l1, p1, p2, wa+iw);
     else if(ip==2)
       radf2(ido, l1, p1, p2, wa+iw);
     else if(ip==3)
-      radf3(ido, l1, p1, p2, wa+iw, wa+iw+ido);
+      radf3(ido, l1, p1, p2, wa+iw);
     else if(ip==5)
-      radf5(ido, l1, p1, p2, wa+iw, wa+iw+ido, wa+iw+2*ido, wa+iw+3*ido);
+      radf5(ido, l1, p1, p2, wa+iw);
     else
       {
-      if(ido==1)
-        na=1-na;
-      if(na==0)
-        radfg(ido, ip, l1, idl1, c, ch, wa+iw);
-      else
-        radfg(ido, ip, l1, idl1, ch, c, wa+iw);
-      na=1-na;
+      if (ido==1)
+        SWAP (p1,p2,double *);
+      radfg(ido, ip, l1, ido*l1, p1, p2, wa+iw);
+      SWAP (p1,p2,double *);
       }
-    l2=l1;
     }
-  if(na==1)
-    return;
-  for(i=0; i<n; i++)
-    c[i]=ch[i];
-}
-
-static void rfftb1(int n, double c[], double ch[], const double wa[],
-  const int ifac[])
-  {
-  int k1, l1, l2, na, nf, ip, iw, ido, idl1;
-  double *p1, *p2;
-
-  nf=ifac[1];
-  na=0;
-  l1=1;
-  iw=0;
-  for(k1=1; k1<=nf; k1++)
-    {
-    ip=ifac[k1+1];
-    l2=ip*l1;
-    ido=n / l2;
-    idl1=ido*l1;
-    p1 = (na==0) ? c : ch;
-    p2 = (na==0) ? ch : c;
-    if(ip==4)
-      radb4(ido, l1, p1, p2, wa+iw, wa+iw+ido, wa+iw+2*ido);
-    else if(ip==2)
-      radb2(ido, l1, p1, p2, wa+iw);
-    else if(ip==3)
-      radb3(ido, l1, p1, p2, wa+iw, wa+iw+ido);
-    else if(ip==5)
-      radb5(ido, l1, p1, p2, wa+iw, wa+iw+ido, wa+iw+2*ido, wa+iw+3*ido);
-    else
-      {
-      radbg(ido, ip, l1, idl1, p1, p2, wa+iw);
-      if(ido!=1)
-        na=1-na;
-      }
-    na=1-na;
-    l1=l2;
-    iw+=(ip-1)*ido;
-    }
-  if(na!=0)
+  if (p1==c)
     memcpy (c,ch,n*sizeof(double));
   }
 
-void rfftf(int n, double r[], double wsave[])
+static void rfftb1(size_t n, double c[], double ch[], const double wa[],
+  const size_t ifac[])
   {
-  if(n!=1)
-    rfftf1(n, r, wsave, wsave+n,(int*)(wsave+2*n));
-  }
+  size_t k1, l1=1, nf=ifac[1], iw=0;
+  double *p1=c, *p2=ch;
 
-void rfftb(int n, double r[], double wsave[])
-  {
-  if(n!=1)
-    rfftb1(n, r, wsave, wsave+n,(int*)(wsave+2*n));
-  }
-
-static void rffti1(int n, double wa[], int ifac[])
-  {
-  static const int ntryh[4]={4, 2, 3, 5};
-  static const double twopi=6.28318530717958647692;
-  double argh, argld, arg, fi;
-  int ntry=0, i, j, k1, l1, l2, ib, ld, ii, nf, ip, nl, is, nq, nr;
-  int ido, ipm, nfm1;
-
-  nl=n;
-  nf=0;
-  j=0;
-startloop:
- ++j;
-  if(j<=4)
-    ntry=ntryh[j-1];
-  else
-    ntry+=2;
-  do
+  for(k1=1; k1<=nf; k1++)
     {
-    nq=nl / ntry;
-    nr=nl-ntry*nq;
-    if(nr !=0)
-      goto startloop;
-    ++nf;
-    ifac[nf+1]=ntry;
-    nl=nq;
-    if(ntry==2 && nf !=1)
+    size_t ip = ifac[k1+1],
+           ido= n/(ip*l1);
+    if(ip==4)
+      radb4(ido, l1, p1, p2, wa+iw);
+    else if(ip==2)
+      radb2(ido, l1, p1, p2, wa+iw);
+    else if(ip==3)
+      radb3(ido, l1, p1, p2, wa+iw);
+    else if(ip==5)
+      radb5(ido, l1, p1, p2, wa+iw);
+    else
       {
-      for(i=2; i<=nf; i++)
-        {
-        ib=nf-i+2;
-        ifac[ib+1]=ifac[ib];
-        }
-      ifac[2]=2;
+      radbg(ido, ip, l1, ido*l1, p1, p2, wa+iw);
+      if (ido!=1)
+        SWAP (p1,p2,double *);
       }
+    SWAP (p1,p2,double *);
+    l1*=ip;
+    iw+=(ip-1)*ido;
     }
-  while(nl !=1);
-  ifac[0]=n;
-  ifac[1]=nf;
-  argh=twopi /(double)(n);
-  is=0;
-  nfm1=nf-1;
-  l1=1;
-  if(nfm1==0)
-    return;
-  for(k1=1; k1<=nfm1; k1++)
-    {
-    ip=ifac[k1+1];
-    ld=0;
-    l2=l1*ip;
-    ido=n / l2;
-    ipm=ip-1;
-    for(j=1; j<=ipm;++j)
-      {
-      ld+=l1;
-      i=is;
-      argld=(double)ld*argh;
+  if (p1!=c)
+    memcpy (c,ch,n*sizeof(double));
+  }
 
-      fi=0;
-      for(ii=3; ii<=ido; ii+=2)
+void rfftf(size_t n, double r[], double wsave[])
+  { if(n!=1) rfftf1(n, r, wsave, wsave+n,(size_t*)(wsave+2*n)); }
+
+void rfftb(size_t n, double r[], double wsave[])
+  { if(n!=1) rfftb1(n, r, wsave, wsave+n,(size_t*)(wsave+2*n)); }
+
+static void rffti1(size_t n, double wa[], size_t ifac[])
+  {
+  static const size_t ntryh[4]={4,2,3,5};
+  static const double twopi=6.28318530717958647692;
+  size_t i, j, k, fi;
+
+  double argh=twopi/n;
+  size_t is=0, l1=1;
+  factorize (n,ntryh,4,ifac);
+  for (k=1; k<ifac[1]; k++)
+    {
+    size_t ip=ifac[k+1],
+           ido=n/(l1*ip);
+    for (j=1; j<ip; ++j)
+      {
+      double argld=j*l1*argh;
+      for(i=is,fi=1; i<=ido+is-3; i+=2,++fi)
         {
-        i+=2;
-        fi+=1;
-        arg=fi*argld;
-        wa[i-2]=cos(arg);
-        wa[i-1]=sin(arg);
+        double arg=fi*argld;
+        wa[i  ]=cos(arg);
+        wa[i+1]=sin(arg);
         }
       is+=ido;
       }
-    l1=l2;
+    l1*=ip;
     }
   }
 
-void rffti(int n, double wsave[])
-  {
-  if (n!=1)
-    rffti1(n, wsave+n,(int*)(wsave+2*n));
-  }
+void rffti(size_t n, double wsave[])
+  { if (n!=1) rffti1(n, wsave+n,(size_t*)(wsave+2*n)); }

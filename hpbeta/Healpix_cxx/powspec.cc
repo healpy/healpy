@@ -25,11 +25,12 @@
  */
 
 /*
- *  Copyright (C) 2003,2004 Max-Planck-Society
+ *  Copyright (C) 2003-2010 Max-Planck-Society
  *  Author: Martin Reinecke
  */
 
 #include "powspec.h"
+#include "lsconstants.h"
 
 using namespace std;
 
@@ -43,18 +44,53 @@ void PowSpec::dealloc()
   gc_.dealloc();
   }
 
+void PowSpec::assertArraySizes() const
+  {
+  planck_assert((num_specs==1) || (num_specs==4) || (num_specs==6),
+    "incorrect number of spectral components");
+  if (num_specs==1)
+    planck_assert(multiequal(tsize(0),gg_.size(),cc_.size(),tg_.size(),
+      tc_.size(),gc_.size()), "incorrect array sizes");
+  if (num_specs==4)
+    {
+    planck_assert(multiequal(tt_.size(),gg_.size(),cc_.size(),tg_.size()),
+      "incorrect array sizes");
+    planck_assert(multiequal(tsize(0),tc_.size(),gc_.size()),
+      "incorrect array sizes");
+    }
+  if (num_specs==6)
+    planck_assert(multiequal(tt_.size(),gg_.size(),cc_.size(),tg_.size(),
+      tc_.size(),gc_.size()), "incorrect array sizes");
+  }
+
+bool PowSpec::consistentAutoPowspec() const
+  {
+  for (tsize l=0; l<tt_.size(); ++l)
+    if (tt_[l]<0) return false;
+  if (num_specs>=4)
+    for (tsize l=0; l<tt_.size(); ++l)
+      {
+      if (gg_[l]<0) return false;
+      if (cc_[l]<0) return false;
+      if (abs(tg_[l])>sqrt(tt_[l]*gg_[l])) return false;
+      }
+  if (num_specs==6)
+    for (tsize l=0; l<tt_.size(); ++l)
+      {
+      if (abs(tc_[l])>sqrt(tt_[l]*cc_[l])) return false;
+      if (abs(gc_[l])>sqrt(gg_[l]*cc_[l])) return false;
+      }
+  return true;
+  }
+
 void PowSpec::Set(arr<double> &tt_new)
   {
   dealloc();
   num_specs = 1;
   tt_.transfer(tt_new);
 //FIXME: temporarily relaxed to allow cross-spectra
-  for (int l=0; l<tt_.size(); ++l)
-    if (tt_[l]<0)
-      {
-      cerr << "Warning: negative values in TT spectrum" << endl;
-      break;
-      }
+  if (!consistentAutoPowspec())
+    cerr << "Warning: negative values in TT spectrum" << endl;
   }
 
 void PowSpec::Set(arr<double> &tt_new, arr<double> &gg_new,
@@ -62,28 +98,26 @@ void PowSpec::Set(arr<double> &tt_new, arr<double> &gg_new,
   {
   dealloc();
   num_specs = 4;
-  tt_.transfer(tt_new);
-  gg_.transfer(gg_new);
-  cc_.transfer(cc_new);
-  tg_.transfer(tg_new);
-  planck_assert((tt_.size()==gg_.size()) && (tt_.size()==cc_.size())
-    && (tt_.size()==tg_.size()), "PowSpec::Set: size mismatch");
-  for (int l=0; l<tt_.size(); ++l)
-    {
-    planck_assert (tt_[l]>=0, "negative TT spectrum at l="+dataToString(l));
-    planck_assert (gg_[l]>=0, "negative GG spectrum at l="+dataToString(l));
-    planck_assert (cc_[l]>=0, "negative CC spectrum at l="+dataToString(l));
-    planck_assert (abs(tg_[l]<=sqrt(tt_[l]*gg_[l])),
-      "Inconsistent T, E and TxE terms at l="+dataToString(l));
-    }
+  tt_.transfer(tt_new); gg_.transfer(gg_new);
+  cc_.transfer(cc_new); tg_.transfer(tg_new);
+  assertArraySizes();
   }
 
-void PowSpec::Smooth_with_Gauss (double fwhm)
+void PowSpec::Set(arr<double> &tt_new, arr<double> &gg_new, arr<double> &cc_new,
+  arr<double> &tg_new, arr<double> &tc_new, arr<double> &gc_new)
+  {
+  Set (tt_new, gg_new, cc_new, tg_new);
+  num_specs = 6;
+  tc_.transfer(tc_new); gc_.transfer(gc_new);
+  assertArraySizes();
+  }
+
+void PowSpec::smoothWithGauss (double fwhm)
   {
   planck_assert (num_specs<=4, "not yet implemented for num_specs>4");
   double sigma = fwhm*fwhm2sigma;
   double fact_pol = exp(2*sigma*sigma);
-  for (int l=0; l<tt_.size(); ++l)
+  for (tsize l=0; l<tt_.size(); ++l)
     {
     double f1 = exp(-.5*l*(l+1)*sigma*sigma);
     double f2 = f1*fact_pol;

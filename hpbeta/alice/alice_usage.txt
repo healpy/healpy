@@ -14,7 +14,7 @@ Usage:
   temperature data, if different temperature than that in the above
   file is desired
 
-  [-out <string>] string used as a prefix for output files 
+  [-out <string>] string used as a prefix for output files
 
   [-texture <fits file>] optional input background texture
 
@@ -31,7 +31,7 @@ Usage:
 
   [-step_arcmin <float>] arcminutes for each step in the convoloution
 
-  [-threshold] 
+  [-threshold]
 
   [-orth <float>] orthogonal projection.  <float> should be between 0.0 and 1.0;
   it determines the zoom.
@@ -61,6 +61,6 @@ Usage:
 
   [-max <float>] maximum value for the temperature scale
 
-  [-polmin <float>] minimum value for the polarization magnitude 
+  [-polmin <float>] minimum value for the polarization magnitude
 
   [-polmax <float>] maximum value for the polarization magnitude

@@ -3,21 +3,36 @@ Installation procedure for Healpy:
 
 * Note: Healpix is included, so you don't need to get it separately
 
+Requirements:
+* Healpix needs cfitsio. You can either:
+ - use an existing installation :
+   Define the environment variable CFITSIO_EXT_PREFIX where to find the
+   cfitsio library and include file (eg /usr/local, so that
+   /usr/local/include/fitsio.h and /usr/local/lib/libcfitsio.a exists),
+   or define CFITSIO_EXT_INC (with the cfitsio include
+   directory) and CFITSIO_EXT_LIB (with the cfitsio library file name)
+ - compile a specific cfitsio lib:
+   Define EXTERNAL_CFITSIO=no, place the  cfitsioXXXX.tar.gz in
+   hpbeta/libcfitsio before installing. The cfitsio version XXXX must
+   match the version in hpbeta/planck.make (or you need to modify it there).
+
 The installation procedure is very simple:
 
-> cd healpy-0.9.3.1
-> python setup.py build
+$ cd healpy-0.9.3.1
+$ python setup.py build
 
 If everything goes fine, you can give a test:
-> cd build/lib*
-> ipython -pylab
+$ cd build/lib*
+$ ipython -pylab
 >>> import healpy as H
 >>> H.mollview(arange(12))
 
 If the plot looks good, you can install:
-> sudo python setup.py install  # install in default location, need root rights
+$ sudo python setup.py install  # install in default location, need root rights
 or
-> python setup.py install --install-lib=~/Softs/Python # will install healpy in directory ~/Softs/Python, which then must be in your PYTHONPATH
+$ python setup.py install --install-lib=~/Softs/Python # will install healpy in directory ~/Softs/Python, which then must be in your PYTHONPATH
+or
+$ python setup.py install --user # will install it in your User python directory (python >= 2.6)
 
 That's it !
 

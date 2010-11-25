@@ -25,7 +25,7 @@
  */
 
 /*! \file healpix_base.h
- *  Copyright (C) 2003, 2004, 2005, 2006 Max-Planck-Society
+ *  Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009 Max-Planck-Society
  *  \author Martin Reinecke
  */
 
@@ -34,14 +34,15 @@
 
 #include <vector>
 #include "cxxutils.h"
-#include "lsconstants.h"
 #include "pointing.h"
-template<typename T, unsigned int sz> class fix_arr;
+#include "arr.h"
 
 /*! The two possible ordering schemes of a HEALPix map. */
-typedef enum { RING, /*!< RING scheme */
-               NEST  /*!< NESTED scheme */
-             }  Healpix_Ordering_Scheme;
+enum Healpix_Ordering_Scheme { RING, /*!< RING scheme */
+                               NEST  /*!< NESTED scheme */
+                             };
+
+Healpix_Ordering_Scheme string2HealpixScheme (const std::string &inp);
 
 class nside_dummy {};
 extern const nside_dummy SET_NSIDE;
@@ -208,15 +209,14 @@ class Healpix_Base
         \note This method works in both RING and NEST schemes, but is
           considerably faster in the RING scheme. */
     void query_disc_inclusive (const pointing &dir, double radius,
-      std::vector<int> &listpix) const
-        { query_disc (dir,radius+1.362*pi/(4*nside_),listpix); }
+      std::vector<int> &listpix) const;
 
     /*! Returns useful information about a given ring of the map.
         \param ring the ring number (the number of the first ring is 1)
         \param startpix the number of the first pixel in the ring
         \param ringpix the number of pixels in the ring
-        \param costheta the cosine of the colatitude (in radians) of the ring
-        \param sintheta the sine of the colatitude (in radians) of the ring
+        \param costheta the cosine of the colatitude of the ring
+        \param sintheta the sine of the colatitude of the ring
         \param shifted if \a true, the center of the first pixel is not at
                \a phi=0 */
     void get_ring_info (int ring, int &startpix, int &ringpix,

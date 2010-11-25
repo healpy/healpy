@@ -27,7 +27,7 @@
 /*! \file alm_fitsio.h
  *  FITS I/O for spherical harmonic coefficients
  *
- *  Copyright (C) 2003, 2004, 2005 Max-Planck-Society
+ *  Copyright (C) 2003-2010 Max-Planck-Society
  *  \author Martin Reinecke
  */
 
@@ -36,7 +36,8 @@
 
 #include <string>
 #include "xcomplex.h"
-class fitshandle;
+#include "datatypes.h"
+#include "fitshandle.h"
 
 template<typename T> class Alm;
 
@@ -69,22 +70,53 @@ template<typename T> void read_Alm_from_fits
   (const std::string &filename, Alm<xcomplex<T> > &alms,
    int lmax, int mmax, int hdunum=2);
 
+template<typename T> inline void read_Alm_from_fits
+  (const std::string &filename, Alm<xcomplex<T> > &almT,
+   Alm<xcomplex<T> > &almG, Alm<xcomplex<T> > &almC,
+   int lmax, int mmax, int firsthdu=2)
+  {
+  read_Alm_from_fits (filename, almT, lmax, mmax, firsthdu);
+  read_Alm_from_fits (filename, almG, lmax, mmax, firsthdu+1);
+  read_Alm_from_fits (filename, almC, lmax, mmax, firsthdu+2);
+  }
+
 /*! Inserts a new binary table into \a out, which contains three columns
-    of FITS type TINT32BIT, \a datatype and \a datatype, respectively.
+    of type PLANCK_INT32, \a datatype and \a datatype, respectively.
     The data in \a alms is written into this table; values outside
     the requested (\a lmax, \a mmax) range are omitted. */
 template<typename T> void write_Alm_to_fits
   (fitshandle &out, const Alm<xcomplex<T> > &alms,
-   int lmax, int mmax, int datatype);
+   int lmax, int mmax, PDT datatype);
+
+template<typename T> inline void write_Alm_to_fits
+  (const std::string &outfile, const Alm<xcomplex<T> > &alms,
+   int lmax, int mmax, PDT datatype)
+  {
+  fitshandle out;
+  out.create(outfile);
+  write_Alm_to_fits (out, alms, lmax, mmax, datatype);
+  }
+
+template<typename T> inline void write_Alm_to_fits
+  (const std::string &outfile, const Alm<xcomplex<T> > &almT,
+   const Alm<xcomplex<T> > &almG, const Alm<xcomplex<T> > &almC,
+   int lmax, int mmax, PDT datatype)
+  {
+  fitshandle out;
+  out.create(outfile);
+  write_Alm_to_fits (out, almT, lmax, mmax, datatype);
+  write_Alm_to_fits (out, almG, lmax, mmax, datatype);
+  write_Alm_to_fits (out, almC, lmax, mmax, datatype);
+  }
 
 /*! Inserts a new binary table into \a out, which contains three columns
-    of FITS type TINT32BIT, \a datatype and \a datatype, respectively.
+    of type PLANCK_INT32, \a datatype and \a datatype, respectively.
     The data in \a alms is written into this table; values outside
     the requested (\a lmax, \a mmax) range are omitted. Values with an absolute
     magnitude of zero are not written. */
 template<typename T> void write_compressed_Alm_to_fits
   (fitshandle &out, const Alm<xcomplex<T> > &alms,
-   int lmax, int mmax, int datatype);
+   int lmax, int mmax, PDT datatype);
 
 /*! \} */
 

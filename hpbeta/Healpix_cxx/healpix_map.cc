@@ -25,7 +25,7 @@
  */
 
 /*
- *  Copyright (C) 2003, 2004 Max-Planck-Society
+ *  Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008 Max-Planck-Society
  *  Author: Martin Reinecke
  */
 
@@ -66,7 +66,7 @@ template<typename T> void Healpix_Map<T>::Import_degrade
           sum += orig.map[opix];
           }
         }
-    map[m] = (hits<minhits) ? Healpix_undef : sum/hits;
+    map[m] = T((hits<minhits) ? Healpix_undef : sum/hits);
     }
 }
   }
@@ -78,7 +78,7 @@ template void Healpix_Map<double>::Import_degrade
 
 template<typename T> void Healpix_Map<T>::minmax (T &Min, T &Max) const
   {
-  Min = 1e30; Max = -1e30;
+  Min = T(1e30); Max = T(-1e30);
   for (int m=0; m<npix_; ++m)
     {
     T val = map[m];

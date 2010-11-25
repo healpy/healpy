@@ -7,12 +7,12 @@ class PolarizationHolder
 {
  public:
   // Default constructor, destructor, etc.
-  
+
   // Load a polarized fits file, with Q and U as the second
   // and third columns (the standard form).
-  // void load(const char* filename);	
-  void load(const std::string& filename);	
-  
+  // void load(const char* filename);
+  void load(const std::string& filename);
+
   // Return the polarization at some pointing.
   void getQU(const pointing& p, float& q, float& u) const;
   void getQU(const pointing& p, double& q, double& u) const
@@ -22,10 +22,10 @@ class PolarizationHolder
       q = static_cast<double>(qf);
       u = static_cast<double>(uf);
     }
-  
+
   // Return the magnitude of the polarization at some pointing.
   float getQUMagnitude(const pointing& p) const;
-  
+
   // Fiddling with these by hand shouldn't be necessary.
   Healpix_Map< float > Q, U;
 };

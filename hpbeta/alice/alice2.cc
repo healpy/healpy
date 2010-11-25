@@ -1,13 +1,13 @@
 // ALICE = Amazing Line Integral Convolution Executable
 // Programmer: David Larson
-// Date: January 29, 2006 
+// Date: January 29, 2006
 // (Code originally written last fall.)
 //
 // Using default emacs indentation.
 
 
 #include "paramfile.h"
-#include "tga_image.h"
+#include "ls_image.h"
 #include "healpix_map_fitsio.h"
 #include "lsconstants.h"
 #include "arr.h"
@@ -35,7 +35,7 @@ typedef struct setup_struct
   int texture_ell;
   int x_size;
   bool sin_kernel;
-  int steps; 
+  int steps;
   int kernel_steps;
   double step_radian;
   bool threshold;
@@ -44,7 +44,7 @@ typedef struct setup_struct
   float alpha, beta, gamma;
   int color_scale;
   bool bar;
-  string title; 
+  string title;
   bool only_fits_output;
   string fits_output_file;
   bool make_movie;
@@ -52,7 +52,7 @@ typedef struct setup_struct
   int movie_frames;
   bool sos;
   float t_min;
-  float t_max;  
+  float t_max;
   float pol_min;
   float pol_max;
 } SetupVars;
@@ -61,7 +61,7 @@ typedef struct setup_struct
 void usage()
 {
 #include "alice_usage.h"
-  throw Message_error();
+  planck_fail("");
 }
 
 // ----------------------------------------------------------------------
@@ -94,14 +94,14 @@ void parse_argv(int argc, char* argv[], SetupVars  &s)
   s.t_max = 123456.0;
   s.pol_min = 123456.0;
   s.pol_max = 123456.0;
-    
+
   int m = 1;
   while (m < argc)
     {
       int mstart = m;
       string arg = argv[m];
-      if (arg == "-in") 
-        { 
+      if (arg == "-in")
+        {
           s.temperature_file = argv[m+1];
           s.polarization_file = argv[m+1];
           m += 2;
@@ -118,14 +118,14 @@ void parse_argv(int argc, char* argv[], SetupVars  &s)
       if (arg == "-step_arcmin") { stringToData(argv[m+1],s.step_radian); s.step_radian*=pi/180/60.0; m+=2; }
       if (arg == "-step_radian") { stringToData(argv[m+1],s.step_radian); m+=2; }
       if (arg == "-threshold") { s.threshold=true; m+=1; }
-      if (arg == "-orth") 
-        { 
-          stringToData(argv[m+1],s.xmax); 
+      if (arg == "-orth")
+        {
+          stringToData(argv[m+1],s.xmax);
           s.xmin = -s.xmax;
           s.ymax = s.xmax;
           s.ymin = s.xmin;
           s.orthogonal = true;
-          m += 2; 
+          m += 2;
         }
       if (arg == "-alpha") { stringToData(argv[m+1],s.alpha); m+=2; }
       if (arg == "-beta") { stringToData(argv[m+1],s.beta); m+=2; }
@@ -135,29 +135,29 @@ void parse_argv(int argc, char* argv[], SetupVars  &s)
       if (arg == "-title") { stringToData(argv[m+1],s.title); m+=2; }
       if (arg == "-fitsout") { s.fits_output_file=argv[m+1]; s.only_fits_output=true; m+=2; }
       if (arg == "-texture2") { s.texture_file2=argv[m+1]; s.make_movie=true; m+=2; }
-      if (arg == "-frames") { stringToData(argv[m+1],s.movie_frames); m+=2; } 
+      if (arg == "-frames") { stringToData(argv[m+1],s.movie_frames); m+=2; }
       if (arg == "-sos") { s.sos=true; m+=1; }
       if (arg == "-min") { stringToData(argv[m+1],s.t_min); m+=2; }
-      if (arg == "-max") { stringToData(argv[m+1],s.t_max); m+=2; }  
+      if (arg == "-max") { stringToData(argv[m+1],s.t_max); m+=2; }
       if (arg == "-polmin") { stringToData(argv[m+1],s.pol_min); m+=2; }
       if (arg == "-polmax") { stringToData(argv[m+1],s.pol_max); m+=2; }
-      
+
       if (mstart == m)
         {
           cout << "unrecognized option: " + arg << endl;
           usage();
         }
     }
-  
+
   if (s.kernel_steps > s.steps)
     {
       cout << "Error: kernel_steps is larger than steps" << endl;
       usage();
     }
-  
+
   if (s.step_radian < 0.0)
     s.step_radian = pi / s.x_size;
-  
+
   s.alpha *= pi / 180.0;
   s.beta *= pi / 180.0;
   s.gamma *= pi / 180.0;
@@ -176,7 +176,7 @@ void print_setup(const SetupVars &s)
   cout << "Alice: sin_kernel = " << s.sin_kernel << endl;
   cout << "Alice: steps = " << s.steps << endl;
   cout << "Alice: kernel_steps = " << s.kernel_steps << endl;
-  cout << "Alice: step_radian = " << s.step_radian << " (" << 
+  cout << "Alice: step_radian = " << s.step_radian << " (" <<
     s.step_radian * 180 * 60 / pi << " arcmin)" << endl;
   cout << "Alice: threshold = " << s.threshold << endl;
   cout << "Alice: orthogonal = " << s.orthogonal << endl;
@@ -208,7 +208,7 @@ void colorscale1(double& red, double& green, double& blue, double x)
   double hue, saturation, value;
   assert(x >= 0);
   assert(x <= 1.0);
-  
+
   hue = 240.0;
   if (x < 0.5)
     {
@@ -224,36 +224,36 @@ void colorscale1(double& red, double& green, double& blue, double x)
 }
 
 // ----------------------------------------------------------------------
-int lic_function(SkyMap &hitcount, SkyMap &texture, const PolarizationHolder &ph, 
+int lic_function(SkyMap &hitcount, SkyMap &texture, const PolarizationHolder &ph,
          const TextureHolder &th, int steps, int kernel_steps, double step_radian)
 {
   arr< double > kernel, convolution, rawtexture;
   kernel.alloc(kernel_steps);
   make_kernel(kernel);
-  
+
   arr< pointing > curve;
   curve.alloc(steps);
 
   int num_curves = 0;
-  int i, j, k;
+  int k;
   pointing p;
 
-  for(i = 0; i <= texture.max_pixel(); i++)
+  for(int i = 0; i <= texture.max_pixel(); i++)
     {
       if (texture.is_valid_pixel(i))
         {
           p = texture.deproject(i);
-          if(hitcount.get_pixel(i) < 1.0) 
+          if(hitcount.get_pixel(i) < 1.0)
             {
               num_curves++;
               runge_kutta_2(p.to_vec3(), ph, step_radian, curve);
               pointings_to_textures(curve, th, rawtexture);
               convolve(kernel, rawtexture, convolution);
-              for(j = 0; j < convolution.size(); j++)
+              for(tsize j = 0; j < convolution.size(); j++)
                 {
                   p = curve[j + kernel.size()/2];
                   k = texture.project(p);
-                  if (texture.is_valid_pixel(k)) 
+                  if (texture.is_valid_pixel(k))
                     {
                       texture.add_to_pixel(k, convolution[j]);
                       hitcount.add_to_pixel(k, 1.0);
@@ -262,7 +262,7 @@ int lic_function(SkyMap &hitcount, SkyMap &texture, const PolarizationHolder &ph
             }
         }
     }
-  
+
   return num_curves;
 }
 
@@ -283,7 +283,7 @@ int main(int argc, char* argv[])
   // Temperature
   Healpix_Map< float > temperature_fits;
   read_Healpix_map_from_fits(s.temperature_file, temperature_fits, 1, 2);
-  
+
   // Polariztion
   PolarizationHolder ph;
   ph.load(s.polarization_file);
@@ -302,19 +302,19 @@ int main(int argc, char* argv[])
       }
   else
     th.load(s.texture_file);
-  
+
   int i;
   pointing p;
   int num_curves = 0;
   SkyMap *hitcount=0, *texture=0, *magnitude=0, *temperature=0;
   RectSkyMap *modtexture=0;
-  
+
   if (s.sos) // Science on a sphere projection
     {
       hitcount = new SoSSkyMap(s.x_size);
       texture = new SoSSkyMap(s.x_size);
       magnitude = new SoSSkyMap(s.x_size);
-      temperature = new SoSSkyMap(s.x_size);   
+      temperature = new SoSSkyMap(s.x_size);
       modtexture = new SoSSkyMap(s.x_size);
     }
   else if (s.orthogonal) // Orthogonal projection
@@ -333,7 +333,7 @@ int main(int argc, char* argv[])
       temperature = new MollweideSkyMap(s.x_size);
       modtexture = new MollweideSkyMap(s.x_size);
     }
-  
+
   // Set up the necessary rotations.
   hitcount->d_mat.Make_CPAC_Euler_Matrix(s.alpha, s.beta, s.gamma);
   texture->d_mat = hitcount->d_mat;
@@ -355,34 +355,34 @@ int main(int argc, char* argv[])
       texture->d_rotate = 1;
       magnitude->d_rotate = 1;
       temperature->d_rotate = 1;
-      modtexture->d_rotate = 1; 
+      modtexture->d_rotate = 1;
     }
-    
+
   for (i = 0; i < magnitude->max_pixel(); i++)
     if (magnitude->is_valid_pixel(i))
       {
         p = magnitude->deproject(i);
         p.normalize();
-	
-	float temp = temperature_fits[temperature_fits.ang2pix(p)];
-	if (s.t_max != 123456.0) temp = (temp > s.t_max) ? s.t_max : temp;
-	if (s.t_min != 123456.0) temp = (temp < s.t_min) ? s.t_min : temp;
+
+        float temp = temperature_fits[temperature_fits.ang2pix(p)];
+        if (s.t_max != 123456.0) temp = (temp > s.t_max) ? s.t_max : temp;
+        if (s.t_min != 123456.0) temp = (temp < s.t_min) ? s.t_min : temp;
         temperature->set_pixel(i, temp);
 
-	temp = ph.getQUMagnitude(p);
-	if (s.pol_max != 123456.0) temp = (temp > s.pol_max) ? s.pol_max : temp;
-	if (s.pol_min != 123456.0) temp = (temp < s.pol_min) ? s.pol_min : temp;
+        temp = ph.getQUMagnitude(p);
+        if (s.pol_max != 123456.0) temp = (temp > s.pol_max) ? s.pol_max : temp;
+        if (s.pol_min != 123456.0) temp = (temp < s.pol_min) ? s.pol_min : temp;
         magnitude->set_pixel(i, temp);
 
         texture->set_pixel(i, th.getTexture(p));
       }
-  
+
   // Print out the background texture before we start the convolution.
   if (!s.only_fits_output)
     {
       int x, y;
       RectSkyMap *rtexture = static_cast<RectSkyMap*>(texture);
-      TGA_Image image(rtexture->d_array.size1(), rtexture->d_array.size2());  
+      LS_Image image(rtexture->d_array.size1(), rtexture->d_array.size2());
       image.fill(Colour(1.0, 1.0, 1.0));
       float min, max, foo;
       rtexture->minmax(min, max);
@@ -395,24 +395,24 @@ int main(int argc, char* argv[])
           }
       string filename = s.output_base + "_background.tga";
       cout  << "Writing image: " << filename << endl;
-      image.write(filename);
+      image.write_TGA(filename);
     }
-  
+
   // Reset the texture to zero.
   for (i = 0; i < texture->max_pixel(); i++)
-    {    
+    {
       texture->set_pixel(i, 0.0);
     }
-  
+
   // This does all the work.
-  num_curves = lic_function(*hitcount, *texture, ph, th, 
+  num_curves = lic_function(*hitcount, *texture, ph, th,
                             s.steps, s.kernel_steps, s.step_radian);
-  
+
   cout << "foo3" << endl;
   int num_pix = 0;
   float hitmin, hitmax;
   float foo;
-  
+
   hitcount->minmax(hitmin, hitmax);
   for (i = 0; i <= hitcount->max_pixel(); i++)
     if (hitcount->is_valid_pixel(i)) num_pix++;
@@ -424,7 +424,7 @@ int main(int argc, char* argv[])
   cout << "average curve points per good pixel = " << s.steps / foo << endl;
   cout << "minimum number of hits = " << hitmin << endl;
   cout << "maximum number of hits = " << hitmax << endl;
-    
+
   if (!s.only_fits_output)
     {
       RectSkyMap *rhitcount = static_cast<RectSkyMap*>(hitcount);
@@ -436,10 +436,10 @@ int main(int argc, char* argv[])
       float mmin, mmax;
       float tmin, tmax;
 
-      TGA_Image image(rtexture->d_array.size1(), rtexture->d_array.size2());  
+      LS_Image image(rtexture->d_array.size1(), rtexture->d_array.size2());
       image.fill(Colour(1.0, 1.0, 1.0));
 
-      // Hitpattern    
+      // Hitpattern
       for(i = 0; i <= rtexture->max_pixel(); i++)
         if (rtexture->is_valid_pixel(i))
           {
@@ -449,8 +449,8 @@ int main(int argc, char* argv[])
           }
       string filename = s.output_base + "_hitpattern.tga";
       cout  << "Writing image: " << filename << endl;
-      image.write(filename);
-      
+      image.write_TGA(filename);
+
       // Texture
       for(i = 0; i <= rtexture->max_pixel(); i++)
         if (rtexture->is_valid_pixel(i))
@@ -459,7 +459,7 @@ int main(int argc, char* argv[])
             rtexture->d_array[x][y] /= rhitcount->d_array[x][y];
             if (s.threshold) rtexture->d_array[x][y] = (rtexture->d_array[x][y] > 0) ? -1.0 : 1.0;
           }
-      rtexture->minmax(min, max); 
+      rtexture->minmax(min, max);
       cout << "min, max texture = " << min << ' ' << max << endl;
       for(i = 0; i <= rtexture->max_pixel(); i++)
         if (rtexture->is_valid_pixel(i))
@@ -470,20 +470,20 @@ int main(int argc, char* argv[])
           }
       filename = s.output_base + "_texture.tga";
       cout  << "Writing image: " << filename << endl;
-      image.write(filename);
-      
+      image.write_TGA(filename);
+
       // Texture modulated by polarization magnitude
-      rtexture->minmax(min, max); 
+      rtexture->minmax(min, max);
       rmagnitude->minmax(mmin, mmax);
       cout << "min, max polarization magnitude = " << mmin << ", " << mmax << endl;
       for(i = 0; i <= rtexture->max_pixel(); i++)
         if (rtexture->is_valid_pixel(i))
           {
             rhitcount->i2xy(i, x, y);
-            modtexture->d_array[x][y] = (rtexture->d_array[x][y] - min) * 
+            modtexture->d_array[x][y] = (rtexture->d_array[x][y] - min) *
               (rmagnitude->d_array[x][y] - mmin);
           }
-      modtexture->minmax(min, max); 
+      modtexture->minmax(min, max);
       cout << "min, max = " << min << " " << max << endl;
       for(i = 0; i <= rtexture->max_pixel(); i++)
         if (rtexture->is_valid_pixel(i))
@@ -494,10 +494,10 @@ int main(int argc, char* argv[])
           }
       filename = s.output_base + "_mod_texture.tga";
       cout  << "Writing image: " << filename << endl;
-      image.write(filename);
-      
+      image.write_TGA(filename);
+
       // Temperature
-      rtemperature->minmax(min, max); 
+      rtemperature->minmax(min, max);
       for(i = 0; i <= rtexture->max_pixel(); i++)
         if (rtexture->is_valid_pixel(i))
           {
@@ -507,10 +507,10 @@ int main(int argc, char* argv[])
           }
       filename = s.output_base + "_temperature.tga";
       cout  << "Writing image: " << filename << endl;
-      image.write(filename);   
-      
+      image.write_TGA(filename);
+
       // Magnitude
-      rmagnitude->minmax(min, max); 
+      rmagnitude->minmax(min, max);
       for(i = 0; i <= rtexture->max_pixel(); i++)
         if (rtexture->is_valid_pixel(i))
           {
@@ -520,13 +520,13 @@ int main(int argc, char* argv[])
           }
       filename = s.output_base + "_magnitude.tga";
       cout  << "Writing image: " << filename << endl;
-      image.write(filename);                    
+      image.write_TGA(filename);
 
 
       // Temperature and polarization
       double r, g, b;
       rtemperature->minmax(tmin, tmax);
-      modtexture->minmax(min, max); 
+      modtexture->minmax(min, max);
       for(i = 0; i <= rtexture->max_pixel(); i++)
         if (rtexture->is_valid_pixel(i))
           {
@@ -535,13 +535,12 @@ int main(int argc, char* argv[])
             r = myColour.r;
             g = myColour.g;
             b = myColour.b;
-            rgbOverOperator(r, g, b, 0, 0, 0, 
+            rgbOverOperator(r, g, b, 0, 0, 0,
                             1.0 - 0.95 * (modtexture->d_array[x][y] - min) / (max - min));
             image.put_pixel(x, y, Colour(r, g, b));
           }
       filename = s.output_base + "_temperature_mod_texture.tga";
       cout  << "Writing image: " << filename << endl;
-      image.write(filename);    
+      image.write_TGA(filename);
     }
 }
-

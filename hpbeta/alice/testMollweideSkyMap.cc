@@ -1,8 +1,9 @@
-#include <cstdio>
 #include <iostream>
-#include <assert.h>
-#include <math.h>
+#include <cassert>
+#include <cmath>
+#include <cstdio>
 #include "MollweideSkyMap.h"
+#include "lsconstants.h"
 
 
 using namespace std;
@@ -11,7 +12,7 @@ int main()
 {
   cout << "hello" << endl;
 
-  printf("pi = %25.20f, %25.20f\n", pi * 1.0, (float) pi);
+  printf("pi = %25.20f, %25.20f\n", pi * 1.0, float(pi));
 
   MollweideSkyMap m;
   m.set_size(2048);
@@ -36,26 +37,26 @@ int main()
   p.theta = pi / 2 + 0.1;
   p.phi = 0.0;
   m.project(p);
-  
+
   for(i = 0; i < 100; i++)
     {
       p.theta = i / 100.0 * pi;
       m.project(p);
       // cout << endl;
     }
-  
+
   p.theta = pi;
   m.project(p);
-  
+
   for(i = 0; i <= m.max_pixel(); i++)
     if (m.is_valid_pixel(i))
       {
-	p = m.deproject(i);
-	// cout << "pointing = " << p;
-	j = m.project(p);
-	// cout << i << ' ' << j << endl;
-	assert(i == j);
-	// return 0;
+        p = m.deproject(i);
+        // cout << "pointing = " << p;
+        j = m.project(p);
+        // cout << i << ' ' << j << endl;
+        assert(i == j);
+        // return 0;
       }
   cout << "test passed c" << endl;
 

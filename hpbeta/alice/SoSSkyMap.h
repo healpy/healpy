@@ -1,4 +1,4 @@
-#ifndef SOSSKYMAP 
+#ifndef SOSSKYMAP
 #define SOSSKYMAP
 
 #include "RectSkyMap.h"
@@ -12,7 +12,7 @@ class SoSSkyMap : public RectSkyMap
   SoSSkyMap(int x);
   void set_size(int x);
 
-  int is_valid_pixel(int i) const
+  int is_valid_pixel(int /*i*/) const
     {
       return 1;  /* All pixels are valid */
     }

@@ -25,7 +25,7 @@
  */
 
 /*! \file alm_healpix_tools.h
- *  Copyright (C) 2003, 2004, 2005 Max-Planck-Society
+ *  Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008 Max-Planck-Society
  *  \author Martin Reinecke
  */
 
@@ -64,7 +64,7 @@ template<typename T> void map2alm (const Healpix_Map<T> &map,
 template<typename T> void map2alm_iter (const Healpix_Map<T> &map,
   Alm<xcomplex<T> > &alm, int num_iter, const arr<double> &weight);
 
-template<typename T> void map2alm_iter (const Healpix_Map<T> &map,
+template<typename T> inline void map2alm_iter (const Healpix_Map<T> &map,
   Alm<xcomplex<T> > &alm, int num_iter)
   {
   arr<double> wgt(2*map.Nside());
@@ -74,6 +74,16 @@ template<typename T> void map2alm_iter (const Healpix_Map<T> &map,
 
 template<typename T> void map2alm_iter2 (const Healpix_Map<T> &map,
   Alm<xcomplex<T> > &alm, double err_abs, double err_rel);
+
+template<typename T> void map2alm_spin
+  (const Healpix_Map<T> &map1, const Healpix_Map<T> &map2,
+   Alm<xcomplex<T> > &alm1, Alm<xcomplex<T> > &alm2,
+   int spin, const arr<double> &weight, bool add_alm);
+
+template<typename T> void map2alm_spin_iter2
+  (const Healpix_Map<T> &map1, const Healpix_Map<T> &map2,
+   Alm<xcomplex<T> > &alm1, Alm<xcomplex<T> > &alm2,
+   int spin, double err_abs, double err_rel);
 
 /*! Converts Healpix maps containing the I, Q and U Stokes parameters
     to sets of a_lms.
@@ -122,7 +132,7 @@ template<typename T> void map2alm_pol_iter
    int num_iter,
    const arr<double> &weight);
 
-template<typename T> void map2alm_pol_iter
+template<typename T> inline void map2alm_pol_iter
   (const Healpix_Map<T> &mapT,
    const Healpix_Map<T> &mapQ,
    const Healpix_Map<T> &mapU,
@@ -151,6 +161,10 @@ template<typename T> void map2alm_pol_iter2
     \param map the output map, which must have RING ordering. */
 template<typename T> void alm2map (const Alm<xcomplex<T> > &alm,
   Healpix_Map<T> &map);
+
+template<typename T> void alm2map_spin
+  (const Alm<xcomplex<T> > &alm1, const Alm<xcomplex<T> > &alm2,
+   Healpix_Map<T> &map1, Healpix_Map<T> &map2, int spin);
 
 /*! Converts a a set of polarised a_lm to a HEALPix map.
     \param almT the input temperature a_lms

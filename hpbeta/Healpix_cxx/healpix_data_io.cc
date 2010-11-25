@@ -25,7 +25,7 @@
  */
 
 /*
- *  Copyright (C) 2003, 2005 Max-Planck-Society
+ *  Copyright (C) 2003, 2005, 2009 Max-Planck-Society
  *  Author: Martin Reinecke
  */
 
@@ -33,7 +33,6 @@
 #include "arr.h"
 #include "fitshandle.h"
 #include "paramfile.h"
-#include "simparams.h"
 
 using namespace std;
 
@@ -46,17 +45,15 @@ void read_weight_ring (const string &dir, int nside, arr<double> &weight)
   inp.read_column(1,weight);
   }
 
-void get_ring_weights (paramfile &params, simparams &par, int nside,
-  arr<double> &weight)
+void get_ring_weights (paramfile &params, int nside, arr<double> &weight)
   {
   bool weighted = params.find<bool>("weighted",false);
-  par.add ("weighted","WEIGHTED",weighted,"ring weights used?");
   weight.alloc (2*nside);
   if (weighted)
     {
     string datadir = params.find<string>("healpix_data");
     read_weight_ring (datadir, nside, weight);
-    for (int m=0; m<weight.size(); ++m) weight[m]+=1;
+    for (tsize m=0; m<weight.size(); ++m) weight[m]+=1;
     }
   else
     weight.fill(1);
@@ -88,11 +85,9 @@ void read_pixwin (const string &dir, int nside, arr<double> &temp,
     inp.read_column(2,pol);
   }
 
-void get_pixwin (paramfile &params, simparams &par, int lmax,
-  int nside, arr<double> &pixwin)
+void get_pixwin (paramfile &params, int lmax, int nside, arr<double> &pixwin)
   {
   bool do_pixwin = params.find<bool>("pixel_window",false);
-  par.add("pixel_window","PIXWIN",do_pixwin,"pixel window used?");
   pixwin.alloc(lmax+1);
   pixwin.fill(1);
   if (do_pixwin)
@@ -101,11 +96,10 @@ void get_pixwin (paramfile &params, simparams &par, int lmax,
     read_pixwin (datadir,nside,pixwin);
     }
   }
-void get_pixwin (paramfile &params, simparams &par, int lmax,
-  int nside, arr<double> &pixwin, arr<double> &pixwin_pol)
+void get_pixwin (paramfile &params, int lmax, int nside, arr<double> &pixwin,
+  arr<double> &pixwin_pol)
   {
   bool do_pixwin = params.find<bool>("pixel_window",false);
-  par.add("pixel_window","PIXWIN",do_pixwin,"pixel window used?");
   pixwin.alloc(lmax+1);
   pixwin.fill(1);
   pixwin_pol.alloc(lmax+1);

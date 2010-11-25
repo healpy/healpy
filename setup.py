@@ -3,8 +3,8 @@
 import platform
 
 TARGET_DICT = {
-    'linux': 'generic_gcc',
-    'darwin': 'osx'
+    'linux': 'healpy',
+    'darwin': 'healpy_osx'
 }
 
 SYSTEM_STRING = platform.system().lower ()
@@ -62,24 +62,20 @@ if sys.argv[1] != 'sdist':
     compile_healpix_cxx(HEALPIX_TARGET)
     if not ( isdir(healpix_cxx_dir+'/include') and
              isdir(healpix_cxx_dir+'/lib') ):
-        raise IOError("No inlcude and lib directory : needed for healpy !")
+        raise IOError("No include and lib directory : needed for healpy !")
 
     if HEALPIX_TARGET2 != HEALPIX_TARGET:
         compile_healpix_cxx(HEALPIX_TARGET2)
         if not ( isdir(healpix_cxx_dir2+'/include') and
                  isdir(healpix_cxx_dir2+'/lib') ):
-            raise IOError("No inlcude and lib directory : needed for healpy !")
+            raise IOError("No include and lib directory : needed for healpy !")
 
 ###############################################
 
-healpix_libs =['healpix_cxx','fftpack','cxxsupport','cfitsio']
-healpix_args =[]
-healpix_libs2=['healpix_cxx','fftpack','cxxsupport','cfitsio']
-healpix_args2=[]
-if HEALPIX_TARGET2=='gcc_omp':
-    healpix_libs2.append('gomp')
-    healpix_args2.append('-fopenmp')
-
+healpix_libs =['healpix_cxx','cxxsupport','psht','fftpack','c_utils','cfitsio','gomp']
+healpix_args =['-fopenmp']
+healpix_libs2=['healpix_cxx','cxxsupport','psht','fftpack','c_utils','cfitsio','gomp']
+healpix_args2=['-fopenmp']
 
 #start with base extension
 pixel_lib = Extension('healpy._healpy_pixel_lib',

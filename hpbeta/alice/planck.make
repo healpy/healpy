@@ -1,47 +1,30 @@
-TEMP1	= $(SRCROOT)/alice
-VPATH	= $(TEMP1) $(LIBDIR)
+PKG:=alice
 
-BINARIES= generateTexture test alice2 testSoSSkyMap testMollweideSkyMap testOrthogonalSkyMap
+SD:=$(SRCROOT)/$(PKG)
+OD:=$(BLDROOT)/$(PKG)
 
-include $(PARAMFILE)
+FULL_INCLUDE+= -I$(SD)
 
-TEST_OBJ= test.o PolarizationHolder.o TextureHolder.o
-TESTSOS_OBJ = PolarizationHolder.o TextureHolder.o SoSSkyMap.o testSoSSkyMap.o
-TESTMOL_OBJ = PolarizationHolder.o TextureHolder.o MollweideSkyMap.o testMollweideSkyMap.o
-TESTORTH_OBJ = PolarizationHolder.o TextureHolder.o testOrthogonalSkyMap.o
-ALICE2_OBJ= alice2.o PolarizationHolder.o TextureHolder.o color.o SoSSkyMap.o MollweideSkyMap.o
+HDR_$(PKG):=$(SD)/*.h
+CXXBIN:=generateTexture alice_test alice2 testSoSSkyMap testMollweideSkyMap testOrthogonalSkyMap
+CXXBIN:=$(CXXBIN:%=$(BINDIR)/%)
 
-SoSSkyMap.o: SoSSkyMap.h
-MollweideSkyMap.o: MollweideSkyMap.h
-PolarizationHolder.o: PolarizationHolder.h
-TextureHolder.o: TextureHolder.h
-color.o: color.h
-test.o: alice_utils.h
-alice2.o: alice_usage.h OrthogonalSkyMap.h
-testOrthogonalSkyMap.o: OrthogonalSkyMap.h
+OBJ:=PolarizationHolder.o TextureHolder.o SoSSkyMap.o MollweideSkyMap.o color.o
+ALLOBJ:=$(OBJ) generateTexture.o alice2.o test.o testSoSSkyMap.o testMollweideSkyMap.o testOrthogonalSkyMap.o
+OBJ:=$(OBJ:%=$(OD)/%)
+ALLOBJ:=$(ALLOBJ:%=$(OD)/%)
 
-generateTexture.o: libhealpix_cxx.a libcxxsupport.a libcfitsio.a
-generateTexture: generateTexture.o
-	$(CXXL) $(CXXLFLAGS) -o $@ generateTexture.o  -lhealpix_cxx \
-	-lcxxsupport -lcfitsio -lfftpack $(CXX_EXTRALIBS)
 
-$(ALICE2_OBJ): libhealpix_cxx.a libcxxsupport.a libcfitsio.a
-alice2: $(ALICE2_OBJ) libhealpix_cxx.a libcxxsupport.a libcfitsio.a
-	$(CXXL) $(CXXLFLAGS) -o $@ $(ALICE2_OBJ) -lhealpix_cxx \
-	-lcxxsupport -lcfitsio -lfftpack $(CXX_EXTRALIBS)
+ODEP:=$(HDR_$(PKG)) $(HDR_Healpix_cxx) $(HDR_cxxsupport) $(HDR_libpsht) $(HDR_libfftpack) $(HDR_c_utils)
+BDEP:=$(OBJ) $(LIB_Healpix_cxx) $(LIB_cxxsupport) $(LIB_libpsht) $(LIB_libfftpack) $(LIB_c_utils) $(LIB_libcfitsio)
 
-test: $(TEST_OBJ) libhealpix_cxx.a libcxxsupport.a libcfitsio.a
-	$(CXXL) $(CXXLFLAGS) -o $@ $(TEST_OBJ) -lhealpix_cxx \
-	-lcxxsupport -lcfitsio -lfftpack $(CXX_EXTRALIBS)	
+$(ALLOBJ): $(ODEP) | $(OD)_mkdir
 
-testSoSSkyMap: $(TESTSOS_OBJ) libhealpix_cxx.a libcxxsupport.a libcfitsio.a
-	$(CXXL) $(CXXLFLAGS) -o $@ $(TESTSOS_OBJ) -lhealpix_cxx \
-	-lcxxsupport -lcfitsio -lfftpack $(CXX_EXTRALIBS)		
+$(BINDIR)/generateTexture: $(OD)/generateTexture.o $(BDEP)
+$(BINDIR)/alice2: $(OD)/alice2.o $(BDEP)
+$(BINDIR)/alice_test: $(OD)/test.o $(BDEP)
+$(BINDIR)/testSoSSkyMap: $(OD)/testSoSSkyMap.o $(BDEP)
+$(BINDIR)/testMollweideSkyMap: $(OD)/testMollweideSkyMap.o $(BDEP)
+$(BINDIR)/testOrthogonalSkyMap: $(OD)/testOrthogonalSkyMap.o $(BDEP)
 
-testMollweideSkyMap: $(TESTMOL_OBJ) libhealpix_cxx.a libcxxsupport.a libcfitsio.a
-	$(CXXL) $(CXXLFLAGS) -o $@ $(TESTMOL_OBJ) -lhealpix_cxx \
-	-lcxxsupport -lcfitsio -lfftpack $(CXX_EXTRALIBS)	
-	
-testOrthogonalSkyMap: $(TESTORTH_OBJ) OrthogonalSkyMap.h  libhealpix_cxx.a libcxxsupport.a libcfitsio.a
-	$(CXXL) $(CXXLFLAGS) -o $@ $(TESTORTH_OBJ) -lhealpix_cxx \
-	-lcxxsupport -lcfitsio -lfftpack $(CXX_EXTRALIBS)		
+all_cxxbin+=$(CXXBIN)

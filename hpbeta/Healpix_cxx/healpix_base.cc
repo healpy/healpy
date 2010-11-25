@@ -25,7 +25,7 @@
  */
 
 /*
- *  Copyright (C) 2003, 2004, 2005, 2006 Max-Planck-Society
+ *  Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008 Max-Planck-Society
  *  Author: Martin Reinecke
  */
 
@@ -34,6 +34,7 @@
 #include "pointing.h"
 #include "arr.h"
 #include "geom_utils.h"
+#include "lsconstants.h"
 
 using namespace std;
 
@@ -42,16 +43,25 @@ short Healpix_Base::utab[];
 
 const nside_dummy SET_NSIDE=nside_dummy();
 
+Healpix_Ordering_Scheme string2HealpixScheme (const string &inp)
+  {
+  string tmp=trim(inp);
+  if (equal_nocase(tmp,"RING")) return RING;
+  if (equal_nocase(tmp,"NESTED")) return NEST;
+  planck_fail ("bad Healpix ordering scheme '"+tmp+
+               "': expected 'RING' or 'NESTED'");
+  }
+
 Healpix_Base::Tablefiller::Tablefiller()
   {
   for (int m=0; m<0x100; ++m)
     {
-    ctab[m] =
+    ctab[m] = short(
          (m&0x1 )       | ((m&0x2 ) << 7) | ((m&0x4 ) >> 1) | ((m&0x8 ) << 6)
-      | ((m&0x10) >> 2) | ((m&0x20) << 5) | ((m&0x40) >> 3) | ((m&0x80) << 4);
-    utab[m] =
+      | ((m&0x10) >> 2) | ((m&0x20) << 5) | ((m&0x40) >> 3) | ((m&0x80) << 4));
+    utab[m] = short(
          (m&0x1 )       | ((m&0x2 ) << 1) | ((m&0x4 ) << 2) | ((m&0x8 ) << 3)
-      | ((m&0x10) << 4) | ((m&0x20) << 5) | ((m&0x40) << 6) | ((m&0x80) << 7);
+      | ((m&0x10) << 4) | ((m&0x20) << 5) | ((m&0x40) << 6) | ((m&0x80) << 7));
     }
   }
 
@@ -311,24 +321,24 @@ int Healpix_Base::ring2nest (int pix) const
 
 int Healpix_Base::nest2peano (int pix) const
   {
-  static const unsigned char subpix[8][4] = {
+  static const uint8 subpix[8][4] = {
     { 0, 1, 3, 2 }, { 3, 0, 2, 1 }, { 2, 3, 1, 0 }, { 1, 2, 0, 3 },
     { 0, 3, 1, 2 }, { 1, 0, 2, 3 }, { 2, 1, 3, 0 }, { 3, 2, 0, 1 } };
-  const unsigned char subpath[8][4] = {
+  static const uint8 subpath[8][4] = {
     { 4, 0, 6, 0 }, { 7, 5, 1, 1 }, { 2, 4, 2, 6 }, { 3, 3, 7, 5 },
     { 0, 2, 4, 4 }, { 5, 1, 5, 3 }, { 6, 6, 0, 2 }, { 1, 7, 3, 7 } };
-  static const unsigned char face2path[12] = {
+  static const uint8 face2path[12] = {
     2, 5, 2, 5, 3, 6, 3, 6, 2, 3, 2, 3 };
-  static const unsigned char face2peanoface[12] = {
+  static const uint8 face2peanoface[12] = {
     0, 5, 6, 11, 10, 1, 4, 7, 2, 3, 8, 9 };
 
   int face = pix>>(2*order_);
-  unsigned char path = face2path[face];
+  uint8 path = face2path[face];
   int result = 0;
 
   for (int shift=2*order_-2; shift>=0; shift-=2)
     {
-    unsigned char spix = (pix>>shift) & 0x3;
+    uint8 spix = uint8((pix>>shift) & 0x3);
     result <<= 2;
     result |= subpix[path][spix];
     path=subpath[path][spix];
@@ -339,24 +349,24 @@ int Healpix_Base::nest2peano (int pix) const
 
 int Healpix_Base::peano2nest (int pix) const
   {
-  static const unsigned char subpix[8][4] = {
+  static const uint8 subpix[8][4] = {
     { 0, 1, 3, 2 }, { 1, 3, 2, 0 }, { 3, 2, 0, 1 }, { 2, 0, 1, 3 },
     { 0, 2, 3, 1 }, { 1, 0, 2, 3 }, { 3, 1, 0, 2 }, { 2, 3, 1, 0 } };
-  static const unsigned char subpath[8][4] = {
+  static const uint8 subpath[8][4] = {
     { 4, 0, 0, 6 }, { 5, 1, 1, 7 }, { 6, 2, 2, 4 }, { 7, 3, 3, 5 },
     { 0, 4, 4, 2 }, { 1, 5, 5, 3 }, { 2, 6, 6, 0 }, { 3, 7, 7, 1 } };
-  static const unsigned char face2path[12] = {
+  static const uint8 face2path[12] = {
     2, 6, 2, 3, 3, 5, 2, 6, 2, 3, 3, 5 };
-  static const unsigned char peanoface2face[12] = {
+  static const uint8 peanoface2face[12] = {
     0, 5, 8, 9, 6, 1, 2, 7, 10, 11, 4, 3 };
 
   int face = pix>>(2*order_);
-  unsigned char path = face2path[face];
+  uint8 path = face2path[face];
   int result = 0;
 
   for (int shift=2*order_-2; shift>=0; shift-=2)
     {
-    unsigned char spix = (pix>>shift) & 0x3;
+    uint8 spix = uint8((pix>>shift) & 0x3);
     result <<= 2;
     result |= subpix[path][spix];
     path=subpath[path][spix];
@@ -431,6 +441,7 @@ int Healpix_Base::ang2pix_z_phi (double z, double phi) const
     else // polar region, za > 2/3
       {
       int ntt = int(tt);
+      if (ntt>=4) ntt=3;
       double tp = tt-ntt;
       double tmp = nside_*sqrt(3*(1-za));
 
@@ -575,7 +586,7 @@ void Healpix_Base::query_disc (const pointing &ptg, double radius,
       in_ring (m, 0, pi, listpix);
 
   if (scheme_==NEST)
-    for (unsigned int m=0; m<listpix.size(); ++m)
+    for (tsize m=0; m<listpix.size(); ++m)
       listpix[m] = ring2nest(listpix[m]);
   }
 
@@ -607,6 +618,10 @@ void Healpix_Base::get_ring_info (int ring, int &startpix, int &ringpix,
     startpix = npix_ - startpix - ringpix;
     }
   }
+
+void Healpix_Base::query_disc_inclusive (const pointing &dir, double radius,
+  vector<int> &listpix) const
+    { query_disc (dir,radius+1.362*pi/(4*nside_),listpix); }
 
 void Healpix_Base::neighbors (int pix, fix_arr<int,8> &result) const
   {
@@ -768,7 +783,7 @@ void Healpix_Base::get_interpol (const pointing &ptg, fix_arr<int,4> &pix,
     }
 
   if (scheme_==NEST)
-    for (int m=0; m<pix.size(); ++m)
+    for (tsize m=0; m<pix.size(); ++m)
       pix[m] = ring2nest(pix[m]);
   }
 

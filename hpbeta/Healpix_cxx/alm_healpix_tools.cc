@@ -25,63 +25,30 @@
  */
 
 /*
- *  Copyright (C) 2003, 2004, 2005 Max-Planck-Society
+ *  Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008 Max-Planck-Society
  *  Author: Martin Reinecke
  */
 
 #include "alm_healpix_tools.h"
-#include "alm_map_tools.h"
 #include "alm.h"
 #include "healpix_map.h"
 #include "xcomplex.h"
+#include "psht_cxx.h"
 
 using namespace std;
-
-namespace {
-
-void healpix2ringpairs (const Healpix_Base &base,
-  const arr<double> &weight, vector<ringpair> &pair)
-  {
-  pair.clear();
-  int startpix, ringpix;
-  double theta, wgt, phi0;
-  bool shifted;
-  int nside = base.Nside();
-  for (int m=0; m<2*nside-1; ++m)
-    {
-    base.get_ring_info2 (m+1, startpix, ringpix, theta, shifted);
-    wgt = weight[m]*fourpi/base.Npix();
-    phi0 = shifted ? pi/ringpix : 0;
-    pair.push_back (ringpair(
-      ringinfo(theta, phi0, wgt, ringpix, startpix),
-      ringinfo(pi-theta, phi0, wgt, ringpix, base.Npix()-startpix-ringpix)));
-    }
-  base.get_ring_info2 (2*nside, startpix, ringpix, theta, shifted);
-  wgt = weight[2*nside-1]*fourpi/base.Npix();
-  phi0 = shifted ? pi/ringpix : 0;
-  pair.push_back (ringpair(ringinfo(theta, phi0, wgt, ringpix, startpix)));
-  }
-
-void healpix2ringpairs (const Healpix_Base &base, vector<ringpair> &pair)
-  {
-  arr<double> wgt(2*base.Nside());
-  wgt.fill(1);
-  healpix2ringpairs(base,wgt,pair);
-  }
-
-} // namespace
-
 
 template<typename T> void map2alm (const Healpix_Map<T> &map,
   Alm<xcomplex<T> > &alm, const arr<double> &weight, bool add_alm)
   {
   planck_assert (map.Scheme()==RING, "map2alm: map must be in RING scheme");
-  planck_assert (weight.size()>=2*map.Nside(),
+  planck_assert (int(weight.size())>=2*map.Nside(),
     "map2alm: weight array has too few entries");
 
-  vector<ringpair> pair;
-  healpix2ringpairs(map,weight,pair);
-  map2alm(pair,&map[0],alm,add_alm);
+  psht_joblist<T> joblist;
+  joblist.set_weighted_Healpix_geometry (map.Nside(),&weight[0]);
+  joblist.set_triangular_alm_info (alm.Lmax(), alm.Mmax());
+  joblist.add_map2alm(&map[0], &alm(0,0), add_alm);
+  joblist.execute();
   }
 
 template void map2alm (const Healpix_Map<float> &map,
@@ -141,6 +108,72 @@ template void map2alm_iter2 (const Healpix_Map<double> &map,
   Alm<xcomplex<double> > &alm, double err_abs, double err_rel);
 
 
+template<typename T> void map2alm_spin
+  (const Healpix_Map<T> &map1, const Healpix_Map<T> &map2,
+   Alm<xcomplex<T> > &alm1, Alm<xcomplex<T> > &alm2,
+   int spin, const arr<double> &weight, bool add_alm)
+  {
+  planck_assert (map1.Scheme()==RING,
+    "map2alm_spin: maps must be in RING scheme");
+  planck_assert (map1.conformable(map2),
+    "map2alm_spin: maps are not conformable");
+  planck_assert (alm1.conformable(alm1),
+    "map2alm_spin: a_lm are not conformable");
+  planck_assert (int(weight.size())>=2*map1.Nside(),
+    "map2alm_spin: weight array has too few entries");
+
+  psht_joblist<T> joblist;
+  joblist.set_weighted_Healpix_geometry (map1.Nside(),&weight[0]);
+  joblist.set_triangular_alm_info (alm1.Lmax(), alm1.Mmax());
+  joblist.add_map2alm_spin(&map1[0], &map2[0], &alm1(0,0), &alm2(0,0),
+    spin, add_alm);
+  joblist.execute();
+  }
+
+template void map2alm_spin
+  (const Healpix_Map<float> &map1, const Healpix_Map<float> &map2,
+   Alm<xcomplex<float> > &alm1, Alm<xcomplex<float> > &alm2,
+   int spin, const arr<double> &weight, bool add_alm);
+template void map2alm_spin
+  (const Healpix_Map<double> &map1, const Healpix_Map<double> &map2,
+   Alm<xcomplex<double> > &alm1, Alm<xcomplex<double> > &alm2,
+   int spin, const arr<double> &weight, bool add_alm);
+
+template<typename T> void map2alm_spin_iter2
+  (const Healpix_Map<T> &map1, const Healpix_Map<T> &map2,
+   Alm<xcomplex<T> > &alm1, Alm<xcomplex<T> > &alm2,
+   int spin, double err_abs, double err_rel)
+  {
+  arr<double> wgt(2*map1.Nside());
+  wgt.fill(1);
+  Healpix_Map<T> map1b(map1), map2b(map2);
+  alm1.SetToZero(); alm2.SetToZero();
+  while(true)
+    {
+    map2alm_spin(map1b,map2b,alm1,alm2,spin,wgt,true);
+    alm2map_spin(alm1,alm2,map1b,map2b,spin);
+    double errmeasure=0;
+    for (int m=0; m<map1.Npix(); ++m)
+      {
+      double err = abs(map1[m]-map1b[m]);
+      double rel = (map1[m]!=0) ? abs(err/map1[m]) : 1e300;
+      errmeasure = max(errmeasure,min(err/err_abs,rel/err_rel));
+      map1b[m] = map1[m]-map1b[m];
+      err = abs(map2[m]-map2b[m]);
+      rel = (map2[m]!=0) ? abs(err/map2[m]) : 1e300;
+      errmeasure = max(errmeasure,min(err/err_abs,rel/err_rel));
+      map2b[m] = map2[m]-map2b[m];
+      }
+cout << "map error measure: " << errmeasure << endl;
+    if (errmeasure<1) break;
+    }
+  }
+
+template void map2alm_spin_iter2
+  (const Healpix_Map<double> &map1, const Healpix_Map<double> &map2,
+   Alm<xcomplex<double> > &alm1, Alm<xcomplex<double> > &alm2,
+   int spin, double err_abs, double err_rel);
+
 template<typename T> void map2alm_pol
   (const Healpix_Map<T> &mapT,
    const Healpix_Map<T> &mapQ,
@@ -155,12 +188,17 @@ template<typename T> void map2alm_pol
     "map2alm_pol: maps must be in RING scheme");
   planck_assert (mapT.conformable(mapQ) && mapT.conformable(mapU),
     "map2alm_pol: maps are not conformable");
-  planck_assert (weight.size()>=2*mapT.Nside(),
-    "map2alm_pol: at least one weight array has too few entries");
+  planck_assert (almT.conformable(almG) && almT.conformable(almC),
+    "map2alm_pol: a_lm are not conformable");
+  planck_assert (int(weight.size())>=2*mapT.Nside(),
+    "map2alm_pol: weight array has too few entries");
 
-  vector<ringpair> pair;
-  healpix2ringpairs(mapT,weight,pair);
-  map2alm_pol(pair,&mapT[0],&mapQ[0],&mapU[0],almT,almG,almC,add_alm);
+  psht_joblist<T> joblist;
+  joblist.set_weighted_Healpix_geometry (mapT.Nside(),&weight[0]);
+  joblist.set_triangular_alm_info (almT.Lmax(), almT.Mmax());
+  joblist.add_map2alm_pol(&mapT[0], &mapQ[0], &mapU[0], &almT(0,0),
+    &almG(0,0), &almC(0,0), add_alm);
+  joblist.execute();
   }
 
 template void map2alm_pol
@@ -181,6 +219,7 @@ template void map2alm_pol
    Alm<xcomplex<double> > &almC,
    const arr<double> &weight,
    bool add_alm);
+
 
 template<typename T> void map2alm_pol_iter
   (const Healpix_Map<T> &mapT,
@@ -282,15 +321,43 @@ template<typename T> void alm2map (const Alm<xcomplex<T> > &alm,
   {
   planck_assert (map.Scheme()==RING, "alm2map: map must be in RING scheme");
 
-  vector<ringpair> pair;
-  healpix2ringpairs(map,pair);
-  alm2map(alm,pair,&map[0]);
+  psht_joblist<T> joblist;
+  joblist.set_Healpix_geometry (map.Nside());
+  joblist.set_triangular_alm_info (alm.Lmax(), alm.Mmax());
+  joblist.add_alm2map(&alm(0,0), &map[0], false);
+  joblist.execute();
   }
 
 template void alm2map (const Alm<xcomplex<double> > &alm,
   Healpix_Map<double> &map);
 template void alm2map (const Alm<xcomplex<float> > &alm,
   Healpix_Map<float> &map);
+
+template<typename T> void alm2map_spin
+  (const Alm<xcomplex<T> > &alm1, const Alm<xcomplex<T> > &alm2,
+   Healpix_Map<T> &map1, Healpix_Map<T> &map2, int spin)
+  {
+  planck_assert (map1.Scheme()==RING,
+    "alm2map_spin: maps must be in RING scheme");
+  planck_assert (map1.conformable(map2),
+    "alm2map_spin: maps are not conformable");
+  planck_assert (alm1.conformable(alm2),
+    "alm2map_spin: a_lm are not conformable");
+
+  psht_joblist<T> joblist;
+  joblist.set_Healpix_geometry (map1.Nside());
+  joblist.set_triangular_alm_info (alm1.Lmax(), alm1.Mmax());
+  joblist.add_alm2map_spin(&alm1(0,0), &alm2(0,0), &map1[0], &map2[0],
+    spin, false);
+  joblist.execute();
+  }
+
+template void alm2map_spin
+  (const Alm<xcomplex<double> > &alm1, const Alm<xcomplex<double> > &alm2,
+   Healpix_Map<double> &map, Healpix_Map<double> &map2, int spin);
+template void alm2map_spin
+  (const Alm<xcomplex<float> > &alm1, const Alm<xcomplex<float> > &alm2,
+   Healpix_Map<float> &map, Healpix_Map<float> &map2, int spin);
 
 
 template<typename T> void alm2map_pol
@@ -305,10 +372,15 @@ template<typename T> void alm2map_pol
     "alm2map_pol: maps must be in RING scheme");
   planck_assert (mapT.conformable(mapQ) && mapT.conformable(mapU),
     "alm2map_pol: maps are not conformable");
+  planck_assert (almT.conformable(almG) && almT.conformable(almC),
+    "alm2map_pol: a_lm are not conformable");
 
-  vector<ringpair> pair;
-  healpix2ringpairs(mapT,pair);
-  alm2map_pol(almT,almG,almC,pair,&mapT[0],&mapQ[0],&mapU[0]);
+  psht_joblist<T> joblist;
+  joblist.set_Healpix_geometry (mapT.Nside());
+  joblist.set_triangular_alm_info (almT.Lmax(), almT.Mmax());
+  joblist.add_alm2map_pol(&almT(0,0), &almG(0,0), &almC(0,0), &mapT[0],
+    &mapQ[0], &mapU[0], false);
+  joblist.execute();
   }
 
 template void alm2map_pol (const Alm<xcomplex<double> > &almT,
@@ -337,9 +409,12 @@ template<typename T> void alm2map_der1
   planck_assert (map.conformable(mapdth) && map.conformable(mapdph),
     "alm2map_der1: maps are not conformable");
 
-  vector<ringpair> pair;
-  healpix2ringpairs(map,pair);
-  alm2map_der1(alm,pair,&map[0],&mapdth[0],&mapdph[0]);
+  psht_joblist<T> joblist;
+  joblist.set_Healpix_geometry (map.Nside());
+  joblist.set_triangular_alm_info (alm.Lmax(), alm.Mmax());
+  joblist.add_alm2map(&alm(0,0), &map[0], false);
+  joblist.add_alm2map_der1(&alm(0,0), &mapdth[0], &mapdph[0], false);
+  joblist.execute();
   }
 
 template void alm2map_der1 (const Alm<xcomplex<double> > &alm,

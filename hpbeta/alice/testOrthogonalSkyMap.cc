@@ -1,8 +1,9 @@
-#include <cstdio>
 #include <iostream>
-#include <assert.h>
-#include <math.h>
+#include <cassert>
+#include <cmath>
+#include <cstdio>
 #include "OrthogonalSkyMap.h"
+#include "lsconstants.h"
 
 using namespace std;
 
@@ -10,7 +11,7 @@ int main()
 {
   cout << "hello" << endl;
 
-  printf("pi = %25.20f, %25.20f\n", pi * 1.0, (float) pi);
+  printf("pi = %25.20f, %25.20f\n", pi * 1.0, float(pi));
 
   OrthogonalSkyMap orth(1024);
 
@@ -30,16 +31,16 @@ int main()
     }
   cout << "test passed a" << endl;
 
-  pointing p; 
+  pointing p;
   for(i = 0; i <= orth.max_pixel(); i++)
     if (orth.is_valid_pixel(i))
       {
-	p = orth.deproject(i);
-	// cout << "pointing = " << p;
-	j = orth.project(p);
-	// cout << i << ' ' << j << endl;
-	assert(i == j);
-	// return 0;
+        p = orth.deproject(i);
+        // cout << "pointing = " << p;
+        j = orth.project(p);
+        // cout << i << ' ' << j << endl;
+        assert(i == j);
+        // return 0;
       }
   cout << "test passed b" << endl;
 

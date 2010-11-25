@@ -1,19 +1,18 @@
-TEMP1	= $(SRCROOT)/docsrc
-VPATH	= $(TEMP1)
+PKG:=docsrc
 
-include $(PARAMFILE)
+docsrc_idx: $(DOCDIR)_mkdir
+	cp $(SRCROOT)/docsrc/index_cxx.html $(DOCDIR)/index.html
 
-cxx_doc: prep
-	rm -rf $(DOCDIR)/*
-	doxygen libfftpack.dox
-	mv htmldoc $(DOCDIR)/libfftpack
-	doxygen cxxsupport.dox
-	mv htmldoc $(DOCDIR)/cxxsupport
-	doxygen Healpix_cxx.dox
-	mv htmldoc $(DOCDIR)/Healpix_cxx
-	rm libfftpack.tag cxxsupport.tag Healpix_cxx.tag
-	cp index_cxx.html $(DOCDIR)/index.html
+docsrc_code_doc: $(DOCDIR)_mkdir docsrc_idx
+	cd $(SRCROOT)/docsrc; \
+	for i in libfftpack libpsht cxxsupport Healpix_cxx; do \
+	  doxygen $${i}.dox; \
+	  mv htmldoc $(DOCDIR)/$${i}; \
+	done; \
+	rm *.tag; \
 
-clean:
-	rm -f *.aux *.out *.toc *.log *.tag
+docsrc_clean:
+	cd $(SRCROOT)/docsrc; \
 	rm -rf htmldoc
+
+doc: docsrc_code_doc

@@ -25,7 +25,7 @@
  */
 
 /*
- *  Copyright (C) 2003, 2004, 2005 Max-Planck-Society
+ *  Copyright (C) 2003-2010 Max-Planck-Society
  *  Author: Martin Reinecke
  */
 
@@ -34,6 +34,7 @@
 #include "alm.h"
 #include "fitshandle.h"
 #include "xcomplex.h"
+#include "safe_cast.h"
 
 using namespace std;
 
@@ -46,26 +47,23 @@ void get_almsize(fitshandle &inp, int &lmax, int &mmax)
     return;
     }
 
-  int n_alms = inp.nelems(1);
+  int n_alms = safe_cast<int>(inp.nelems(1));
   arr<int> index;
-  const int chunksize=1024*256;
-  int offset=0;
-  lmax=-1;
-  mmax=-1;
-  while (offset<n_alms)
+  lmax=mmax=-1;
+  chunkMaker cm(n_alms,inp.efficientChunkSize(1));
+  uint64 offset,ppix;
+  while(cm.getNext(offset,ppix))
     {
-    int ppix=min(chunksize,n_alms-offset);
     index.alloc(ppix);
     inp.read_column(1,index,offset);
 
-    for (int i=0; i<ppix; ++i)
+    for (tsize i=0; i<ppix; ++i)
       {
       int l = isqrt(index[i]-1);
       int m = index[i] - l*l - l - 1;
       if (l>lmax) lmax=l;
       if (m>mmax) mmax=m;
       }
-    offset+=chunksize;
     }
   }
 
@@ -95,25 +93,24 @@ void get_almsize_pol(const string &filename, int &lmax, int &mmax)
 template<typename T> void read_Alm_from_fits
   (fitshandle &inp, Alm<xcomplex<T> >&alms, int lmax, int mmax)
   {
-  int n_alms = inp.nelems(1);
+  int n_alms = safe_cast<int>(inp.nelems(1));
   arr<int> index;
   arr<T> re, im;
 
   alms.Set(lmax, mmax);
   alms.SetToZero();
   int max_index = lmax*lmax + lmax + mmax + 1;
-  const int chunksize=1024*256;
-  int offset=0;
-  while (offset<n_alms)
+  chunkMaker cm(n_alms,inp.efficientChunkSize(1));
+  uint64 offset,ppix;
+  while(cm.getNext(offset,ppix))
     {
-    int ppix=min(chunksize,n_alms-offset);
     index.alloc(ppix);
     re.alloc(ppix); im.alloc(ppix);
     inp.read_column(1,index,offset);
     inp.read_column(2,re,offset);
     inp.read_column(3,im,offset);
 
-    for (int i=0; i<ppix; ++i)
+    for (tsize i=0; i<ppix; ++i)
       {
       if (index[i]>max_index) return;
 
@@ -124,7 +121,6 @@ template<typename T> void read_Alm_from_fits
       if ((l<=lmax) && (m<=mmax))
         alms(l,m).Set (re[i], im[i]);
       }
-    offset+=chunksize;
     }
   }
 
@@ -152,10 +148,10 @@ template void read_Alm_from_fits (const string &filename,
 
 template<typename T> void write_Alm_to_fits
   (fitshandle &out, const Alm<xcomplex<T> > &alms, int lmax, int mmax,
-  int datatype)
+  PDT datatype)
   {
   vector<fitscolumn> cols;
-  cols.push_back (fitscolumn("index","l*l+l+m+1",1,TINT32BIT));
+  cols.push_back (fitscolumn("index","l*l+l+m+1",1,PLANCK_INT32));
   cols.push_back (fitscolumn("real","unknown",1,datatype));
   cols.push_back (fitscolumn("imag","unknown",1,datatype));
   out.insert_bintab(cols);
@@ -166,14 +162,13 @@ template<typename T> void write_Alm_to_fits
   int n_alms = ((mmax+1)*(mmax+2))/2 + (mmax+1)*(lmax-mmax);
 
   int l=0, m=0;
-  const int chunksize=1024*256;
-  int offset=0;
-  while (offset<n_alms)
+  chunkMaker cm(n_alms,out.efficientChunkSize(1));
+  uint64 offset,ppix;
+  while(cm.getNext(offset,ppix))
     {
-    int ppix=min(chunksize,n_alms-offset);
     index.alloc(ppix);
     re.alloc(ppix); im.alloc(ppix);
-    for (int i=0; i<ppix; ++i)
+    for (tsize i=0; i<ppix; ++i)
       {
       index[i] = l*l + l + m + 1;
       if ((l<=lm) && (m<=mm))
@@ -186,27 +181,25 @@ template<typename T> void write_Alm_to_fits
     out.write_column(1,index,offset);
     out.write_column(2,re,offset);
     out.write_column(3,im,offset);
-
-    offset+=chunksize;
     }
-  out.add_key("MAX-LPOL",lmax,"highest l in the table");
-  out.add_key("MAX-MPOL",mmax,"highest m in the table");
+  out.set_key("MAX-LPOL",lmax,"highest l in the table");
+  out.set_key("MAX-MPOL",mmax,"highest m in the table");
   }
 
 template void write_Alm_to_fits
   (fitshandle &out, const Alm<xcomplex<double> > &alms, int lmax,
-   int mmax, int datatype);
+   int mmax, PDT datatype);
 template void write_Alm_to_fits
   (fitshandle &out, const Alm<xcomplex<float> > &alms, int lmax,
-   int mmax, int datatype);
+   int mmax, PDT datatype);
 
 
 template<typename T> void write_compressed_Alm_to_fits
   (fitshandle &out, const Alm<xcomplex<T> > &alms, int lmax, int mmax,
-  int datatype)
+  PDT datatype)
   {
   vector<fitscolumn> cols;
-  cols.push_back (fitscolumn("index","l*l+l+m+1",1,TINT32BIT));
+  cols.push_back (fitscolumn("index","l*l+l+m+1",1,PLANCK_INT32));
   cols.push_back (fitscolumn("real","unknown",1,datatype));
   cols.push_back (fitscolumn("imag","unknown",1,datatype));
   out.insert_bintab(cols);
@@ -219,15 +212,14 @@ template<typename T> void write_compressed_Alm_to_fits
       if (alms(l,m).norm()>0) ++n_alms;
 
   int l=0, m=0;
-  const int chunksize=1024*256;
   int real_lmax=0, real_mmax=0;
-  int offset=0;
-  while (offset<n_alms)
+  chunkMaker cm(n_alms,out.efficientChunkSize(1));
+  uint64 offset,ppix;
+  while(cm.getNext(offset,ppix))
     {
-    int ppix=min(chunksize,n_alms-offset);
     index.alloc(ppix);
     re.alloc(ppix); im.alloc(ppix);
-    for (int i=0; i<ppix; ++i)
+    for (tsize i=0; i<ppix; ++i)
       {
       while (alms(l,m).norm()==0)
         {
@@ -245,16 +237,14 @@ template<typename T> void write_compressed_Alm_to_fits
     out.write_column(1,index,offset);
     out.write_column(2,re,offset);
     out.write_column(3,im,offset);
-
-    offset+=chunksize;
     }
-  out.add_key("MAX-LPOL",real_lmax,"highest l in the table");
-  out.add_key("MAX-MPOL",real_mmax,"highest m in the table");
+  out.set_key("MAX-LPOL",real_lmax,"highest l in the table");
+  out.set_key("MAX-MPOL",real_mmax,"highest m in the table");
   }
 
 template void write_compressed_Alm_to_fits
   (fitshandle &out, const Alm<xcomplex<double> > &alms, int lmax,
-   int mmax, int datatype);
+   int mmax, PDT datatype);
 template void write_compressed_Alm_to_fits
   (fitshandle &out, const Alm<xcomplex<float> > &alms, int lmax,
-   int mmax, int datatype);
+   int mmax, PDT datatype);

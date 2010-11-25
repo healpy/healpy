@@ -13,28 +13,28 @@ class OrthogonalSkyMap : public RectSkyMap
  private:
   double d_xmin, d_xscale;
   double d_ymin, d_yscale;
-  
+
  public:
-  OrthogonalSkyMap() 
+  OrthogonalSkyMap()
     {
       set_size(100, -1.0, 1.0, -1.0, 1.0);
     };
-  
+
   OrthogonalSkyMap(int width, double xmin, double xmax, double ymin, double ymax)
     {
       set_size(width, xmin, xmax, ymin, ymax);
     };
-  
+
   OrthogonalSkyMap(int width)
     {
       set_size(width, -1.0, 1.0, -1.0, 1.0);
     };
-  
+
   void set_size(int width, double xmin, double xmax, double ymin, double ymax)
     {
       assert(width > 0);
       assert(xmax > xmin);
-      assert(ymax > ymin); 
+      assert(ymax > ymin);
       int height = static_cast<int>(floor(0.5 + width * (ymax - ymin) / (xmax - xmin)));
       this->RectSkyMap::set_size(width, height);
       d_xmin = xmin;
@@ -46,7 +46,7 @@ class OrthogonalSkyMap : public RectSkyMap
 /*       cout << "d_xscale = " << d_xscale << endl; */
 /*       cout << "d_yscale = " << d_yscale << endl; */
     };
-  
+
   int is_valid_pixel(int i) const
     {
       int x, y;
@@ -66,13 +66,13 @@ class OrthogonalSkyMap : public RectSkyMap
       xp = (x + 0.5) * d_xscale + d_xmin;
       yp = (d_y - y - 0.5) * d_yscale + d_ymin;
     };
-  
+
   void xpyp2xy(double xp, double yp, int &x, int &y) const
     {
       x = static_cast<int>(floor((xp - d_xmin) / d_xscale));
-      y = static_cast<int>(floor(d_y - (yp - d_ymin) / d_yscale));      
+      y = static_cast<int>(floor(d_y - (yp - d_ymin) / d_yscale));
     };
-  
+
   // Return 1 if the pointing is on the visible half of the sphere.
   int ang2xpyp(pointing p, double &xp, double &yp) const
     {
@@ -81,11 +81,11 @@ class OrthogonalSkyMap : public RectSkyMap
       v = p.to_vec3();
       xp = v.y;
       yp = v.x;
-      
+
       return (v.z > 0.0);
     };
-  
-  // Return 1 if result is in the projected circle. 
+
+  // Return 1 if result is in the projected circle.
   int xpyp2ang(double xp, double yp, pointing &p) const
     {
       double r2 = xp * xp + yp * yp;
@@ -93,17 +93,17 @@ class OrthogonalSkyMap : public RectSkyMap
       if (r2 <= 1.0)
     {
       z = sqrt(1.0 - r2);
-      vec2pnt(vec3(yp, xp, z), p);
+      p.from_vec3(vec3(yp, xp, z));
       return 1;
     }
-      else 
+      else
     {
       p.theta = 0.0;
       p.phi = 0.0;
       return 0;
     }
     };
-  
+
   int project(pointing p) const
     {
       int i, x, y;
@@ -122,9 +122,9 @@ class OrthogonalSkyMap : public RectSkyMap
         return -1;
     }
       else
-    return -1;      
+    return -1;
     };
-  
+
   pointing deproject(int i) const
     {
       int x, y;
@@ -134,7 +134,7 @@ class OrthogonalSkyMap : public RectSkyMap
       xy2xpyp(x, y, xp, yp);
       xpyp2ang(xp, yp, p);
       p = unrotate(p);
-      return p;    
+      return p;
     };
 };
 

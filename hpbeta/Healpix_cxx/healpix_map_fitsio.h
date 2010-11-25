@@ -25,7 +25,7 @@
  */
 
 /*! \file healpix_map_fitsio.h
- *  Copyright (C) 2003, 2004 Max-Planck-Society
+ *  Copyright (C) 2003-2010 Max-Planck-Society
  *  \author Martin Reinecke
  */
 
@@ -33,8 +33,9 @@
 #define HEALPIX_MAP_FITSIO_H
 
 #include <string>
+#include "datatypes.h"
+#include "fitshandle.h"
 
-class fitshandle;
 class Healpix_Base;
 
 template<typename T> class arr;
@@ -53,23 +54,57 @@ template<typename T> void read_Healpix_map_from_fits
   (const std::string &filename, Healpix_Map<T> &map, int colnum=1,
   int hdunum=2);
 
+template<typename T> inline void read_Healpix_map_from_fits
+  (const std::string &filename, Healpix_Map<T> &mapT, Healpix_Map<T> &mapQ,
+  Healpix_Map<T> &mapU, int hdunum=2)
+  {
+  fitshandle inp;
+  inp.open(filename);
+  inp.goto_hdu(hdunum);
+  read_Healpix_map_from_fits(inp,mapT,1);
+  read_Healpix_map_from_fits(inp,mapQ,2);
+  read_Healpix_map_from_fits(inp,mapU,3);
+  }
+
 /*! Inserts a new binary table into \a out, which contains one column
-    of FITS type \a datatype with the name \a name, and writes all HEALPix
+    of Planck type \a datatype with the name \a name, and writes all HEALPix
     specific keywords based on the information in \a base. */
 void prepare_Healpix_fitsmap
-  (fitshandle &out, const Healpix_Base &base, int datatype,
+  (fitshandle &out, const Healpix_Base &base, PDT datatype,
   const arr<std::string> &colname);
 
 /*! Inserts a new binary table into \a out, which contains one column
-    of FITS type \a datatype, and stores \a map into this column. */
+    of Planck type \a datatype, and stores \a map into this column. */
 template<typename T> void write_Healpix_map_to_fits
-  (fitshandle &out, const Healpix_Map<T> &map, int datatype);
+  (fitshandle &out, const Healpix_Map<T> &map, PDT datatype);
 /*! Inserts a new binary table into \a out, which contains three columns
-    of FITS type \a datatype, and stores \a mapT, \a mapQ and \a mapU
+    of Planck type \a datatype, and stores \a mapT, \a mapQ and \a mapU
     into these columns. */
 template<typename T> void write_Healpix_map_to_fits
   (fitshandle &out, const Healpix_Map<T> &mapT,
-   const Healpix_Map<T> &mapQ, const Healpix_Map<T> &mapU, int datatype);
+   const Healpix_Map<T> &mapQ, const Healpix_Map<T> &mapU, PDT datatype);
+
+/*! Creates a new FITS file with the name \a outfile, with a binary table in
+    HDU 2, which contains one column of Planck type \a datatype, and stores
+    \a map into this column. */
+template<typename T> inline void write_Healpix_map_to_fits
+  (const std::string &outfile, const Healpix_Map<T> &map, PDT datatype)
+  {
+  fitshandle out;
+  out.create (outfile);
+  write_Healpix_map_to_fits (out,map,datatype);
+  }
+/*! Creates a new FITS file with the name \a outfile, with a binary table in
+    HDU 2, which contains three columns of Planck type \a datatype, and stores
+    \a mapT, \a mapQ and \a mapU into this column. */
+template<typename T> inline void write_Healpix_map_to_fits
+  (const std::string &outfile, const Healpix_Map<T> &mapT,
+   const Healpix_Map<T> &mapQ, const Healpix_Map<T> &mapU, PDT datatype)
+  {
+  fitshandle out;
+  out.create (outfile);
+  write_Healpix_map_to_fits (out,mapT,mapQ,mapU,datatype);
+  }
 
 /*! \} */
 

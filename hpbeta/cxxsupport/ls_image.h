@@ -1,43 +1,43 @@
 /*
- *  This file is part of Healpix_cxx.
+ *  This file is part of libcxxsupport.
  *
- *  Healpix_cxx is free software; you can redistribute it and/or modify
+ *  libcxxsupport is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation; either version 2 of the License, or
  *  (at your option) any later version.
  *
- *  Healpix_cxx is distributed in the hope that it will be useful,
+ *  libcxxsupport is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with Healpix_cxx; if not, write to the Free Software
+ *  along with libcxxsupport; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
- *  For more information about HEALPix, see http://healpix.jpl.nasa.gov
  */
 
 /*
- *  Healpix_cxx is being developed at the Max-Planck-Institut fuer Astrophysik
+ *  libcxxsupport is being developed at the Max-Planck-Institut fuer Astrophysik
  *  and financially supported by the Deutsches Zentrum fuer Luft- und Raumfahrt
  *  (DLR).
  */
 
-/*! \file tga_image.h
- *  Classes for creation and output of TGA image files
+/*! \file ls_image.h
+ *  Classes for creation and output of image files
  *
- *  Copyright (C) 2003, 2006 Max-Planck-Society
+ *  Copyright (C) 2003-2010 Max-Planck-Society
  *  \author Martin Reinecke, David Larson
  */
 
-#ifndef PLANCK_TGA_IMAGE_H
-#define PLANCK_TGA_IMAGE_H
+#ifndef PLANCK_LS_IMAGE_H
+#define PLANCK_LS_IMAGE_H
 
 #include <string>
 #include <vector>
+#include <iostream>
 #include <algorithm>
 #include "arr.h"
+#include "datatypes.h"
 
 /*! \defgroup imagegroup Image creation */
 /*! \{ */
@@ -62,7 +62,7 @@ class Colour
       { return Colour(r+c2.r, g+c2.g, b+c2.b); }
     /*! Returns \a *this, scaled by \a f. */
     const Colour operator* (double f) const
-      { return Colour(r*f, g*f, b*f); }
+      { return Colour(float(r*f), float(g*f), float(b*f)); }
   };
 
 /*! A class for mapping floting-point values into colours. */
@@ -101,16 +101,16 @@ class Colour8
     void import (const Colour &col)
       {
       using namespace std;
-      r = max(0,min(255,int(col.r*256)));
-      g = max(0,min(255,int(col.g*256)));
-      b = max(0,min(255,int(col.b*256)));
+      r = uint8(max(0,min(255,int(col.r*256))));
+      g = uint8(max(0,min(255,int(col.g*256))));
+      b = uint8(max(0,min(255,int(col.b*256))));
       }
 
   public:
-    char r,g,b;
+    uint8 r,g,b;
 
     Colour8() {}
-    Colour8 (unsigned char R, unsigned char G, unsigned char B)
+    Colour8 (uint8 R, uint8 G, uint8 B)
       : r(R), g(G), b(B) {}
     Colour8 (const Colour &col)
       { import (col); }
@@ -132,8 +132,8 @@ class Font
 extern const Font medium_bold_font;
 extern const Font giant_font;
 
-/*! Class for creating and storing TGA image files. */
-class TGA_Image
+/*! Class for creating and storing image files. */
+class LS_Image
   {
   private:
     Font font;
@@ -144,11 +144,11 @@ class TGA_Image
 
   public:
     /*! */
-    TGA_Image ();
+    LS_Image ();
     /*! Creates an image object with a resolution of \a xres by \a yres. */
-    TGA_Image (int xres, int yres);
+    LS_Image (int xres, int yres);
     /*! */
-    ~TGA_Image () {}
+    ~LS_Image () {}
 
     /*! Fills the entire image with colour \a col. */
     void fill (const Colour &col) { pixel.fill(col); }
@@ -164,23 +164,27 @@ class TGA_Image
     void annotate_centered (int xpos, int ypos, const Colour &col,
       const std::string &text, int scale=1);
     /*! Sets the pixel \a i, \a j, to the colour \a col. */
-    void put_pixel (int i, int j, const Colour &col)
+    void put_pixel (tsize i, tsize j, const Colour &col)
       {
-      if ((i>=0) && (i<pixel.size1()) && (j>=0) && (j<pixel.size2()))
+      if ((i<pixel.size1()) && (j<pixel.size2()))
         pixel[i][j] = col;
       }
     /*! Returns the colour of the pixel \a i, \a j, or black if the pixel
         lies outside of the image. */
-    Colour8 get_pixel (int i, int j)
+    Colour8 get_pixel (tsize i, tsize j)
       {
-      if ((i>=0) && (i<pixel.size1()) && (j>=0) && (j<pixel.size2()))
-        return pixel[i][j];
-      else
-        return Colour8(0, 0, 0);
+      return ((i<pixel.size1()) && (j<pixel.size2())) ?
+        pixel[i][j] : Colour8(0, 0, 0);
       }
 
-    /*! Writes the image to \a file. */
-    void write (const std::string &file) const;
+    /*! Writes the image to \a file in uncompressed TGA format. */
+    void write_TGA (const std::string &file) const;
+
+    /*! Writes the image to \a file in run-length encoded TGA format. */
+    void write_TGA_rle (const std::string &file) const;
+
+    /*! Writes the image to \a file in binary PPM format. */
+    void write_PPM (const std::string &file) const;
   };
 
 /*! \} */

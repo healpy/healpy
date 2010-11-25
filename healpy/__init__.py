@@ -43,7 +43,7 @@ from pixelfunc import (ma,vec2ang,ang2vec,ang2pix,
 from sphtfunc import (anafast,map2alm,
                       alm2map,Alm,synalm,synfast,
                       smoothing,smoothalm,almxfl,alm2cl,
-                      pixwin,alm2signal,getylm,alm2map_der1)
+                      pixwin,alm2map_der1)
 
 from query_disc_func import *
 
@@ -51,7 +51,6 @@ from zoomtool import mollzoom,set_g_clim
 
 from rotator import Rotator
 
-from _healpy_sph_transform_lib import _alm2signal
 from _healpy_pixel_lib import UNSEEN
 
 try:

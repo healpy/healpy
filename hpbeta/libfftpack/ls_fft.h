@@ -32,6 +32,8 @@
 #ifndef PLANCK_LS_FFT_H
 #define PLANCK_LS_FFT_H
 
+#include "c_utils.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -46,38 +48,37 @@ Before any FFT is executed, a plan must be generated for it. Plan creation
 is designed to be fast, so that there is no significant overhead if the
 plan is only used once or a few times.
 
-The main component of the code is a C port of Swarztrauber's FFTPACK
-(http://www.netlib.org/fftpack/), which was originally done by Pekka Janhunen
-and reformatted by Joerg Arndt.
+The main component of the code is based on Paul N. Swarztrauber's FFTPACK in the
+double precision incarnation by Hugh C. Pumphrey
+(http://www.netlib.org/fftpack/dp.tgz).
 
-I added a few digits to the floating-point constants to achieve higher
-precision, split the complex transforms into separate routines for forward
-and backward transforms (to increase performance a bit), and replaced
-the iterative twiddling factor calculation in radfg() and radbg() by an exact
-calculation of the factors.
+I replaced the iterative sine and cosine calculations in radfg() and radbg()
+by an exact calculation, which slightly improves the transform accuracy for
+real FFTs with lengths containing large prime factors.
 
 Since FFTPACK becomes quite slow for FFT lengths with large prime factors
-(in the worst case of prime lengths it reaches O(n*n) complexity), I
-implemented Bluestein's algorithm, which computes a FFT of length n by
-several FFTs of length n2>=2*n and a convolution. Since n2 can be chosen
-to be highly composite, this algorithm is more efficient if n has large
-prime factors. The longer FFTs themselves are then computed using the FFTPACK
-routines.
-Bluestein's algorithm was implemented according to the description at
-<a href="http://en.wikipedia.org/wiki/Bluestein%27s_FFT_algorithm">Wikipedia</a>.
+(in the worst case of prime lengths it reaches \f$\mathcal{O}(n^2)\f$
+complexity), I implemented Bluestein's algorithm, which computes a FFT of length
+\f$n\f$ by several FFTs of length \f$n_2\ge 2n-1\f$ and a convolution. Since
+\f$n_2\f$ can be chosen to be highly composite, this algorithm is more efficient
+if \f$n\f$ has large prime factors. The longer FFTs themselves are then computed
+using the FFTPACK routines.
+Bluestein's algorithm was implemented according to the description on Wikipedia
+(<a href="http://en.wikipedia.org/wiki/Bluestein%27s_FFT_algorithm">
+http://en.wikipedia.org/wiki/Bluestein%27s_FFT_algorithm</a>).
 
 \b Thread-safety:
-All routines can be called concurrently; all information needed by ls_fft
-is stored in the plan variable. However, using the same plan variable on
-multiple threads simultaneously is not supported and will lead to data
-corruption.
+All routines can be called concurrently; all information needed by
+<tt>ls_fft</tt> is stored in the plan variable. However, using the same plan
+variable on multiple threads simultaneously is not supported and will lead to
+data corruption.
 */
 /*! \{ */
 
 typedef struct
   {
   double *work;
-  int length;
+  size_t length;
   int bluestein;
   } complex_plan_i;
 
@@ -85,20 +86,22 @@ typedef struct
 typedef complex_plan_i * complex_plan;
 
 /*! Returns a plan for a complex FFT with \a length elements. */
-complex_plan make_complex_plan (int length);
+complex_plan make_complex_plan (size_t length);
 /*! Destroys a plan for a complex FFT. */
 void kill_complex_plan (complex_plan plan);
 /*! Computes a complex forward FFT on \a data, using \a plan.
-    \a Data has the form r0, i0, r1, i1, ..., r[length-1], i[length-1]. */
+    \a Data has the form <tt>r0, i0, r1, i1, ...,
+    r[length-1], i[length-1]</tt>. */
 void complex_plan_forward (complex_plan plan, double *data);
 /*! Computes a complex backward FFT on \a data, using \a plan.
-    \a Data has the form r0, i0, r1, i1, ..., r[length-1], i[length-1]. */
+    \a Data has the form <tt>r0, i0, r1, i1, ...,
+    r[length-1], i[length-1]</tt>. */
 void complex_plan_backward (complex_plan plan, double *data);
 
 typedef struct
   {
   double *work;
-  int length;
+  size_t length;
   int bluestein;
   } real_plan_i;
 
@@ -106,43 +109,44 @@ typedef struct
 typedef real_plan_i * real_plan;
 
 /*! Returns a plan for a real FFT with \a length elements. */
-real_plan make_real_plan (int length);
+real_plan make_real_plan (size_t length);
 /*! Destroys a plan for a real FFT. */
 void kill_real_plan (real_plan plan);
 /*! Computes a real forward FFT on \a data, using \a plan
     and assuming the FFTPACK storage scheme:
-    - on entry, \a data has the form r0, r1, ..., r[length-1];
-    - on exit, it has the form r0, r1, i1, r2, i2, ...
+    - on entry, \a data has the form <tt>r0, r1, ..., r[length-1]</tt>;
+    - on exit, it has the form <tt>r0, r1, i1, r2, i2, ...</tt>
       (a total of \a length values). */
 void real_plan_forward_fftpack (real_plan plan, double *data);
 /*! Computes a real forward FFT on \a data, using \a plan
     and assuming the FFTPACK storage scheme:
-    - on entry, \a data has the form r0, r1, i1, r2, i2, ...
+    - on entry, \a data has the form <tt>r0, r1, i1, r2, i2, ...</tt>
     (a total of \a length values);
-    - on exit, it has the form r0, r1, ..., r[length-1]. */
+    - on exit, it has the form <tt>r0, r1, ..., r[length-1]</tt>. */
 void real_plan_backward_fftpack (real_plan plan, double *data);
 /*! Computes a real forward FFT on \a data, using \a plan
     and assuming the FFTW halfcomplex storage scheme:
-    - on entry, \a data has the form r0, r1, ..., r[length-1];
-    - on exit, it has the form r0, r1, r2, ..., i2, i1. */
+    - on entry, \a data has the form <tt>r0, r1, ..., r[length-1]</tt>;
+    - on exit, it has the form <tt>r0, r1, r2, ..., i2, i1</tt>. */
 void real_plan_forward_fftw (real_plan plan, double *data);
 /*! Computes a real backward FFT on \a data, using \a plan
     and assuming the FFTW halfcomplex storage scheme:
-    - on entry, \a data has the form r0, r1, r2, ..., i2, i1.
-    - on exit, it has the form r0, r1, ..., r[length-1]. */
+    - on entry, \a data has the form <tt>r0, r1, r2, ..., i2, i1</tt>.
+    - on exit, it has the form <tt>r0, r1, ..., r[length-1]</tt>. */
 void real_plan_backward_fftw (real_plan plan, double *data);
 /*! Computes a real forward FFT on \a data, using \a plan
     and assuming a full-complex storage scheme:
-    - on entry, \a data has the form r0, [ignored], r1, [ignored], ...,
-      r[length-1], [ignored];
-    - on exit, it has the form r0, i0, r1, i1, ..., r[length-1], i[length-1].
+    - on entry, \a data has the form <tt>r0, [ignored], r1, [ignored], ...,
+      r[length-1], [ignored]</tt>;
+    - on exit, it has the form <tt>r0, i0, r1, i1, ...,
+      r[length-1], i[length-1]</tt>.
     */
 void real_plan_forward_c (real_plan plan, double *data);
 /*! Computes a real backward FFT on \a data, using \a plan
     and assuming a full-complex storage scheme:
-    - on entry, \a data has the form r0, i0, r1, i1, ...,
-      r[length-1], i[length-1];
-    - on exit, it has the form r0, 0, r1, 0, ..., r[length-1], 0. */
+    - on entry, \a data has the form <tt>r0, i0, r1, i1, ...,
+      r[length-1], i[length-1]</tt>;
+    - on exit, it has the form <tt>r0, 0, r1, 0, ..., r[length-1], 0</tt>. */
 void real_plan_backward_c (real_plan plan, double *data);
 
 /*! \} */

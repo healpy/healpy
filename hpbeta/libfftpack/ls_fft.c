@@ -34,19 +34,20 @@
 #include "fftpack.h"
 #include "ls_fft.h"
 
-complex_plan make_complex_plan (int length)
+complex_plan make_complex_plan (size_t length)
   {
-  complex_plan plan = (complex_plan) malloc(sizeof(complex_plan_i));
-  int pfsum = prime_factor_sum(length);
+  complex_plan plan = RALLOC(complex_plan_i,1);
+  size_t pfsum = prime_factor_sum(length);
   double comp1 = length*pfsum;
   double comp2 = 2*3*length*log(3.*length);
+  comp2*=3.; /* fudge factor that appears to give good overall performance */
   plan->length=length;
   plan->bluestein = (comp2<comp1);
   if (plan->bluestein)
     bluestein_i (length,&(plan->work));
   else
     {
-    plan->work=(double *)malloc((4*length+15)*sizeof(double));
+    plan->work=RALLOC(double,4*length+15);
     cffti(length, plan->work);
     }
   return plan;
@@ -54,8 +55,8 @@ complex_plan make_complex_plan (int length)
 
 void kill_complex_plan (complex_plan plan)
   {
-  free(plan->work);
-  free(plan);
+  DEALLOC(plan->work);
+  DEALLOC(plan);
   }
 
 void complex_plan_forward (complex_plan plan, double *data)
@@ -75,19 +76,20 @@ void complex_plan_backward (complex_plan plan, double *data)
   }
 
 
-real_plan make_real_plan (int length)
+real_plan make_real_plan (size_t length)
   {
-  real_plan plan = (real_plan) malloc(sizeof(real_plan_i));
-  int pfsum = prime_factor_sum(length);
+  real_plan plan = RALLOC(real_plan_i,1);
+  size_t pfsum = prime_factor_sum(length);
   double comp1 = .5*length*pfsum;
   double comp2 = 2*3*length*log(3.*length);
+  comp2*=3; /* fudge factor that appears to give good overall performance */
   plan->length=length;
   plan->bluestein = (comp2<comp1);
   if (plan->bluestein)
     bluestein_i (length,&(plan->work));
   else
     {
-    plan->work=(double *)malloc((2*length+15)*sizeof(double));
+    plan->work=RALLOC(double,2*length+15);
     rffti(length, plan->work);
     }
   return plan;
@@ -95,17 +97,17 @@ real_plan make_real_plan (int length)
 
 void kill_real_plan (real_plan plan)
   {
-  free(plan->work);
-  free(plan);
+  DEALLOC(plan->work);
+  DEALLOC(plan);
   }
 
 void real_plan_forward_fftpack (real_plan plan, double *data)
   {
   if (plan->bluestein)
     {
-    int m;
-    int n=plan->length;
-    double *tmp = (double *)malloc(2*n*sizeof(double));
+    size_t m;
+    size_t n=plan->length;
+    double *tmp = RALLOC(double,2*n);
     for (m=0; m<n; ++m)
       {
       tmp[2*m] = data[m];
@@ -114,16 +116,16 @@ void real_plan_forward_fftpack (real_plan plan, double *data)
     bluestein(n,tmp,plan->work,-1);
     data[0] = tmp[0];
     memcpy (data+1, tmp+2, (n-1)*sizeof(double));
-    free (tmp);
+    DEALLOC(tmp);
     }
   else
     rfftf (plan->length, data, plan->work);
   }
 
-static void fftpack2halfcomplex (double *data, int n)
+static void fftpack2halfcomplex (double *data, size_t n)
   {
-  int m;
-  double *tmp = (double *)malloc(n*sizeof(double));
+  size_t m;
+  double *tmp = RALLOC(double,n);
   tmp[0]=data[0];
   for (m=1; m<(n+1)/2; ++m)
     {
@@ -133,13 +135,13 @@ static void fftpack2halfcomplex (double *data, int n)
   if (!(n&1))
     tmp[n/2]=data[n-1];
   memcpy (data,tmp,n*sizeof(double));
-  free(tmp);
+  DEALLOC(tmp);
   }
 
-static void halfcomplex2fftpack (double *data, int n)
+static void halfcomplex2fftpack (double *data, size_t n)
   {
-  int m;
-  double *tmp = (double *)malloc(n*sizeof(double));
+  size_t m;
+  double *tmp = RALLOC(double,n);
   tmp[0]=data[0];
   for (m=1; m<(n+1)/2; ++m)
     {
@@ -149,7 +151,7 @@ static void halfcomplex2fftpack (double *data, int n)
   if (!(n&1))
     tmp[n-1]=data[n/2];
   memcpy (data,tmp,n*sizeof(double));
-  free(tmp);
+  DEALLOC(tmp);
   }
 
 void real_plan_forward_fftw (real_plan plan, double *data)
@@ -162,9 +164,9 @@ void real_plan_backward_fftpack (real_plan plan, double *data)
   {
   if (plan->bluestein)
     {
-    int m;
-    int n=plan->length;
-    double *tmp = (double *)malloc(2*n*sizeof(double));
+    size_t m;
+    size_t n=plan->length;
+    double *tmp = RALLOC(double,2*n);
     tmp[0]=data[0];
     tmp[1]=0.;
     memcpy (tmp+2,data+1, (n-1)*sizeof(double));
@@ -177,7 +179,7 @@ void real_plan_backward_fftpack (real_plan plan, double *data)
     bluestein (n, tmp, plan->work, 1);
     for (m=0; m<n; ++m)
       data[m] = tmp[2*m];
-    free (tmp);
+    DEALLOC(tmp);
     }
   else
     rfftb (plan->length, data, plan->work);
@@ -191,8 +193,8 @@ void real_plan_backward_fftw (real_plan plan, double *data)
 
 void real_plan_forward_c (real_plan plan, double *data)
   {
-  int m;
-  int n=plan->length;
+  size_t m;
+  size_t n=plan->length;
 
   if (plan->bluestein)
     {
@@ -213,7 +215,8 @@ void real_plan_forward_c (real_plan plan, double *data)
     }
   else
     {
-    for (m=0; m<n; ++m) data[m+1] = data[2*m];
+/* using "m+m" instead of "2*m" to avoid a nasty bug in Intel's compiler */
+    for (m=0; m<n; ++m) data[m+1] = data[m+m];
     rfftf (n, data+1, plan->work);
     data[0] = data[1];
     data[1] = 0;
@@ -228,11 +231,11 @@ void real_plan_forward_c (real_plan plan, double *data)
 
 void real_plan_backward_c (real_plan plan, double *data)
   {
-  int m;
-  int n=plan->length;
+  size_t n=plan->length;
 
   if (plan->bluestein)
     {
+    size_t m;
     data[1]=0;
     for (m=2; m<n; m+=2)
       {
@@ -250,6 +253,7 @@ void real_plan_backward_c (real_plan plan, double *data)
     }
   else
     {
+    ptrdiff_t m;
     data[1] = data[0];
     rfftb (n, data+1, plan->work);
     for (m=n-1; m>=0; --m)

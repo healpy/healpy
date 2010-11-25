@@ -37,7 +37,7 @@ int main()
       assert(i == j);
     }
   cout << "test passed b" << endl;
-  
+
   for (i = 0; i < s.max_pixel(); i++)
     {
       j = s.get_next_pixel(i);
@@ -46,6 +46,6 @@ int main()
   j = s.get_next_pixel(s.max_pixel());
   assert(j == s.max_pixel() + 1);
   cout << "test passed cc" << endl;
-  
+
   return 0;
 }

@@ -125,9 +125,9 @@ Transform 1: Equatorial (2000) -> Galactic   (2000)
 
     \verbatim Usage: calc_powspec <almfile1> [<almfile2>] <powspec_file>\endverbatim 
 
-  \section median_filter
+  \section median_filter_cxx
     This program inputs a HEALPix map, runs a median filter with the desired
     radius on it and saves the result to another file.
 
-    \verbatim Usage: median_filter <input map> <output map> <radius in arcmin>\endverbatim
+    \verbatim Usage: median_filter_cxx <input map> <output map> <radius in arcmin>\endverbatim
 */

@@ -1,5 +1,4 @@
-SRCROOT = $(LEVELS_SRC)
-BUILDDIR= $(SRCROOT)/build.$(HEALPIX_TARGET)
+BLDROOT = $(SRCROOT)/build.$(HEALPIX_TARGET)
 PREFIX  = $(SRCROOT)/$(HEALPIX_TARGET)
 BINDIR	= $(PREFIX)/bin
 INCDIR	= $(PREFIX)/include
@@ -8,61 +7,19 @@ DOCDIR	= $(SRCROOT)/doc
 
 # do not use any suffix rules
 .SUFFIXES:
+# do not use any default rules
+.DEFAULT:
 
-%.o : %.c
-	$(CC) $(CCFLAGS) $<
+$(BLDROOT)/%.o : $(SRCROOT)/%.c
+	@echo "#  compiling $*.c"
+	cd $(@D) && $(CC) $(FULL_INCLUDE) -I$(BLDROOT) $(CCFLAGS) $<
 
-%.o : %.cc
-	$(CXX) $(CXXCFLAGS) $<
+$(BLDROOT)/%.o : $(SRCROOT)/%.cc
+	@echo "#  compiling $*.cc"
+	cd $(@D) && $(CXX) $(FULL_INCLUDE) -I$(BLDROOT) $(CXXCFLAGS) $<
 
-default: active_all
-
-SUBCLEAN=$(addsuffix .clean,$(SUBDIRS))
-SUBALL=$(addsuffix .all,$(SUBDIRS))
-SUBDOC=$(addsuffix .doc,$(SUBDIRS))
-ACTIVE_SUBALL=$(addsuffix .all,$(ACTIVE_SUBDIRS))
-
-.PHONY: subdir_all subdir_clean $(SUBDIRS) $(SUBALL) $(SUBCLEAN) prep all \
-	active_subdir_all subdir_clean install active_all clean distclean
-
-prep:
-	@if [ ! -d $(PREFIX)   ]; then mkdir $(PREFIX)  ; fi
-	@if [ ! -d $(BUILDDIR) ]; then mkdir $(BUILDDIR); fi
-	@if [ ! -d $(BINDIR)   ]; then mkdir $(BINDIR)  ; fi
-	@if [ ! -d $(LIBDIR)   ]; then mkdir $(LIBDIR)  ; fi
-	@if [ ! -d $(INCDIR)   ]; then mkdir $(INCDIR)  ; fi
-	@if [ ! -d $(DOCDIR)   ]; then mkdir $(DOCDIR)  ; fi
-
-$(SUBCLEAN):
-	@if [ -d $(BUILDDIR)/$(basename $@) ]; then \
-	   cd $(BUILDDIR)/$(basename $@) && \
-	   $(MAKE) -f $(SRCROOT)/$(basename $@)/planck.make clean; \
-	fi
-$(SUBALL): prep
-	@if [ ! -d $(BUILDDIR)/$(basename $@) ]; \
-	   then mkdir $(BUILDDIR)/$(basename $@); fi
-	@cd $(BUILDDIR)/$(basename $@) && \
-	  $(MAKE) -f $(SRCROOT)/$(basename $@)/planck.make all
-
-subdir_all: $(SUBALL)
-
-active_subdir_all: $(ACTIVE_SUBALL)
-
-subdir_clean: $(SUBCLEAN)
-
-install:
-	@if [ "$(HEADERS)"   ]; then cp -p $(HEADERS)   $(INCDIR); fi
-	@if [ "$(BINARIES)"  ]; then cp -p $(BINARIES)  $(BINDIR); fi
-	@if [ "$(LIBRARIES)" ]; then cp -p $(LIBRARIES) $(LIBDIR); fi
-
-install: $(BINARIES) $(LIBRARIES)
-$(BINARIES) $(LIBRARIES): $(OBJECTS)
-active_all: active_subdir_all $(OBJECTS) $(LIBRARIES) $(BINARIES) install
-
-all:	subdir_all $(OBJECTS) $(LIBRARIES) $(BINARIES) install
-
-clean:	subdir_clean
-	rm -f *.o *.a $(BINARIES)
+%_mkdir:
+	@if [ ! -d $* ]; then mkdir -p $* ; fi
 
 distclean:
-	rm -rf $(BUILDDIR) $(PREFIX)
+	rm -rf $(BLDROOT) $(PREFIX) $(DOCDIR)

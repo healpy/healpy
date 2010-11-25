@@ -1,25 +1,23 @@
 /*
- *  This file is part of Healpix_cxx.
+ *  This file is part of libcxxsupport.
  *
- *  Healpix_cxx is free software; you can redistribute it and/or modify
+ *  libcxxsupport is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation; either version 2 of the License, or
  *  (at your option) any later version.
  *
- *  Healpix_cxx is distributed in the hope that it will be useful,
+ *  libcxxsupport is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with Healpix_cxx; if not, write to the Free Software
+ *  along with libcxxsupport; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
- *  For more information about HEALPix, see http://healpix.jpl.nasa.gov
  */
 
 /*
- *  Healpix_cxx is being developed at the Max-Planck-Institut fuer Astrophysik
+ *  libcxxsupport is being developed at the Max-Planck-Institut fuer Astrophysik
  *  and financially supported by the Deutsches Zentrum fuer Luft- und Raumfahrt
  *  (DLR).
  */
@@ -30,8 +28,6 @@
 
 #ifndef PLANCK_CONSTANTS_H
 #define PLANCK_CONSTANTS_H
-
-#include <cmath>
 
 /*! \defgroup mathconstgroup Mathematical constants */
 /*! \{ */
@@ -53,6 +49,7 @@ const double twothird=2.0/3.0;
 const double fourthird=4.0/3.0;
 
 const double degr2rad=pi/180.0;
+const double arcmin2rad=degr2rad/60;
 const double rad2degr=180.0/pi;
 
 //! Ratio between FWHM and sigma of a Gauss curve (\f$\sqrt{8\ln2}\f$).
@@ -67,46 +64,30 @@ const double fwhm2sigma=1/sigma2fwhm;
 const double Jansky2SI=1.0e-26;
 const double SI2Jansky=1.0e+26;
 
-//! Light speed in m/s.
+//! Light speed in m/s (CODATA 2006)
 const double speedOfLight=2.99792458e8;
 
-//! Boltzmann's constant in J/K
-const double kBoltzmann=1.380658e-23;
+//! Boltzmann's constant in J/K (CODATA 2006)
+const double kBoltzmann=1.3806504e-23;
 
-//! Stefan-Boltzmann constant in W/m^2/K^4
-const double sigmaStefanBoltzmann=5.67051e-8;
+//! Stefan-Boltzmann constant in W/m^2/K^4 (CODATA 2006)
+const double sigmaStefanBoltzmann=5.6704e-8;
 
-//! Planck's constant in J s
-const double hPlanck=6.6260755e-34;
+//! Planck's constant in J s (CODATA 2006)
+const double hPlanck=6.62606896e-34;
 
 //! Astronomical unit in m
-const double astronomicalUnit=1.49597893e11;
+const double astronomicalUnit=1.49597870691e11;
 
 //! Solar constant in W/m^2
 const double solarConstant=1368.0;
 
-//! Tropical year in s
-const double tropicalYear=3.15569259747e7;
+//! Average CMB temperature in K (Mather et al. 1999, ApJ 512, 511)
+const double tcmb = 2.725;
 
-//! Average CMB temperature in K
-const double tcmb = 2.726;
-
-//! Colatitude of the solar system motion relative to CMB
-//! (ecliptical coordinates).
-const double solsysdir_ecl_theta = 1.7678013480275747;
-
-//! Longitude of the solar system motion relative to CMB
-//! (ecliptical coordinates).
-const double solsysdir_ecl_phi = 3.0039153062803194;
-
-//! Speed of the solar system motion relative to CMB in m/s.
-const double solsysspeed = 371000.0;
+//! offset (in seconds) between Jan 1, 1958 and Jan 1, 1970
+const double sec_58_70 = 378691200.;
 
 /*! \} */
-
-// technical constants
-
-//! Healpix value representing "undefined"
-const double Healpix_undef=-1.6375e30;
 
 #endif

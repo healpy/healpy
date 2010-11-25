@@ -1,6 +1,7 @@
 #include <iostream>
 #include <stdio.h>
 #include "MollweideSkyMap.h"
+#include "lsconstants.h"
 using namespace std;
 
 
@@ -10,7 +11,7 @@ MollweideSkyMap::MollweideSkyMap(int x)
 }
 
 void MollweideSkyMap::set_size(int x)
-{ 
+{
   int y;
   assert(x >= 2);
   y = x / 2;
@@ -30,7 +31,7 @@ int MollweideSkyMap::is_valid_pixel(int i) const
 }
 
 void MollweideSkyMap::xy2xpyp(int x, int y, double &xp, double &yp) const
-{ 
+{
   xp = 2 * roottwo * (x + 0.5 - d_halfx) / d_halfx;
   yp = -roottwo * (y + 0.5 - d_halfy) / d_halfy;
 }
@@ -47,7 +48,7 @@ int MollweideSkyMap::project(pointing p) const
   double xp, yp, psi, lat, lon;
   double slope, diff;
   double pisinlat;
-  
+
   p.normalize();
   lat = pi / 2 - p.theta;
   lon = p.phi;
@@ -63,7 +64,7 @@ int MollweideSkyMap::project(pointing p) const
       diff = 2 * psi + sin(2 * psi) - pisinlat;
       slope = 2 * (1.0 + cos(2 * psi));
       if (slope == 0.0)
-	slope = 1.0e-5;
+        slope = 1.0e-5;
       psi -= diff / slope;
       // printf("psi, diff = %20.15f %20.15f\n", psi, diff);
       // cout << "psi, diff = " << psi << ' ' << diff << endl;

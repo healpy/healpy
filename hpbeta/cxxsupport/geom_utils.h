@@ -1,25 +1,23 @@
 /*
- *  This file is part of Healpix_cxx.
+ *  This file is part of libcxxsupport.
  *
- *  Healpix_cxx is free software; you can redistribute it and/or modify
+ *  libcxxsupport is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation; either version 2 of the License, or
  *  (at your option) any later version.
  *
- *  Healpix_cxx is distributed in the hope that it will be useful,
+ *  libcxxsupport is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with Healpix_cxx; if not, write to the Free Software
+ *  along with libcxxsupport; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
- *  For more information about HEALPix, see http://healpix.jpl.nasa.gov
  */
 
 /*
- *  Healpix_cxx is being developed at the Max-Planck-Institut fuer Astrophysik
+ *  libcxxsupport is being developed at the Max-Planck-Institut fuer Astrophysik
  *  and financially supported by the Deutsches Zentrum fuer Luft- und Raumfahrt
  *  (DLR).
  */
@@ -31,6 +29,9 @@
  *  \author Martin Reinecke
  *  \author Reinhard Hell
  */
+
+#ifndef PLANCK_GEOM_UTILS_H
+#define PLANCK_GEOM_UTILS_H
 
 #include "cxxutils.h"
 #include "vec3.h"
@@ -46,19 +47,14 @@ inline double orientation (const vec3 &loc, const vec3 &dir)
   {
 // FIXME: here is still optimization potential
   if (loc.x==0 && loc.y==0)
-    {
-    if (loc.z>0) return safe_atan2(dir.y,-dir.x);
-    else return safe_atan2(dir.y,dir.x);
-    }
+    return (loc.z>0) ? safe_atan2(dir.y,-dir.x) : safe_atan2(dir.y,dir.x);
   vec3 east (-loc.y, loc.x, 0);
   vec3 north = crossprod(loc,east);
-  double y = dotprod(dir,east);
-  double x = dotprod(dir,north);
-  return safe_atan2(-y,x);
+  return safe_atan2(-dotprod(dir,east),dotprod(dir,north));
   }
 
 /*! Returns the angle between \a v1 and \a v2 in radians. */
 inline double v_angle (const vec3 &v1, const vec3 &v2)
-  {
-  return atan2 (crossprod(v1,v2).Length(), dotprod(v1,v2));
-  }
+  { return atan2 (crossprod(v1,v2).Length(), dotprod(v1,v2)); }
+
+#endif

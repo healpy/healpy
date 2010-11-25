@@ -25,7 +25,7 @@
  */
 
 /*
- *  Copyright (C) 2004, 2005, 2006 Max-Planck-Society
+ *  Copyright (C) 2004, 2005, 2006, 2007, 2008 Max-Planck-Society
  *  Author: Martin Reinecke
  */
 
@@ -64,6 +64,8 @@ using namespace std;
 const int nsamples = 1000000;
 
 planck_rng rng;
+
+namespace {
 
 void random_dir (pointing &ptg)
   {
@@ -436,8 +438,8 @@ void check_swap_scheme()
   for (int order=0; order<=10; ++order)
     {
     cout << "order = " << order << endl;
-    Healpix_Map<unsigned char> map(order,NEST);
-    for (int m=0; m<map.Npix(); ++m) map[m]=m&0xFF;
+    Healpix_Map<uint8> map(order,NEST);
+    for (int m=0; m<map.Npix(); ++m) map[m]=uint8(m&0xFF);
     map.swap_scheme();
     map.swap_scheme();
     for (int m=0; m<map.Npix(); ++m)
@@ -464,15 +466,15 @@ void check_query_disc()
       map.query_disc(ptg,rad,list);
       vec3 vptg=ptg;
       double cosrad=cos(rad);
-      for (unsigned int i=0; i<list.size(); ++i)
+      for (tsize i=0; i<list.size(); ++i)
         map[list[i]] = true;
       for (int i=0; i<map.Npix(); ++i)
         {
-        bool inside = dotprod(map.pix2ang(i),vptg)>cosrad;
+        bool inside = dotprod(vec3(map.pix2ang(i)),vptg)>cosrad;
         if (inside^map[i])
           cout << "  PROBLEM: order = " << order << ", ptg = " << ptg << endl;
         }
-      for (unsigned int i=0; i<list.size(); ++i)
+      for (tsize i=0; i<list.size(); ++i)
         map[list[i]] = false;
       }
     }
@@ -628,6 +630,11 @@ void check_alm2map2alm (int lmax, int mmax, int nside)
   map2alm_iter2(mapT,almT,1e-12,1e-12);
   check_alm (oalmT, almT, epsilon);
 
+  alm2map_spin(oalmG,oalmC,mapQ,mapU,1);
+  map2alm_spin_iter2(mapQ,mapU,almG,almC,1,1e-12,1e-12);
+  check_alm (oalmG, almG, epsilon);
+  check_alm (oalmC, almC, epsilon);
+
   alm2map_pol(oalmT,oalmG,oalmC,mapT,mapQ,mapU);
   map2alm_pol_iter2(mapT,mapQ,mapU,almT,almG,almC,1e-12,1e-12);
   check_alm (oalmT, almT, epsilon);
@@ -639,7 +646,7 @@ void check_smooth_alm ()
   {
   cout << "testing whether unsmooth(smooth(a_lm)) returns a_lm" << endl;
   const double epsilon = 1e-14;
-  const double fwhm_arcmin = 100;
+  const double fwhm = 100.*arcmin2rad;
   const int lmax=300, mmax=300;
   Alm<xcomplex<double> > oalmT(lmax,mmax),almT(lmax,mmax),
     oalmG(lmax,mmax),almG(lmax,mmax),oalmC(lmax,mmax),almC(lmax,mmax);
@@ -647,12 +654,12 @@ void check_smooth_alm ()
   random_alm(oalmT,oalmG,oalmC,lmax,mmax);
 
   almT=oalmT; almG=oalmG; almC=oalmC;
-  smooth_with_Gauss (almT, fwhm_arcmin);
-  smooth_with_Gauss (almT, -fwhm_arcmin);
+  smoothWithGauss (almT, fwhm);
+  smoothWithGauss (almT, -fwhm);
   check_alm (oalmT, almT, epsilon);
   almT=oalmT;
-  smooth_with_Gauss (almT, almG, almC, fwhm_arcmin);
-  smooth_with_Gauss (almT, almG, almC, -fwhm_arcmin);
+  smoothWithGauss (almT, almG, almC, fwhm);
+  smoothWithGauss (almT, almG, almC, -fwhm);
   check_alm (oalmT, almT, epsilon);
   check_alm (oalmG, almG, epsilon);
   check_alm (oalmC, almC, epsilon);
@@ -673,8 +680,12 @@ void check_rot_alm ()
   check_alm (oalm, alm, epsilon);
   }
 
-int main()
+} // unnamed namespace
+
+int main(int argc, const char **argv)
   {
+  module_startup ("hpxtest",argc,argv,1,"");
+
   check_smooth_alm();
   check_rot_alm();
   check_alm2map2alm(620,620,256);

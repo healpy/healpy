@@ -8,7 +8,7 @@ using namespace std;
 void PolarizationHolder::load(const string& filename)
 {
   fitshandle fh;
-  fh.open(filename, READONLY);
+  fh.open(filename);
   fh.goto_hdu(2);
   read_Healpix_map_from_fits(fh, Q, 2);
   read_Healpix_map_from_fits(fh, U, 3);

@@ -34,14 +34,14 @@
 
 #include "arr.h"
 #include "alm.h"
+#include "lsconstants.h"
 #include "healpix_map.h"
 #include "xcomplex.h"
 #include "alm_healpix_tools.h"
-#include "alm_map_tools.h"
 #include "powspec.h"
 #include "alm_powspec_tools.h"
-#include "ylmgen.h"
 #include "healpix_data_io.h"
+#include "_healpy_utils.h"
 
 #define IS_DEBUG_ON 0
 
@@ -51,9 +51,6 @@
 #define XFREE(X) if( X ) free(X);
 #define XDELETE(X) if( X ) delete[] X;
 #define DBGPRINTF(X,...) if( IS_DEBUG_ON ) printf(X, ## __VA_ARGS__)
-
-static double sky_signal_direct(Alm<xcomplex<double> >alm, 
-				double theta, double phi);
 
 static long npix2nside(long npix);
 static long nside2npix(long nside);
@@ -77,12 +74,6 @@ static PyObject *healpy_synalm(PyObject *self, PyObject *args,
 
 static PyObject *healpy_getn(PyObject *self, PyObject *args);
 
-static PyObject *healpy_alm2signal(PyObject *self, PyObject *args, 
-				   PyObject *kwds);
-
-static PyObject *healpy_Ylm(PyObject *self, PyObject *args, 
-			    PyObject *kwds);
-
 static PyMethodDef SphtMethods[] = {
   {"_map2alm", (PyCFunction)healpy_map2alm, METH_VARARGS | METH_KEYWORDS, 
    "Compute alm or cl from an input map.\n"
@@ -101,12 +92,6 @@ static PyMethodDef SphtMethods[] = {
    "Compute alm's given cl's and unit variance random arrays.\n"},
   {"_getn", healpy_getn, METH_VARARGS,
    "Compute number n such that n(n+1)/2 is equal to the argument.\n"},
-  {"_alm2signal", (PyCFunction)healpy_alm2signal, METH_VARARGS | METH_KEYWORDS,
-   "Compute sum(Alm*Ylm) for a direction (theta,phi).\n"},
-  {"_getylm", (PyCFunction)healpy_Ylm, METH_VARARGS | METH_KEYWORDS,
-   "Compute Ylm(theta,0) for m and l=m..lmax. Return a lmax+1 long array\n"
-   "with values for l<m set to zero.\n"
-   "call: _getylm(lmax,mmax,m,theta)"},
   {NULL, NULL, 0, NULL} /* Sentinel */
 };
 
@@ -390,7 +375,7 @@ static PyObject *healpy_map2alm(PyObject *self, PyObject *args,
   double avg = 0.0;
   if( regression ) {
     avg = mapI.average();
-    mapI.add(-avg);
+    mapI.Add(-avg);
   }
 
   if( !polarisation )
@@ -401,7 +386,7 @@ static PyObject *healpy_map2alm(PyObject *self, PyObject *args,
 
   if( regression ) {
     almIalm(0,0) += avg*sqrt(fourpi);
-    mapI.add(avg);
+    mapI.Add(avg);
   }
 
   if( !docl )
@@ -731,7 +716,7 @@ static PyObject *healpy_alm2map(PyObject *self, PyObject *args,
       xcomplex<double> almI00 = almIalm(0,0);
       almIalm(0,0) = 0;
       alm2map(almIalm,mapI);
-      mapI.add(offset);
+      mapI.Add(offset);
       almIalm(0,0) = almI00;
     }
   else
@@ -740,7 +725,7 @@ static PyObject *healpy_alm2map(PyObject *self, PyObject *args,
       xcomplex<double> almI00 = almIalm(0,0);
       almIalm(0,0) = 0;
       alm2map_pol(almIalm,almGalm,almCalm,mapI,mapQ,mapU);
-      mapI.add(offset);      
+      mapI.Add(offset);
       almIalm(0,0) = almI00;
     }
 
@@ -872,7 +857,7 @@ static PyObject *healpy_alm2map_der1(PyObject *self, PyObject *args,
   xcomplex<double> almI00 = almIalm(0,0);
   almIalm(0,0) = 0;
   alm2map_der1(almIalm,mapI,mapDt,mapDp);
-  mapI.add(offset);
+  mapI.Add(offset);
   almIalm(0,0) = almI00;
 
   return Py_BuildValue("NNN",mapIout,mapDtheta,mapDphi);
@@ -1270,190 +1255,4 @@ void cholesky(int n, double *data, double *res)
 	}
     }
   return;
-}
-
-
-/***********************************************************************
-    alm2signal
-
-       input: 
-          alm: a 1D ndarray
-          theta:
-          phi:    direction in the sky
-
-       parameter: lmax, mmax (default, lmax=mmax compatible with szalm)
-
-       output: the signal at given position
-*/
-static PyObject *healpy_alm2signal(PyObject *self, PyObject *args, 
-				   PyObject *kwds)
-{
-  int lmax=-1, mmax=-1;
-  double theta,phi;
-
-  static char* kwlist[] = {"","", "", "lmax", "mmax", NULL};
-
-  PyArrayObject *alm = NULL;
-
-  if( !PyArg_ParseTupleAndKeywords(args, kwds, "O!dd|ii", kwlist,
-				   &PyArray_Type, &alm,
-				   &theta, &phi,
-				   &lmax, &mmax) )
-    return NULL;
-  
-  /* Check array is contiguous */
-  if( !(alm->flags & NPY_C_CONTIGUOUS) ) 
-    {
-      PyErr_SetString(PyExc_ValueError,
-		      "Array must be C contiguous for this operation.");
-      return NULL;      
-    }
-  
-  /* Check type of data : must be double complex ('D') */
-  if( alm->descr->type != 'D' )
-    {
-      PyErr_SetString(PyExc_TypeError,
-		      "Type must be double complex (complex128) "
-		      "for this function");
-      return NULL;
-    }
-
-  /* Check number of dimension : must be 1 */
-  if( alm->nd != 1 )
-    {
-      PyErr_SetString(PyExc_ValueError,
-		      "The map must be a 1D array");
-      return NULL;
-    }
-  /* Need to have lmax and mmax defined */
-  if( lmax < 0 )
-    {
-      /* Check that the dimension is compatible with lmax=mmax */
-      long imax = alm->dimensions[0] - 1;
-      double ell;
-      ell = (-3.+sqrt(9.+8.*imax))/2.;
-      if( ell != floor(ell) )
-	{
-	  PyErr_SetString(PyExc_ValueError, "Wrong alm size "
-			  "(or give lmax and mmax).\n");
-	  return NULL;
-	}
-      lmax=(int)floor(ell);
-      mmax = lmax;
-    }
-  if( mmax < 0 || mmax > lmax)
-    mmax = lmax;
-
-  /* Check lmax and mmax are ok compared to alm.size */
-  int szalm = Alm< xcomplex<double> >::Num_Alms(lmax,mmax);
-  if( alm->dimensions[0] != szalm )
-    {
-      PyErr_SetString(PyExc_ValueError, "Wrong alm size.\n");
-      return NULL;
-    }
-
-  /* Initialize the Alm object */
-  Alm< xcomplex<double> > almobj;
-  {
-    arr< xcomplex<double> > alm_arr((xcomplex<double>*)alm->data, szalm);
-    almobj.Set(alm_arr, lmax, mmax);
-  }
-
-  /* call sky_signal_direct */
-  double result;
-
-  result = sky_signal_direct(almobj, theta, phi);
-
-  /* return the value */
-  return Py_BuildValue("d",result);
-
-}
-
-
-
-double sky_signal_direct(Alm<xcomplex<double> >alm, double theta, double phi)
-{
-  // 
-  int lmax = alm.Lmax();
-  int mmax = alm.Mmax();
-  Ylmgen ylmgen(lmax, mmax);
-
-  double cth, sth;
-  cth = cos(theta);
-  sth = sin(theta);
-
-  arr<double> ylm(lmax+1);
-
-  // to do as in alm2map_cxx
-  double offset = alm(0,0).real()/sqrt(fourpi);
-  alm(0,0) = 0;
-
-  // Term m=0
-  int firstl = 0;
-  ylmgen.get_Ylm(cth, sth, 0, ylm, firstl);
-  double a = 0.0;
-  for( int l=firstl; l<=lmax; l++ )
-    {
-      a += alm(l,0).real() * ylm[l];
-    }
-  
-  // Terms m>=1
-  double b = 0.0;
-  for( int m=1; m<=mmax; m++ )
-    {
-      ylmgen.get_Ylm(cth, sth, m, ylm, firstl);      
-      for( int l=firstl; l<= lmax; l++ )
-	{
-	  b += ( alm(l,m).real() * cos(m*phi) - 
-		 alm(l,m).imag() * sin(m*phi) )*ylm[l];
-	}
-    }
-  
-  return (a + 2. * b) + offset;
-}
-
-
-
-static PyObject *healpy_Ylm(PyObject *self, PyObject *args, 
-			    PyObject *kwds)
-{
-  int lmax, mmax, m;
-  double theta, cth, sth;
-
-  static char* kwlist[] = {"", "", "", "", NULL};
-
-
-  if( !PyArg_ParseTupleAndKeywords(args, kwds, "iiid", kwlist,
-				   &lmax, &mmax, &m, &theta) )
-    return NULL;
-
-  /* Compute the Ylm */
-  
-  Ylmgen ylmgen(lmax, mmax);
-  arr<double> ylm;
-  int firstl;
-
-  cth = cos(theta);
-  sth = sin(theta);
-  ylmgen.get_Ylm(cth, sth, m, ylm, firstl);
-
-  /* Create a numpy array */
-  PyArrayObject *ylm_arr;
-  int nd = 1;
-  npy_intp dims[1];
-  dims[0] = ylm.size();
-  
-  ylm_arr = (PyArrayObject*)PyArray_SimpleNew(nd, dims, NPY_DOUBLE);
-  if( !ylm_arr )
-    return NULL;
-
-  /* copy values of ylm to ylm_arr */
-  memcpy(PyArray_BYTES(ylm_arr), ylm.begin(), PyArray_DIM(ylm_arr, 0)*sizeof(double));
-
-  /* Set lower values to zero */
-  for( int i=0; i<firstl; i++ )
-    *(double*)PyArray_GETPTR1(ylm_arr, i) = 0.0;
-
-  /* return the array object */
-  return Py_BuildValue("N",ylm_arr);
 }

@@ -22,7 +22,7 @@ void hsvToRgb(double& red, double& green, double& blue, double hue, double satur
   assert(hue >= -1.0);
   assert(hue < 361.0);
 
-  if (hue > 360.0) 
+  if (hue > 360.0)
     hue -= 360.0;
   if (hue < 0.0)
     {
@@ -39,7 +39,7 @@ void hsvToRgb(double& red, double& green, double& blue, double hue, double satur
   if (value > 1.0) value = 1.0;
   if (value < 0.0) value = 0.0;
 
-  if (saturation == 0.0) 
+  if (saturation == 0.0)
     {
     red = value;
     green = value;
@@ -102,7 +102,3 @@ void rgbOverOperator(double& red, double& green, double& blue, double redUnder, 
   green = green * alpha + greenUnder * (1 - alpha);
   blue = blue * alpha + blueUnder * (1 - alpha);
   }
-
-
-
-

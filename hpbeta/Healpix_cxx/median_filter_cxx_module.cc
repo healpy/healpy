@@ -25,7 +25,7 @@
  */
 
 /*
- *  Copyright (C) 2005 Max-Planck-Society
+ *  Copyright (C) 2005-2010 Max-Planck-Society
  *  Author: Martin Reinecke
  */
 
@@ -33,8 +33,12 @@
 #include "healpix_map.h"
 #include "healpix_map_fitsio.h"
 #include "fitshandle.h"
+#include "levels_facilities.h"
+#include "lsconstants.h"
 
 using namespace std;
+
+namespace {
 
 template<typename Iterator> typename iterator_traits<Iterator>::value_type
   median(Iterator first, Iterator last)
@@ -42,15 +46,18 @@ template<typename Iterator> typename iterator_traits<Iterator>::value_type
   Iterator mid = first+(last-first-1)/2;
   nth_element(first,mid,last);
   if ((last-first)&1) return *mid;
-  return 0.5*((*mid)+(*min_element(mid+1,last)));
+  return typename iterator_traits<Iterator>::value_type
+    (0.5*((*mid)+(*min_element(mid+1,last))));
   }
 
-int main (int argc, const char **argv)
+} // unnamed namespace
+
+int median_filter_cxx_module (int argc, const char **argv)
   {
-  module_startup ("median_filter", argc, argv, 4,
+  module_startup ("median_filter_cxx", argc, argv, 4,
                   "<input map> <output map> <radius in arcmin>");
 
-  double radius = stringToData<double>(argv[3])/60*degr2rad;
+  double radius = stringToData<double>(argv[3])*arcmin2rad;
 
   Healpix_Map<float> inmap;
   read_Healpix_map_from_fits(argv[1],inmap,1,2);
@@ -62,12 +69,12 @@ int main (int argc, const char **argv)
     {
     inmap.query_disc(inmap.pix2ang(m),radius,list);
     list2.resize(list.size());
-    for (unsigned int i=0; i<list.size(); ++i)
+    for (tsize i=0; i<list.size(); ++i)
       list2[i] = inmap[list[i]];
     outmap[m]=median(list2.begin(),list2.end());
     }
 
-  fitshandle out;
-  out.create(argv[2]);
-  write_Healpix_map_to_fits (out,outmap,TFLOAT);
+  write_Healpix_map_to_fits (argv[2],outmap,PLANCK_FLOAT32);
+
+  return 0;
   }

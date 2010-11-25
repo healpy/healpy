@@ -76,22 +76,20 @@ template<typename T> void extract_powspec
 /*! \} */
 
 /*! Applies a convolution with a Gaussian beam with an FWHM of
-    \a fwhm_arcmin arcmin to \a alm.
-    \note If \a fwhm_arcmin<0, a deconvolution with \a -fwhm_arcmin
-      is performed.
+    \a fwhm (in radian) to \a alm.
+    \note If \a fwhm<0, a deconvolution with \a -fwhm is performed.
     \relates Alm */
-template<typename T> void smooth_with_Gauss
-  (Alm<xcomplex<T> > &alm, double fwhm_arcmin);
+template<typename T> void smoothWithGauss
+  (Alm<xcomplex<T> > &alm, double fwhm);
 /*! Applies a convolution with a Gaussian beam with an FWHM of
-    \a fwhm_arcmin arcmin to \a almT, \a almG and \a almC.
-    \note If \a fwhm_arcmin<0, a deconvolution with \a -fwhm_arcmin
-      is performed.
+    \a fwhm (in radian) to \a almT, \a almG and \a almC.
+    \note If \a fwhm<0, a deconvolution with \a -fwhm is performed.
     \relates Alm */
-template<typename T> void smooth_with_Gauss
+template<typename T> void smoothWithGauss
   (Alm<xcomplex<T> > &almT,
    Alm<xcomplex<T> > &almG,
    Alm<xcomplex<T> > &almC,
-   double fwhm_arcmin);
+   double fwhm);
 
 /*! Rotates \a alm through the Euler angles \a psi, \a theta and \a phi.
     The Euler angle convention  is right handed, rotations are active.

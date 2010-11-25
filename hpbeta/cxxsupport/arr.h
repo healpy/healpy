@@ -1,25 +1,23 @@
 /*
- *  This file is part of Healpix_cxx.
+ *  This file is part of libcxxsupport.
  *
- *  Healpix_cxx is free software; you can redistribute it and/or modify
+ *  libcxxsupport is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation; either version 2 of the License, or
  *  (at your option) any later version.
  *
- *  Healpix_cxx is distributed in the hope that it will be useful,
+ *  libcxxsupport is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with Healpix_cxx; if not, write to the Free Software
+ *  along with libcxxsupport; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
- *  For more information about HEALPix, see http://healpix.jpl.nasa.gov
  */
 
 /*
- *  Healpix_cxx is being developed at the Max-Planck-Institut fuer Astrophysik
+ *  libcxxsupport is being developed at the Max-Planck-Institut fuer Astrophysik
  *  and financially supported by the Deutsches Zentrum fuer Luft- und Raumfahrt
  *  (DLR).
  */
@@ -27,65 +25,186 @@
 /*! \file arr.h
  *  Various high-performance array classes used by the Planck LevelS package.
  *
- *  Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007 Max-Planck-Society
+ *  Copyright (C) 2002 - 2010 Max-Planck-Society
  *  \author Martin Reinecke
  */
 
 #ifndef PLANCK_ARR_H
 #define PLANCK_ARR_H
 
-#include "cxxutils.h"
 #include <algorithm>
+#include <cstdlib>
+#include "cxxutils.h"
 
 /*! \defgroup arraygroup Array classes */
 /*! \{ */
 
+template <typename T> class normalAlloc__
+  {
+  public:
+    T *alloc(tsize sz) const { return (sz>0) ? new T[sz] : 0; }
+    void dealloc (T *ptr) const { delete[] ptr; }
+  };
+
+template <typename T, int align> class alignAlloc__
+  {
+  public:
+    T *alloc(tsize sz) const
+      {
+      using namespace std;
+      if (sz==0) return 0;
+      void *res;
+      planck_assert(posix_memalign(&res,align,sz*sizeof(T))==0,
+        "error in posix_memalign()");
+      return static_cast<T *>(res);
+      }
+    void dealloc(T *ptr) const
+      {
+      using namespace std;
+      if (ptr) free(ptr);
+      }
+  };
+
+
+/*! View of a 1D array */
+template <typename T> class arr_ref
+  {
+  protected:
+    tsize s;
+    T *d;
+
+  public:
+    /*! Constructs an \a arr_ref of size \a s_, starting at \a d_. */
+    arr_ref(T *d_, tsize s_) : s(s_),d(d_) {}
+
+    /*! Returns the current array size. */
+    tsize size() const { return s; }
+
+    /*! Writes \a val into every element of the array. */
+    void fill (const T &val)
+      { for (tsize m=0; m<s; ++m) d[m]=val; }
+
+    /*! Returns a reference to element \a n */
+    template<typename T2> T &operator[] (T2 n) {return d[n];}
+    /*! Returns a constant reference to element \a n */
+    template<typename T2> const T &operator[] (T2 n) const {return d[n];}
+
+    /*! Returns a pointer to the first array element, or NULL if the array
+        is zero-sized. */
+    T *begin() { return d; }
+    /*! Returns a pointer to the one-past-last array element, or NULL if the
+        array is zero-sized. */
+    T *end() { return d+s; }
+    /*! Returns a constant pointer to the first array element, or NULL if the
+        array is zero-sized. */
+    const T *begin() const { return d; }
+    /*! Returns a constant pointer to the one-past-last array element, or NULL
+        if the array is zero-sized. */
+    const T *end() const { return d+s; }
+
+    /*! Copies all array elements to \a ptr. */
+    template<typename T2> void copyToPtr (T *ptr) const
+      { for (tsize m=0; m<s; ++m) ptr[m]=d[m]; }
+
+    /*! Sorts the elements in the array, in ascending order. */
+    void sort()
+      { std::sort (d,d+s); }
+
+    /*! Sorts the elements in the array, such that \a comp(d[i],d[j])==true
+        for \a i<j. */
+    template<typename Comp> void sort(Comp comp)
+      { std::sort (d,d+s,comp); }
+
+    /*! Helper function for linear interpolation (or extrapolation).
+        \a idx and \a val are computed such that
+        \a val=d[idx]+frac*(d[idx+1]-d[idx]). If \a val<d[0], \a frac will be
+        negative, if \a val>d[s-1], frac will be larger than 1. In all other
+        cases \a 0<=frac<=1.
+
+        The array must be ordered in ascending order; no two values may be
+        equal. */
+    void interpol_helper (const T &val, tsize &idx, double &frac) const
+      { ::interpol_helper (d, d+s, val, idx, frac); }
+
+    /*! Helper function for linear interpolation (or extrapolation).
+        \a idx and \a val are computed such that
+        \a val=d[idx]+frac*(d[idx+1]-d[idx]). If \a comp(val,d[0])==true,
+        \a frac will be negative, if \a comp(val,d[s-1])==false, frac will be
+        larger than 1. In all other cases \a 0<=frac<=1.
+
+        The array must be ordered such that \a comp(d[i],d[j])==true
+        for \a i<j; no two values may be equal. */
+    template<typename Comp> void interpol_helper (const T &val, Comp comp,
+      tsize &idx, double &frac) const
+      { ::interpol_helper (d, d+s, val, comp, idx, frac); }
+
+    /*! Returns the minimum and maximum entry in \a minv and \a maxv,
+        respectively. Throws an exception if the array is zero-sized. */
+    void minmax (T &minv, T &maxv) const
+      {
+      planck_assert(s>0,"trying to find min and max of a zero-sized array");
+      minv=maxv=d[0];
+      for (tsize m=1; m<s; ++m)
+        {
+        if (d[m]<minv) minv=d[m];
+        else if (d[m]>maxv) maxv=d[m];
+        }
+      }
+
+    /*! Returns \a true, if \a val is found in the array, else \a false. */
+    bool contains (const T &val) const
+      {
+      for (tsize m=0; m<s; ++m)
+        if (d[m]==val) return true;
+      return false;
+      }
+
+    /*! Returns the index of the first occurrence of \a val in the array.
+        If it is not found, an exception is thrown. */
+    tsize find (const T &val) const
+      {
+      for (tsize m=0; m<s; ++m)
+        if (d[m]==val) return m;
+      planck_fail ("entry '"+dataToString(val)+"' not found in array");
+      }
+  };
+
 /*! An array whose size is known at compile time. Very useful for storing
     small arrays on the stack, without need for \a new and \a delete(). */
-template <typename T, unsigned int sz> class fix_arr
+template <typename T, tsize sz> class fix_arr
   {
   private:
     T d[sz];
 
   public:
     /*! Returns the size of the array. */
-    long size() const { return sz; }
+    tsize size() const { return sz; }
 
-    /*! Returns a reference to element \a #n */
+    /*! Returns a reference to element \a n */
     template<typename T2> T &operator[] (T2 n) {return d[n];}
-    /*! Returns a constant reference to element \a #n */
+    /*! Returns a constant reference to element \a n */
     template<typename T2> const T &operator[] (T2 n) const {return d[n];}
   };
 
 
-/*! One-dimensional array type. */
-template <typename T> class arr
+/*! One-dimensional array type, with selectable storage management. */
+template <typename T, typename storageManager> class arrT: public arr_ref<T>
   {
   private:
-    long s;
-    T *d;
+    storageManager stm;
     bool own;
 
-#if defined(PLANCK_CHECKS)
-    void check_range(long n) const
-      {
-      if ((n<0) || (n>=s)) throw Message_error
-        ("arr: index "+dataToString(n)+" is out of range. Max index is "
-         +dataToString(s-1));
-      }
-#endif
-
     void reset()
-      { s=0; d=0; own=true; }
+      { this->d=0; this->s=0; own=true; }
 
   public:
     /*! Creates a zero-sized array. */
-    arr() : s(0), d(0), own(true) {}
+    arrT() : arr_ref<T>(0,0), own(true) {}
     /*! Creates an array with \a sz entries. */
-    arr(long sz) : s(sz), d (s>0 ? new T[s] : 0), own(true) {}
+    arrT(tsize sz) : arr_ref<T>(stm.alloc(sz),sz), own(true) {}
     /*! Creates an array with \a sz entries, and initializes them with
         \a inival. */
-    arr(long sz, const T &inival) : s(sz), d (s>0 ? new T[s] : 0), own(true)
+    arrT(tsize sz, const T &inival) : arr_ref<T>(stm.alloc(sz),sz), own(true)
       { fill(inival); }
     /*! Creates an array with \a sz entries, which uses the memory pointed
         to by \a ptr.
@@ -98,137 +217,167 @@ template <typename T> class arr
           <li>\a ptr is not subject to garbage collection</li>
           </ul>
         Other restrictions may apply. You have been warned. */
-    arr (T *ptr, long sz): s(sz), d(ptr), own(false) {}
+    arrT (T *ptr, tsize sz): arr_ref<T>(ptr,sz), own(false) {}
     /*! Creates an array which is a copy of \a orig. The data in \a orig
         is duplicated. */
-    arr (const arr &orig): s(orig.s), d (s>0 ? new T[s] : 0), own(true)
-      { for (long m=0; m<s; ++m) d[m] = orig.d[m]; }
+    arrT (const arrT &orig): arr_ref<T>(stm.alloc(orig.s),orig.s), own(true)
+      { for (tsize m=0; m<this->s; ++m) this->d[m] = orig.d[m]; }
     /*! Frees the memory allocated by the object. */
-    ~arr() { if (own) delete[] d; }
-
-    /*! Returns the current array size. */
-    long size() const { return s; }
+    ~arrT() { if (own) stm.dealloc(this->d); }
 
     /*! Allocates space for \a sz elements. The content of the array is
         undefined on exit. \a sz can be 0. If \a sz is the
         same as the current size, no reallocation is performed. */
-    void alloc (long sz)
+    void alloc (tsize sz)
       {
-      if (sz==s) return;
-      if (own) delete[] d;
-      s = sz;
-      d = s>0 ? new T[sz] : 0;
+      if (sz==this->s) return;
+      if (own) stm.dealloc(this->d);
+      this->s = sz;
+      this->d = stm.alloc(sz);
       own = true;
       }
+    /*! Allocates space for \a sz elements. If \a sz is the
+        same as the current size, no reallocation is performed.
+        All elements are set to \a inival. */
+    void allocAndFill (tsize sz, const T &inival)
+      { alloc(sz); this->fill(inival); }
     /*! Deallocates the memory held by the array, and sets the array size
         to 0. */
-    void dealloc () {if (own) delete[] d; reset();}
-
-    /*! Writes \a val into every element of the array. */
-    void fill (const T &val)
-      { for (long m=0; m<s; ++m) d[m]=val; }
+    void dealloc() {if (own) stm.dealloc(this->d); reset();}
 
     /*! Changes the array to be a copy of \a orig. */
-    arr &operator= (const arr &orig)
+    arrT &operator= (const arrT &orig)
       {
       if (this==&orig) return *this;
       alloc (orig.s);
-      for (long m=0; m<s; ++m) d[m] = orig.d[m];
+      for (tsize m=0; m<this->s; ++m) this->d[m] = orig.d[m];
       return *this;
       }
 
-#if defined (PLANCK_CHECKS)
-    template<typename T2> T &operator[] (T2 n) {check_range(n); return d[n];}
-    template<typename T2> const T &operator[] (T2 n) const
-      {check_range(n); return d[n];}
-#else
-    /*! Returns a reference to element \a #n */
-    template<typename T2> T &operator[] (T2 n) {return d[n];}
-    /*! Returns a constant reference to element \a #n */
-    template<typename T2> const T &operator[] (T2 n) const {return d[n];}
-#endif
-
-    T *begin() { return d; }
-    T *end() { return d+s; }
-
-    /*! Sorts the elements in the array, in ascending order. */
-    void sort()
-      { std::sort (d,d+s); }
-
-    /*! Returns the minimum and maximum entry in \a minv and \a maxv,
-        respectively. Throws an exception if the array is zero-sized. */
-    void minmax (T &minv, T &maxv) const
+    /*! Reserves space for \a sz elements, then copies \a sz elements
+        from \a ptr into the array. */
+    template<typename T2> void copyFromPtr (const T2 *ptr, tsize sz)
       {
-      planck_assert(s>0,"trying to find min and max of a zero-sized array");
-      minv=maxv=d[0];
-      for (int m=1; m<s; ++m)
-        {
-        if (d[m]<minv) minv=d[m];
-        else if (d[m]>maxv) maxv=d[m];
-        }
+      alloc(sz);
+      for (tsize m=0; m<this->s; ++m) this->d[m]=ptr[m];
       }
 
-    /*! Assigns the contents and size of \a other to the array. On exit,
-        \a other is yero-sized. */
-    void transfer (arr &other)
-      { if (own) delete[] d; d=other.d; s=other.s; own=other.own; other.reset(); }
+    /*! Assigns the contents and size of \a other to the array.
+        \note On exit, \a other is zero-sized! */
+    void transfer (arrT &other)
+      {
+      if (own) stm.dealloc(this->d);
+      this->d=other.d;
+      this->s=other.s;
+      own=other.own;
+      other.reset();
+      }
     /*! Swaps contents and size with \a other. */
-    void swap (arr &other)
-      { std::swap(d,other.d); std::swap(s,other.s); std::swap(own,other.own);}
+    void swap (arrT &other)
+      {
+      std::swap(this->d,other.d);
+      std::swap(this->s,other.s);
+      std::swap(own,other.own);
+      }
   };
 
-/*! Two-dimensional array type. The storage ordering is the same as in C.
+/*! One-dimensional array type. */
+template <typename T>
+  class arr: public arrT<T,normalAlloc__<T> >
+  {
+  public:
+    /*! Creates a zero-sized array. */
+    arr() : arrT<T,normalAlloc__<T> >() {}
+    /*! Creates an array with \a sz entries. */
+    arr(tsize sz) : arrT<T,normalAlloc__<T> >(sz) {}
+    /*! Creates an array with \a sz entries, and initializes them with
+        \a inival. */
+    arr(tsize sz, const T &inival) : arrT<T,normalAlloc__<T> >(sz,inival) {}
+    /*! Creates an array with \a sz entries, which uses the memory pointed
+        to by \a ptr.
+        \note \a ptr will <i>not</i> be deallocated by the destructor.
+        \warning Only use this if you REALLY know what you are doing.
+        In particular, this is only safely usable if
+          <ul>
+          <li>\a T is a POD type</li>
+          <li>\a ptr survives during the lifetime of the array object</li>
+          <li>\a ptr is not subject to garbage collection</li>
+          </ul>
+        Other restrictions may apply. You have been warned. */
+    arr (T *ptr, tsize sz): arrT<T,normalAlloc__<T> >(ptr,sz) {}
+  };
+
+/*! One-dimensional array type, with selectable storage alignment. */
+template <typename T, int align>
+  class arr_align: public arrT<T,alignAlloc__<T,align> >
+  {
+  public:
+    /*! Creates a zero-sized array. */
+    arr_align() : arrT<T,alignAlloc__<T,align> >() {}
+    /*! Creates an array with \a sz entries. */
+    arr_align(tsize sz) : arrT<T,alignAlloc__<T,align> >(sz) {}
+    /*! Creates an array with \a sz entries, and initializes them with
+        \a inival. */
+    arr_align(tsize sz, const T &inival)
+      : arrT<T,alignAlloc__<T,align> >(sz,inival) {}
+  };
+
+
+/*! Two-dimensional array type, with selectable storage management.
+    The storage ordering is the same as in C.
     An entry is located by address arithmetic, not by double dereferencing.
     The indices start at zero. */
-template <typename T> class arr2
+template <typename T, typename storageManager> class arr2T
   {
   private:
-    long s1, s2;
-    arr<T> d;
-
-#if defined (PLANCK_CHECKS)
-    void check_range(long n) const
-      {
-      if ((n<0) || (n>=s1)) throw Message_error
-        ("arr2: index "+dataToString(n)+" is out of range. Max index is "
-         +dataToString(s1-1));
-      }
-#endif
+    tsize s1, s2;
+    arrT<T, storageManager> d;
 
   public:
     /*! Creates a zero-sized array. */
-    arr2() : s1(0), s2(0) {}
+    arr2T() : s1(0), s2(0) {}
     /*! Creates an array with the dimensions \a sz1 and \a sz2. */
-    arr2(long sz1, long sz2)
+    arr2T(tsize sz1, tsize sz2)
       : s1(sz1), s2(sz2), d(s1*s2) {}
+    /*! Creates an array with the dimensions  \a sz1 and \a sz2
+        and initializes them with \a inival. */
+    arr2T(tsize sz1, tsize sz2, const T &inival)
+      : s1(sz1), s2(sz2), d (s1*s2)
+      { fill(inival); }
     /*! Creates the array as a copy of \a orig. */
-    arr2(const arr2 &orig)
+    arr2T(const arr2T &orig)
       : s1(orig.s1), s2(orig.s2), d(orig.d) {}
     /*! Frees the memory associated with the array. */
-    ~arr2() {}
+    ~arr2T() {}
 
     /*! Returns the first array dimension. */
-    long size1() const { return s1; }
+    tsize size1() const { return s1; }
     /*! Returns the second array dimension. */
-    long size2() const { return s2; }
+    tsize size2() const { return s2; }
     /*! Returns the total array size, i.e. the product of both dimensions. */
-    long size () const { return s1*s2; }
+    tsize size () const { return s1*s2; }
 
     /*! Allocates space for an array with \a sz1*sz2 elements.
         The content of the array is undefined on exit.
         \a sz1 or \a sz2 can be 0. If \a sz1*sz2 is the same as the
         currently allocated space, no reallocation is performed. */
-    void alloc (long sz1, long sz2)
+    void alloc (tsize sz1, tsize sz2)
       {
       if (sz1*sz2 != d.size())
         d.alloc(sz1*sz2);
       s1=sz1; s2=sz2;
       }
     /*! Allocates space for an array with \a sz1*sz2 elements.
+        All elements are set to \a inival.
+        \a sz1 or \a sz2 can be 0. If \a sz1*sz2 is the same as the
+        currently allocated space, no reallocation is performed. */
+    void allocAndFill (tsize sz1, tsize sz2, const T &inival)
+      { alloc(sz1,sz2); fill(inival); }
+    /*! Allocates space for an array with \a sz1*sz2 elements.
         The content of the array is undefined on exit.
         \a sz1 or \a sz2 can be 0. If \a sz1*sz2 is smaller than the
         currently allocated space, no reallocation is performed. */
-    void fast_alloc (long sz1, long sz2)
+    void fast_alloc (tsize sz1, tsize sz2)
       {
       if (sz1*sz2<=d.size())
         { s1=sz1; s2=sz2; }
@@ -240,10 +389,10 @@ template <typename T> class arr2
 
     /*! Sets all array elements to \a val. */
     void fill (const T &val)
-      { d.fill(val); }
+      { for (tsize m=0; m<s1*s2; ++m) d[m]=val; }
 
     /*! Changes the array to be a copy of \a orig. */
-    arr2 &operator= (const arr2 &orig)
+    arr2T &operator= (const arr2T &orig)
       {
       if (this==&orig) return *this;
       alloc (orig.s1, orig.s2);
@@ -251,17 +400,18 @@ template <typename T> class arr2
       return *this;
       }
 
-#if defined (PLANCK_CHECKS)
-    template<typename T2> T *operator[] (T2 n)
-      {check_range(n);return &d[n*s2];}
-    template<typename T2> const T *operator[] (T2 n) const
-      {check_range(n);return &d[n*s2];}
-#else
-    /*! Returns a pointer to the beginning of slice \a #n. */
+    /*! Returns a pointer to the beginning of slice \a n. */
     template<typename T2> T *operator[] (T2 n) {return &d[n*s2];}
-    /*! Returns a constant pointer to the beginning of slice \a #n. */
+    /*! Returns a constant pointer to the beginning of slice \a n. */
     template<typename T2> const T *operator[] (T2 n) const {return &d[n*s2];}
-#endif
+
+    /*! Returns a reference to the element with the indices \a n1 and \a n2. */
+    template<typename T2, typename T3> T &operator() (T2 n1, T3 n2)
+      {return d[n1*s2 + n2];}
+    /*! Returns a constant reference to the element with the indices
+        \a n1 and \a n2. */
+    template<typename T2, typename T3> const T &operator() (T2 n1, T3 n2) const
+      {return d[n1*s2 + n2];}
 
     /*! Returns the minimum and maximum entry in \a minv and \a maxv,
         respectively. Throws an exception if the array is zero-sized. */
@@ -270,7 +420,7 @@ template <typename T> class arr2
       planck_assert(s1*s2>0,
         "trying to find min and max of a zero-sized array");
       minv=maxv=d[0];
-      for (int m=1; m<s1*s2; ++m)
+      for (tsize m=1; m<s1*s2; ++m)
         {
         if (d[m]<minv) minv=d[m];
         if (d[m]>maxv) maxv=d[m];
@@ -278,12 +428,54 @@ template <typename T> class arr2
       }
 
     /*! Swaps contents and sizes with \a other. */
-    void swap (arr2 &other)
+    void swap (arr2T &other)
       {
       d.swap(other.d);
       std::swap(s1,other.s1);
       std::swap(s2,other.s2);
       }
+
+    /*! Returns \c true if the array and \a other have the same dimensions,
+        else \c false. */
+    template<typename T2, typename T3> bool conformable
+      (const arr2T<T2,T3> &other) const
+      { return (other.size1()==s1) && (other.size2()==s2); }
+  };
+
+/*! Two-dimensional array type. The storage ordering is the same as in C.
+    An entry is located by address arithmetic, not by double dereferencing.
+    The indices start at zero. */
+template <typename T>
+  class arr2: public arr2T<T,normalAlloc__<T> >
+  {
+  public:
+    /*! Creates a zero-sized array. */
+    arr2() : arr2T<T,normalAlloc__<T> > () {}
+    /*! Creates an array with the dimensions \a sz1 and \a sz2. */
+    arr2(tsize sz1, tsize sz2) : arr2T<T,normalAlloc__<T> > (sz1,sz2) {}
+    /*! Creates an array with the dimensions  \a sz1 and \a sz2
+        and initializes them with \a inival. */
+    arr2(tsize sz1, tsize sz2, const T &inival)
+      : arr2T<T,normalAlloc__<T> > (sz1,sz2,inival) {}
+  };
+
+/*! Two-dimensional array type, with selectable storage alignment.
+    The storage ordering is the same as in C.
+    An entry is located by address arithmetic, not by double dereferencing.
+    The indices start at zero. */
+template <typename T, int align>
+  class arr2_align: public arr2T<T,alignAlloc__<T,align> >
+  {
+  public:
+    /*! Creates a zero-sized array. */
+    arr2_align() : arr2T<T,alignAlloc__<T,align> > () {}
+    /*! Creates an array with the dimensions \a sz1 and \a sz2. */
+    arr2_align(tsize sz1, tsize sz2)
+      : arr2T<T,alignAlloc__<T,align> > (sz1,sz2) {}
+    /*! Creates an array with the dimensions  \a sz1 and \a sz2
+        and initializes them with \a inival. */
+    arr2_align(tsize sz1, tsize sz2, const T &inival)
+      : arr2T<T,alignAlloc__<T,align> > (sz1,sz2,inival) {}
   };
 
 /*! Two-dimensional array type. An entry is located by double dereferencing,
@@ -291,27 +483,18 @@ template <typename T> class arr2
 template <typename T> class arr2b
   {
   private:
-    long s1, s2;
+    tsize s1, s2;
     arr<T> d;
     arr<T *> d1;
 
-#if defined (PLANCK_CHECKS)
-    void check_range(long n) const
-      {
-      if ((n<0) || (n>=s1)) throw Message_error
-        ("arr: index "+dataToString(n)+" is out of range. Max index is "
-         +dataToString(s1-1));
-      }
-#endif
-
     void fill_d1()
-      { for (long m=0; m<s1; ++m) d1[m] = &d[m*s2]; }
+      { for (tsize m=0; m<s1; ++m) d1[m] = &d[m*s2]; }
 
   public:
     /*! Creates a zero-sized array. */
     arr2b() : s1(0), s2(0), d(0), d1(0) {}
     /*! Creates an array with the dimensions \a sz1 and \a sz2. */
-    arr2b(long sz1, long sz2)
+    arr2b(tsize sz1, tsize sz2)
       : s1(sz1), s2(sz2), d(s1*s2), d1(s1)
       { fill_d1(); }
     /*! Creates the array as a copy of \a orig. */
@@ -322,15 +505,15 @@ template <typename T> class arr2b
     ~arr2b() {}
 
     /*! Returns the first array dimension. */
-    long size1() const { return s1; }
+    tsize size1() const { return s1; }
     /*! Returns the second array dimension. */
-    long size2() const { return s2; }
+    tsize size2() const { return s2; }
     /*! Returns the total array size, i.e. the product of both dimensions. */
-    long size () const { return s1*s2; }
+    tsize size () const { return s1*s2; }
 
     /*! Allocates space for an array with \a sz1*sz2 elements.
         The content of the array is undefined on exit. */
-    void alloc (long sz1, long sz2)
+    void alloc (tsize sz1, tsize sz2)
       {
       if ((s1==sz1) && (s2==sz2)) return;
       s1=sz1; s2=sz2;
@@ -350,20 +533,15 @@ template <typename T> class arr2b
       {
       if (this==&orig) return *this;
       alloc (orig.s1, orig.s2);
-      for (long m=0; m<s1*s2; ++m) d[m] = orig.d[m];
+      for (tsize m=0; m<s1*s2; ++m) d[m] = orig.d[m];
       return *this;
       }
 
-#if defined (PLANCK_CHECKS)
-    template<typename T2> T *operator[] (T2 n) {check_range(n); return d1[n];}
-    template<typename T2> const T *operator[] (T2 n) const
-      {check_range(n); return d1[n];}
-#else
-    /*! Returns a pointer to the beginning of slice \a #n. */
+    /*! Returns a pointer to the beginning of slice \a n. */
     template<typename T2> T *operator[] (T2 n) {return d1[n];}
-    /*! Returns a constant pointer to the beginning of slice \a #n. */
+    /*! Returns a constant pointer to the beginning of slice \a n. */
     template<typename T2> const T *operator[] (T2 n) const {return d1[n];}
-#endif
+
     /*! Returns a pointer to the beginning of the pointer array. */
     T **p0() {return &d1[0];}
   };
@@ -375,14 +553,14 @@ template <typename T> class arr2b
 template <typename T> class arr3
   {
   private:
-    long s1, s2, s3, s2s3;
+    tsize s1, s2, s3, s2s3;
     arr<T> d;
 
   public:
     /*! Creates a zero-sized array. */
     arr3() : s1(0), s2(0), s3(0), s2s3(0), d(0) {}
     /*! Creates an array with the dimensions \a sz1, \a sz2 and \a sz3. */
-    arr3(long sz1, long sz2, long sz3)
+    arr3(tsize sz1, tsize sz2, tsize sz3)
       : s1(sz1), s2(sz2), s3(sz3), s2s3(s2*s3), d(s1*s2*s3) {}
     /*! Creates the array as a copy of \a orig. */
     arr3(const arr3 &orig)
@@ -391,17 +569,17 @@ template <typename T> class arr3
     ~arr3() {}
 
     /*! Returns the first array dimension. */
-    long size1() const { return s1; }
+    tsize size1() const { return s1; }
     /*! Returns the second array dimension. */
-    long size2() const { return s2; }
+    tsize size2() const { return s2; }
     /*! Returns the third array dimension. */
-    long size3() const { return s3; }
+    tsize size3() const { return s3; }
     /*! Returns the total array size, i.e. the product of all dimensions. */
-    long size () const { return s1*s2*s3; }
+    tsize size () const { return s1*s2*s3; }
 
     /*! Allocates space for an array with \a sz1*sz2*sz3 elements.
         The content of the array is undefined on exit. */
-    void alloc (long sz1, long sz2, long sz3)
+    void alloc (tsize sz1, tsize sz2, tsize sz3)
       {
       d.alloc(sz1*sz2*sz3);
       s1=sz1; s2=sz2; s3=sz3; s2s3=s2*s3;
@@ -424,11 +602,13 @@ template <typename T> class arr3
 
     /*! Returns a reference to the element with the indices
         \a n1, \a n2 and \a n3. */
-    template<typename T2> T &operator() (T2 n1, T2 n2, T2 n3)
+    template<typename T2, typename T3, typename T4> T &operator()
+      (T2 n1, T3 n2, T4 n3)
       {return d[n1*s2s3 + n2*s3 + n3];}
     /*! Returns a constant reference to the element with the indices
         \a n1, \a n2 and \a n3. */
-    template<typename T2> const T &operator() (T2 n1, T2 n2, T2 n3) const
+    template<typename T2, typename T3, typename T4> const T &operator()
+      (T2 n1, T3 n2, T4 n3) const
       {return d[n1*s2s3 + n2*s3 + n3];}
 
     /*! Swaps contents and sizes with \a other. */
@@ -440,6 +620,11 @@ template <typename T> class arr3
       std::swap(s3,other.s3);
       std::swap(s2s3,other.s2s3);
       }
+
+    /*! Returns \c true if the array and \a other have the same dimensions,
+        else \c false. */
+    template<typename T2> bool conformable (const arr3<T2> &other) const
+      { return (other.size1()==s1)&&(other.size2()==s2)&&(other.size3()==s3); }
   };
 
 /*! \} */

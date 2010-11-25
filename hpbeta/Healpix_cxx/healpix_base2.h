@@ -25,7 +25,7 @@
  */
 
 /*! \file healpix_base2.h
- *  Copyright (C) 2003, 2004, 2005, 2006 Max-Planck-Society
+ *  Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009 Max-Planck-Society
  *  \author Martin Reinecke
  */
 
@@ -65,8 +65,6 @@ class Healpix_Base2
     Healpix_Ordering_Scheme scheme_;
 
     inline int64 ring_above (double z) const;
-    void in_ring (int64 iz, double phi0, double dphi,
-      std::vector<int64> &listir) const;
 
     int64 xyf2nest(int ix, int iy, int face_num) const;
     void nest2xyf(int64 pix, int &ix, int &iy, int &face_num) const;
@@ -180,35 +178,12 @@ class Healpix_Base2
       return res;
       }
 
-    /*! Returns the numbers of all pixels whose centers lie within \a radius
-        of \a dir in \a listpix.
-        \param dir the angular coordinates of the disc center
-        \param radius the radius (in radians) of the disc
-        \param listpix a vector containing the numbers of all pixels within
-               the disc
-        \note This method is more efficient in the RING scheme. */
-    void query_disc (const pointing &dir, double radius,
-      std::vector<int64> &listpix) const;
-    /*! Returns the numbers of all pixels that lie at least partially within
-        \a radius of \a dir in \a listpix. It may also return a few pixels
-        which do not lie in the disk at all.
-        \param dir the angular coordinates of the disc center
-        \param radius the radius (in radians) of the disc
-        \param listpix a vector containing the numbers of all pixels within
-               the disc
-        \note This method works in both RING and NEST schemes, but is
-          considerably faster in the RING scheme. */
-//FIXME: factor 1.362 not OK!
-    void query_disc_inclusive (const pointing &dir, double radius,
-      std::vector<int64> &listpix) const
-        { query_disc (dir,radius+1.362*pi/(4*nside_),listpix); }
-
     /*! Returns useful information about a given ring of the map.
         \param ring the ring number (the number of the first ring is 1)
         \param startpix the number of the first pixel in the ring
         \param ringpix the number of pixels in the ring
-        \param costheta the cosine of the colatitude (in radians) of the ring
-        \param sintheta the sine of the colatitude (in radians) of the ring
+        \param costheta the cosine of the colatitude of the ring
+        \param sintheta the sine of the colatitude of the ring
         \param shifted if \a true, the center of the first pixel is not at
                \a phi=0 */
     void get_ring_info (int64 ring, int64 &startpix, int64 &ringpix,

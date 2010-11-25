@@ -25,7 +25,7 @@
  */
 
 /*
- *  Copyright (C) 2003, 2004, 2005, 2006 Max-Planck-Society
+ *  Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009 Max-Planck-Society
  *  Author: Martin Reinecke
  */
 
@@ -34,6 +34,7 @@
 #include "pointing.h"
 #include "arr.h"
 #include "geom_utils.h"
+#include "lsconstants.h"
 
 using namespace std;
 
@@ -44,12 +45,12 @@ Healpix_Base2::Tablefiller::Tablefiller()
   {
   for (int m=0; m<0x100; ++m)
     {
-    ctab[m] =
+    ctab[m] = short(
          (m&0x1 )       | ((m&0x2 ) << 7) | ((m&0x4 ) >> 1) | ((m&0x8 ) << 6)
-      | ((m&0x10) >> 2) | ((m&0x20) << 5) | ((m&0x40) >> 3) | ((m&0x80) << 4);
-    utab[m] =
+      | ((m&0x10) >> 2) | ((m&0x20) << 5) | ((m&0x40) >> 3) | ((m&0x80) << 4));
+    utab[m] = short(
          (m&0x1 )       | ((m&0x2 ) << 1) | ((m&0x4 ) << 2) | ((m&0x8 ) << 3)
-      | ((m&0x10) << 4) | ((m&0x20) << 5) | ((m&0x40) << 6) | ((m&0x80) << 7);
+      | ((m&0x10) << 4) | ((m&0x20) << 5) | ((m&0x40) << 6) | ((m&0x80) << 7));
     }
   }
 
@@ -65,12 +66,24 @@ int64 Healpix_Base2::npix2nside (int64 npix)
   return res;
   }
 
+int64 Healpix_Base2::ring_above (double z) const
+  {
+  double az=abs(z);
+  if (az>twothird) // polar caps
+    {
+    int64 iring = int64(nside_*sqrt(3*(1-az)));
+    return (z>0) ? iring : 4*nside_-iring-1;
+    }
+  else // ----- equatorial region ---------
+    return int64(nside_*(2-1.5*z));
+  }
+
 void Healpix_Base2::nest2xyf (int64 pix, int &ix, int &iy, int &face_num)
   const
   {
-  face_num = pix>>(2*order_);
+  face_num = int(pix>>(2*order_));
   pix &= (npface_-1);
-  int32 raw = ((pix&0x555500000000ull)>>16) 
+  int32 raw = ((pix&0x555500000000ull)>>16)
              | ((pix&0x5555000000000000ull)>>31)
              | (pix&0x5555)
              | ((pix&0x55550000)>>15);
@@ -272,24 +285,24 @@ int64 Healpix_Base2::ring2nest (int64 pix) const
 
 int64 Healpix_Base2::nest2peano (int64 pix) const
   {
-  static const unsigned char subpix[8][4] = {
+  static const uint8 subpix[8][4] = {
     { 0, 1, 3, 2 }, { 3, 0, 2, 1 }, { 2, 3, 1, 0 }, { 1, 2, 0, 3 },
     { 0, 3, 1, 2 }, { 1, 0, 2, 3 }, { 2, 1, 3, 0 }, { 3, 2, 0, 1 } };
-  const unsigned char subpath[8][4] = {
+  static const uint8 subpath[8][4] = {
     { 4, 0, 6, 0 }, { 7, 5, 1, 1 }, { 2, 4, 2, 6 }, { 3, 3, 7, 5 },
     { 0, 2, 4, 4 }, { 5, 1, 5, 3 }, { 6, 6, 0, 2 }, { 1, 7, 3, 7 } };
-  static const unsigned char face2path[12] = {
+  static const uint8 face2path[12] = {
     2, 5, 2, 5, 3, 6, 3, 6, 2, 3, 2, 3 };
-  static const unsigned char face2peanoface[12] = {
+  static const uint8 face2peanoface[12] = {
     0, 5, 6, 11, 10, 1, 4, 7, 2, 3, 8, 9 };
 
   int face = pix>>(2*order_);
-  unsigned char path = face2path[face];
+  uint8 path = face2path[face];
   int64 result = 0;
 
   for (int shift=2*order_-2; shift>=0; shift-=2)
     {
-    unsigned char spix = (pix>>shift) & 0x3;
+    uint8 spix = uint8((pix>>shift) & 0x3);
     result <<= 2;
     result |= subpix[path][spix];
     path=subpath[path][spix];
@@ -300,24 +313,24 @@ int64 Healpix_Base2::nest2peano (int64 pix) const
 
 int64 Healpix_Base2::peano2nest (int64 pix) const
   {
-  static const unsigned char subpix[8][4] = {
+  static const uint8 subpix[8][4] = {
     { 0, 1, 3, 2 }, { 1, 3, 2, 0 }, { 3, 2, 0, 1 }, { 2, 0, 1, 3 },
     { 0, 2, 3, 1 }, { 1, 0, 2, 3 }, { 3, 1, 0, 2 }, { 2, 3, 1, 0 } };
-  static const unsigned char subpath[8][4] = {
+  static const uint8 subpath[8][4] = {
     { 4, 0, 0, 6 }, { 5, 1, 1, 7 }, { 6, 2, 2, 4 }, { 7, 3, 3, 5 },
     { 0, 4, 4, 2 }, { 1, 5, 5, 3 }, { 2, 6, 6, 0 }, { 3, 7, 7, 1 } };
-  static const unsigned char face2path[12] = {
+  static const uint8 face2path[12] = {
     2, 6, 2, 3, 3, 5, 2, 6, 2, 3, 3, 5 };
-  static const unsigned char peanoface2face[12] = {
+  static const uint8 peanoface2face[12] = {
     0, 5, 8, 9, 6, 1, 2, 7, 10, 11, 4, 3 };
 
   int face = pix>>(2*order_);
-  unsigned char path = face2path[face];
+  uint8 path = face2path[face];
   int64 result = 0;
 
   for (int shift=2*order_-2; shift>=0; shift-=2)
     {
-    unsigned char spix = (pix>>shift) & 0x3;
+    uint8 spix = uint8((pix>>shift) & 0x3);
     result <<= 2;
     result |= subpix[path][spix];
     path=subpath[path][spix];
@@ -392,6 +405,7 @@ int64 Healpix_Base2::ang2pix_z_phi (double z, double phi) const
     else // polar region, za > 2/3
       {
       int ntt = int(tt);
+      if (ntt>=4) ntt=3;
       double tp = tt-ntt;
       double tmp = nside_*sqrt(3*(1-za));
 
@@ -489,6 +503,35 @@ void Healpix_Base2::pix2ang_z_phi (int64 pix, double &z, double &phi) const
     }
   }
 
+void Healpix_Base2::get_ring_info (int64 ring, int64 &startpix, int64 &ringpix,
+  double &costheta, double &sintheta, bool &shifted) const
+  {
+  planck_assert(scheme_==RING,"map must be in RING scheme");
+  int64 northring = (ring>2*nside_) ? 4*nside_-ring : ring;
+  if (northring < nside_)
+    {
+    double tmp = northring*northring*fact2_;
+    costheta = 1 - tmp;
+    sintheta = sqrt(tmp*(2-tmp));
+    ringpix = 4*northring;
+    shifted = true;
+    startpix = 2*northring*(northring-1);
+    }
+  else
+    {
+    costheta = (2*nside_-northring)*fact1_;
+    sintheta = sqrt((1+costheta)*(1-costheta));
+    ringpix = 4*nside_;
+    shifted = ((northring-nside_) & 1) == 0;
+    startpix = ncap_ + (northring-nside_)*ringpix;
+    }
+  if (northring != ring) // southern hemisphere
+    {
+    costheta = -costheta;
+    startpix = npix_ - startpix - ringpix;
+    }
+  }
+
 void Healpix_Base2::neighbors (int64 pix, fix_arr<int64,8> &result) const
   {
   static const int xoffset[] = { -1,-1, 0, 1, 1, 1, 0,-1 };
@@ -556,6 +599,101 @@ void Healpix_Base2::neighbors (int64 pix, fix_arr<int64,8> &result) const
         result[i] = -1;
       }
     }
+  }
+
+void Healpix_Base2::get_ring_info2 (int64 ring, int64 &startpix, int64 &ringpix,
+  double &theta, bool &shifted) const
+  {
+  int64 northring = (ring>2*nside_) ? 4*nside_-ring : ring;
+  if (northring < nside_)
+    {
+    double tmp = northring*northring*fact2_;
+    double costheta = 1 - tmp;
+    double sintheta = sqrt(tmp*(2-tmp));
+    theta = atan2(sintheta,costheta);
+    ringpix = 4*northring;
+    shifted = true;
+    startpix = 2*northring*(northring-1);
+    }
+  else
+    {
+    theta = acos((2*nside_-northring)*fact1_);
+    ringpix = 4*nside_;
+    shifted = ((northring-nside_) & 1) == 0;
+    startpix = ncap_ + (northring-nside_)*ringpix;
+    }
+  if (northring != ring) // southern hemisphere
+    {
+    theta = pi-theta;
+    startpix = npix_ - startpix - ringpix;
+    }
+  }
+
+void Healpix_Base2::get_interpol (const pointing &ptg, fix_arr<int64,4> &pix,
+  fix_arr<double,4> &wgt) const
+  {
+  double z = cos (ptg.theta);
+  int64 ir1 = ring_above(z);
+  int64 ir2 = ir1+1;
+  double theta1, theta2, w1, tmp, dphi;
+  int64 sp,nr;
+  bool shift;
+  int64 i1,i2;
+  if (ir1>0)
+    {
+    get_ring_info2 (ir1, sp, nr, theta1, shift);
+    dphi = twopi/nr;
+    tmp = (ptg.phi/dphi - .5*shift);
+    i1 = (tmp<0) ? int64(tmp)-1 : int64(tmp);
+    w1 = (ptg.phi-(i1+.5*shift)*dphi)/dphi;
+    i2 = i1+1;
+    if (i1<0) i1 +=nr;
+    if (i2>=nr) i2 -=nr;
+    pix[0] = sp+i1; pix[1] = sp+i2;
+    wgt[0] = 1-w1; wgt[1] = w1;
+    }
+  if (ir2<(4*nside_))
+    {
+    get_ring_info2 (ir2, sp, nr, theta2, shift);
+    dphi = twopi/nr;
+    tmp = (ptg.phi/dphi - .5*shift);
+    i1 = (tmp<0) ? int64(tmp)-1 : int64(tmp);
+    w1 = (ptg.phi-(i1+.5*shift)*dphi)/dphi;
+    i2 = i1+1;
+    if (i1<0) i1 +=nr;
+    if (i2>=nr) i2 -=nr;
+    pix[2] = sp+i1; pix[3] = sp+i2;
+    wgt[2] = 1-w1; wgt[3] = w1;
+    }
+
+  if (ir1==0)
+    {
+    double wtheta = ptg.theta/theta2;
+    wgt[2] *= wtheta; wgt[3] *= wtheta;
+    double fac = (1-wtheta)*0.25;
+    wgt[0] = fac; wgt[1] = fac; wgt[2] += fac; wgt[3] +=fac;
+    pix[0] = (pix[2]+2)%4;
+    pix[1] = (pix[3]+2)%4;
+    }
+  else if (ir2==4*nside_)
+    {
+    double wtheta = (ptg.theta-theta1)/(pi-theta1);
+    wgt[0] *= (1-wtheta); wgt[1] *= (1-wtheta);
+    double fac = wtheta*0.25;
+    wgt[0] += fac; wgt[1] += fac; wgt[2] = fac; wgt[3] =fac;
+    pix[2] = ((pix[0]+2)&3)+npix_-4;
+    pix[3] = ((pix[1]+2)&3)+npix_-4;
+    }
+  else
+    {
+    double wtheta = (ptg.theta-theta1)/(theta2-theta1);
+    wgt[0] *= (1-wtheta); wgt[1] *= (1-wtheta);
+    wgt[2] *= wtheta; wgt[3] *= wtheta;
+    }
+
+  if (scheme_==NEST)
+    for (tsize m=0; m<pix.size(); ++m)
+      pix[m] = ring2nest(pix[m]);
   }
 
 double Healpix_Base2::max_pixrad() const

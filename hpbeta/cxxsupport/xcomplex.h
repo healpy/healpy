@@ -1,25 +1,23 @@
 /*
- *  This file is part of Healpix_cxx.
+ *  This file is part of libcxxsupport.
  *
- *  Healpix_cxx is free software; you can redistribute it and/or modify
+ *  libcxxsupport is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation; either version 2 of the License, or
  *  (at your option) any later version.
  *
- *  Healpix_cxx is distributed in the hope that it will be useful,
+ *  libcxxsupport is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with Healpix_cxx; if not, write to the Free Software
+ *  along with libcxxsupport; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
- *  For more information about HEALPix, see http://healpix.jpl.nasa.gov
  */
 
 /*
- *  Healpix_cxx is being developed at the Max-Planck-Institut fuer Astrophysik
+ *  libcxxsupport is being developed at the Max-Planck-Institut fuer Astrophysik
  *  and financially supported by the Deutsches Zentrum fuer Luft- und Raumfahrt
  *  (DLR).
  */
@@ -28,7 +26,7 @@
  *  Class for representing complex numbers, strongly inspired by C++'s
  *  std::complex
  *
- *  Copyright (C) 2003 Max-Planck-Society
+ *  Copyright (C) 2003-2010 Max-Planck-Society
  *  \author Martin Reinecke
  */
 
@@ -36,6 +34,7 @@
 #define PLANCK_XCOMPLEX_H
 
 #include <iostream>
+#include <complex>
 
 /*! \defgroup complexgroup Complex number support */
 /*! \{ */
@@ -68,9 +67,16 @@ template<typename T> class xcomplex
     /*! Creates the complex number (\a re_, 0). */
     xcomplex (const T &re_)
       : re(re_), im(0) {}
+    /*! Creates an xcomplex from a std::complex of identical precision. */
+    xcomplex (const std::complex<T> &orig)
+      : re(orig.real()), im(orig.imag()) {}
     /*! Creates a complex number as a copy of \a orig. */
-    template<typename U> xcomplex (const xcomplex<U> &orig)
-      : re(orig.re), im(orig.im) {}
+    template<typename U> explicit xcomplex (const xcomplex<U> &orig)
+      : re(T(orig.re)), im(T(orig.im)) {}
+
+    /*! Conversion operator to std::complex<T> */
+    operator std::complex<T> () const
+      { return std::complex<T>(re,im); }
 
     /*! Returns the real part as lvalue. */
     T &real() { return re; }
@@ -86,22 +92,33 @@ template<typename T> class xcomplex
       { re = re_; im = im_; }
 
     /*! Sets the number to \a orig. */
-    template<typename U> xcomplex &operator= (const xcomplex<U> &orig)
+    xcomplex &operator= (const xcomplex &orig)
       { re=orig.re; im=orig.im; return *this; }
+    /*! Sets the number to \a orig. */
+    xcomplex &operator= (const std::complex<T> &orig)
+      { re=orig.real(); im=orig.imag(); return *this; }
     /*! Sets the number to (\a orig, 0). */
     xcomplex &operator= (const T &orig)
       { re=orig; im=0; return *this; }
-    /*! Adds \a orig to \a *this. */
-    xcomplex &operator+= (const xcomplex &orig)
-      { re+=orig.re; im+=orig.im; return *this; }
-    /*! Subtracts \a orig from \a *this. */
-    xcomplex &operator-= (const xcomplex &orig)
-      { re-=orig.re; im-=orig.im; return *this; }
-    /*! Multiplies \a *this by \a orig. */
-    xcomplex &operator*= (const xcomplex &orig)
+    /*! Adds \a b to \a *this. */
+    xcomplex &operator+= (const xcomplex &b)
+      { re+=b.re; im+=b.im; return *this; }
+    /*! Subtracts \a b from \a *this. */
+    xcomplex &operator-= (const xcomplex &b)
+      { re-=b.re; im-=b.im; return *this; }
+    /*! Multiplies \a *this by \a b. */
+    xcomplex &operator*= (const xcomplex &b)
       {
       T tmp=re;
-      re=re*orig.re-im*orig.im; im=tmp*orig.im+im*orig.re;
+      re=tmp*b.re-im*b.im; im=tmp*b.im+im*b.re;
+      return *this;
+      }
+    /*! Divides \a *this by \a b. */
+    xcomplex &operator/= (const xcomplex &b)
+      {
+      std::complex<T> tmp=*this;
+      tmp /= b;
+      *this=tmp;
       return *this;
       }
     /*! Multiplies \a *this by \a fact. */
@@ -113,6 +130,9 @@ template<typename T> class xcomplex
     /*! Returns \a *this * \a b. */
     xcomplex operator* (const xcomplex &b) const
       { return xcomplex (re*b.re-im*b.im, re*b.im+im*b.re); }
+    /*! Returns \a *this / \a b. */
+    xcomplex operator/ (const xcomplex &b) const
+      { return xcomplex(std::complex<T>(*this)/std::complex<T>(b)); }
     /*! Returns \a *this + \a b. */
     xcomplex operator+ (const xcomplex &b) const
       { return xcomplex (re+b.re, im+b.im); }
@@ -129,6 +149,13 @@ template<typename T> class xcomplex
     /*! Flips the signs of the imaginary component. */
     void Conjugate()
       { im=-im; }
+    /*! Multiplies the number by exp(i*\a angle) */
+    void Rotate(T angle)
+      {
+      T ca=cos(angle), sa=sin(angle);
+      T tmp=re;
+      re=tmp*ca-im*sa; im=tmp*sa+im*ca;
+      }
     /*! Returns the complex conjugate of \a *this. */
     xcomplex conj() const
       { return xcomplex (re,-im); }

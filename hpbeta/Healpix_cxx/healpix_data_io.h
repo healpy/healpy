@@ -35,21 +35,17 @@
 #include <string>
 
 class paramfile;
-class simparams;
 template<typename T> class arr;
 
-void read_weight_ring (const std::string &dir, int nside,
-  arr<double> &weight);
-void get_ring_weights (paramfile &params, simparams &par, int nside,
-  arr<double> &weight);
+void read_weight_ring (const std::string &dir, int nside, arr<double> &weight);
+void get_ring_weights (paramfile &params, int nside, arr<double> &weight);
 
 void read_pixwin (const std::string &dir, int nside, arr<double> &temp);
 void read_pixwin (const std::string &dir, int nside, arr<double> &temp,
   arr<double> &pol);
 
-void get_pixwin (paramfile &params, simparams &par, int lmax,
-  int nside, arr<double> &pixwin);
-void get_pixwin (paramfile &params, simparams &par, int lmax,
-  int nside, arr<double> &pixwin, arr<double> &pixwin_pol);
+void get_pixwin (paramfile &params, int lmax, int nside, arr<double> &pixwin);
+void get_pixwin (paramfile &params, int lmax, int nside, arr<double> &pixwin,
+  arr<double> &pixwin_pol);
 
 #endif

@@ -25,7 +25,7 @@
  */
 
 /*
- *  Copyright (C) 2003, 2004 Max-Planck-Society
+ *  Copyright (C) 2003-2010 Max-Planck-Society
  *  Author: Martin Reinecke
  */
 
@@ -38,106 +38,76 @@ using namespace std;
 void read_powspec_from_fits (const string &infile, PowSpec &powspec,
   int nspecs, int lmax)
   {
-  planck_assert ((nspecs==1)||(nspecs==4), "wrong number of spectra");
+  planck_assert ((nspecs==1)||(nspecs==4)||(nspecs==6),
+    "wrong number of spectra");
   fitshandle inp;
   inp.open(infile);
   inp.goto_hdu(2);
-  if (inp.key_present("PDMTYPE"))    // official Planck format
-    {
-    inp.assert_pdmtype("POWERSPEC");
-    arr<double> tmp;
-    arr<int> itmp;
-    if ((inp.coltype(1)==TINT)||(inp.coltype(1)==TLONG))
-      inp.read_entire_column(1,itmp);
-    else
-      {
-      cerr << "Warning: column containing l values is not of integer type!"
-           << endl;
-      inp.read_entire_column(1,tmp);
-      itmp.alloc(tmp.size());
-      for (int m=0; m<tmp.size(); ++m) itmp[m] = nearest<int>(tmp[m]);
-      }
 
-    if (nspecs==1)
-      {
-      arr<double> tt(lmax+1);
-      tt.fill(0);
-      inp.read_entire_column(2,tmp);
-      for (int m=0; m<itmp.size(); ++m)
-        if (itmp[m]<=lmax) tt[itmp[m]] = tmp[m];
-      powspec.Set(tt);
-      }
-    else
-      {
-      arr<double> tt(lmax+1), gg(lmax+1), cc(lmax+1), tg(lmax+1);
-      tt.fill(0); gg.fill(0); cc.fill(0); tg.fill(0);
-      inp.read_entire_column(2,tmp);
-      for (int m=0; m<itmp.size(); ++m)
-        if (itmp[m]<=lmax) tt[itmp[m]] = tmp[m];
-      inp.read_entire_column(3,tmp);
-      for (int m=0; m<itmp.size(); ++m)
-        if (itmp[m]<=lmax) gg[itmp[m]] = tmp[m];
-      inp.read_entire_column(4,tmp);
-      for (int m=0; m<itmp.size(); ++m)
-        if (itmp[m]<=lmax) cc[itmp[m]] = tmp[m];
-      inp.read_entire_column(5,tmp);
-      for (int m=0; m<itmp.size(); ++m)
-        if (itmp[m]<=lmax) tg[itmp[m]] = tmp[m];
-      powspec.Set(tt,gg,cc,tg);
-      }
-    }
-  else
+  arr<double> tt(lmax+1,0),gg(lmax+1,0),cc(lmax+1,0),tg(lmax+1,0),
+              tc(lmax+1,0),gc(lmax+1,0);
+
+  int lmax_file = safe_cast<int>(inp.nelems(1)-1);
+  if (lmax_file<lmax)
+    cerr << "warning: lmax in file smaller than expected; padding with 0."
+          << endl;
+  int lmax_read = min (lmax,lmax_file);
+  inp.read_column_raw (1,&tt[0],lmax_read+1);
+  if (nspecs>=4)
     {
-    int lmax_file = inp.nelems(1)-1;
-    if (lmax_file<lmax)
-      cerr << "warning: lmax in file smaller than expected; padding with 0."
-           << endl;
-    int lmax_read = min (lmax,lmax_file);
-    if (nspecs==1)
-      {
-      arr<double> tt(lmax+1);
-      inp.read_column_raw (1,&tt[0],lmax_read+1);
-      for (int l=lmax_read+1; l<=lmax; ++l)
-        tt[l]=0;
-      powspec.Set(tt);
-      }
-    else
-      {
-      arr<double> tt(lmax+1), gg(lmax+1), cc(lmax+1), tg(lmax+1);
-      inp.read_column_raw (1,&tt[0],lmax_read+1);
-      inp.read_column_raw (2,&gg[0],lmax_read+1);
-      inp.read_column_raw (3,&cc[0],lmax_read+1);
-      inp.read_column_raw (4,&tg[0],lmax_read+1);
-      for (int l=lmax_read+1; l<=lmax; ++l)
-        tt[l]=gg[l]=cc[l]=tg[l]=0;
-      powspec.Set(tt,gg,cc,tg);
-      }
+    inp.read_column_raw (2,&gg[0],lmax_read+1);
+    inp.read_column_raw (3,&cc[0],lmax_read+1);
+    inp.read_column_raw (4,&tg[0],lmax_read+1);
     }
+  if (nspecs==6)
+    {
+    inp.read_column_raw (5,&tc[0],lmax_read+1);
+    inp.read_column_raw (6,&gc[0],lmax_read+1);
+    }
+
+  if (nspecs==1) powspec.Set(tt);
+  if (nspecs==4) powspec.Set(tt,gg,cc,tg);
+  if (nspecs==6) powspec.Set(tt,gg,cc,tg,tc,gc);
   }
 
 void write_powspec_to_fits (fitshandle &out,
   const PowSpec &powspec, int nspecs)
   {
-  planck_assert ((nspecs==1)||(nspecs==4), "wrong number of spectra");
+  planck_assert ((nspecs==1)||(nspecs==4)||(nspecs==6),
+    "incorrect number of spectra");
   vector<fitscolumn> cols;
-  cols.push_back(fitscolumn("l","multipole order",1,TINT32BIT));
-  cols.push_back(fitscolumn("Temperature C_l","Kelvin-squared",1,TDOUBLE));
+  cols.push_back(fitscolumn("Temperature C_l","unknown",1,PLANCK_FLOAT64));
   if (nspecs>1)
     {
-    cols.push_back(fitscolumn("E-mode C_l","Kelvin-squared",1,TDOUBLE));
-    cols.push_back(fitscolumn("B-mode C_l","Kelvin-squared",1,TDOUBLE));
-    cols.push_back(fitscolumn("T-E cross-corr.","Kelvin-squared",1,TDOUBLE));
+    cols.push_back(fitscolumn("E-mode C_l","unknown",1,PLANCK_FLOAT64));
+    cols.push_back(fitscolumn("B-mode C_l","unknown",1,PLANCK_FLOAT64));
+    cols.push_back(fitscolumn("T-E cross-corr.","unknown",1,
+      PLANCK_FLOAT64));
+    }
+  if (nspecs>4)
+    {
+    cols.push_back(fitscolumn("T-B cross-corr.","unknown",1,PLANCK_FLOAT64));
+    cols.push_back(fitscolumn("E-B cross-corr.","unknown",1,PLANCK_FLOAT64));
     }
   out.insert_bintab(cols);
-  out.add_key("PDMTYPE",string("POWERSPEC"),"Planck data model type");
-  arr<int> tmparr(powspec.Lmax()+1);
-  for (int l=0; l<=powspec.Lmax(); ++l) tmparr[l]=l;
-  out.write_column(1,tmparr);
-  out.write_column(2,powspec.tt());
+  out.write_column(1,powspec.tt());
   if (nspecs>1)
     {
-    out.write_column(3,powspec.gg());
-    out.write_column(4,powspec.cc());
-    out.write_column(5,powspec.tg());
+    out.write_column(2,powspec.gg());
+    out.write_column(3,powspec.cc());
+    out.write_column(4,powspec.tg());
     }
+  if (nspecs>4)
+    {
+    out.write_column(5,powspec.tc());
+    out.write_column(6,powspec.gc());
+    }
+  }
+
+void write_powspec_to_fits (const string &outfile,
+  const PowSpec &powspec, int nspecs)
+  {
+  fitshandle out;
+  out.create(outfile);
+  write_powspec_to_fits(out,powspec,nspecs);
   }

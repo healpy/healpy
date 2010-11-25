@@ -22,26 +22,40 @@
  *  (DLR).
  */
 
+/*
+  fftpack.h : function declarations for fftpack.c
+  Algorithmically based on Fortran-77 FFTPACK by Paul N. Swarztrauber
+  (Version 4, 1985).
+
+  Pekka Janhunen 23.2.1995
+
+  (reformatted by joerg arndt)
+
+  reformatted and slightly enhanced by Martin Reinecke (2004)
+ */
+
 #ifndef PLANCK_FFTPACK_H
 #define PLANCK_FFTPACK_H
+
+#include "c_utils.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 /*! forward complex transform */
-void cfftf(int N, double complex_data[], double wrk[]);
+void cfftf(size_t N, double complex_data[], double wrk[]);
 /*! backward complex transform */
-void cfftb(int N, double complex_data[], double wrk[]);
+void cfftb(size_t N, double complex_data[], double wrk[]);
 /*! initializer for complex transforms */
-void cffti(int N, double wrk[]);
+void cffti(size_t N, double wrk[]);
 
 /*! forward real transform */
-void rfftf(int N, double data[], double wrk[]);             
+void rfftf(size_t N, double data[], double wrk[]);
 /*! backward real transform */
-void rfftb(int N, double data[], double wrk[]);
+void rfftb(size_t N, double data[], double wrk[]);
 /*! initializer for real transforms */
-void rffti(int N, double wrk[]);
+void rffti(size_t N, double wrk[]);
 
 #ifdef __cplusplus
 }

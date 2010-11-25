@@ -23,7 +23,7 @@
  */
 
 /*
- *  Copyright (C) 2005, 2006, 2007 Max-Planck-Society
+ *  Copyright (C) 2005, 2006, 2007, 2008 Max-Planck-Society
  *  \author Martin Reinecke
  */
 
@@ -33,19 +33,19 @@
 #include "bluestein.h"
 
 /* returns the sum of all prime factors of n */
-int prime_factor_sum (int n)
+size_t prime_factor_sum (size_t n)
   {
-  int result=0,x,limit,tmp;
+  size_t result=0,x,limit,tmp;
   while (((tmp=(n>>1))<<1)==n)
     { result+=2; n=tmp; }
 
-  limit=sqrt(n+0.01);
+  limit=(size_t)sqrt(n+0.01);
   for (x=3; x<=limit; x+=2)
   while ((tmp=(n/x))*x==n)
     {
     result+=x;
     n=tmp;
-    limit=sqrt(n+0.01);
+    limit=(size_t)sqrt(n+0.01);
     }
   if (n>1) result+=n;
 
@@ -53,9 +53,9 @@ int prime_factor_sum (int n)
   }
 
 /* returns the smallest composite of 2, 3 and 5 which is >= n */
-static int good_size(int n)
+static size_t good_size(size_t n)
   {
-  int maxfactors=1, i, j, k, f2=1, f3, f5, bestfac, guessfac;
+  size_t maxfactors=1, i, j, k, f2=1, f3, f5, bestfac, guessfac;
   while ((n>>maxfactors)>0)
     ++maxfactors;
   bestfac=1<<maxfactors;
@@ -82,19 +82,19 @@ static int good_size(int n)
   return bestfac;
   }
 
-void bluestein_i (int n, double **tstorage)
+void bluestein_i (size_t n, double **tstorage)
   {
   static const double pi=3.14159265358979323846;
-  int n2=good_size(n*2-1);
-  int m, coeff;
+  size_t n2=good_size(n*2-1);
+  size_t m, coeff;
   double angle, xn2;
   double *bk, *bkf, *work;
   double pibyn=pi/n;
-  *tstorage = (double *)malloc (sizeof(double)*(1+2*n+8*n2+15));
-  ((int *)(*tstorage))[0]=n2;
-  bk  = *tstorage+1;
-  bkf = *tstorage+1+2*n;
-  work= *tstorage+1+2*(n+n2);
+  *tstorage = RALLOC(double,2+2*n+8*n2+16);
+  ((size_t *)(*tstorage))[0]=n2;
+  bk  = *tstorage+2;
+  bkf = *tstorage+2+2*n;
+  work= *tstorage+2+2*(n+n2);
 
 /* initialize b_k */
   bk[0] = 1;
@@ -110,7 +110,7 @@ void bluestein_i (int n, double **tstorage)
     bk[2*m+1] = sin(angle);
     }
 
-/* initialize the zero-padded, Fourier transformed b_k. Add normalisation.  */
+/* initialize the zero-padded, Fourier transformed b_k. Add normalisation. */
   xn2 = 1./n2;
   bkf[0] = bk[0]*xn2;
   bkf[1] = bk[1]*xn2;
@@ -125,15 +125,15 @@ void bluestein_i (int n, double **tstorage)
   cfftf (n2,bkf,work);
   }
 
-void bluestein (int n, double *data, double *tstorage, int isign)
+void bluestein (size_t n, double *data, double *tstorage, int isign)
   {
-  int n2=*((int *)tstorage);
-  int m;
+  size_t n2=*((size_t *)tstorage);
+  size_t m;
   double *bk, *bkf, *akf, *work;
-  bk  = tstorage+1;
-  bkf = tstorage+1+2*n;
-  work= tstorage+1+2*(n+n2);
-  akf = tstorage+1+2*n+6*n2+15;  
+  bk  = tstorage+2;
+  bkf = tstorage+2+2*n;
+  work= tstorage+2+2*(n+n2);
+  akf = tstorage+2+2*n+6*n2+16;
 
 /* initialize a_k and FFT it */
   if (isign>0)

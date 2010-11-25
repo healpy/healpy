@@ -25,7 +25,7 @@
  */
 
 /*! \file healpix_map.h
- *  Copyright (C) 2003, 2004, 2005, 2006 Max-Planck-Society
+ *  Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008 Max-Planck-Society
  *  \author Martin Reinecke
  */
 
@@ -34,6 +34,9 @@
 
 #include "arr.h"
 #include "healpix_base.h"
+
+//! Healpix value representing "undefined"
+const double Healpix_undef=-1.6375e30;
 
 /*! A HEALPix map of a given datatype */
 template<typename T> class Healpix_Map: public Healpix_Base
@@ -60,7 +63,8 @@ template<typename T> class Healpix_Map: public Healpix_Base
 
     /*! Deletes the old map, creates a map from the contents of \a data and
         sets the ordering scheme to \a scheme. The size of \a data must be a
-        valid HEALPix map size. */
+        valid HEALPix map size.
+        \note On exit, \a data is zero-sized! */
     void Set (arr<T> &data, Healpix_Ordering_Scheme scheme)
       {
       Healpix_Base::SetNside(npix2nside (data.size()), scheme);
@@ -227,8 +231,8 @@ template<typename T> class Healpix_Map: public Healpix_Base
     T interpolation (const fix_arr<int,4> &pix,
       const fix_arr<double,4> &wgt) const
       {
-      return map[pix[0]]*wgt[0] + map[pix[1]]*wgt[1]
-           + map[pix[2]]*wgt[2] + map[pix[3]]*wgt[3];
+      return T(map[pix[0]]*wgt[0] + map[pix[1]]*wgt[1]
+             + map[pix[2]]*wgt[2] + map[pix[3]]*wgt[3]);
       }
     /*! Returns the interpolated map value at \a ptg */
     T interpolated_value (const pointing &ptg) const
@@ -267,11 +271,19 @@ template<typename T> class Healpix_Map: public Healpix_Base
       }
 
     /*! Adds \a val to all defined map pixels. */
-    void add (T val)
+    void Add (T val)
       {
       for (int m=0; m<npix_; ++m)
         if (!approx<double>(map[m],Healpix_undef))
           { map[m]+=val; }
+      }
+
+    /*! Multiplies all defined map pixels by \a val. */
+    void Scale (T val)
+      {
+      for (int m=0; m<npix_; ++m)
+        if (!approx<double>(map[m],Healpix_undef))
+          { map[m]*=val; }
       }
 
     /*! Returns the root mean square of the map, not counting undefined

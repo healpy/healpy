@@ -1,25 +1,23 @@
 /*
- *  This file is part of Healpix_cxx.
+ *  This file is part of libcxxsupport.
  *
- *  Healpix_cxx is free software; you can redistribute it and/or modify
+ *  libcxxsupport is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation; either version 2 of the License, or
  *  (at your option) any later version.
  *
- *  Healpix_cxx is distributed in the hope that it will be useful,
+ *  libcxxsupport is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with Healpix_cxx; if not, write to the Free Software
+ *  along with libcxxsupport; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
- *  For more information about HEALPix, see http://healpix.jpl.nasa.gov
  */
 
 /*
- *  Healpix_cxx is being developed at the Max-Planck-Institut fuer Astrophysik
+ *  libcxxsupport is being developed at the Max-Planck-Institut fuer Astrophysik
  *  and financially supported by the Deutsches Zentrum fuer Luft- und Raumfahrt
  *  (DLR).
  */
@@ -27,7 +25,7 @@
 /*
  *  Class for parsing parameter files
  *
- *  Copyright (C) 2003, 2004, 2005 Max-Planck-Society
+ *  Copyright (C) 2003, 2004, 2005, 2008, 2009, 2010 Max-Planck-Society
  *  Authors: Martin Reinecke, Reinhard Hell
  */
 
@@ -38,7 +36,6 @@
 #include <set>
 #include <string>
 #include <iostream>
-#include "simparams.h"
 #include "cxxutils.h"
 
 class paramfile
@@ -53,16 +50,19 @@ class paramfile
       {
       params_type::const_iterator loc=params.find(key);
       if (loc!=params.end()) return loc->second;
-      throw Message_error ("Error: Cannot find the key \"" + key + "\".");
+      planck_fail ("Cannot find the key '" + key + "'.");
       }
+
+    bool param_unread (const std::string &key) const
+      { return (read_params.find(key)==read_params.end()); }
 
   public:
     paramfile (const std::string &filename, bool verbose_=true)
       : verbose(verbose_)
       { parse_file (filename, params); }
 
-    paramfile (const params_type &par)
-      : params (par), verbose(true)
+    paramfile (const params_type &par, bool verbose_=true)
+      : params (par), verbose(verbose_)
       {}
 
     ~paramfile ()
@@ -70,10 +70,16 @@ class paramfile
       if (verbose)
         for (params_type::const_iterator loc=params.begin();
              loc!=params.end(); ++loc)
-          if (read_params.find(loc->first)==read_params.end())
-            std::cout << "Parser warning: unused parameter "
-                      << loc->first << std::endl;
+          if (param_unread(loc->first))
+            std::cout << "Parser warning: unused parameter '"
+                      << loc->first << "'" << std::endl;
       }
+
+    void setVerbosity (bool verbose_)
+      { verbose = verbose_; }
+
+    bool getVerbosity () const
+      { return verbose; }
 
     bool param_present(const std::string &key) const
       { return (params.find(key)!=params.end()); }
@@ -82,9 +88,10 @@ class paramfile
       {
       T result;
       stringToData(get_valstr(key),result);
-      if (verbose)
-        std::cout << "Parser: " << key << " = " << dataToString(result)
-                  << std::endl;
+      std::string output = dataToString(result);
+      if (planckType<T>()==PLANCK_STRING) output = "'"+output+"'";
+      if (verbose && param_unread(key))
+        std::cout << "Parser: " << key << " = " << output << std::endl;
       read_params.insert(key);
       return result;
       }
@@ -92,8 +99,10 @@ class paramfile
       (const std::string &key, const T &deflt)
       {
       if (param_present(key)) return find<T>(key);
-      if (verbose)
-        std::cout << "Parser: " << key << " = " << dataToString(deflt)
+      std::string output = dataToString(deflt);
+      if (planckType<T>()==PLANCK_STRING) output = "'"+output+"'";
+      if (verbose && param_unread(key))
+        std::cout << "Parser: " << key << " = " << output
                   << " <default>" << std::endl;
       params[key]=dataToString(deflt);
       read_params.insert(key);
@@ -102,24 +111,6 @@ class paramfile
 
     const params_type &getParams() const
       { return params; }
-
-    template<typename T> void findParam
-      (const std::string &key, T &value) const
-      { value = find<T>(key); }
-
-    template<typename T> void findHeaderParam(const std::string& key,
-      T& value, simparams& headerParams, const std::string& headerKey,
-      const std::string& headerComment) const
-      {
-      findParam(key, value);
-      headerParams.add(key, headerKey, dataToString(value), headerComment);
-      }
-    void findSourceParam(const std::string& key, std::string& value,
-      simparams& headerParams) const
-      {
-      findParam(key, value);
-      headerParams.add_source_file(value);
-      }
   };
 
 #endif

@@ -1,18 +1,21 @@
-TEMP1	= $(SRCROOT)/libfftpack
-VPATH	= $(TEMP1) $(INCDIR)
+PKG:=libfftpack
 
-LIBRARIES= libfftpack.a
+SD:=$(SRCROOT)/$(PKG)
+OD:=$(BLDROOT)/$(PKG)
 
-HEADERS= $(TEMP1)/ls_fft.h
+FULL_INCLUDE+= -I$(SD)
 
-include $(PARAMFILE)
+HDR_$(PKG):=$(SD)/*.h
+LIB_$(PKG):=$(LIBDIR)/libfftpack.a
+OBJ:=fftpack.o bluestein.o ls_fft.o
+OBJ:=$(OBJ:%=$(OD)/%)
 
+ODEP:=$(HDR_$(PKG)) $(HDR_c_utils)
 
-FFTPACK_OBJ= fftpack.o bluestein.o ls_fft.o
+$(OD)/fftpack.o: $(SD)/fftpack_inc.c
 
-fftpack.o: fftpack.h
-bluestein.o: bluestein.h fftpack.h
-ls_fft.o: ls_fft.h bluestein.h fftpack.h
+$(OBJ): $(ODEP) | $(OD)_mkdir
+$(LIB_$(PKG)): $(OBJ)
 
-libfftpack.a: $(FFTPACK_OBJ) $(HEADERS)
-	$(ARCREATE) libfftpack.a $(FFTPACK_OBJ)
+all_hdr+=$(HDR_$(PKG))
+all_lib+=$(LIB_$(PKG))

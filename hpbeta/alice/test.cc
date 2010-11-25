@@ -6,7 +6,7 @@
 using namespace std;
 
 /*! Contains test code to do sanity checks as I go along. */
-int main(void) 
+int main(void)
 {
   vec3 location, north, east, old_axis, new_axis, dummy, direction, orthogonal;
   vec3 new_location;
@@ -37,7 +37,7 @@ int main(void)
   dummy = vec3(0.0, 1.0, 1.0);
   dummy.Normalize();
   assert((orthogonal - dummy).Length() < epsilon);
-  
+
   location = vec3(1.0, 0.0, 0.0);
   old_axis = vec3(0.0, -1.0, 0.1);
   get_step(location, 1.0, 0.0, halfpi, old_axis, new_location, new_axis);

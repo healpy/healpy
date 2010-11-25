@@ -1,4 +1,5 @@
 #include "SoSSkyMap.h"
+#include "lsconstants.h"
 #include <math.h>
 
 SoSSkyMap::SoSSkyMap(int x)
@@ -6,7 +7,7 @@ SoSSkyMap::SoSSkyMap(int x)
   set_size(x);
 }
 
-void SoSSkyMap::set_size(int x) 
+void SoSSkyMap::set_size(int x)
 {
   int y;
   assert(x >= 2);
@@ -15,7 +16,7 @@ void SoSSkyMap::set_size(int x)
   d_xscale = 2 * pi / x;
   d_yscale = pi / y;
 }
-     
+
 int SoSSkyMap::project(pointing p) const
 {
   int x, y, i;

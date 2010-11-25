@@ -10,7 +10,7 @@
 class RectSkyMap : public SkyMap
 {
  public:
-  
+
   arr2<float> d_array;
   int d_x, d_y;
 
@@ -23,7 +23,7 @@ class RectSkyMap : public SkyMap
   void i2xy(int i, int &x, int &y) const
     {
       x = i % d_x;
-      y = i / d_x; 
+      y = i / d_x;
     }
 
   void xy2i(int x, int y, int &i) const
@@ -39,7 +39,7 @@ class RectSkyMap : public SkyMap
       d_array.alloc(x, y);
       d_array.fill(0.0);
     }
-  
+
   double get_pixel(int i) const
     {
       int x, y;
@@ -65,14 +65,14 @@ class RectSkyMap : public SkyMap
     {
       return d_x * d_y - 1;
     }
-  
+
   int get_next_pixel(int i) const
     {
       i++;
-      while(i < max_pixel() && !is_valid_pixel(i)) 
-	i++;
+      while(i < max_pixel() && !is_valid_pixel(i))
+        i++;
       return i;
-    }  
+    }
 
   void minmax(float &min, float &max) const
     {

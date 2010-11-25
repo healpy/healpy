@@ -472,38 +472,6 @@ def pixwin(nside,pol=False):
     else:
         return pw_temp
 
-def alm2signal(alm, theta, phi, lmax=-1, mmax=-1):
-    """This function use alm (temperature only) to compute the signal at
-    an arbitrary direction on the sky, ie computes sum alm Ylm(theta,phi).
-
-    Input:
-     - alm: a vector containing alm
-     - theta, phi : a direction on the sky
-     - lmax, mmax (optional): the lmax, mmax of the alm. If not given, assume
-                              mmax=lmax and find lmax from alm size 
-    Return:
-     - a scalar (double) = sum alm Ylm
-    """
-    sig = sphtlib._alm2signal(npy.asarray(alm,
-                                          dtype=npy.comple128,
-                                          order='C').ravel(),
-                              theta, phi, lmax, mmax)
-    return sig
-
-def getylm(lmax, m, theta):
-    """Computes Ylm for given theta and phi=0, for l=0..lmax and given m.
-    Values for l<|m| are set to zero.
-
-    Input:
-     - lmax: maximum l value for which to compute Ylm
-     - m: value m for which to compute Ylm
-     - theta: value for which Ylm(theta,0) is computed
-    Return:
-     - ylm : a vector of size lmax+1. ylm[0..m-1] = 0.0
-    """
-    ylm = sphtlib._getylm(lmax,m,m,theta)
-    return ylm
-
 def alm2map_der1(alm, nside, lmax=-1, mmax=-1):
    """Computes an Healpix map and its first derivatives given the alm.
 

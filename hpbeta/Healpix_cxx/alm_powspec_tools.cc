@@ -25,7 +25,7 @@
  */
 
 /*
- *  Copyright (C) 2003, 2004, 2005 Max-Planck-Society
+ *  Copyright (C) 2003-2010 Max-Planck-Society
  *  Author: Martin Reinecke
  */
 
@@ -36,6 +36,8 @@
 #include "xcomplex.h"
 #include "rotmatrix.h"
 #include "openmp_support.h"
+#include "wigner.h"
+#include "lsconstants.h"
 
 using namespace std;
 template<typename T> void create_alm
@@ -49,12 +51,12 @@ template<typename T> void create_alm
     {
     double rms_tt = sqrt(powspec.tt(l));
     double zeta1_r = rng.rand_gauss();
-    alm(l,0) = zeta1_r * rms_tt;
+    alm(l,0) = T(zeta1_r * rms_tt);
     for (int m=1; m<=min(l,mmax); ++m)
       {
       zeta1_r = rng.rand_gauss()*hsqrt2;
       double zeta1_i = rng.rand_gauss()*hsqrt2;
-      alm(l,m).Set (zeta1_r*rms_tt, zeta1_i*rms_tt);
+      alm(l,m).Set (T(zeta1_r*rms_tt), T(zeta1_i*rms_tt));
       }
     }
   }
@@ -86,14 +88,14 @@ template<typename T> void create_alm_pol
       }
 
     double zeta1_r = rng.rand_gauss();
-    almT(l,0) = zeta1_r * rms_tt;
-    almG(l,0) = zeta1_r * rms_g1;
+    almT(l,0) = T(zeta1_r * rms_tt);
+    almG(l,0) = T(zeta1_r * rms_g1);
     for (int m=1; m<=min(l,mmax); ++m)
       {
       zeta1_r = rng.rand_gauss()*hsqrt2;
       double zeta1_i = rng.rand_gauss()*hsqrt2;
-      almT(l,m).Set (zeta1_r*rms_tt, zeta1_i*rms_tt);
-      almG(l,m).Set (zeta1_r*rms_g1, zeta1_i*rms_g1);
+      almT(l,m).Set (T(zeta1_r*rms_tt), T(zeta1_i*rms_tt));
+      almG(l,m).Set (T(zeta1_r*rms_g1), T(zeta1_i*rms_g1));
       }
     }
 
@@ -113,8 +115,8 @@ template<typename T> void create_alm_pol
       rms_g2 = sqrt(rms_g2);
       rms_cc = sqrt(powspec.cc(l));
       }
-    almG(l,0) += rng.rand_gauss()*rms_g2;
-    almC(l,0)  = rng.rand_gauss()*rms_cc;
+    almG(l,0) += T(rng.rand_gauss()*rms_g2);
+    almC(l,0)  = T(rng.rand_gauss()*rms_cc);
 
     for (int m=1; m<=min(l,mmax); ++m)
       {
@@ -123,8 +125,8 @@ template<typename T> void create_alm_pol
       double zeta3_r = rng.rand_gauss()*hsqrt2;
       double zeta3_i = rng.rand_gauss()*hsqrt2;
 
-      almG(l,m) += xcomplex<T> (zeta2_r*rms_g2,zeta2_i*rms_g2);
-      almC(l,m).Set (zeta3_r*rms_cc,zeta3_i*rms_cc);
+      almG(l,m) += xcomplex<T> (T(zeta2_r*rms_g2),T(zeta2_i*rms_g2));
+      almC(l,m).Set (T(zeta3_r*rms_cc),T(zeta3_i*rms_cc));
       }
     }
   }
@@ -143,33 +145,11 @@ template void create_alm_pol
    planck_rng &rng);
 
 
-template<typename T> void extract_powspec
-  (const Alm<xcomplex<T> > &alm, PowSpec &powspec)
-  {
-  arr<double> tt(alm.Lmax()+1);
-  for (int l=0; l<=alm.Lmax(); ++l)
-    {
-    tt[l] = norm(alm(l,0));
-    int limit = min(l,alm.Mmax());
-    for (int m=1; m<=limit; ++m)
-      tt[l] += 2*norm(alm(l,m));
-    tt[l] /= (2*l+1);
-    }
-  powspec.Set(tt);
-  }
-
-template void extract_powspec
-  (const Alm<xcomplex<float> > &alm, PowSpec &powspec);
-template void extract_powspec
-  (const Alm<xcomplex<double> > &alm, PowSpec &powspec);
-
-
 template<typename T> void extract_crosspowspec
   (const Alm<xcomplex<T> > &alm1,
    const Alm<xcomplex<T> > &alm2,PowSpec &powspec)
   {
-  planck_assert (alm1.conformable(alm2),
-    "extract_crosspowspec: a_lms are not conformable");
+  planck_assert (alm1.conformable(alm2), "a_lm are not conformable");
   arr<double> tt(alm1.Lmax()+1);
   for (int l=0; l<=alm1.Lmax(); ++l)
     {
@@ -191,36 +171,64 @@ template void extract_crosspowspec
 
 
 template<typename T> void extract_powspec
-  (const Alm<xcomplex<T> > &almT,
-   const Alm<xcomplex<T> > &almG,
-   const Alm<xcomplex<T> > &almC,
+  (const Alm<xcomplex<T> > &alm, PowSpec &powspec)
+  { extract_crosspowspec (alm,alm,powspec); }
+
+template void extract_powspec
+  (const Alm<xcomplex<float> > &alm, PowSpec &powspec);
+template void extract_powspec
+  (const Alm<xcomplex<double> > &alm, PowSpec &powspec);
+
+template<typename T> void extract_crosspowspec
+  (const Alm<xcomplex<T> > &almT1,
+   const Alm<xcomplex<T> > &almG1,
+   const Alm<xcomplex<T> > &almC1,
+   const Alm<xcomplex<T> > &almT2,
+   const Alm<xcomplex<T> > &almG2,
+   const Alm<xcomplex<T> > &almC2,
    PowSpec &powspec)
   {
-  planck_assert (almT.conformable(almG) && almT.conformable(almC),
-    "extract_powspec: a_lms are not conformable");
-  int lmax = almT.Lmax();
-  arr<double> tt(lmax+1), gg(lmax+1), cc(lmax+1), tg(lmax+1);
+  planck_assert (almT1.conformable(almG1) && almT1.conformable(almC1) &&
+                 almT1.conformable(almT2) && almT1.conformable(almG2) &&
+                 almT1.conformable(almC2), "a_lm are not conformable");
+
+  int lmax = almT1.Lmax();
+  arr<double> tt(lmax+1), gg(lmax+1), cc(lmax+1), tg(lmax+1),
+              tc(lmax+1), gc(lmax+1);
   for (int l=0; l<=lmax; ++l)
     {
-    tt[l] = norm(almT(l,0));
-    gg[l] = norm(almG(l,0));
-    cc[l] = norm(almC(l,0));
-    tg[l] = (almT(l,0)*conj(almG(l,0))).re;
-    int limit = min(l,almT.Mmax());
+    tt[l] = almT1(l,0).re*almT2(l,0).re;
+    gg[l] = almG1(l,0).re*almG2(l,0).re;
+    cc[l] = almC1(l,0).re*almC2(l,0).re;
+    tg[l] = almT1(l,0).re*almG2(l,0).re;
+    tc[l] = almT1(l,0).re*almC2(l,0).re;
+    gc[l] = almG1(l,0).re*almC2(l,0).re;
+    int limit = min(l,almT1.Mmax());
     for (int m=1; m<=limit; ++m)
       {
-      tt[l] += 2*norm(almT(l,m));
-      gg[l] += 2*norm(almG(l,m));
-      cc[l] += 2*norm(almC(l,m));
-      tg[l] += 2*(almT(l,m)*conj(almG(l,m))).re;
+      tt[l] += 2 * (almT1(l,m).re*almT2(l,m).re + almT1(l,m).im*almT2(l,m).im);
+      gg[l] += 2 * (almG1(l,m).re*almG2(l,m).re + almG1(l,m).im*almG2(l,m).im);
+      cc[l] += 2 * (almC1(l,m).re*almC2(l,m).re + almC1(l,m).im*almC2(l,m).im);
+      tg[l] += 2 * (almT1(l,m).re*almG2(l,m).re + almT1(l,m).im*almG2(l,m).im);
+      tc[l] += 2 * (almT1(l,m).re*almC2(l,m).re + almT1(l,m).im*almC2(l,m).im);
+      gc[l] += 2 * (almG1(l,m).re*almC2(l,m).re + almG1(l,m).im*almC2(l,m).im);
       }
     tt[l] /= (2*l+1);
     gg[l] /= (2*l+1);
     cc[l] /= (2*l+1);
     tg[l] /= (2*l+1);
+    tc[l] /= (2*l+1);
+    gc[l] /= (2*l+1);
     }
-  powspec.Set(tt,gg,cc,tg);
+  powspec.Set(tt,gg,cc,tg,tc,gc);
   }
+
+template<typename T> void extract_powspec
+  (const Alm<xcomplex<T> > &almT,
+   const Alm<xcomplex<T> > &almG,
+   const Alm<xcomplex<T> > &almC,
+   PowSpec &powspec)
+  { extract_crosspowspec(almT,almG,almC,almT,almG,almC,powspec); }
 
 template void extract_powspec
   (const Alm<xcomplex<float> > &almT,
@@ -234,31 +242,31 @@ template void extract_powspec
    PowSpec &powspec);
 
 
-template<typename T> void smooth_with_Gauss
-  (Alm<xcomplex<T> > &alm, double fwhm_arcmin)
+template<typename T> void smoothWithGauss
+  (Alm<xcomplex<T> > &alm, double fwhm)
   {
-  int fct = (fwhm_arcmin>=0) ? 1 : -1;
-  double sigma = fwhm_arcmin/60*degr2rad*fwhm2sigma;
+  int fct = (fwhm>=0) ? 1 : -1;
+  double sigma = fwhm*fwhm2sigma;
   arr<double> gb(alm.Lmax()+1);
   for (int l=0; l<=alm.Lmax(); ++l)
     gb[l] = exp(-.5*fct*l*(l+1)*sigma*sigma);
   alm.ScaleL(gb);
   }
 
-template void smooth_with_Gauss
-  (Alm<xcomplex<float> > &alm, double fwhm_arcmin);
-template void smooth_with_Gauss
-  (Alm<xcomplex<double> > &alm, double fwhm_arcmin);
+template void smoothWithGauss
+  (Alm<xcomplex<float> > &alm, double fwhm);
+template void smoothWithGauss
+  (Alm<xcomplex<double> > &alm, double fwhm);
 
 
-template<typename T> void smooth_with_Gauss
+template<typename T> void smoothWithGauss
   (Alm<xcomplex<T> > &almT,
    Alm<xcomplex<T> > &almG,
    Alm<xcomplex<T> > &almC,
-   double fwhm_arcmin)
+   double fwhm)
   {
-  int fct = (fwhm_arcmin>=0) ? 1 : -1;
-  double sigma = fwhm_arcmin/60*degr2rad*fwhm2sigma;
+  int fct = (fwhm>=0) ? 1 : -1;
+  double sigma = fwhm*fwhm2sigma;
   double fact_pol = exp(2*fct*sigma*sigma);
   arr<double> gb(almT.Lmax()+1);
   for (int l=0; l<=almT.Lmax(); ++l)
@@ -269,154 +277,16 @@ template<typename T> void smooth_with_Gauss
   almG.ScaleL(gb); almC.ScaleL(gb);
   }
 
-template void smooth_with_Gauss
+template void smoothWithGauss
   (Alm<xcomplex<float> > &almT,
    Alm<xcomplex<float> > &almG,
    Alm<xcomplex<float> > &almC,
-   double fwhm_arcmin);
-template void smooth_with_Gauss
+   double fwhm);
+template void smoothWithGauss
   (Alm<xcomplex<double> > &almT,
    Alm<xcomplex<double> > &almG,
    Alm<xcomplex<double> > &almC,
-   double fwhm_arcmin);
-
-namespace {
-
-#if 0
-
-class wigner_d
-  {
-  private:
-    double p,q;
-    arr<double> sqt;
-    arr2<double> d;
-    int n;
-
-    void do_line0 (double *l1, int j)
-      {
-      double xj = 1./j;
-      l1[j] = -p*l1[j-1];
-      for (int i=j-1; i>=1; --i)
-        l1[i] = xj*sqt[j]*(q*sqt[j-i]*l1[i] - p*sqt[i]*l1[i-1]);
-      l1[0] = q*l1[0];
-      }
-    void do_line (const double *l1, double *l2, int j, int k)
-      {
-      double xj = 1./j;
-      double t1 = xj*sqt[j-k]*q, t2 = xj*sqt[j-k]*p;
-      double t3 = xj*sqt[k]*p,   t4 = xj*sqt[k]*q;
-      l2[j] = sqt[j] * (t4*l1[j-1]-t2*l2[j-1]);
-      for (int i=j-1; i>=1; --i)
-        l2[i] = t1*sqt[j-i]*l2[i] - t2*sqt[i]*l2[i-1]
-               +t3*sqt[j-i]*l1[i] + t4*sqt[i]*l1[i-1];
-      l2[0] = sqt[j] * (t3*l1[0]+t1*l2[0]);
-      }
-
-  public:
-    wigner_d(int lmax, double ang)
-      : p(sin(ang/2)), q(cos(ang/2)), sqt(2*lmax+1), d(lmax+1,2*lmax+1), n(-1)
-      { for (int m=0; m<sqt.size(); ++m) sqt[m] = sqrt(double(m)); }
-
-    const arr2<double> &recurse ()
-      {
-      ++n;
-      if (n==0)
-        d[0][0] = 1;
-      else if (n==1)
-        {
-        d[0][0] = q*q; d[0][1] = -p*q*sqt[2]; d[0][2] = p*p;
-        d[1][0] = -d[0][1]; d[1][1] = q*q-p*p; d[1][2] = d[0][1];
-        }
-      else
-        {
-        // padding
-        int sign = (n&1)? -1 : 1;
-        for (int i=0; i<=2*n-2; ++i)
-          {
-          d[n][i] = sign*d[n-2][2*n-2-i];
-          sign=-sign;
-          }
-        do_line (d[n-1],d[n],2*n-1,n);
-        for (int k=n; k>=2; --k)
-          {
-          do_line (d[k-2],d[k-1],2*n-1,k-1);
-          do_line (d[k-1],d[k],2*n,k);
-          }
-        do_line0 (d[0],2*n-1);
-        do_line (d[0],d[1],2*n,1);
-        do_line0 (d[0],2*n);
-        }
-      return d;
-      }
-  };
-
-#else
-
-class wigner_d
-  {
-  private:
-    double p,q;
-    arr<double> sqt;
-    arr2<double> d, dd;
-    int n;
-
-  public:
-    wigner_d(int lmax, double ang)
-      : p(sin(ang/2)), q(cos(ang/2)), sqt(2*lmax+1), d(lmax+1,2*lmax+1),
-        dd(lmax+1,2*lmax+1), n(-1)
-      { for (int m=0; m<sqt.size(); ++m) sqt[m] = sqrt(double(m)); }
-
-    const arr2<double> &recurse ()
-      {
-      ++n;
-      if (n==0)
-        d[0][0] = 1;
-      else if (n==1)
-        {
-        d[0][0] = q*q; d[0][1] = -p*q*sqt[2]; d[0][2] = p*p;
-        d[1][0] = -d[0][1]; d[1][1] = q*q-p*p; d[1][2] = d[0][1];
-        }
-      else
-        {
-        // padding
-        int sign = (n&1)? -1 : 1;
-        for (int i=0; i<=2*n-2; ++i)
-          {
-          d[n][i] = sign*d[n-2][2*n-2-i];
-          sign=-sign;
-          }
-        for (int j=2*n-1; j<=2*n; ++j)
-          {
-          double xj = 1./j;
-          dd[0][0] = q*d[0][0];
-          for (int i=1;i<j; ++i)
-            dd[0][i] = xj*sqt[j]*(q*sqt[j-i]*d[0][i] - p*sqt[i]*d[0][i-1]);
-          dd[0][j] = -p*d[0][j-1];
-#pragma omp parallel
-{
-          int k;
-#pragma omp for schedule(static)
-          for (k=1; k<=n; ++k)
-            {
-            double t1 = xj*sqt[j-k]*q, t2 = xj*sqt[j-k]*p;
-            double t3 = xj*sqt[k  ]*p, t4 = xj*sqt[k  ]*q;
-            dd[k][0] = xj*sqt[j]*(q*sqt[j-k]*d[k][0] + p*sqt[k]*d[k-1][0]);
-            for (int i=1; i<j; ++i)
-              dd[k][i] = t1*sqt[j-i]*d[k  ][i] - t2*sqt[i]*d[k  ][i-1]
-                       + t3*sqt[j-i]*d[k-1][i] + t4*sqt[i]*d[k-1][i-1];
-            dd[k][j] = -t2*sqt[j]*d[k][j-1] + t4*sqt[j]*d[k-1][j-1];
-            }
-}
-          dd.swap(d);
-          }
-        }
-      return d;
-      }
-  };
-
-#endif
-
-} // namespace
+   double fwhm);
 
 template<typename T> void rotate_alm (Alm<xcomplex<T> > &alm,
   double psi, double theta, double phi)
@@ -431,27 +301,26 @@ template<typename T> void rotate_alm (Alm<xcomplex<T> > &alm,
     expphi[m].Set (cos(phi*m),-sin(phi*m));
     }
 
-  wigner_d rec(lmax,theta);
+  wigner_d_risbo_openmp rec(lmax,theta);
 
   arr<xcomplex<double> > almtmp(lmax+1);
 
   for (int l=0; l<=lmax; ++l)
     {
-    announce_progress (pow(double(l),3),pow(l-1.,3),pow(double(lmax),3));
     const arr2<double> &d(rec.recurse());
 
     for (int m=0; m<=l; ++m)
-      almtmp[m] = alm(l,0)*d[l][l+m];
+      almtmp[m] = xcomplex<double>(alm(l,0))*d[l][l+m];
 
 #pragma omp parallel
 {
-    int lo,hi;
+    int64 lo,hi;
     openmp_calc_share(0,l+1,lo,hi);
 
     bool flip = true;
     for (int mm=1; mm<=l; ++mm)
       {
-      xcomplex<double> t1 = alm(l,mm)*exppsi[mm];
+      xcomplex<double> t1 = xcomplex<double>(alm(l,mm))*exppsi[mm];
       bool flip2 = ((mm+lo)&1) ? true : false;
       for (int m=lo; m<hi; ++m)
         {
@@ -466,9 +335,8 @@ template<typename T> void rotate_alm (Alm<xcomplex<T> > &alm,
 }
 
     for (int m=0; m<=l; ++m)
-      alm(l,m) = almtmp[m]*expphi[m];
+      alm(l,m) = xcomplex<T>(almtmp[m]*expphi[m]);
     }
-  end_announce_progress();
   }
 
 template void rotate_alm (Alm<xcomplex<float> > &alm,
@@ -492,33 +360,32 @@ template<typename T> void rotate_alm (Alm<xcomplex<T> > &almT,
     expphi[m].Set (cos(phi*m),-sin(phi*m));
     }
 
-  wigner_d rec(lmax,theta);
+  wigner_d_risbo_openmp rec(lmax,theta);
 
   arr<xcomplex<double> > almtmpT(lmax+1), almtmpG(lmax+1), almtmpC(lmax+1);
 
   for (int l=0; l<=lmax; ++l)
     {
-    announce_progress (pow(double(l),3),pow(l-1.,3),pow(double(lmax),3));
     const arr2<double> &d(rec.recurse());
 
     for (int m=0; m<=l; ++m)
       {
-      almtmpT[m] = almT(l,0)*d[l][m+l];
-      almtmpG[m] = almG(l,0)*d[l][m+l];
-      almtmpC[m] = almC(l,0)*d[l][m+l];
+      almtmpT[m] = xcomplex<double>(almT(l,0))*d[l][m+l];
+      almtmpG[m] = xcomplex<double>(almG(l,0))*d[l][m+l];
+      almtmpC[m] = xcomplex<double>(almC(l,0))*d[l][m+l];
       }
 
 #pragma omp parallel
 {
-    int lo,hi;
+    int64 lo,hi;
     openmp_calc_share(0,l+1,lo,hi);
 
     bool flip = true;
     for (int mm=1; mm<=l; ++mm)
       {
-      xcomplex<double> t1T = almT(l,mm)*exppsi[mm];
-      xcomplex<double> t1G = almG(l,mm)*exppsi[mm];
-      xcomplex<double> t1C = almC(l,mm)*exppsi[mm];
+      xcomplex<double> t1T = xcomplex<double>(almT(l,mm))*exppsi[mm];
+      xcomplex<double> t1G = xcomplex<double>(almG(l,mm))*exppsi[mm];
+      xcomplex<double> t1C = xcomplex<double>(almC(l,mm))*exppsi[mm];
       bool flip2 = ((mm+lo)&1) ? true : false;
       for (int m=lo; m<hi; ++m)
         {
@@ -536,12 +403,11 @@ template<typename T> void rotate_alm (Alm<xcomplex<T> > &almT,
 
     for (int m=0; m<=l; ++m)
       {
-      almT(l,m) = almtmpT[m]*expphi[m];
-      almG(l,m) = almtmpG[m]*expphi[m];
-      almC(l,m) = almtmpC[m]*expphi[m];
+      almT(l,m) = xcomplex<T>(almtmpT[m]*expphi[m]);
+      almG(l,m) = xcomplex<T>(almtmpG[m]*expphi[m]);
+      almC(l,m) = xcomplex<T>(almtmpC[m]*expphi[m]);
       }
     }
-  end_announce_progress();
   }
 
 template void rotate_alm (Alm<xcomplex<float> > &almT,

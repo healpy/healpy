@@ -37,6 +37,8 @@
 
 using namespace std;
 
+namespace {
+
 Trafo maketrafo (int num)
   {
   switch (num)
@@ -53,9 +55,11 @@ Trafo maketrafo (int num)
     case 10: return Trafo(1950,1950,Ecliptic,Equatorial);
     case 11: return Trafo(1950,1950,Ecliptic,Galactic);
     case 12: return Trafo(1950,1950,Galactic,Ecliptic);
-    default: throw Message_error ("Unsupported transformation");
+    default: planck_fail("Unsupported transformation "+dataToString(num));
     }
   }
+
+} // unnamed namespace
 
 int main(int argc, const char **argv)
   {
@@ -80,7 +84,7 @@ PLANCK_DIAGNOSIS_BEGIN
          << "         12: Galactic   (1950) -> Ecliptic   (1950)" << endl
          << endl
          << "pol: T or F" << endl << endl;
-    throw Message_error();
+    planck_fail_quietly("Incorrect usage");
     }
 
   string infile  = argv[1];
@@ -101,7 +105,7 @@ PLANCK_DIAGNOSIS_BEGIN
     get_almsize (infile,lmax,dummy);
     read_Alm_from_fits (infile, almT, lmax, lmax);
     rotate_alm(almT,tr.Matrix());
-    write_Alm_to_fits (out,almT,lmax,lmax,TFLOAT);
+    write_Alm_to_fits (out,almT,lmax,lmax,PLANCK_FLOAT32);
     }
   else
     {
@@ -111,9 +115,9 @@ PLANCK_DIAGNOSIS_BEGIN
     read_Alm_from_fits (infile, almG, lmax, lmax, 3);
     read_Alm_from_fits (infile, almC, lmax, lmax, 4);
     rotate_alm(almT,almG,almC,tr.Matrix());
-    write_Alm_to_fits (out,almT,lmax,lmax,TDOUBLE);
-    write_Alm_to_fits (out,almG,lmax,lmax,TDOUBLE);
-    write_Alm_to_fits (out,almC,lmax,lmax,TDOUBLE);
+    write_Alm_to_fits (out,almT,lmax,lmax,PLANCK_FLOAT64);
+    write_Alm_to_fits (out,almG,lmax,lmax,PLANCK_FLOAT64);
+    write_Alm_to_fits (out,almC,lmax,lmax,PLANCK_FLOAT64);
     }
 
 PLANCK_DIAGNOSIS_END

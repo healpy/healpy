@@ -30,14 +30,16 @@
 #ifndef PLANCK_BLUESTEIN_H
 #define PLANCK_BLUESTEIN_H
 
+#include "c_utils.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-int prime_factor_sum (int n);
+size_t prime_factor_sum (size_t n);
 
-void bluestein_i (int n, double **tstorage);
-void bluestein (int n, double *data, double *tstorage, int isign);
+void bluestein_i (size_t n, double **tstorage);
+void bluestein (size_t n, double *data, double *tstorage, int isign);
 
 #ifdef __cplusplus
 }

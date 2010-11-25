@@ -1,21 +1,32 @@
-include $(PARAMFILE)
+PKG:=libcfitsio
 
-all: fitslib
+ifeq ($(EXTERNAL_CFITSIO),yes)
 
-fitslib: $(LIBDIR)/libcfitsio.a
+LIB_$(PKG):=$(CFITSIO_EXT_LIB)
+FULL_INCLUDE+= -I$(CFITSIO_EXT_INC)
 
-PACKAGE = $(SRCROOT)/libcfitsio/cfitsio3100.tar.gz
+else
 
-$(LIBDIR)/libcfitsio.a: $(PACKAGE)
-	rm -rf cfitsio
-	gunzip -c $(PACKAGE) | tar xvf -
+PACKAGE:=$(SRCROOT)/libcfitsio/cfitsio3250.tar.gz
+
+SD:=$(SRCROOT)/$(PKG)
+OD:=$(BLDROOT)/$(PKG)
+
+FULL_INCLUDE+= -I$(BLDROOT)/libcfitsio/cfitsio
+
+HDR_$(PKG):=fitsio.h longnam.h
+HDR_$(PKG):=$(HDR_$(PKG):%=$(BLDROOT)/libcfitsio/cfitsio/%)
+LIB_$(PKG):=$(LIBDIR)/libcfitsio.a
+
+$(LIB_$(PKG)): $(SD)/* | $(OD)_mkdir $(LIBDIR)_mkdir
+	cd $(BLDROOT)/libcfitsio/ && \
+	rm -rf cfitsio && \
+	gunzip -c $(PACKAGE) | tar xvf - && \
 	cd cfitsio && \
-	mv compress_alternate.c compress.c && \
-	MAKE="$(MAKE)" FC="$(FC)" CC="$(CC)" CFLAGS="$(CCFLAGS_NO_C)" \
-	  ./configure --includedir="$(INCDIR)" --libdir="$(LIBDIR)" && \
-	$(MAKE)
-	cp cfitsio/libcfitsio.a $(LIBDIR)
-	cp cfitsio/fitsio.h cfitsio/longnam.h $(INCDIR)
+	MAKE="$(MAKE)" FC="$(FC)" CC="$(CC)" CFLAGS="$(CCFLAGS_NO_C)" ./configure && \
+	$(MAKE) && \
+	cp -p libcfitsio.a $(LIBDIR)
 
-clean:
-	if [ -d cfitsio ]; then rm -rf cfitsio; fi
+$(HDR_$(PKG)): $(LIB_$(PKG))
+
+endif

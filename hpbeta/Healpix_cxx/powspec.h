@@ -25,7 +25,7 @@
  */
 
 /*
- *  Copyright (C) 2003, 2004 Max-Planck-Society
+ *  Copyright (C) 2003-2010 Max-Planck-Society
  *  Author: Martin Reinecke
  */
 
@@ -68,6 +68,14 @@ class PowSpec
         }
       }
 
+    /*! Ensures that the internal array sizes are consistent with the
+        \a num_specs variable. */
+    void assertArraySizes() const;
+
+    /*! Checks whether the object can be an auto power spectrum. If this
+        is not the case, an exception is thrown. */
+    bool consistentAutoPowspec() const;
+
     /*! Returns the number of spectral components. */
     int Num_specs() const { return num_specs; }
     /*! Returns the maximum \a l. */
@@ -109,15 +117,22 @@ class PowSpec
     /*! Returns GC(l) (read-only). */
     const double &gc (int l) const { return gc_[l]; }
 
-    /*! Sets the whole TT array. */
+    /*! Sets the whole TT array.
+        \note On exit, \a tt_new is zero-sized! */
     void Set(arr<double> &tt_new);
-    /*! Sets all components. */
+    /*! Sets the four first components.
+        \note On exit, all arguments are zero-sized! */
     void Set(arr<double> &tt_new, arr<double> &gg_new,
              arr<double> &cc_new, arr<double> &tg_new);
-    /* Smooths the spectrum with a Gaussian beam.
+    /*! Sets all components.
+        \note On exit, all arguments are zero-sized! */
+    void Set(arr<double> &tt_new, arr<double> &gg_new,
+             arr<double> &cc_new, arr<double> &tg_new,
+             arr<double> &tc_new, arr<double> &gc_new);
+    /*! Smooths the spectrum with a Gaussian beam.
        \a fwhm is given in radian.
        \note This is only implememted for 1 and 4 spectra so far. */
-    void Smooth_with_Gauss (double fwhm);
+    void smoothWithGauss (double fwhm);
   };
 
 #endif

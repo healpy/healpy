@@ -11,7 +11,7 @@ class SkyMap
  public:
   rotmatrix d_mat; /* for rotating the projection */
   int d_rotate; /* flag for doing rotation */
-  virtual ~SkyMap() 
+  virtual ~SkyMap()
     {
       d_rotate = 0;
     };
@@ -28,27 +28,27 @@ class SkyMap
   pointing rotate(pointing p) const
     {
       if (d_rotate)
-	{
-	  vec3 v = d_mat.Transform(p.to_vec3());
-	  pointing p_out(v);
-	  return p_out;
-	}
+        {
+          vec3 v = d_mat.Transform(p.to_vec3());
+          pointing p_out(v);
+          return p_out;
+        }
       else
-	return p;
+        return p;
     };
-  
+
   pointing unrotate(pointing p) const
     {
       if (d_rotate)
-	{
-	  rotmatrix t = d_mat;
-	  t.Transpose();
-	  vec3 v = t.Transform(p.to_vec3());
-	  pointing p_out(v);
-	  return p_out;
-	}
+        {
+          rotmatrix t = d_mat;
+          t.Transpose();
+          vec3 v = t.Transform(p.to_vec3());
+          pointing p_out(v);
+          return p_out;
+        }
       else
-	return p;
+        return p;
     };
 };
 

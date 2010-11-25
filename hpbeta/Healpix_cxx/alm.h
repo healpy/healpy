@@ -27,7 +27,7 @@
 /*! \file alm.h
  *  Class for storing spherical harmonic coefficients.
  *
- *  Copyright (C) 2003, 2004, 2005, 2006, 2007 Max-Planck-Society
+ *  Copyright (C) 2003 - 2009 Max-Planck-Society
  *  \author Martin Reinecke
  */
 
@@ -36,35 +36,77 @@
 
 #include "arr.h"
 
-/*! Class for storing spherical harmonic coefficients. */
-template<typename T> class Alm
+/*! Base class for calculating the storage layout of spherical harmonic
+    coefficients. */
+class Alm_Base
   {
-  private:
+  protected:
     int lmax, mmax, tval;
-    arr<T> alm;
 
   public:
-    /*! Returns the number of coefficients in an Alm object with maximum
-        quantum numbers \a l and \a m. */
-    static long Num_Alms (int l, int m)
+    /*! Returns the total number of coefficients for maximum quantum numbers
+        \a l and \a m. */
+    static tsize Num_Alms (int l, int m)
       {
       planck_assert(m<=l,"mmax must not be larger than lmax");
       return ((m+1)*(m+2))/2 + (m+1)*(l-m);
       }
+    /*! Constructs an Alm_Base object with given \a lmax and \a mmax. */
+    Alm_Base (int lmax_=0, int mmax_=0)
+      : lmax(lmax_), mmax(mmax_), tval(2*lmax+1) {}
 
-    /*! Constructs an Alm object with given \a lmax and \a mmax. */
-    Alm (int lmax_=0, int mmax_=0)
-      : lmax(lmax_), mmax(mmax_), tval(2*lmax+1),
-        alm (Num_Alms(lmax,mmax))
-      {}
-
-    /*! Deletes the old coefficients and allocates storage according to
-        \a lmax and \a mmax. */
+    /*! Changes the object's maximum quantum numbers to \a lmax and \a mmax. */
     void Set (int lmax_, int mmax_)
       {
       lmax=lmax_;
       mmax=mmax_;
       tval=2*lmax+1;
+      }
+
+    /*! Returns the maximum \a l */
+    int Lmax() const { return lmax; }
+    /*! Returns the maximum \a m */
+    int Mmax() const { return mmax; }
+
+    /*! Returns an array index for a given m, from which the index of a_lm
+        can be obtained by adding l. */
+    int index_l0 (int m) const
+      { return ((m*(tval-m))>>1); }
+
+    /*! Returns the array index of the specified coefficient. */
+    int index (int l, int m) const
+      { return index_l0(m) + l; }
+
+    /*! Returns \a true, if both objects have the same \a lmax and \a mmax,
+        else  \a false. */
+    bool conformable (const Alm_Base &other) const
+      { return ((lmax==other.lmax) && (mmax==other.mmax)); }
+
+    /*! Swaps the contents of two Alm_Base objects. */
+    void swap (Alm_Base &other)
+      {
+      std::swap(lmax, other.lmax);
+      std::swap(mmax, other.mmax);
+      std::swap(tval, other.tval);
+      }
+  };
+
+/*! Class for storing spherical harmonic coefficients. */
+template<typename T> class Alm: public Alm_Base
+  {
+  private:
+    arr<T> alm;
+
+  public:
+    /*! Constructs an Alm object with given \a lmax and \a mmax. */
+    Alm (int lmax_=0, int mmax_=0)
+      : Alm_Base(lmax_,mmax_), alm (Num_Alms(lmax,mmax)) {}
+
+    /*! Deletes the old coefficients and allocates storage according to
+        \a lmax and \a mmax. */
+    void Set (int lmax_, int mmax_)
+      {
+      Alm_Base::Set(lmax_, mmax_);
       alm.alloc(Num_Alms(lmax,mmax));
       }
 
@@ -73,9 +115,7 @@ template<typename T> class Alm
     void Set (arr<T> &data, int lmax_, int mmax_)
       {
       planck_assert (Num_Alms(lmax_,mmax_)==data.size(),"wrong array size");
-      lmax=lmax_;
-      mmax=mmax_;
-      tval=2*lmax+1;
+      Alm_Base::Set(lmax_, mmax_);
       alm.transfer(data);
       }
 
@@ -85,11 +125,12 @@ template<typename T> class Alm
 
     /*! Multiplies all coefficients by \a factor. */
     template<typename T2> void Scale (const T2 &factor)
-      { for (int m=0; m<alm.size(); ++m) alm[m]*=factor; }
+      { for (tsize m=0; m<alm.size(); ++m) alm[m]*=factor; }
     /*! \a a(l,m) *= \a factor[l] for all \a l,m. */
     template<typename T2> void ScaleL (const arr<T2> &factor)
       {
-      planck_assert(factor.size()>lmax, "alm.ScaleL: factor array too short");
+      planck_assert(factor.size()>tsize(lmax),
+        "alm.ScaleL: factor array too short");
       for (int m=0; m<=mmax; ++m)
         for (int l=m; l<=lmax; ++l)
           operator()(l,m)*=factor[l];
@@ -100,47 +141,35 @@ template<typename T> class Alm
 
     /*! Returns a reference to the specified coefficient. */
     T &operator() (int l, int m)
-      { return alm[((m*(tval-m))>>1) + l]; }
+      { return alm[index(l,m)]; }
     /*! Returns a constant reference to the specified coefficient. */
     const T &operator() (int l, int m) const
-      { return alm[((m*(tval-m))>>1) + l]; }
+      { return alm[index(l,m)]; }
 
     /*! Returns a pointer for a given m, from which the address of a_lm
         can be obtained by adding l. */
     T *mstart (int m)
-      { return &alm[(m*(tval-m))>>1]; }
+      { return &alm[index_l0(m)]; }
     /*! Returns a pointer for a given m, from which the address of a_lm
         can be obtained by adding l. */
     const T *mstart (int m) const
-      { return &alm[(m*(tval-m))>>1]; }
-
-    /*! Returns the maximum \a l */
-    int Lmax() const { return lmax; }
-    /*! Returns the maximum \a m */
-    int Mmax() const { return mmax; }
+      { return &alm[index_l0(m)]; }
 
     /*! Returns a constant reference to the a_lm data. */
     const arr<T> &Alms () const { return alm; }
 
-    /*! Swaps the contents of two A_lm objects. */
+    /*! Swaps the contents of two Alm objects. */
     void swap (Alm &other)
       {
-      std::swap(lmax, other.lmax);
-      std::swap(mmax, other.mmax);
-      std::swap(tval, other.tval);
+      Alm_Base::swap(other);
       alm.swap(other.alm);
       }
-
-    /*! Returns \a true, if both objects have the same \a lmax and \a mmax,
-        else  \a false. */
-    bool conformable (const Alm &other) const
-      { return ((lmax==other.lmax) && (mmax==other.mmax)); }
 
     /*! Adds all coefficients from \a other to the own coefficients. */
     void Add (const Alm &other)
       {
       planck_assert (conformable(other), "A_lm are not conformable");
-      for (int m=0; m<alm.size(); ++m)
+      for (tsize m=0; m<alm.size(); ++m)
         alm[m] += other.alm[m];
       }
   };
