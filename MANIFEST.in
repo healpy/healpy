@@ -2,4 +2,9 @@ recursive-include hpbeta *
 recursive-include healpy/data *.fits
 prune hpbeta/generic_gcc
 prune hpbeta/build.generic_gcc
+prune hpbeta/healpy
+prune hpbeta/build.healpy
+prune hpbeta/healpy_osx
+prune hpbeta/build.healpy_osx
 include COPYING INSTALL MANIFEST.in ChangeLog
+include healpy/src/_healpy_utils.h
