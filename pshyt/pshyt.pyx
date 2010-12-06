@@ -1,5 +1,31 @@
+# 
+#  This file is part of Healpy.
+# 
+#  Healpy is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation; either version 2 of the License, or
+#  (at your option) any later version.
+# 
+#  Healpy is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+# 
+#  You should have received a copy of the GNU General Public License
+#  along with Healpy; if not, write to the Free Software
+#  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+# 
+#  For more information about Healpy, see http://code.google.com/p/healpy
+# 
+"""A wrapper for the PSHT library.
+Beware, this one only works with healpix maps, and double precision maps
+and alms.
+"""
 cimport numpy as c_numpy
-import numpy as nm
+import numpy as npy
+nm = npy
+np = npy
+
 # Numpy must be initialized
 c_numpy.import_array()
 
@@ -43,13 +69,13 @@ class pshtError(Exception):
  pass
 
 def _howManyMaps(rmap):
- if isinstance(rmap,nm.ndarray):
+ if isinstance(rmap,npy.ndarray):
    if len(rmap.shape)==1:
      return 1
    else:
      return rmap.shape[0]
  if isinstance(rmap,(list,tuple)):
-   if isinstance(rmap[0],(list,tuple.nm.ndarray)):
+   if isinstance(rmap[0],(list,tuple,npy.ndarray)):
      return len(rmap)
    else:
      return 1
@@ -89,9 +115,9 @@ Create a new job list.
    return ((self.lmax+1)*(self.lmax+2))/2
 
  def _newmap(self):
-   return nm.zeros(self._mapsize())
+   return npy.zeros(self._mapsize())
  def _newalm(self):
-   return nm.zeros(self._almsize(),dtype=nm.complex)
+   return npy.zeros(self._almsize(),dtype=npy.complex)
 
  def _testmapalm(self,rmap,alm):
    if len(rmap)!=self._mapsize():
@@ -441,15 +467,15 @@ def __tlm(lmax,mmax):
 #   lmax,mmax = __tlm(lmax,mmax)
 #   pol = False
 #   if _howManyMaps(rmap)==3:
-#     nside=int(nm.sqrt(len(rmap[0])/12.))
-#     avg = nm.mean(rmap[0])
+#     nside=int(npy.sqrt(len(rmap[0])/12.))
+#     avg = npy.mean(rmap[0])
 #     rmap[0] = rmap[0] - avg
 #     pol = True
 #   else:
 #     if regression:
-#       avg = nm.mean(rmap)
+#       avg = npy.mean(rmap)
 #       rmap = rmap - avg
-#     nside=int(nm.sqrt(len(rmap)/12.))
+#     nside=int(npy.sqrt(len(rmap)/12.))
 
 #   jb = job(nside,lmax,mmax)
 #   alm = jb.do_map2alm(rmap)
@@ -464,9 +490,9 @@ def __tlm(lmax,mmax):
 
 #   if regression:
 #     if pol:
-#       alm[0][0] += avg*nm.sqrt(4*nm.pi)
+#       alm[0][0] += avg*npy.sqrt(4*npy.pi)
 #     else:
-#       alm[0] += avg*nm.sqrt(4*nm.pi)
+#       alm[0] += avg*npy.sqrt(4*npy.pi)
 #   return alm
 
 def alm2map_spin(alm,nside,spin,lmax=None,mmax=None):
@@ -506,7 +532,7 @@ Computes the spinned alm of two Healpix maps using PSHT.
    - a list of two alms
  """
  lmax,mmax = __tlm(lmax,mmax)
- nside=int(nm.sqrt(len(rmap[0])/12.))
+ nside=int(npy.sqrt(len(rmap[0])/12.))
  jb = job(nside,lmax,mmax)
  jb.add_map2alm_spin(rmap)
  res = jb.execute()
@@ -537,8 +563,8 @@ def __getlmax_from_hp(s,mmax=-1):
    if mmax >= 0:
        x=(2*s+mmax**2-mmax-2)/(2*mmax+2)
    else:
-       x=(-3+nm.sqrt(1+8*s))/2
-   if x != nm.floor(x):
+       x=(-3+npy.sqrt(1+8*s))/2
+   if x != npy.floor(x):
        return -1
    else:
        return int(x)

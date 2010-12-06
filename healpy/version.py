@@ -19,6 +19,7 @@
 # 
 
 import re
+
 rev  = "$Revision$"
 revnumber = re.findall(': *(\d*) *\$',rev)
 

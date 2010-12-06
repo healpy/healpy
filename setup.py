@@ -115,7 +115,7 @@ setup(name='healpy',
                   'healpy.projaxes','healpy.version'],
       cmdclass = {'build_ext': build_ext},
       ext_modules=[pixel_lib,spht_lib,hfits_lib,
-                   Extension("pshyt", ["pshyt/pshyt."+ext],
+                   Extension("healpy.pshyt", ["pshyt/pshyt."+ext],
                              include_dirs = [numpy_inc,healpix_cxx_inc],
                              libraries = ['psht','gomp','fftpack','c_utils'],
                              library_dirs = [healpix_cxx_lib])

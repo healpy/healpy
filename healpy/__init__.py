@@ -31,8 +31,9 @@ except NameError:
 
 from version import __version__
 
-import numpy as nm
-
+import numpy as npy
+np = npy
+nm = npy
 
 
 
