@@ -31,6 +31,8 @@ except NameError:
 
 from version import __version__
 
+import numpy as nm
+
 from pixelfunc import (ma,vec2ang,ang2vec,ang2pix,
                        pix2ang,pix2vec,vec2pix,ang2vec,
                        nside2npix,npix2nside,isnsideok,
@@ -52,6 +54,8 @@ from zoomtool import mollzoom,set_g_clim
 from rotator import Rotator
 
 from _healpy_pixel_lib import UNSEEN
+
+
 
 try:
     from visufunc import (mollview,graticule,delgraticules,gnomview,
