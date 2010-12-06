@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import platform
+import os
 
 TARGET_DICT = {
     'linux': 'healpy',
@@ -71,6 +72,18 @@ if sys.argv[1] != 'sdist':
 
 ###############################################
 
+library_dirs = [healpix_cxx_lib]
+
+if 'CFITSIO_EXT_PREFIX' in os.environ:
+    cfitsio_inc_dir = os.path.join(os.environ['CFITSIO_EXT_PREFIX'], 'include')
+    cfitsio_lib_dir = os.path.join(os.environ['CFITSIO_EXT_PREFIX'], 'lib')
+    library_dirs.append(cfitsio_lib_dir)
+if 'CFITSIO_EXT_INC' in os.environ:
+    cfitsio_inc_dir = os.environ['CFITSIO_EXT_INC']
+if 'CFITSIO_EXT_LIB' in os.environ:
+    cfitsio_lib_dir = os.environ['CFITSIO_EXT_LIB']
+    library_dirs.append(cfitsio_lib_dir)
+
 healpix_libs =['healpix_cxx','cxxsupport','psht','fftpack','c_utils','cfitsio','gomp']
 healpix_args =['-fopenmp']
 
@@ -79,7 +92,7 @@ pixel_lib = Extension('healpy._healpy_pixel_lib',
                       sources=[join('healpy','src',s)
                                for s in healpy_pixel_lib_src],
                       include_dirs=[numpy_inc,healpix_cxx_inc],
-                      library_dirs=[healpix_cxx_lib],
+                      library_dirs=library_dirs,
                       libraries=healpix_libs,
                       extra_compile_args=healpix_args
                       )
@@ -87,7 +100,7 @@ pixel_lib = Extension('healpy._healpy_pixel_lib',
 spht_lib = Extension('healpy._healpy_sph_transform_lib',
                      sources=[join('healpy','src',s) for s in healpy_spht_src],
                      include_dirs=[numpy_inc,healpix_cxx_inc],
-                     library_dirs=[healpix_cxx_lib],
+                     library_dirs=library_dirs,
                      libraries=healpix_libs,
                      extra_compile_args=healpix_args
                      )
@@ -96,7 +109,7 @@ hfits_lib = Extension('healpy._healpy_fitsio_lib',
                       sources=[join('healpy','src',s)
                                for s in healpy_fitsio_src],
                       include_dirs=[numpy_inc,healpix_cxx_inc],
-                      library_dirs=[healpix_cxx_lib],
+                      library_dirs=library_dirs,
                       libraries=healpix_libs,
                       extra_compile_args=healpix_args
                       )
@@ -106,8 +119,8 @@ setup(name='healpy',
       version=get_version(),
       description='Healpix tools package for Python',
       author='C. Rosset',
-      author_email='rosset@lal.in2p3.fr',
-      url='http://code.google.com/p/healpy',
+      author_email='cyrille.rosset@apc.univ-paris-diderot.fr',
+      url='http://www.healpy.org',
       packages=['healpy'],
       py_modules=['healpy.pixelfunc','healpy.sphtfunc',
                   'healpy.visufunc','healpy.fitsfunc',
@@ -118,7 +131,7 @@ setup(name='healpy',
                    Extension("healpy.pshyt", ["pshyt/pshyt."+ext],
                              include_dirs = [numpy_inc,healpix_cxx_inc],
                              libraries = ['psht','gomp','fftpack','c_utils'],
-                             library_dirs = [healpix_cxx_lib])
+                             library_dirs = library_dirs)
                    ],
       package_data={'healpy': ['data/*.fits']},
       license='GPLv2'
