@@ -1,3 +1,224 @@
+2010-12-06 14:20  cyrille.rosset
+
+	* [r146] MANIFEST.in, healpy/__init__.py, healpy/version.py,
+	  pshyt/pshyt.c, pshyt/pshyt.pyx, setup.py: Add doc to pshyt module
+	  ; move pshyt into healpy for installation ; add alias for numpy
+	  (nm=np=npy=numpy in healpy and pshyt)
+
+2010-12-06 13:08  lejeune@apc.univ-paris7.fr
+
+	* [r145] healpy/__init__.py, pshyt, pshyt/pshyt.c, pshyt/pshyt.pyx,
+	  setup.py: include Karim's pshyt module
+
+2010-12-06 11:22  lejeune@apc.univ-paris7.fr
+
+	* [r144] healpy/__init__.py: add numpy to init
+
+2010-12-03 14:04  cyrille.rosset
+
+	* [r143] MANIFEST.in, healpy/version.py,
+	  hpbeta/config/config.healpy: Change default PREFIX to /usr
+	  instead of /usr/local, update MANIFEST.in
+
+2010-12-01 10:12  lejeune@apc.univ-paris7.fr
+
+	* [r142] setup.py: from now, no need to compile twice
+
+2010-11-25 17:20  cyrille.rosset
+
+	* [r141] healpy/version.py, healpy/visufunc.py: remove pylab.show()
+	  at the end of plotting commands
+
+2010-11-25 14:04  martin.reinecke1@gmx.de
+
+	* [r140] ., INSTALL, healpy/__init__.py, healpy/sphtfunc.py,
+	  healpy/src/_healpy_fitsio_lib.cc,
+	  healpy/src/_healpy_pixel_lib.cc,
+	  healpy/src/_healpy_sph_transform_lib.cc,
+	  healpy/src/_healpy_utils.h, hpbeta/Healpix_cxx/Healpix_cxx.dox,
+	  hpbeta/Healpix_cxx/alm.h, hpbeta/Healpix_cxx/alm2map_cxx.cc,
+	  hpbeta/Healpix_cxx/alm2map_cxx_module.cc,
+	  hpbeta/Healpix_cxx/alm_fitsio.cc,
+	  hpbeta/Healpix_cxx/alm_fitsio.h,
+	  hpbeta/Healpix_cxx/alm_healpix_tools.cc,
+	  hpbeta/Healpix_cxx/alm_healpix_tools.h,
+	  hpbeta/Healpix_cxx/alm_map_tools.cc,
+	  hpbeta/Healpix_cxx/alm_map_tools.h,
+	  hpbeta/Healpix_cxx/alm_powspec_tools.cc,
+	  hpbeta/Healpix_cxx/alm_powspec_tools.h,
+	  hpbeta/Healpix_cxx/anafast_cxx.cc,
+	  hpbeta/Healpix_cxx/anafast_cxx.par.txt,
+	  hpbeta/Healpix_cxx/anafast_cxx_module.cc,
+	  hpbeta/Healpix_cxx/calc_powspec.cc,
+	  hpbeta/Healpix_cxx/calc_powspec_module.cc,
+	  hpbeta/Healpix_cxx/healpix_base.cc,
+	  hpbeta/Healpix_cxx/healpix_base.h,
+	  hpbeta/Healpix_cxx/healpix_base2.cc,
+	  hpbeta/Healpix_cxx/healpix_base2.h,
+	  hpbeta/Healpix_cxx/healpix_data_io.cc,
+	  hpbeta/Healpix_cxx/healpix_data_io.h,
+	  hpbeta/Healpix_cxx/healpix_map.cc,
+	  hpbeta/Healpix_cxx/healpix_map.h,
+	  hpbeta/Healpix_cxx/healpix_map_fitsio.cc,
+	  hpbeta/Healpix_cxx/healpix_map_fitsio.h,
+	  hpbeta/Healpix_cxx/hotspots_cxx.cc,
+	  hpbeta/Healpix_cxx/hotspots_cxx_module.cc,
+	  hpbeta/Healpix_cxx/hpxtest.cc, hpbeta/Healpix_cxx/map2tga.cc,
+	  hpbeta/Healpix_cxx/map2tga_module.cc,
+	  hpbeta/Healpix_cxx/median_filter.cc,
+	  hpbeta/Healpix_cxx/median_filter_cxx.cc,
+	  hpbeta/Healpix_cxx/median_filter_cxx_module.cc,
+	  hpbeta/Healpix_cxx/mult_alm.cc,
+	  hpbeta/Healpix_cxx/mult_alm_module.cc,
+	  hpbeta/Healpix_cxx/planck.make, hpbeta/Healpix_cxx/powspec.cc,
+	  hpbeta/Healpix_cxx/powspec.h,
+	  hpbeta/Healpix_cxx/powspec_fitsio.cc,
+	  hpbeta/Healpix_cxx/powspec_fitsio.h,
+	  hpbeta/Healpix_cxx/rotalm_cxx.cc,
+	  hpbeta/Healpix_cxx/smoothing_cxx.cc,
+	  hpbeta/Healpix_cxx/smoothing_cxx.par.txt,
+	  hpbeta/Healpix_cxx/smoothing_cxx_module.cc,
+	  hpbeta/Healpix_cxx/syn_alm_cxx.cc,
+	  hpbeta/Healpix_cxx/syn_alm_cxx_module.cc,
+	  hpbeta/Healpix_cxx/udgrade_cxx.cc,
+	  hpbeta/Healpix_cxx/udgrade_cxx_module.cc,
+	  hpbeta/Healpix_cxx/ylmgen.h, hpbeta/Makefile,
+	  hpbeta/README.compilation, hpbeta/alice/MollweideSkyMap.cc,
+	  hpbeta/alice/OrthogonalSkyMap.h,
+	  hpbeta/alice/PolarizationHolder.cc,
+	  hpbeta/alice/PolarizationHolder.h, hpbeta/alice/RectSkyMap.h,
+	  hpbeta/alice/SkyMap.h, hpbeta/alice/SoSSkyMap.cc,
+	  hpbeta/alice/SoSSkyMap.h, hpbeta/alice/TextureHolder.cc,
+	  hpbeta/alice/TextureHolder.h, hpbeta/alice/alice2.cc,
+	  hpbeta/alice/alice_usage.txt, hpbeta/alice/alice_utils.h,
+	  hpbeta/alice/color.cc, hpbeta/alice/generateTexture.cc,
+	  hpbeta/alice/planck.make, hpbeta/alice/test.cc,
+	  hpbeta/alice/testMollweideSkyMap.cc,
+	  hpbeta/alice/testOrthogonalSkyMap.cc,
+	  hpbeta/alice/testSoSSkyMap.cc, hpbeta/c_utils,
+	  hpbeta/c_utils/c_utils.c, hpbeta/c_utils/c_utils.h,
+	  hpbeta/c_utils/planck.make, hpbeta/c_utils/sse_utils.h,
+	  hpbeta/c_utils/walltime_c.c, hpbeta/c_utils/walltime_c.h,
+	  hpbeta/config/config.gcc_omp, hpbeta/config/config.generic_gcc,
+	  hpbeta/config/config.healpy, hpbeta/config/config.healpy_osx,
+	  hpbeta/config/config.linux_icc, hpbeta/config/config.osx,
+	  hpbeta/config/rules.common, hpbeta/cxxsupport/arr.h,
+	  hpbeta/cxxsupport/bstream.h, hpbeta/cxxsupport/compat_headers,
+	  hpbeta/cxxsupport/cxxutils.cc, hpbeta/cxxsupport/cxxutils.h,
+	  hpbeta/cxxsupport/datatypes.h,
+	  hpbeta/cxxsupport/error_handling.cc,
+	  hpbeta/cxxsupport/error_handling.h,
+	  hpbeta/cxxsupport/fftpack_support.h,
+	  hpbeta/cxxsupport/fitshandle.cc, hpbeta/cxxsupport/fitshandle.h,
+	  hpbeta/cxxsupport/font_data.inc, hpbeta/cxxsupport/geom_utils.h,
+	  hpbeta/cxxsupport/levels_facilities.h,
+	  hpbeta/cxxsupport/ls_image.cc, hpbeta/cxxsupport/ls_image.h,
+	  hpbeta/cxxsupport/lsconstants.h,
+	  hpbeta/cxxsupport/message_error.h,
+	  hpbeta/cxxsupport/openmp_support.h,
+	  hpbeta/cxxsupport/paramfile.h, hpbeta/cxxsupport/planck.make,
+	  hpbeta/cxxsupport/planck_rng.h, hpbeta/cxxsupport/pointing.h,
+	  hpbeta/cxxsupport/rotmatrix.cc, hpbeta/cxxsupport/rotmatrix.h,
+	  hpbeta/cxxsupport/safe_cast.h, hpbeta/cxxsupport/simparams.cc,
+	  hpbeta/cxxsupport/simparams.h, hpbeta/cxxsupport/tga_image.cc,
+	  hpbeta/cxxsupport/tga_image.h, hpbeta/cxxsupport/trafos.cc,
+	  hpbeta/cxxsupport/trafos.h, hpbeta/cxxsupport/vec3.h,
+	  hpbeta/cxxsupport/wigner.cc, hpbeta/cxxsupport/wigner.h,
+	  hpbeta/cxxsupport/xcomplex.h, hpbeta/doc,
+	  hpbeta/docsrc/Healpix_cxx.dox, hpbeta/docsrc/cxxsupport.dox,
+	  hpbeta/docsrc/libfftpack.dox, hpbeta/docsrc/planck.make,
+	  hpbeta/libcfitsio/cfitsio3100.tar.gz,
+	  hpbeta/libcfitsio/planck.make, hpbeta/libfftpack/README,
+	  hpbeta/libfftpack/bluestein.c, hpbeta/libfftpack/bluestein.h,
+	  hpbeta/libfftpack/fftpack.c, hpbeta/libfftpack/fftpack.h,
+	  hpbeta/libfftpack/fftpack_inc.c, hpbeta/libfftpack/ls_fft.c,
+	  hpbeta/libfftpack/ls_fft.h, hpbeta/libfftpack/planck.make,
+	  hpbeta/libpsht, hpbeta/libpsht/libpsht.dox,
+	  hpbeta/libpsht/planck.make, hpbeta/libpsht/psht.c,
+	  hpbeta/libpsht/psht.h, hpbeta/libpsht/psht_almhelpers.c,
+	  hpbeta/libpsht/psht_almhelpers.h, hpbeta/libpsht/psht_cxx.h,
+	  hpbeta/libpsht/psht_geomhelpers.c,
+	  hpbeta/libpsht/psht_geomhelpers.h, hpbeta/libpsht/psht_inc.c,
+	  hpbeta/libpsht/psht_perftest.c, hpbeta/libpsht/psht_test.c,
+	  hpbeta/libpsht/ylmgen_c.c, hpbeta/libpsht/ylmgen_c.h,
+	  hpbeta/test/cl.fits, setup.py: merge revision 132 to 139 on the
+	  cxx_integration_nov_2010 branch to trunk
+
+2010-11-05 13:54  cyrille.rosset
+
+	* [r137] setup.py: correct get_version()
+
+2010-11-04 12:33  martin.reinecke1@gmx.de
+
+	* [r130] healpy/src/_healpy_sph_transform_lib.cc: fix a bug in
+	  sky_signal_direct()
+
+2010-10-12 00:57  andrea.zonca@gmail.com
+
+	* [r129] healpy/pixelfunc.py: get_neighbours bug issue 45 fixed
+
+2010-10-12 00:40  andrea.zonca@gmail.com
+
+	* [r128] healpy/fitsfunc.py, healpy/test/test_fitsfunc.py: fixed
+	  issue 24, added test case
+
+2010-10-11 18:15  andrea.zonca@gmail.com
+
+	* [r127] healpy/pixelfunc.py: docstring for resol fixed
+
+2010-10-11 18:00  andrea.zonca@gmail.com
+
+	* [r126] healpy/__init__.py: nside2resol and nside2pixarea exported
+
+2010-10-11 18:00  andrea.zonca@gmail.com
+
+	* [r125] healpy/pixelfunc.py, healpy/test,
+	  healpy/test/test_pixelfunc.py: pixel area and resolution from
+	  nside, with test case
+
+2010-10-11 14:38  cyrille.rosset
+
+	* [r122] healpy/version.py: update version.py
+
+2010-10-11 14:29  cyrille.rosset
+
+	* [r121] healpy/projaxes.py, healpy/zoomtool.py: correct bug in
+	  zoomtool - redisplays scatter plot when changing the gnomview
+
+2010-10-02 02:12  andrea.zonca@gmail.com
+
+	* [r120] healpy/fitsfunc.py, healpy/sphtfunc.py,
+	  hpbeta/config/config.osx, setup.py: Merge branch 'devel'
+
+2010-10-02 01:53  andrea.zonca@gmail.com
+
+	* [r119] healpy/version.py: fixed version number also for github
+	  repo
+
+2010-09-07 20:07  andrea.zonca@gmail.com
+
+	* [r116] healpy/__init__.py, healpy/fitsfunc.py: first
+	  implementation of read cl and write cl for T only, needs testing
+	  with IDL
+
+2010-08-30 20:21  andrea.zonca@gmail.com
+
+	* [r115] healpy/pixelfunc.py: bug fixed in theta check
+
+2010-08-20 07:51  andrea.zonca@gmail.com
+
+	* [r114] healpy/pixelfunc.py: fixed bug in vec2ang in case of
+	  monodimensional arrays
+
+2010-08-20 00:02  andrea.zonca@gmail.com
+
+	* [r113] healpy/__init__.py, healpy/pixelfunc.py: implemented
+	  vec2ang
+
+2010-07-30 09:36  cyrille.rosset
+
+	* [r112] ChangeLog: update ChangeLog
+
 2010-07-30 09:28  cyrille.rosset
 
 	* [r111] ChangeLog: update ChangeLog
