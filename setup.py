@@ -19,6 +19,17 @@ from distutils.core import setup, Extension
 from os.path import join,isdir
 import sys
 
+try:
+  from Cython.Distutils import build_ext
+  import Cython.Compiler.Version
+  version = [int(v) for v in Cython.Compiler.Version.version.split(".")]
+  assert version[1]>=12
+  ext = "pyx"
+except Exception:
+  from distutils.command.build_ext import build_ext
+  ext = "c"
+  print "No Cython>0.12 found, defaulting to pregenerated c version."
+  
 from numpy import get_include
 numpy_inc = get_include()
 
@@ -102,7 +113,13 @@ setup(name='healpy',
                   'healpy.visufunc','healpy.fitsfunc',
                   'healpy.projector','healpy.rotator',
                   'healpy.projaxes','healpy.version'],
-      ext_modules=[pixel_lib,spht_lib,hfits_lib],
+      cmdclass = {'build_ext': build_ext},
+      ext_modules=[pixel_lib,spht_lib,hfits_lib,
+                   Extension("pshyt", ["pshyt/pshyt."+ext],
+                             include_dirs = [numpy_inc,healpix_cxx_inc],
+                             libraries = ['psht','gomp','fftpack','c_utils'],
+                             library_dirs = [healpix_cxx_lib])
+                   ],
       package_data={'healpy': ['data/*.fits']},
       license='GPLv2'
       )
