@@ -207,35 +207,57 @@ def read_map(filename,field=0,dtype=npy.float64,nest=False,hdu=1,h=False,
             return tuple(ret)
 
 
-def write_alm(filename,alms,out_dtype=None,lmax=-1,mmax=-1):
+def write_alm(filename,alms,out_dtype=None,lmax=-1,mmax=-1,mmax_in=-1):
     """
     Write alms to a fits file. In the fits file the alms are written 
     with explicit index scheme, index = l*l + l + m +1, possibly out of order.
     By default write_alm makes a table with the same precision as the alms.
+    If specified, the lmax and mmax parameters truncate the input data to
+    include only alms for which l <= lmax and m <= mmax.
+
+    Input:
+      - filename: the filename of the output fits file
+      - alms: a complex array holding the alms.
+
+    Parameters:
+     - lmax: maximum l in the output file
+     - mmax: maximum m in the output file
+     - out_dtype: data type in the output file (must be a numpy dtype)
+     - mmax_in: maximum m in the input array
     """
 
-    l2max = Alm.getlmax(len(alms),mmax=mmax)
+    l2max = Alm.getlmax(len(alms),mmax=mmax_in)
     if (lmax != -1 and lmax > l2max):
         raise ValueError("Too big lmax in parameter")
     elif lmax == -1:
         lmax = l2max
 
-    if (mmax == -1):
+    if mmax_in == -1:
+	mmax_in = l2max
+
+    if mmax == -1:
         mmax = lmax
+    if mmax > mmax_in:
+	mmax = mmax_in
 
     if (out_dtype == None):
         out_dtype = alms.real.dtype
 
     l,m = Alm.getlm(lmax)
     idx = npy.where((l <= lmax)*(m <= mmax))
-    index = l[idx]**2 + l[idx] + m[idx] + 1
+    l = l[idx]
+    m = m[idx]
+
+    idx_in_original = Alm.getidx(l2max, l=l, m=m)
+    
+    index = l**2 + l + m + 1
 
     out_data = npy.empty(len(index),\
                              dtype=[('index','i'),\
                                         ('real',out_dtype),('imag',out_dtype)])
-    out_data['index'] = index[idx]
-    out_data['real'] = alms.real[idx]
-    out_data['imag'] = alms.imag[idx]
+    out_data['index'] = index
+    out_data['real'] = alms.real[idx_in_original]
+    out_data['imag'] = alms.imag[idx_in_original]
 
     cindex = pyf.Column(name="index", format=getformat(npy.int32), unit="l*l+l+m+1", array=out_data['index'])
     creal = pyf.Column(name="real", format=getformat(out_dtype), unit="unknown", array=out_data['real'])

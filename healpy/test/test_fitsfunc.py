@@ -39,17 +39,35 @@ class TestReadWriteAlm(unittest.TestCase):
 
     def test_write_alm(self):
 
-        write_alm('toto128.fits',self.alms,lmax=128,mmax=128)
-        a0 = read_alm('toto128.fits')
+        write_alm('testalm_128.fits',self.alms,lmax=128,mmax=128)
+        a0 = read_alm('testalm_128.fits')
+	# Sanity check of the file
         self.assertEqual(Alm.getlmax(len(a0)),128)
 
-    def test_write_alm_256_128(self):
-        write_alm('toto256_128.fits',self.alms,lmax=256,mmax=128)
-        a0 = read_alm('toto256_128.fits')
+        # Check the written data
+        a0 = read_alm('testalm_128.fits')
         l0,m0 = Alm.getlm(128)
+        # We extract 0 <= l <= 128 and 0 <= m <= 128 from self.alms
         idx = Alm.getidx(256,l0,m0)
         np.testing.assert_array_almost_equal(self.alms[idx],a0)
+	
 
+    def test_write_alm_256_128(self):
+        write_alm('testalm_256_128.fits',self.alms,lmax=256,mmax=128)
+        a0 = read_alm('testalm_256_128.fits')
+        # Unfortunately there is no mechanism to extract mmax with read_alm
+        # interface
+	self.assertEqual(Alm.getlmax(len(a0),mmax=128),256)
+
+        # Check the written data
+        a0 = read_alm('testalm_256_128.fits')
+        
+	l0,m0 = Alm.getlm(256)
+	idx = Alm.getidx(256, l0, m0)
+        # Extract 0 <= l <= 256 and 0 <= m <= 128
+	idx_mmax = np.where(m0 <= 128)
+	idx = idx[idx_mmax]
+	np.testing.assert_array_almost_equal(self.alms[idx], a0)
 
 if __name__ == '__main__':
     unittest.main()
