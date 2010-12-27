@@ -205,6 +205,45 @@ def read_map(filename,field=0,dtype=npy.float64,nest=False,hdu=1,h=False,
             return tuple(ret)
         else:
             return tuple(ret)
+
+
+def write_alm(filename,alms,out_dtype=None,lmax=-1,mmax=-1):
+    """
+    Write alms to a fits file. In the fits file the alms are written 
+    with explicit index scheme, index = l*l + l + m +1, possibly out of order.
+    By default write_alm makes a table with the same precision as the alms.
+    """
+
+    l2max = Alm.getlmax(len(alms),mmax=mmax)
+    if (lmax != -1 and lmax > l2max):
+        raise ValueError("Too big lmax in parameter")
+    elif lmax == -1:
+        lmax = l2max
+
+    if (mmax == -1):
+        mmax = lmax
+
+    if (out_dtype == None):
+        out_dtype = alms.real.dtype
+
+    l,m = Alm.getlm(lmax)
+    idx = npy.where((l <= lmax)*(m <= mmax))
+    index = l[idx]**2 + l[idx] + m[idx] + 1
+
+    out_data = npy.empty(len(index),\
+                             dtype=[('index','i'),\
+                                        ('real',out_dtype),('imag',out_dtype)])
+    out_data['index'] = index[idx]
+    out_data['real'] = alms.real[idx]
+    out_data['imag'] = alms.imag[idx]
+
+    cindex = pyf.Column(name="index", format=getformat(npy.int32), unit="l*l+l+m+1", array=out_data['index'])
+    creal = pyf.Column(name="real", format=getformat(out_dtype), unit="unknown", array=out_data['real'])
+    cimag = pyf.Column(name="imag", format=getformat(out_dtype), unit="unknown", array=out_data['imag'])
+
+    coldefs=pyf.ColDefs([cindex,creal,cimag])
+    tbhdu = pyf.new_table(coldefs)
+    tbhdu.writeto(filename,clobber=True)       
     
 def read_alm(filename,hdu=1):
     """Read alm from a fits file. In the fits file, the alm are written

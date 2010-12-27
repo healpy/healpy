@@ -5,6 +5,7 @@ import numpy as np
 
 import healpy
 from healpy.fitsfunc import *
+from healpy.sphtfunc import *
 
 class TestFitsFunc(unittest.TestCase):
     
@@ -28,6 +29,26 @@ class TestFitsFunc(unittest.TestCase):
 
     def tearDown(self):
         os.remove(self.filename)
+
+class TestReadWriteAlm(unittest.TestCase):
+
+    def setUp(self):
+
+        s=Alm.getsize(256)
+        self.alms = np.arange(s, dtype=np.complex128)
+
+    def test_write_alm(self):
+
+        write_alm('toto128.fits',self.alms,lmax=128,mmax=128)
+        a0 = read_alm('toto128.fits')
+        self.assertEqual(Alm.getlmax(len(a0)),128)
+
+    def test_write_alm_256_128(self):
+        write_alm('toto256_128.fits',self.alms,lmax=256,mmax=128)
+        a0 = read_alm('toto256_128.fits')
+        l0,m0 = Alm.getlm(128)
+        idx = Alm.getidx(256,l0,m0)
+        np.testing.assert_array_almost_equal(self.alms[idx],a0)
 
 
 if __name__ == '__main__':
