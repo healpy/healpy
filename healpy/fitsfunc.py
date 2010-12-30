@@ -267,7 +267,7 @@ def write_alm(filename,alms,out_dtype=None,lmax=-1,mmax=-1,mmax_in=-1):
     tbhdu = pyf.new_table(coldefs)
     tbhdu.writeto(filename,clobber=True)       
     
-def read_alm(filename,hdu=1):
+def read_alm(filename,hdu=1,return_mmax=False):
     """Read alm from a fits file. In the fits file, the alm are written
     with explicit index scheme, index = l**2+l+m+1, while healpix cxx
     uses index = m*(2*lmax+1-m)/2+l. The conversion is done in this 
@@ -284,7 +284,10 @@ def read_alm(filename,hdu=1):
     i = Alm.getidx(lmax,l,m)
     alm.real[i] = almr
     alm.imag[i] = almi
-    return alm
+    if return_mmax:
+        return alm, mmax
+    else:
+        return alm
 
 ## Generic functions to read and write column of data in fits file
 
