@@ -272,6 +272,17 @@ def read_alm(filename,hdu=1,return_mmax=False):
     with explicit index scheme, index = l**2+l+m+1, while healpix cxx
     uses index = m*(2*lmax+1-m)/2+l. The conversion is done in this 
     function.
+
+    Input:
+      - filename: the name of the fits file to read
+
+    Parameters:
+      - hdu: the header to read. Start at 0. Default: hdu=1
+      - return_mmax: If true, both the alms and mmax is returned in a tuple. Default: return_mmax=False
+
+    Return:
+      - alms: if return_mmax=False
+      - alms,mmax: if return_mmax=True
     """
     idx, almr, almi = mrdfits(filename,hdu=hdu)
     l = npy.floor(npy.sqrt(idx-1)).astype(long)
