@@ -25,7 +25,7 @@
 /*! \file ylmgen_c.h
  *  Code for efficient calculation of Y_lm(phi=0,theta)
  *
- *  Copyright (C) 2005-2010 Max-Planck-Society
+ *  Copyright (C) 2005-2011 Max-Planck-Society
  *  \author Martin Reinecke
  */
 
@@ -39,14 +39,26 @@ extern "C" {
 #endif
 
 typedef double ylmgen_dbl2[2];
+typedef double ylmgen_dbl3[3];
+
+typedef struct
+  {
+  double cth_crit;
+  int mdist_crit;
+  /* members depending on m and m' */
+  int s, m, mlo, mhi, cosPow, sinPow;
+  long double prefactor;
+  ylmgen_dbl3 *fx;
+  int preMinus_p, preMinus_m;
+  } sylmgen_d;
 
 typedef struct
   {
   double fsmall, fbig, eps, cth_crit;
-  int lmax, mmax, m_cur, ith, m_crit;
+  int lmax, mmax, m_cur, ith, nth, m_crit, spinrec;
   /*! The index of the first non-negligible Y_lm value. */
-  int firstl;
-  double *cf, *mfac, *t1fac, *t2fac, *cth, *sth, *logsth;
+  int *firstl;
+  double *cf, *mfac, *t1fac, *t2fac, *th, *cth, *sth, *logsth;
   ylmgen_dbl2 *recfac;
   double *lamfact;
   /*! Points to an array of size [0..lmax] containing the Y_lm values. */
@@ -54,6 +66,11 @@ typedef struct
   /*! Points to an array of size [0..lmax] containing the lambda_w
       and lambda_x values for spin>0 transforms. */
   ylmgen_dbl2 **lambda_wx;
+  long double *logsum, *lc05, *ls05;
+  double *flm1, *flm2, *xl;
+
+  sylmgen_d **sylm;
+
   int *lwx_uptodate;
   int ylm_uptodate;
 
@@ -73,8 +90,11 @@ typedef struct
 
 /*! Creates a generator which will calculate Y_lm(theta,phi=0)
     up to \a l=l_max and \a m=m_max. It may regard Y_lm whose absolute
-    magnitude is smaller than \a epsilon as zero. */
-void Ylmgen_init (Ylmgen_C *gen, int l_max, int m_max, double epsilon);
+    magnitude is smaller than \a epsilon as zero. If \a spinrec is nonzero,
+    the spin-1 and spin-2 Y_lm will be calculated by recursion from the spin-0
+    ones, otherwise Wigner d matrix elements will be used. */
+void Ylmgen_init (Ylmgen_C *gen, int l_max, int m_max, int spinrec,
+   double epsilon);
 
 /*! Passes am array \a theta of \a nth colatitudes that will be used in
     subsequent calls. The individual angles will be referenced by their
@@ -104,6 +124,15 @@ void Ylmgen_recalc_Ylm_sse2 (Ylmgen_C *gen);
     transforms. */
 void Ylmgen_recalc_lambda_wx_sse2 (Ylmgen_C *gen, int spin);
 #endif
+
+/*! Returns a pointer to an array with lmax+1 entries containing normalisation
+    factors that must be applied to Y_lm values computed for \a spin with the
+    given \a spinrec flag. The array must be deallocated (using free()) by the
+    user. */
+double *Ylmgen_get_norm (int lmax, int spin, int spinrec);
+
+/*! Returns the maximum spin quantum number supported by the Ylmgen code. */
+int Ylmgen_maxspin(void);
 
 #ifdef __cplusplus
 }

@@ -25,7 +25,7 @@
 /*
  *  Code for efficient calculation of Y_lm(theta,phi=0)
  *
- *  Copyright (C) 2005-2010 Max-Planck-Society
+ *  Copyright (C) 2005-2011 Max-Planck-Society
  *  Author: Martin Reinecke
  */
 
@@ -34,9 +34,390 @@
 #include "ylmgen_c.h"
 #include "c_utils.h"
 
-enum { large_exponent2=90, minscale=-4, maxscale=11, max_spin=3 };
+enum { large_exponent2=90, minscale=-4, maxscale=11, max_spin=100 };
 
-void Ylmgen_init (Ylmgen_C *gen, int l_max, int m_max, double epsilon)
+static void sylmgen_init (sylmgen_d *gen, const Ylmgen_C *ygen, int spin)
+  {
+  int i;
+  UTIL_ASSERT(spin>=1,"incorrect spin");
+  gen->s=spin;
+  gen->m=gen->mlo=gen->mhi=-1234567890;
+  ALLOC(gen->fx,ylmgen_dbl3,ygen->lmax+2);
+
+  for (i=0; i<ygen->lmax+2; ++i)
+    gen->fx[i][0]=gen->fx[i][1]=gen->fx[i][2]=0.;
+
+  gen->cth_crit = 2.;
+  gen->mdist_crit = ygen->lmax+1;
+  }
+
+static void sylmgen_destroy (sylmgen_d *gen)
+  { DEALLOC(gen->fx); }
+
+static void sylmgen_prepare (sylmgen_d *gen, const Ylmgen_C *ygen, int m_)
+  {
+  int mlo_, mhi_, ms_similar, l;
+
+  if (m_==gen->m) return;
+  UTIL_ASSERT(m_>=0,"incorrect m");
+
+  mlo_=m_; mhi_=gen->s;
+  if (mhi_<mlo_) SWAP(mhi_,mlo_,int);
+  ms_similar = ((gen->mhi==mhi_) && (gen->mlo==mlo_));
+
+  gen->m=m_;
+  gen->mlo = mlo_; gen->mhi = mhi_;
+
+  if (!ms_similar)
+    {
+    for (l=gen->mhi; l<ygen->lmax; ++l)
+      {
+      double t = ygen->flm1[l+gen->m]*ygen->flm1[l-gen->m]
+                *ygen->flm1[l+gen->s]*ygen->flm1[l-gen->s];
+      double lt = 2*l+1;
+      double l1 = l+1;
+      gen->fx[l+1][0]=l1*lt*t;
+      gen->fx[l+1][1]=gen->m*gen->s*ygen->xl[l]*ygen->xl[l+1];
+      t = ygen->flm2[l+gen->m]*ygen->flm2[l-gen->m]
+         *ygen->flm2[l+gen->s]*ygen->flm2[l-gen->s];
+      gen->fx[l+1][2]=t*l1*ygen->xl[l];
+      }
+    gen->prefactor = 0.5L*(ygen->logsum[2*gen->mhi]
+      -ygen->logsum[gen->mhi+gen->mlo]-ygen->logsum[gen->mhi-gen->mlo]);
+    }
+
+  gen->preMinus_p = gen->preMinus_m = 0;
+  if (gen->mhi==gen->m)
+    {
+    gen->cosPow = gen->mhi+gen->s; gen->sinPow = gen->mhi-gen->s;
+    gen->preMinus_p = gen->preMinus_m = ((gen->mhi-gen->s)&1);
+    }
+  else
+    {
+    gen->cosPow = gen->mhi+gen->m; gen->sinPow = gen->mhi-gen->m;
+    gen->preMinus_m = ((gen->mhi+gen->m)&1);
+    }
+  }
+
+static void sylmgen_recalc (sylmgen_d *gen, const Ylmgen_C *ygen, int ith,
+  ylmgen_dbl2 *res, int *firstl)
+  {
+  const double ln2     = 0.6931471805599453094172321214581766;
+  const double inv_ln2 = 1.4426950408889634073599246810018921;
+  int l=gen->mhi;
+  int lmax = ygen->lmax;
+  ylmgen_dbl3 *fy = gen->fx;
+  const double fsmall = ygen->fsmall, fbig = ygen->fbig, eps = ygen->eps;
+  const double cth = ygen->cth[ith];
+  long double logvalp = inv_ln2*(gen->prefactor
+    + ygen->lc05[ith]*gen->cosPow + ygen->ls05[ith]*gen->sinPow);
+  long double logvalm = inv_ln2*(gen->prefactor
+    + ygen->lc05[ith]*gen->sinPow + ygen->ls05[ith]*gen->cosPow);
+  int scalep = (int)(logvalp/large_exponent2)-minscale;
+  int scalem = (int)(logvalm/large_exponent2)-minscale;
+  double rec1p=0., rec1m=0.;
+  double rec2p = (double)(exp(ln2*(logvalp-(scalep+minscale)*large_exponent2)));
+  double rec2m = (double)(exp(ln2*(logvalm-(scalem+minscale)*large_exponent2)));
+  double corfacp,corfacm;
+  double tp,tm;
+
+  if ((abs(gen->m-gen->s)>=gen->mdist_crit)&&(fabs(cth)>=gen->cth_crit))
+    { *firstl=ygen->lmax+1; return; }
+
+  if (gen->preMinus_p)
+    rec2p=-rec2p;
+  if (gen->preMinus_m)
+    rec2m=-rec2m;
+  if (gen->s&1)
+    rec2p=-rec2p;
+
+  /* iterate until we reach the realm of IEEE numbers */
+  while((scalem<0)&&(scalep<0))
+    {
+    if (++l>lmax) break;
+    rec1p = (cth - fy[l][1])*fy[l][0]*rec2p - fy[l][2]*rec1p;
+    rec1m = (cth + fy[l][1])*fy[l][0]*rec2m - fy[l][2]*rec1m;
+    if (++l>lmax) break;
+    rec2p = (cth - fy[l][1])*fy[l][0]*rec1p - fy[l][2]*rec2p;
+    rec2m = (cth + fy[l][1])*fy[l][0]*rec1m - fy[l][2]*rec2m;
+
+    while (fabs(rec2p)>fbig)
+      { rec1p *= fsmall; rec2p *= fsmall; ++scalep; }
+    while (fabs(rec2m)>fbig)
+      { rec1m *= fsmall; rec2m *= fsmall; ++scalem; }
+    }
+
+  corfacp = (scalep<0) ? 0. : ygen->cf[scalep];
+  corfacm = (scalem<0) ? 0. : ygen->cf[scalem];
+
+  if (l<=lmax)
+    {
+    while (1)
+      {
+      if ((fabs(rec2p*corfacp)>eps) || (fabs(rec2m*corfacm)>eps))
+        break;
+      if (++l>lmax) break;
+      rec1p = (cth - fy[l][1])*fy[l][0]*rec2p - fy[l][2]*rec1p;
+      rec1m = (cth + fy[l][1])*fy[l][0]*rec2m - fy[l][2]*rec1m;
+      if ((fabs(rec1p*corfacp)>eps) || (fabs(rec1m*corfacm)>eps))
+        { SWAP(rec1p,rec2p,double); SWAP(rec1m,rec2m,double); break; }
+      if (++l>lmax) break;
+      rec2p = (cth - fy[l][1])*fy[l][0]*rec1p - fy[l][2]*rec2p;
+      rec2m = (cth + fy[l][1])*fy[l][0]*rec1m - fy[l][2]*rec2m;
+
+      if ((fabs(rec2p)>fbig) || (fabs(rec2m)>fbig))
+        {
+        while (fabs(rec2p)>fbig)
+          { rec1p *= fsmall; rec2p *= fsmall; ++scalep; }
+        while (fabs(rec2m)>fbig)
+          { rec1m *= fsmall; rec2m *= fsmall; ++scalem; }
+        corfacp = (scalep<0) ? 0. : ygen->cf[scalep];
+        corfacm = (scalem<0) ? 0. : ygen->cf[scalem];
+        }
+      }
+    }
+
+  *firstl=l;
+  if (l>lmax)
+    {
+    gen->mdist_crit=abs(gen->m-gen->s);
+    gen->cth_crit= fabs(cth);
+    return;
+    }
+
+  tp = rec2p*corfacp; tm = rec2m*corfacm;
+  res[l][0]=tp+tm;
+  res[l][1]=tm-tp;
+
+  while (1)
+    {
+    if ((fabs(tp)>eps) && (fabs(tm)>eps))
+      break;
+    if (++l>lmax) break;
+    rec1p = (cth - fy[l][1])*fy[l][0]*rec2p - fy[l][2]*rec1p;
+    rec1m = (cth + fy[l][1])*fy[l][0]*rec2m - fy[l][2]*rec1m;
+    tp=rec1p*corfacp; tm=rec1m*corfacm;
+    res[l][0]=tp+tm; res[l][1]=tm-tp;
+    if ((fabs(tp)>eps) && (fabs(tm)>eps))
+      { SWAP(rec1p,rec2p,double); SWAP(rec1m,rec2m,double); break; }
+    if (++l>lmax) break;
+    rec2p = (cth - fy[l][1])*fy[l][0]*rec1p - fy[l][2]*rec2p;
+    rec2m = (cth + fy[l][1])*fy[l][0]*rec1m - fy[l][2]*rec2m;
+    tp=rec2p*corfacp; tm=rec2m*corfacm;
+    res[l][0]=tp+tm; res[l][1]=tm-tp;
+
+    if ((fabs(rec2p)>fbig) || (fabs(rec2m)>fbig))
+      {
+      while (fabs(rec2p)>fbig)
+        { rec1p *= fsmall; rec2p *= fsmall; ++scalep; }
+      while (fabs(rec2m)>fbig)
+        { rec1m *= fsmall; rec2m *= fsmall; ++scalem; }
+      corfacp = (scalep<0) ? 0. : ygen->cf[scalep];
+      corfacm = (scalem<0) ? 0. : ygen->cf[scalem];
+      }
+    }
+
+  rec1p *= corfacp; rec2p *= corfacp;
+  rec1m *= corfacm; rec2m *= corfacm;
+
+  for (;l<lmax-1;l+=2)
+    {
+    rec1p = (cth - fy[l+1][1])*fy[l+1][0]*rec2p - fy[l+1][2]*rec1p;
+    rec1m = (cth + fy[l+1][1])*fy[l+1][0]*rec2m - fy[l+1][2]*rec1m;
+    res[l+1][0] = rec1p+rec1m; res[l+1][1] = rec1m-rec1p;
+    rec2p = (cth - fy[l+2][1])*fy[l+2][0]*rec1p - fy[l+2][2]*rec2p;
+    rec2m = (cth + fy[l+2][1])*fy[l+2][0]*rec1m - fy[l+2][2]*rec2m;
+    res[l+2][0] = rec2p+rec2m; res[l+2][1] = rec2m-rec2p;
+    }
+  while (1)
+    {
+    if (++l>lmax) break;
+    rec1p = (cth - fy[l][1])*fy[l][0]*rec2p - fy[l][2]*rec1p;
+    rec1m = (cth + fy[l][1])*fy[l][0]*rec2m - fy[l][2]*rec1m;
+    res[l][0] = rec1p+rec1m; res[l][1] = rec1m-rec1p;
+    if (++l>lmax) break;
+    rec2p = (cth - fy[l][1])*fy[l][0]*rec1p - fy[l][2]*rec2p;
+    rec2m = (cth + fy[l][1])*fy[l][0]*rec1m - fy[l][2]*rec2m;
+    res[l][0] = rec2p+rec2m; res[l][1] = rec2m-rec2p;
+    }
+  }
+
+#ifdef PLANCK_HAVE_SSE2
+
+#define ADVANCE(L,ap,am,bp,bm) \
+  { \
+  v2df f0=_mm_set1_pd(fy[L][0]), \
+       f1=_mm_set1_pd(fy[L][1]), \
+       f2=_mm_set1_pd(fy[L][2]); \
+  ap = _mm_sub_pd( \
+       _mm_mul_pd(_mm_sub_pd(cth,f1),_mm_mul_pd(f0,bp)), \
+       _mm_mul_pd(f2,ap)); \
+  am = _mm_sub_pd( \
+       _mm_mul_pd(_mm_add_pd(cth,f1),_mm_mul_pd(f0,bm)), \
+       _mm_mul_pd(f2,am)); \
+  }
+
+#define RENORMX(r1,r2,corf,sca,scb) \
+  do \
+    { \
+    double rec1a, rec1b, rec2a, rec2b, corfaca, corfacb; \
+    read_v2df (r1, &rec1a, &rec1b); read_v2df (r2, &rec2a, &rec2b); \
+    read_v2df (corf, &corfaca, &corfacb); \
+    while (fabs(rec2a)>fbig) \
+      { \
+      rec1a*=fsmall; rec2a*=fsmall; ++sca; \
+      corfaca = (sca<0) ? 0. : ygen->cf[sca]; \
+      } \
+    while (fabs(rec2b)>fbig) \
+      { \
+      rec1b*=fsmall; rec2b*=fsmall; ++scb; \
+      corfacb = (scb<0) ? 0. : ygen->cf[scb]; \
+      } \
+    r1=build_v2df(rec1a,rec1b); r2=build_v2df(rec2a,rec2b); \
+    corf=build_v2df(corfaca,corfacb); \
+    } \
+  while(0)
+
+#define RENORM \
+  RENORMX(rec1p,rec2p,corfacp,scale1p,scale2p); \
+  RENORMX(rec1m,rec2m,corfacm,scale1m,scale2m)
+
+static void sylmgen_recalc_sse2 (sylmgen_d *gen, const Ylmgen_C *ygen,
+  int ith1, int ith2, v2df2 *res, int *firstl)
+  {
+  const double ln2     = 0.6931471805599453094172321214581766;
+  const double inv_ln2 = 1.4426950408889634073599246810018921;
+  int l=gen->mhi;
+  int lmax = ygen->lmax;
+  ylmgen_dbl3 *fy = gen->fx;
+  const double fbig=ygen->fbig, fsmall=ygen->fsmall;
+  v2df eps2    = build_v2df(ygen->eps,ygen->eps);
+  const double cth1=ygen->cth[ith1], cth2=ygen->cth[ith2];
+  v2df cth = build_v2df(cth1,cth2);
+  long double
+    logval1p = inv_ln2*(gen->prefactor
+             + ygen->lc05[ith1]*gen->cosPow + ygen->ls05[ith1]*gen->sinPow),
+    logval2p = inv_ln2*(gen->prefactor
+             + ygen->lc05[ith2]*gen->cosPow + ygen->ls05[ith2]*gen->sinPow),
+    logval1m = inv_ln2*(gen->prefactor
+             + ygen->lc05[ith1]*gen->sinPow + ygen->ls05[ith1]*gen->cosPow),
+    logval2m = inv_ln2*(gen->prefactor
+             + ygen->lc05[ith2]*gen->sinPow + ygen->ls05[ith2]*gen->cosPow);
+
+  int scale1p = (int)(logval1p/large_exponent2)-minscale,
+      scale2p = (int)(logval2p/large_exponent2)-minscale,
+      scale1m = (int)(logval1m/large_exponent2)-minscale,
+      scale2m = (int)(logval2m/large_exponent2)-minscale;
+
+  v2df rec1p =_mm_setzero_pd(), rec1m=_mm_setzero_pd();
+  v2df rec2p = build_v2df(
+    (double)(exp(ln2*(logval1p-(scale1p+minscale)*large_exponent2))),
+    (double)(exp(ln2*(logval2p-(scale2p+minscale)*large_exponent2))));
+  v2df rec2m = build_v2df(
+    (double)(exp(ln2*(logval1m-(scale1m+minscale)*large_exponent2))),
+    (double)(exp(ln2*(logval2m-(scale2m+minscale)*large_exponent2))));
+  v2df corfacp=build_v2df((scale1p<0) ? 0. : ygen->cf[scale1p],
+                          (scale2p<0) ? 0. : ygen->cf[scale2p]),
+       corfacm=build_v2df((scale1m<0) ? 0. : ygen->cf[scale1m],
+                          (scale2m<0) ? 0. : ygen->cf[scale2m]);
+  v2df tp,tm;
+
+  if ((abs(gen->m-gen->s)>=gen->mdist_crit)
+     &&(fabs(ygen->cth[ith1])>=gen->cth_crit)
+     &&(fabs(ygen->cth[ith2])>=gen->cth_crit))
+    { *firstl=ygen->lmax+1; return; }
+
+  if (gen->preMinus_p)
+    rec2p = _mm_xor_pd (rec2p,V2DF_SIGNMASK); /* negate */
+  if (gen->preMinus_m)
+    rec2m = _mm_xor_pd (rec2m,V2DF_SIGNMASK); /* negate */
+  if (gen->s&1)
+    rec2p = _mm_xor_pd (rec2p,V2DF_SIGNMASK); /* negate */
+
+  /* iterate until we reach the realm of IEEE numbers */
+  while((scale1m<0)&&(scale1p<0)&&(scale2m<0)&&(scale2p<0))
+    {
+    if (++l>lmax) break;
+    ADVANCE (l,rec1p,rec1m,rec2p,rec2m)
+    if (++l>lmax) break;
+    ADVANCE (l,rec2p,rec2m,rec1p,rec1m)
+
+    RENORM;
+    }
+
+  if (l<=lmax)
+    {
+    while (1)
+      {
+      if (v2df_any_gt(_mm_mul_pd(rec2p,corfacp),eps2) ||
+          v2df_any_gt(_mm_mul_pd(rec2m,corfacm),eps2))
+        break;
+      if (++l>lmax) break;
+      ADVANCE (l,rec1p,rec1m,rec2p,rec2m)
+      if (v2df_any_gt(_mm_mul_pd(rec1p,corfacp),eps2) ||
+          v2df_any_gt(_mm_mul_pd(rec1m,corfacm),eps2))
+        { SWAP(rec1p,rec2p,v2df); SWAP(rec1m,rec2m,v2df); break; }
+      if (++l>lmax) break;
+      ADVANCE (l,rec2p,rec2m,rec1p,rec1m)
+
+      RENORM;
+      }
+    }
+
+  *firstl=l;
+  if (l>lmax)
+    {
+    gen->mdist_crit=abs(gen->m-gen->s);
+    gen->cth_crit= (fabs(cth1)<fabs(cth2)) ? fabs(cth1) : fabs(cth2);
+    return;
+    }
+  tp = _mm_mul_pd(rec2p,corfacp); tm = _mm_mul_pd(rec2m,corfacm);
+  res[l].a=_mm_add_pd(tp,tm);
+  res[l].b=_mm_sub_pd(tm,tp);
+
+  while (1)
+    {
+    if (v2df_all_ge(tp,eps2) && v2df_all_ge(tm,eps2))
+      break;
+    if (++l>lmax) break;
+    ADVANCE(l,rec1p,rec1m,rec2p,rec2m)
+    tp=_mm_mul_pd(rec1p,corfacp); tm=_mm_mul_pd(rec1m,corfacm);
+    res[l].a=_mm_add_pd(tp,tm); res[l].b=_mm_sub_pd(tm,tp);
+    if (v2df_all_ge(tp,eps2) && v2df_all_ge(tm,eps2))
+      { SWAP(rec1p,rec2p,v2df); SWAP(rec1m,rec2m,v2df); break; }
+    if (++l>lmax) break;
+    ADVANCE (l,rec2p,rec2m,rec1p,rec1m)
+    tp=_mm_mul_pd(rec2p,corfacp); tm=_mm_mul_pd(rec2m,corfacm);
+    res[l].a=_mm_add_pd(tp,tm); res[l].b=_mm_sub_pd(tm,tp);
+
+    RENORM;
+    }
+
+  rec1p = _mm_mul_pd(rec1p,corfacp); rec2p = _mm_mul_pd(rec2p,corfacp);
+  rec1m = _mm_mul_pd(rec1m,corfacm); rec2m = _mm_mul_pd(rec2m,corfacm);
+
+  for (;l<lmax-1;l+=2)
+    {
+    ADVANCE(l+1,rec1p,rec1m,rec2p,rec2m)
+    res[l+1].a=_mm_add_pd(rec1p,rec1m); res[l+1].b=_mm_sub_pd(rec1m,rec1p);
+    ADVANCE(l+2,rec2p,rec2m,rec1p,rec1m)
+    res[l+2].a=_mm_add_pd(rec2p,rec2m); res[l+2].b=_mm_sub_pd(rec2m,rec2p);
+    }
+  while (1)
+    {
+    if (++l>lmax) break;
+    ADVANCE(l,rec1p,rec1m,rec2p,rec2m)
+    res[l].a=_mm_add_pd(rec1p,rec1m); res[l].b=_mm_sub_pd(rec1m,rec1p);
+    if (++l>lmax) break;
+    ADVANCE(l,rec2p,rec2m,rec1p,rec1m)
+    res[l].a=_mm_add_pd(rec2p,rec2m); res[l].b=_mm_sub_pd(rec2m,rec2p);
+    }
+  }
+
+#endif
+
+void Ylmgen_init (Ylmgen_C *gen, int l_max, int m_max, int spinrec,
+  double epsilon)
   {
   int m;
   const double inv_sqrt4pi = 0.2820947917738781434740397257803862929220;
@@ -47,10 +428,14 @@ void Ylmgen_init (Ylmgen_C *gen, int l_max, int m_max, double epsilon)
   gen->eps = epsilon;
   gen->cth_crit = 2.;
   gen->ith = -1;
+  gen->nth = 0;
   gen->lmax = l_max;
   gen->mmax = m_max;
+  gen->spinrec = spinrec;
   gen->m_cur = -1;
   gen->m_crit = gen->mmax+1;
+  gen->firstl = RALLOC(int,max_spin+1);
+  for (m=0; m<=max_spin; ++m) gen->firstl[m]=-1;
   gen->cf = RALLOC(double,maxscale-minscale+1);
   for (m=0; m<(maxscale-minscale+1); ++m)
     gen->cf[m] = ldexp(1.,(m+minscale)*large_exponent2);
@@ -71,7 +456,13 @@ void Ylmgen_init (Ylmgen_C *gen, int l_max, int m_max, double epsilon)
 
   gen->lamfact = RALLOC(double,gen->lmax+1);
   gen->ylm = RALLOC(double,gen->lmax+1);
-  ALLOC2D(gen->lambda_wx,ylmgen_dbl2,max_spin+1,gen->lmax+1);
+  ALLOC(gen->lambda_wx,ylmgen_dbl2 *,max_spin+1);
+  for (m=0; m<=max_spin; ++m)
+    gen->lambda_wx[m]=NULL;
+
+  gen->sylm = RALLOC(sylmgen_d *,max_spin+1);
+  for (m=0; m<=max_spin; ++m)
+    gen->sylm[m]=NULL;
 
   gen->ylm_uptodate = 0;
   gen->lwx_uptodate = RALLOC(int,max_spin+1);
@@ -79,20 +470,43 @@ void Ylmgen_init (Ylmgen_C *gen, int l_max, int m_max, double epsilon)
   gen->recfac_uptodate = 0;
   gen->lamfact_uptodate = 0;
 
-  gen->cth = gen->sth = gen->logsth = NULL;
+  gen->th = gen->cth = gen->sth = gen->logsth = NULL;
 
 #ifdef PLANCK_HAVE_SSE2
   gen->ith1 = gen->ith2 = -1;
   gen->ylm_sse2 = RALLOC(v2df,gen->lmax+1);
-  ALLOC2D(gen->lambda_wx_sse2,v2df2,max_spin+1,gen->lmax+1);
+  ALLOC(gen->lambda_wx_sse2,v2df2 *,max_spin+1);
+  for (m=0; m<=max_spin; ++m)
+    gen->lambda_wx_sse2[m]=NULL;
   gen->ylm_uptodate_sse2 = 0;
   gen->lwx_uptodate_sse2 = RALLOC(int,max_spin+1);
   SET_ARRAY(gen->lwx_uptodate_sse2,0,max_spin+1,0);
 #endif
+
+  ALLOC(gen->logsum,long double,2*gen->lmax+1);
+  gen->lc05 = gen->ls05 = NULL;
+  ALLOC(gen->flm1,double,2*gen->lmax+1);
+  ALLOC(gen->flm2,double,2*gen->lmax+1);
+  ALLOC(gen->xl,double,gen->lmax+1);
+
+  gen->logsum[0] = 0.;
+  for (m=1; m<2*gen->lmax+1; ++m)
+    gen->logsum[m] = gen->logsum[m-1]+logl((long double)m);
+  for (m=0; m<2*gen->lmax+1; ++m)
+    {
+    gen->flm1[m] = sqrt(1./(m+1.));
+    gen->flm2[m] = sqrt(m/(m+1.));
+    }
+
+  gen->xl[0]=0;
+  for (m=1; m<gen->lmax+1; ++m) gen->xl[m]=1./m;
   }
 
 void Ylmgen_destroy (Ylmgen_C *gen)
   {
+  int m;
+
+  DEALLOC(gen->firstl);
   DEALLOC(gen->cf);
   DEALLOC(gen->recfac);
   DEALLOC(gen->mfac);
@@ -101,13 +515,31 @@ void Ylmgen_destroy (Ylmgen_C *gen)
   DEALLOC(gen->lamfact);
   DEALLOC(gen->ylm);
   DEALLOC(gen->lwx_uptodate);
-  DEALLOC2D(gen->lambda_wx);
+  for (m=0; m<=max_spin; ++m)
+    DEALLOC(gen->lambda_wx[m]);
+  DEALLOC(gen->lambda_wx);
+  for (m=0; m<=max_spin; ++m)
+    if (gen->sylm[m])
+      {
+      sylmgen_destroy (gen->sylm[m]);
+      DEALLOC(gen->sylm[m]);
+      }
+  DEALLOC(gen->sylm);
+  DEALLOC(gen->th);
   DEALLOC(gen->cth);
   DEALLOC(gen->sth);
   DEALLOC(gen->logsth);
+  DEALLOC(gen->logsum);
+  DEALLOC(gen->lc05);
+  DEALLOC(gen->ls05);
+  DEALLOC(gen->flm1);
+  DEALLOC(gen->flm2);
+  DEALLOC(gen->xl);
 #ifdef PLANCK_HAVE_SSE2
   DEALLOC(gen->ylm_sse2);
-  DEALLOC2D(gen->lambda_wx_sse2);
+  for (m=0; m<=max_spin; ++m)
+    DEALLOC(gen->lambda_wx_sse2[m]);
+  DEALLOC(gen->lambda_wx_sse2);
   DEALLOC(gen->lwx_uptodate_sse2);
 #endif
   }
@@ -116,22 +548,35 @@ void Ylmgen_set_theta (Ylmgen_C *gen, const double *theta, int nth)
   {
   const double inv_ln2 = 1.4426950408889634073599246810018921;
   int m;
+  DEALLOC(gen->th);
   DEALLOC(gen->cth);
   DEALLOC(gen->sth);
   DEALLOC(gen->logsth);
+  DEALLOC(gen->lc05);
+  DEALLOC(gen->ls05);
+  gen->th = RALLOC(double,nth);
   gen->cth = RALLOC(double,nth);
   gen->sth = RALLOC(double,nth);
   gen->logsth = RALLOC(double,nth);
+  gen->lc05 = RALLOC(long double,nth);
+  gen->ls05 = RALLOC(long double,nth);
   for (m=0; m<nth; ++m)
     {
-    gen->cth[m] = cos(theta[m]);
-    gen->sth[m] = sin(theta[m]);
-    /* if ring is exactly on a pole, move it a bit */
-    if (fabs(gen->sth[m])<1e-15) gen->sth[m]=1e-15;
+    const double pi = 3.141592653589793238462643383279502884197;
+    double th=theta[m];
+    UTIL_ASSERT ((th>=0.)&&(th<=pi),"bad theta angle specified");
+    /* tiny adjustments to make sure cos and sin (theta/2) are positive */
+    if (th==0.) th=1e-16;
+    if (ABSAPPROX(th,pi,1e-15)) th=pi-1e-15;
+    gen->th[m] = th;
+    gen->cth[m] = cos(th);
+    gen->sth[m] = sin(th);
     gen->logsth[m] = inv_ln2*log(gen->sth[m]);
-    UTIL_ASSERT(gen->sth[m]>0,"bad theta angle specified");
+    gen->lc05[m]=logl(cosl(0.5L*th));
+    gen->ls05[m]=logl(sinl(0.5L*th));
     }
 
+  gen->nth = nth;
   gen->ith = -1;
 #ifdef PLANCK_HAVE_SSE2
   gen->ith1 = gen->ith2 = -1;
@@ -211,7 +656,7 @@ void Ylmgen_recalc_Ylm (Ylmgen_C *gen)
   gen->ylm_uptodate=1;
 
   if (((m>=gen->m_crit)&&(fabs(cth)>=gen->cth_crit)) || ((m>0)&&(sth==0)))
-    { gen->firstl=gen->lmax+1; return; }
+    { gen->firstl[0]=gen->lmax+1; return; }
 
   Ylmgen_recalc_recfac(gen);
 
@@ -258,7 +703,7 @@ void Ylmgen_recalc_Ylm (Ylmgen_C *gen)
       }
     }
 
-  gen->firstl=l;
+  gen->firstl[0]=l;
   if (l>lmax)
     { gen->m_crit=m; gen->cth_crit=fabs(cth); return; }
 
@@ -289,7 +734,8 @@ static void Ylmgen_recalc_lambda_wx1 (Ylmgen_C *gen)
   {
   if (gen->lwx_uptodate[1]) return;
   Ylmgen_recalc_Ylm(gen);
-  if (gen->firstl>gen->lmax) return;
+  gen->firstl[1] = gen->firstl[0];
+  if (gen->firstl[1]>gen->lmax) return;
   Ylmgen_recalc_lamfact(gen);
   gen->lwx_uptodate[1] = 1;
 
@@ -302,7 +748,7 @@ static void Ylmgen_recalc_lambda_wx1 (Ylmgen_C *gen)
   ylmgen_dbl2 *lambda_wx = gen->lambda_wx[1];
   int l;
   double ell;
-  for (ell=l=gen->firstl; l<=gen->lmax; ++l, ell+=1.)
+  for (ell=l=gen->firstl[1]; l<=gen->lmax; ++l, ell+=1.)
     {
     double lam_lm1m=lam_lm;
     lam_lm=gen->ylm[l];
@@ -316,7 +762,8 @@ static void Ylmgen_recalc_lambda_wx2 (Ylmgen_C *gen)
   {
   if (gen->lwx_uptodate[2]) return;
   Ylmgen_recalc_Ylm(gen);
-  if (gen->firstl>gen->lmax) return;
+  gen->firstl[2] = gen->firstl[0];
+  if (gen->firstl[2]>gen->lmax) return;
   Ylmgen_recalc_lamfact(gen);
   gen->lwx_uptodate[2] = 1;
 
@@ -333,7 +780,7 @@ static void Ylmgen_recalc_lambda_wx2 (Ylmgen_C *gen)
   ylmgen_dbl2 *lambda_wx = gen->lambda_wx[2];
   int l;
   double ell;
-  for (ell=l=gen->firstl; l<=gen->lmax; ++l, ell+=1.)
+  for (ell=l=gen->firstl[2]; l<=gen->lmax; ++l, ell+=1.)
     {
     double lam_lm1m=lam_lm;
     lam_lm=gen->ylm[l];
@@ -348,55 +795,27 @@ static void Ylmgen_recalc_lambda_wx2 (Ylmgen_C *gen)
   }
   }
 
-static void Ylmgen_recalc_lambda_wx_recursive (Ylmgen_C *gen, int spin)
-  {
-  if (gen->lwx_uptodate[spin]) return;
-  Ylmgen_recalc_lambda_wx (gen, spin-1);
-  if (gen->firstl>gen->lmax) return;
-  Ylmgen_recalc_lamfact(gen);
-  gen->lwx_uptodate[spin] = 1;
-
-  {
-  ylmgen_dbl2 *lwxm1 = gen->lambda_wx[spin-1];
-  ylmgen_dbl2 *lambda_wx = gen->lambda_wx[spin];
-  double m=gen->m_cur;
-  double cth=gen->cth[gen->ith];
-  double sth=gen->sth[gen->ith];
-  int ifirst = IMAX(1,gen->firstl);
-  double spm1 = spin-1.;
-  double last_w=0, last_x=0;
-
-  int l;
-  double ell;
-  lambda_wx[0][0] = lambda_wx[0][1] = 0;
-  for (ell=l=ifirst; l<=gen->lmax; ++l, ell+=1.)
-    {
-    double xlsth = 1./(ell*sth);
-    double lcth = ell*cth;
-    lambda_wx[l][0] = ( (l-spm1)*(m*lwxm1[l][1] - lcth*lwxm1[l][0])
-                      + (l+spm1)*gen->lamfact[l]*last_w)
-                    * xlsth;
-    lambda_wx[l][1] = ( (l-spm1)*(m*lwxm1[l][0] - lcth*lwxm1[l][1])
-                      + (l+spm1)*gen->lamfact[l]*last_x)
-                    * xlsth;
-    last_w = lwxm1[l][0];
-    last_x = lwxm1[l][1];
-    }
-  }
-  }
-
 void Ylmgen_recalc_lambda_wx (Ylmgen_C *gen, int spin)
   {
   UTIL_ASSERT ((spin>0) && (spin<=max_spin),
     "invalid spin in Ylmgen_recalc_lambda_wx");
-  switch(spin)
+
+  if (!gen->lambda_wx[spin])
+    gen->lambda_wx[spin]=RALLOC(ylmgen_dbl2,gen->lmax+1);
+
+  if (gen->spinrec && spin==1) { Ylmgen_recalc_lambda_wx1(gen); return; }
+  if (gen->spinrec && spin==2) { Ylmgen_recalc_lambda_wx2(gen); return; }
+
+  if (!gen->sylm[spin])
     {
-    case 1 : Ylmgen_recalc_lambda_wx1(gen); break;
-    case 2 : Ylmgen_recalc_lambda_wx2(gen); break;
-    default:
-      Ylmgen_recalc_lambda_wx_recursive(gen,spin);
-      break;
+    gen->sylm[spin]=RALLOC(sylmgen_d,1);
+    sylmgen_init(gen->sylm[spin],gen,spin);
     }
+  if (gen->lwx_uptodate[spin]) return;
+  sylmgen_prepare(gen->sylm[spin],gen,gen->m_cur);
+  sylmgen_recalc(gen->sylm[spin],gen,gen->ith,gen->lambda_wx[spin],
+    &gen->firstl[spin]);
+  gen->lwx_uptodate[spin] = 1;
   }
 
 #ifdef PLANCK_HAVE_SSE2
@@ -475,7 +894,7 @@ void Ylmgen_recalc_Ylm_sse2 (Ylmgen_C *gen)
   gen->ylm_uptodate_sse2=1;
 
   if ((m>=gen->m_crit)&&(fabs(cth1)>=gen->cth_crit)&&(fabs(cth2)>=gen->cth_crit))
-    { gen->firstl=gen->lmax+1; return; }
+    { gen->firstl[0]=gen->lmax+1; return; }
 
   Ylmgen_recalc_recfac(gen);
 
@@ -533,7 +952,7 @@ void Ylmgen_recalc_Ylm_sse2 (Ylmgen_C *gen)
       }
     }
 
-  gen->firstl=l;
+  gen->firstl[0]=l;
   if (l>lmax)
     {
     gen->m_crit=m;
@@ -588,7 +1007,8 @@ static void Ylmgen_recalc_lambda_wx1_sse2 (Ylmgen_C *gen)
   {
   if (gen->lwx_uptodate_sse2[1]) return;
   Ylmgen_recalc_Ylm_sse2(gen);
-  if (gen->firstl>gen->lmax) return;
+  gen->firstl[1] = gen->firstl[0];
+  if (gen->firstl[1]>gen->lmax) return;
   Ylmgen_recalc_lamfact(gen);
   gen->lwx_uptodate_sse2[1] = 1;
 
@@ -600,9 +1020,9 @@ static void Ylmgen_recalc_lambda_wx1_sse2 (Ylmgen_C *gen)
   v2df lam_lm=_mm_setzero_pd();
   v2df2 *lambda_wx = gen->lambda_wx_sse2[1];
   int l;
-  v2df ell=build_v2df(gen->firstl,gen->firstl);
+  v2df ell=build_v2df(gen->firstl[1],gen->firstl[1]);
   v2df uno=_mm_set1_pd(1.);
-  for (l=gen->firstl; l<=gen->lmax; ++l, ell=_mm_add_pd(ell,uno))
+  for (l=gen->firstl[1]; l<=gen->lmax; ++l, ell=_mm_add_pd(ell,uno))
     {
     v2df lamfact=_mm_load1_pd(&gen->lamfact[l]);
     v2df lam_lm1m=lam_lm;
@@ -618,7 +1038,8 @@ static void Ylmgen_recalc_lambda_wx2_sse2 (Ylmgen_C *gen)
   {
   if (gen->lwx_uptodate_sse2[2]) return;
   Ylmgen_recalc_Ylm_sse2(gen);
-  if (gen->firstl>gen->lmax) return;
+  gen->firstl[2] = gen->firstl[0];
+  if (gen->firstl[2]>gen->lmax) return;
   Ylmgen_recalc_lamfact(gen);
   gen->lwx_uptodate_sse2[2] = 1;
 
@@ -635,8 +1056,8 @@ static void Ylmgen_recalc_lambda_wx2_sse2 (Ylmgen_C *gen)
   v2df lam_lm=_mm_setzero_pd();
   v2df2 *lambda_wx = gen->lambda_wx_sse2[2];
   int l;
-  v2df ell=build_v2df(gen->firstl,gen->firstl);
-  for (l=gen->firstl; l<=gen->lmax; ++l, ell=_mm_add_pd(ell,uno))
+  v2df ell=build_v2df(gen->firstl[2],gen->firstl[2]);
+  for (l=gen->firstl[2]; l<=gen->lmax; ++l, ell=_mm_add_pd(ell,uno))
     {
     v2df lamfact=_mm_load1_pd(&gen->lamfact[l]);
     v2df lam_lm1m=lam_lm;
@@ -655,67 +1076,75 @@ static void Ylmgen_recalc_lambda_wx2_sse2 (Ylmgen_C *gen)
   }
   }
 
-static void Ylmgen_recalc_lambda_wx_recursive_sse2 (Ylmgen_C *gen, int spin)
-  {
-  if (gen->lwx_uptodate_sse2[spin]) return;
-  Ylmgen_recalc_lambda_wx_sse2 (gen, spin-1);
-  if (gen->firstl>gen->lmax) return;
-  Ylmgen_recalc_lamfact(gen);
-  gen->lwx_uptodate_sse2[spin] = 1;
-
-  {
-  v2df2 *lwxm1 = gen->lambda_wx_sse2[spin-1];
-  v2df2 *lambda_wx = gen->lambda_wx_sse2[spin];
-  v2df m=build_v2df(gen->m_cur,gen->m_cur);
-  v2df uno=_mm_set1_pd(1.);
-  v2df cth=build_v2df(gen->cth[gen->ith1],gen->cth[gen->ith2]);
-  v2df sth=build_v2df(gen->sth[gen->ith1],gen->sth[gen->ith2]);
-  int ifirst = IMAX(1,gen->firstl);
-  v2df spm1 = build_v2df(spin-1.,spin-1.);
-  v2df last_w=_mm_setzero_pd(), last_x=_mm_setzero_pd();
-
-  int l;
-  v2df ell=build_v2df(ifirst,ifirst);
-  lambda_wx[0].a = lambda_wx[0].b = _mm_setzero_pd();
-  for (l=ifirst; l<=gen->lmax; ++l, ell=_mm_add_pd(ell,uno))
-    {
-    v2df xlsth = _mm_div_pd(uno,_mm_mul_pd(ell,sth));
-    v2df lcth = _mm_mul_pd(ell,cth);
-    v2df lmspm1 = _mm_sub_pd(ell,spm1);
-    v2df lpspm1 = _mm_add_pd(ell,spm1);
-    v2df t0 = _mm_mul_pd(lpspm1,_mm_load1_pd(&gen->lamfact[l]));
-    v2df t1 = _mm_mul_pd(m,lwxm1[l].b);
-    v2df t2 = _mm_mul_pd(lcth,lwxm1[l].a);
-    v2df t3 = _mm_sub_pd(t1,t2);
-    v2df t4 = _mm_mul_pd(lmspm1,t3);
-    v2df t5 = _mm_mul_pd(t0,last_w);
-    v2df t6 = _mm_add_pd(t4,t5);
-    lambda_wx[l].a = _mm_mul_pd(t6, xlsth);
-    t1 = _mm_mul_pd(m,lwxm1[l].a);
-    t2 = _mm_mul_pd(lcth,lwxm1[l].b);
-    t3 = _mm_sub_pd(t1,t2);
-    t4 = _mm_mul_pd(lmspm1,t3);
-    t5 = _mm_mul_pd(t0,last_x);
-    t6 = _mm_add_pd(t4,t5);
-    lambda_wx[l].b = _mm_mul_pd(t6, xlsth);
-    last_w = lwxm1[l].a;
-    last_x = lwxm1[l].b;
-    }
-  }
-  }
-
 void Ylmgen_recalc_lambda_wx_sse2 (Ylmgen_C *gen, int spin)
   {
   UTIL_ASSERT ((spin>0) && (spin<=max_spin),
     "invalid spin in Ylmgen_recalc_lambda_wx_sse2");
-  switch(spin)
+
+  if (!gen->lambda_wx_sse2[spin])
+    gen->lambda_wx_sse2[spin]=RALLOC(v2df2,gen->lmax+1);
+
+  if (gen->spinrec && spin==1) { Ylmgen_recalc_lambda_wx1_sse2(gen); return; }
+  if (gen->spinrec && spin==2) { Ylmgen_recalc_lambda_wx2_sse2(gen); return; }
+
+  if (!gen->sylm[spin])
     {
-    case 1 : Ylmgen_recalc_lambda_wx1_sse2(gen); break;
-    case 2 : Ylmgen_recalc_lambda_wx2_sse2(gen); break;
-    default:
-      Ylmgen_recalc_lambda_wx_recursive_sse2(gen,spin);
-      break;
+    gen->sylm[spin]=RALLOC(sylmgen_d,1);
+    sylmgen_init(gen->sylm[spin],gen,spin);
     }
+  if (gen->lwx_uptodate_sse2[spin]) return;
+  sylmgen_prepare(gen->sylm[spin],gen,gen->m_cur);
+  sylmgen_recalc_sse2(gen->sylm[spin],gen,gen->ith1,gen->ith2,
+    gen->lambda_wx_sse2[spin],&gen->firstl[spin]);
+  gen->lwx_uptodate_sse2[spin] = 1;
   }
 
 #endif /* PLANCK_HAVE_SSE2 */
+
+double *Ylmgen_get_norm (int lmax, int spin, int spinrec)
+  {
+  const double pi = 3.141592653589793238462643383279502884197;
+  double *res=RALLOC(double,lmax+1);
+  int l;
+  double spinsign;
+  /* sign convention for H=1 (LensPix paper) */
+#if 1
+  spinsign = (spin>0) ? -1.0 : 1.0;
+#else
+  spinsign = 1.0;
+#endif
+
+  if (spin==0)
+    {
+    for (l=0; l<=lmax; ++l)
+      res[l]=1.;
+    return res;
+    }
+
+  if ((!spinrec) || (spin>=3))
+    {
+    for (l=0; l<=lmax; ++l)
+      res[l] = (l<spin) ? 0. : spinsign*0.5*sqrt((2*l+1)/(4*pi));
+    return res;
+    }
+
+  if (spin==1)
+    {
+    for (l=0; l<=lmax; ++l)
+      res[l] = (l<spin) ? 0. : spinsign*sqrt(1./((l+1.)*l));
+    return res;
+    }
+
+  if (spin==2)
+    {
+    for (l=0; l<=lmax; ++l)
+      res[l] = (l<spin) ? 0. : spinsign*sqrt(1./((l+2.)*(l+1.)*l*(l-1.)));
+    return res;
+    }
+
+  UTIL_FAIL ("error in Ylmgen_get_norm");
+  return NULL;
+  }
+
+int Ylmgen_maxspin(void)
+  { return max_spin; }

@@ -122,6 +122,13 @@ class bostream
       put(&data,1);
       return *this;
       }
+
+    bool getSwap() const
+      { return doswap; }
+    void setSwap(bool newswap)
+      { doswap=newswap; }
+    void flipSwap()
+      { doswap=!doswap; }
   };
 
 /*! Class for reading binary data from a stream. */
@@ -157,6 +164,13 @@ class bistream
       get (&data,1);
       return *this;
       }
+
+    bool getSwap() const
+      { return doswap; }
+    void setSwap(bool newswap)
+      { doswap=newswap; }
+    void flipSwap()
+      { doswap=!doswap; }
   };
 
 class bofstream: public std::ofstream
@@ -194,6 +208,13 @@ class bofstream: public std::ofstream
         write (reinterpret_cast<const char *> (data), num*sizeof(T));
       return *this;
       }
+
+    bool getSwap() const
+      { return doswap; }
+    void setSwap(bool newswap)
+      { doswap=newswap; }
+    void flipSwap()
+      { doswap=!doswap; }
   };
 
 class bifstream: public std::ifstream
@@ -233,6 +254,13 @@ class bifstream: public std::ifstream
       { seekg(0,std::ios::beg); }
     void skip(std::streamoff nbytes)
       { seekg(nbytes,std::ios::cur); }
+
+    bool getSwap() const
+      { return doswap; }
+    void setSwap(bool newswap)
+      { doswap=newswap; }
+    void flipSwap()
+      { doswap=!doswap; }
   };
 
 #endif

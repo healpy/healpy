@@ -80,9 +80,10 @@ static void random_alm (pshtd_cmplx *alm, psht_alm_info *helper, int spin)
   }
 
 static void measure_errors (pshtd_cmplx **alm, pshtd_cmplx **alm2,
-  int nalms, int ncomp)
+  ptrdiff_t nalms, int ncomp)
   {
-  int i,m;
+  int i;
+  ptrdiff_t m;
 
   for (i=0; i<ncomp; ++i)
     {
@@ -103,12 +104,13 @@ static void measure_errors (pshtd_cmplx **alm, pshtd_cmplx **alm2,
 
 static void map2alm_iter (psht_geom_info *tinfo, double **map,
   pshtd_cmplx **alm_orig, pshtd_cmplx **alm, int lmax, int mmax,
-  int npix, int nalms, int spin, int niter)
+  ptrdiff_t npix, ptrdiff_t nalms, int spin, int niter)
   {
   psht_alm_info *alms;
   pshtd_joblist *joblist;
   int ncomp = (spin==0) ? 1 : 2;
-  int iter,i,m;
+  int iter,i;
+  ptrdiff_t m;
   double timer;
 
   psht_make_triangular_alm_info(lmax,mmax,1,&alms);
@@ -157,14 +159,14 @@ static void map2alm_iter (psht_geom_info *tinfo, double **map,
   pshtd_destroy_joblist(joblist);
   }
 
-static void check_accuracy (psht_geom_info *tinfo, int lmax, int mmax,
-  int npix, int spin, int niter)
+static void check_accuracy (psht_geom_info *tinfo, ptrdiff_t lmax,
+  ptrdiff_t mmax, ptrdiff_t npix, int spin, int niter)
   {
   psht_alm_info *alms;
   pshtd_joblist *joblist;
   double **map;
   pshtd_cmplx **alm, **alm2;
-  int nalms = ((mmax+1)*(mmax+2))/2 + (mmax+1)*(lmax-mmax);
+  ptrdiff_t nalms = ((mmax+1)*(mmax+2))/2 + (mmax+1)*(lmax-mmax);
   int ncomp = (spin==0) ? 1 : 2;
   double timer;
 
@@ -221,9 +223,9 @@ int main(int argc, char **argv)
     {
     int nrings=lmax+1;
     int ppring=atoi(argv[3]);
-    int npix=nrings*ppring;
-    printf("\nTesting Gaussian grid (%d rings, %d pixels/ring, %d pixels)\n",
-          nrings,ppring,npix);
+    ptrdiff_t npix=(ptrdiff_t)nrings*ppring;
+    printf("\nTesting Gaussian grid (%d rings, %d pixels/ring, %ld pixels)\n",
+          nrings,ppring,(long)npix);
     psht_make_gauss_geom_info (nrings, ppring, 1, &tinfo);
     check_accuracy(tinfo,lmax,lmax,npix,spin,niter);
     psht_destroy_geom_info(tinfo);
@@ -232,9 +234,9 @@ int main(int argc, char **argv)
     {
     int nrings=2*lmax+2;
     int ppring=atoi(argv[3]);
-    int npix=nrings*ppring;
-    printf("\nTesting ECP grid (%d rings, %d pixels/ring, %d pixels)\n",
-          nrings,ppring,npix);
+    ptrdiff_t npix=(ptrdiff_t)nrings*ppring;
+    printf("\nTesting ECP grid (%d rings, %d pixels/ring, %ld pixels)\n",
+          nrings,ppring,(long)npix);
     psht_make_ecp_geom_info (nrings, ppring, 0., 1, &tinfo);
     check_accuracy(tinfo,lmax,lmax,npix,spin,niter);
     psht_destroy_geom_info(tinfo);
@@ -242,11 +244,11 @@ int main(int argc, char **argv)
   else if (strcmp(argv[1],"healpix")==0)
     {
     int nside=atoi(argv[3]);
-    int npix;
+    ptrdiff_t npix;
     if (nside<1) nside=1;
-    npix=12*nside*nside;
-    printf("\nTesting Healpix grid (nside=%d, %d pixels)\n",
-          nside,npix);
+    npix=12*(ptrdiff_t)nside*nside;
+    printf("\nTesting Healpix grid (nside=%d, %ld pixels)\n",
+          nside,(long)npix);
     psht_make_healpix_geom_info (nside, 1, &tinfo);
     check_accuracy(tinfo,lmax,lmax,npix,spin,niter);
     psht_destroy_geom_info(tinfo);

@@ -52,7 +52,7 @@ class psht_base
       psht_destroy_alm_info(ainfo);
       }
 
-    void set_general_geometry (int nrings, const int *nph, const int *ofs,
+    void set_general_geometry (int nrings, const int *nph, const ptrdiff_t *ofs,
       const int *stride, const double *phi0, const double *theta,
       const double *weight)
       {

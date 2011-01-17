@@ -52,3 +52,27 @@ double wallTime(void)
   return t.tv_sec + 1e-6*t.tv_usec;
 #endif
   }
+
+typedef struct
+  {
+  double ts,ta;
+  int on;
+  } wTimer;
+
+#define NTIMERS 100
+
+static wTimer wT[NTIMERS];
+
+int wTimer_num(void)
+  { return NTIMERS; }
+void wTimer_reset(int n)
+  { wT[n].ts=wT[n].ta=wT[n].on=0; }
+void wTimer_start(int n)
+  { wT[n].ts=wallTime(); wT[n].on=1; }
+void wTimer_stop(int n)
+  {
+  if (wT[n].on)
+    { wT[n].ta+=wallTime()-wT[n].ts; wT[n].on=0; }
+  }
+double wTimer_acc(int n)
+  { return wT[n].on ? wT[n].ta+wallTime()-wT[n].ts : wT[n].ta; }

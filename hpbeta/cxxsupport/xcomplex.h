@@ -124,6 +124,9 @@ template<typename T> class xcomplex
     /*! Multiplies \a *this by \a fact. */
     xcomplex &operator*= (const T &fact)
       { re*=fact; im*=fact; return *this; }
+    /*! Divides \a *this by \a div. */
+    xcomplex &operator/= (const T &div)
+      { re/=div; im/=div; return *this; }
     /*! Returns \a *this * \a fact. */
     xcomplex operator* (const T &fact) const
       { return xcomplex (re*fact,im*fact); }
@@ -133,6 +136,9 @@ template<typename T> class xcomplex
     /*! Returns \a *this / \a b. */
     xcomplex operator/ (const xcomplex &b) const
       { return xcomplex(std::complex<T>(*this)/std::complex<T>(b)); }
+    /*! Returns \a *this / \a div. */
+    xcomplex operator/ (const T &div) const
+      { return xcomplex (re/div,im/div); }
     /*! Returns \a *this + \a b. */
     xcomplex operator+ (const xcomplex &b) const
       { return xcomplex (re+b.re, im+b.im); }
@@ -173,11 +179,23 @@ template <typename T> inline xcomplex<T> conj (const xcomplex<T> &num)
     \relates xcomplex */
 template <typename T> inline T norm (const xcomplex<T> &num)
   { return num.re*num.re + num.im*num.im; }
+/*! Returns the absolute value of \a num.
+    \relates xcomplex */
+template <typename T> inline T abs (const xcomplex<T> &num)
+  {
+  using namespace std;
+  return abs(complex<T>(num));
+  }
 /*! Returns \a f1*f2.
     \relates xcomplex */
 template <typename T> inline xcomplex<T> operator*
   (const T &f1, const xcomplex<T> &f2)
   { return xcomplex<T> (f1*f2.re, f1*f2.im); }
+/*! Returns \a f1/f2.
+    \relates xcomplex */
+template <typename T> inline xcomplex<T> operator/
+  (const T &f1, const xcomplex<T> &f2)
+  { return xcomplex<T>(f1)/f2; }
 /*! Writes \a val to \a os.
     \relates xcomplex */
 template<typename T>

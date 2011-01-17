@@ -49,12 +49,12 @@
 #include "c_utils.h"
 #include "walltime_c.h"
 
-static void get_map(float **map, int npix)
+static void get_map(float **map, ptrdiff_t npix)
   {
   *map=RALLOC(float,npix);
   SET_ARRAY(*map,0,npix,1);
   }
-static void get_alm(pshts_cmplx **alm, int nalm)
+static void get_alm(pshts_cmplx **alm, ptrdiff_t nalm)
   {
   static const pshts_cmplx pshts_cmplx_one={1,1};
   *alm=RALLOC(pshts_cmplx,nalm);
@@ -62,7 +62,7 @@ static void get_alm(pshts_cmplx **alm, int nalm)
   }
 
 static void prepare_job (const char *jobname, float **map,
-  pshts_cmplx **alm, int npix, int nalm, int ofs_m, int ofs_a,
+  pshts_cmplx **alm, ptrdiff_t npix, ptrdiff_t nalm, int ofs_m, int ofs_a,
   int num_m, int num_a)
   {
   int m;
@@ -75,7 +75,7 @@ static void prepare_job (const char *jobname, float **map,
 
 int main(int argc, char **argv)
   {
-  int npix=0,lmax,nalm;
+  ptrdiff_t npix=0,lmax,nalm;
   float *map[100];
   pshts_cmplx *alm[100];
   psht_alm_info *alms;
@@ -95,34 +95,34 @@ int main(int argc, char **argv)
     {
     int nrings=lmax+1;
     int ppring=atoi(argv[3]);
-    npix=nrings*ppring;
-    printf("\nTesting Gaussian grid (%d rings, %d pixels/ring, %d pixels)\n",
-          nrings,ppring,npix);
+    npix=(ptrdiff_t)nrings*ppring;
+    printf("\nTesting Gaussian grid (%d rings, %d pixels/ring, %ld pixels)\n",
+          nrings,ppring,(long)npix);
     psht_make_gauss_geom_info (nrings, ppring, 1, &tinfo);
     }
   else if (strcmp(argv[1],"ecp")==0)
     {
     int nrings=2*lmax+2;
     int ppring=atoi(argv[3]);
-    npix=nrings*ppring;
-    printf("\nTesting ECP grid (%d rings, %d pixels/ring, %d pixels)\n",
-          nrings,ppring,npix);
+    npix=(ptrdiff_t)nrings*ppring;
+    printf("\nTesting ECP grid (%d rings, %d pixels/ring, %ld pixels)\n",
+          nrings,ppring,(long)npix);
     psht_make_ecp_geom_info (nrings, ppring, 0., 1, &tinfo);
     }
   else if (strcmp(argv[1],"healpix")==0)
     {
     int nside=atoi(argv[3]);
     if (nside<1) nside=1;
-    npix=12*nside*nside;
-    printf("\nTesting Healpix grid (nside=%d, %d pixels)\n",
-          nside,npix);
+    npix=12*(ptrdiff_t)nside*nside;
+    printf("\nTesting Healpix grid (nside=%d, %ld pixels)\n",
+          nside,(long)npix);
     psht_make_healpix_geom_info (nside, 1, &tinfo);
     }
   else
     UTIL_FAIL("unknown command");
 
   psht_make_triangular_alm_info(lmax,lmax,1,&alms);
-  nalm = ((lmax+1)*(lmax+2))/2;
+  nalm = ((ptrdiff_t)(lmax+1)*(lmax+2))/2;
   pshts_make_joblist (&joblist);
 
   ofs_m=ofs_a=0;

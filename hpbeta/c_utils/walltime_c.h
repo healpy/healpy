@@ -46,6 +46,12 @@ extern "C" {
     \note Only useful for measuring time differences. */
 double wallTime(void);
 
+int wTimer_num(void);
+void wTimer_reset(int n);
+void wTimer_start(int n);
+void wTimer_stop(int n);
+double wTimer_acc(int n);
+
 #ifdef __cplusplus
 }
 #endif

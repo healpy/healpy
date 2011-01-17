@@ -35,11 +35,12 @@
 void psht_make_triangular_alm_info (int lmax, int mmax, int stride,
   psht_alm_info **alm_info)
   {
-  int m, tval;
+  ptrdiff_t m;
+  int tval;
   psht_alm_info *info = RALLOC(psht_alm_info,1);
   info->lmax = lmax;
   info->mmax = mmax;
-  info->mstart = RALLOC(int,mmax+1);
+  info->mstart = RALLOC(ptrdiff_t,mmax+1);
   info->stride = stride;
   tval = 2*lmax+1;
   for (m=0; m<=mmax; ++m)
@@ -50,11 +51,11 @@ void psht_make_triangular_alm_info (int lmax, int mmax, int stride,
 void psht_make_rectangular_alm_info (int lmax, int mmax, int stride,
   psht_alm_info **alm_info)
   {
-  int m;
+  ptrdiff_t m;
   psht_alm_info *info = RALLOC(psht_alm_info,1);
   info->lmax = lmax;
   info->mmax = mmax;
-  info->mstart = RALLOC(int,mmax+1);
+  info->mstart = RALLOC(ptrdiff_t,mmax+1);
   info->stride = stride;
   for (m=0; m<=mmax; ++m)
     info->mstart[m] = stride*m*(lmax+1);

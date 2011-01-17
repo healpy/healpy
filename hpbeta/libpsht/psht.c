@@ -39,8 +39,6 @@
 const pshts_cmplx pshts_cmplx_null={0,0};
 const pshtd_cmplx pshtd_cmplx_null={0,0};
 
-enum { max_spin=3 };
-
 static void get_chunk_info (int ndata, int *nchunks, int *chunksize)
   {
   static const int chunksize_min=100;
@@ -125,21 +123,21 @@ static void assert_jobspace (int njobs_now)
     "Too many jobs added to a libpsht joblist. Exiting ...");
   }
 
-void psht_make_alm_info (int lmax, int mmax, int stride, const int *mstart,
-  psht_alm_info **alm_info)
+void psht_make_alm_info (int lmax, int mmax, int stride,
+  const ptrdiff_t *mstart, psht_alm_info **alm_info)
   {
   int m;
   psht_alm_info *info = RALLOC(psht_alm_info,1);
   info->lmax = lmax;
   info->mmax = mmax;
-  info->mstart = RALLOC(int,mmax+1);
+  info->mstart = RALLOC(ptrdiff_t,mmax+1);
   info->stride = stride;
   for (m=0; m<=mmax; ++m)
     info->mstart[m] = mstart[m];
   *alm_info = info;
   }
 
-long psht_alm_index (const psht_alm_info *self, int l, int m)
+ptrdiff_t psht_alm_index (const psht_alm_info *self, int l, int m)
   { return self->mstart[m]+self->stride*l; }
 
 void psht_destroy_alm_info (psht_alm_info *info)
@@ -148,8 +146,8 @@ void psht_destroy_alm_info (psht_alm_info *info)
   DEALLOC (info);
   }
 
-void psht_make_geom_info (int nrings, const int *nph,
-  const int *ofs, const int *stride, const double *phi0, const double *theta,
+void psht_make_geom_info (int nrings, const int *nph, const ptrdiff_t *ofs,
+  const int *stride, const double *phi0, const double *theta,
   const double *weight, psht_geom_info **geom_info)
   {
   psht_geom_info *info = RALLOC(psht_geom_info,1);
@@ -199,28 +197,6 @@ void psht_destroy_geom_info (psht_geom_info *geom_info)
   {
   DEALLOC (geom_info->pair);
   DEALLOC (geom_info);
-  }
-
-static double **init_normal_l (int lmax)
-  {
-  double **normal_l;
-  int l;
-  ALLOC2D (normal_l,double,max_spin+1,lmax+1);
-  for (l=0; l<=lmax; ++l)
-    {
-    int spin;
-    normal_l[0][l] = 1;
-    for (spin=1; spin<=max_spin; ++spin)
-      normal_l[spin][l] = (l<spin) ?
-        0. : normal_l[spin-1][l]*sqrt(1./((l+(double)spin)*(l+1.-spin)));
-
-/* sign convention for H=1 (LensPix paper)
-   remove the loop to obtain H=0 convention */
-    for (spin=1; spin<=max_spin; ++spin)
-      normal_l[spin][l] = -normal_l[spin][l];
-    }
-
-  return normal_l;
   }
 
 #define CONCAT(a,b) a ## b

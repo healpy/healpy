@@ -32,6 +32,7 @@
 #ifndef PLANCK_PSHT_H
 #define PLANCK_PSHT_H
 
+#include <stddef.h>
 #include "sse_utils.h"
 
 #ifdef __cplusplus
@@ -58,7 +59,8 @@ extern const pshtd_cmplx pshtd_cmplx_null;
 typedef struct
   {
   double theta, phi0, weight, cth, sth;
-  int nph, ofs, stride;
+  ptrdiff_t ofs;
+  int nph, stride;
   } psht_ringinfo;
 
 /*! Helper type containing information about a pair of rings with colatitudes
@@ -92,11 +94,15 @@ typedef struct
   double *map[3];
   pshtd_cmplx *alm[3];
   pshtd_cmplx *phas1[3], *phas2[3];
+  double *norm_l;
+  union {
 #ifdef PLANCK_HAVE_SSE2
-  v2df2 *alm_tmp[3];
+    v2df *v[3];
+    v2df2 *v2[3];
 #else
-  pshtd_cmplx *alm_tmp[3];
+    pshtd_cmplx *c[3];
 #endif
+    } alm_tmp;
   } pshtd_job;
 
 enum { psht_maxjobs=10 };
@@ -120,11 +126,15 @@ typedef struct
   float *map[3];
   pshts_cmplx *alm[3];
   pshtd_cmplx *phas1[3], *phas2[3];
+  double *norm_l;
+  union {
 #ifdef PLANCK_HAVE_SSE2
-  v2df2 *alm_tmp[3];
+    v2df *v[3];
+    v2df2 *v2[3];
 #else
-  pshtd_cmplx *alm_tmp[3];
+    pshtd_cmplx *c[3];
 #endif
+    } alm_tmp;
   } pshts_job;
 
 /*! Type holding a list of simultaneous single precision SHT jobs.
@@ -147,9 +157,9 @@ typedef struct
   int mmax;
   /*! Array containing the (hypothetical) indices of the coefficient
       with quantum numbers 0,\a m */
-  int *mstart; 
+  ptrdiff_t *mstart;
   /*! Stride between a_lm and a_(l+1),m */
-  int stride;
+  ptrdiff_t stride;
   } psht_alm_info;
 
 /*! Creates an Alm data structure information from the following parameters:
@@ -161,9 +171,9 @@ typedef struct
     \param alm_info will hold a pointer to the newly created data structure
  */
 void psht_make_alm_info (int lmax, int mmax, int stride,
-  const int *mstart, psht_alm_info **alm_info);
+  const ptrdiff_t *mstart, psht_alm_info **alm_info);
 /*! Returns the index of the coefficient with quantum numbers \a l,\a m. */
-long psht_alm_index (const psht_alm_info *self, int l, int m);
+ptrdiff_t psht_alm_index (const psht_alm_info *self, int l, int m);
 /*! Deallocates the a_lm info object. */
 void psht_destroy_alm_info (psht_alm_info *info);
 
@@ -183,8 +193,8 @@ void psht_destroy_alm_info (psht_alm_info *info);
     \param weight the pixel weight to be used for the ring
     \param geom_info will hold a pointer to the newly created data structure
  */
-void psht_make_geom_info (int nrings, const int *nph,
-  const int *ofs, const int *stride, const double *phi0, const double *theta,
+void psht_make_geom_info (int nrings, const int *nph, const ptrdiff_t *ofs,
+  const int *stride, const double *phi0, const double *theta,
   const double *weight, psht_geom_info **geom_info);
 
 /*! Deallocates the geometry information in \a info. */
