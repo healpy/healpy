@@ -26,6 +26,7 @@ $ cd build/lib*
 $ ipython -pylab
 >>> import healpy as H
 >>> H.mollview(arange(12))
+>>> pylab.show()
 
 If the plot looks good, you can install:
 $ sudo python setup.py install  # install in default location, need root rights
