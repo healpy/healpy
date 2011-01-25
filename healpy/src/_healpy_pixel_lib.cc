@@ -35,36 +35,26 @@
 #include "numpy/ufuncobject.h"
 #include "numpy/noprefix.h"
 
-static void
-ufunc_ang2pix_ring(char **args, intp *dimensions, intp *steps, void *func);
-static void
-ufunc_ang2pix_nest(char **args, intp *dimensions, intp *steps, void *func);
-static void
-ufunc_pix2ang_ring(char **args, intp *dimensions, intp *steps, void *func);
-static void
-ufunc_pix2ang_nest(char **args, intp *dimensions, intp *steps, void *func);
-static void
-ufunc_ring2nest(char **args, intp *dimensions, intp *steps, void *func);
-static void
-ufunc_nest2ring(char **args, intp *dimensions, intp *steps, void *func);
-static void
-ufunc_get_interpol_ring(char **args, intp *dimension, intp *steps, void *funv);
-static void
-ufunc_get_interpol_nest(char **args, intp *dimension, intp *steps, void *funv);
-static void
-ufunc_get_neighbors_ring(char **args, intp *dimension, intp *steps, void *funv);
-static void
-ufunc_get_neighbors_nest(char **args, intp *dimension, intp *steps, void *funv);
+template<Healpix_Ordering_Scheme scheme>static void
+  ufunc_ang2pix(char **args, intp *dimensions, intp *steps, void *func);
+template<Healpix_Ordering_Scheme scheme> static void
+  ufunc_pix2ang(char **args, intp *dimensions, intp *steps, void *func);
 
+template<Healpix_Ordering_Scheme scheme> static void
+  ufunc_pix2vec(char **args, intp *dimensions, intp *steps, void *func);
+template<Healpix_Ordering_Scheme scheme> static void
+  ufunc_vec2pix(char **args, intp *dimensions, intp *steps, void *func);
+
+template<Healpix_Ordering_Scheme scheme> static void
+  ufunc_get_interpol(char **args, intp *dimensions, intp *steps, void *func);
+template<Healpix_Ordering_Scheme scheme> static void
+  ufunc_get_neighbors(char **args, intp *dimensions, intp *steps, void *func);
 
 static void
-ufunc_pix2vec_ring(char **args, intp *dimensions, intp *steps, void *func);
+  ufunc_ring2nest(char **args, intp *dimensions, intp *steps, void *func);
 static void
-ufunc_pix2vec_nest(char **args, intp *dimensions, intp *steps, void *func);
-static void
-ufunc_vec2pix_ring(char **args, intp *dimensions, intp *steps, void *func);
-static void
-ufunc_vec2pix_nest(char **args, intp *dimensions, intp *steps, void *func);
+  ufunc_nest2ring(char **args, intp *dimensions, intp *steps, void *func);
+
 
 
 static char *docstring = 
@@ -77,28 +67,28 @@ static char *docstring =
 
 /* to define the ufunc */
 static PyUFuncGenericFunction ang2pix_ring_functions[] = {
-  ufunc_ang2pix_ring
+  ufunc_ang2pix<RING>
 };
 static PyUFuncGenericFunction ang2pix_nest_functions[] = {
-  ufunc_ang2pix_nest
+  ufunc_ang2pix<NEST>
 };
 static PyUFuncGenericFunction pix2ang_ring_functions[] = {
-  ufunc_pix2ang_ring
+  ufunc_pix2ang<RING>
 };
 static PyUFuncGenericFunction pix2ang_nest_functions[] = {
-  ufunc_pix2ang_nest
+  ufunc_pix2ang<NEST>
 };
 static PyUFuncGenericFunction vec2pix_ring_functions[] = {
-  ufunc_vec2pix_ring
+  ufunc_vec2pix<RING>
 };
 static PyUFuncGenericFunction vec2pix_nest_functions[] = {
-  ufunc_vec2pix_nest
+  ufunc_vec2pix<NEST>
 };
 static PyUFuncGenericFunction pix2vec_ring_functions[] = {
-  ufunc_pix2vec_ring
+  ufunc_pix2vec<RING>
 };
 static PyUFuncGenericFunction pix2vec_nest_functions[] = {
-  ufunc_pix2vec_nest
+  ufunc_pix2vec<NEST>
 };
 static PyUFuncGenericFunction ring2nest_functions[] = {
   ufunc_ring2nest
@@ -107,16 +97,16 @@ static PyUFuncGenericFunction nest2ring_functions[] = {
   ufunc_nest2ring
 };
 static PyUFuncGenericFunction get_interpol_ring_functions[] = {
-  ufunc_get_interpol_ring
+  ufunc_get_interpol<RING>
 };
 static PyUFuncGenericFunction get_interpol_nest_functions[] = {
-  ufunc_get_interpol_nest
+  ufunc_get_interpol<NEST>
 };
 static PyUFuncGenericFunction get_neighbors_ring_functions[] = {
-  ufunc_get_neighbors_ring
+  ufunc_get_neighbors<RING>
 };
 static PyUFuncGenericFunction get_neighbors_nest_functions[] = {
-  ufunc_get_neighbors_nest
+  ufunc_get_neighbors<NEST>
 };
 
 
@@ -290,10 +280,10 @@ init_healpy_pixel_lib(void)
 }
 
 /* 
-   ang2pix_ring
+   ang2pix
 */
-static void
-ufunc_ang2pix_ring(char **args, intp *dimensions, intp *steps, void *func)
+template<Healpix_Ordering_Scheme scheme>static void
+  ufunc_ang2pix(char **args, intp *dimensions, intp *steps, void *func)
 {
   register intp i, n=dimensions[0];
   register intp is1=steps[0],is2=steps[1],is3=steps[2],
@@ -304,38 +294,17 @@ ufunc_ang2pix_ring(char **args, intp *dimensions, intp *steps, void *func)
   
   for(i=0; i<n; i++, ip1+=is1, ip2+=is2, ip3+=is3, op+=os) 
     {
-      hb.SetNside(*(long*)ip1,RING);
-      *(long *)op = hb.ang2pix(pointing(*(double *)ip2,
-					*(double *)ip3));
-    }
-}
-
-/* 
-   ang2pix_nest
-*/
-static void
-ufunc_ang2pix_nest(char **args, intp *dimensions, intp *steps, void *func)
-{
-  register intp i, n=dimensions[0];
-  register intp is1=steps[0],is2=steps[1],is3=steps[2],
-    os=steps[3];
-  char *ip1=args[0], *ip2=args[1], *ip3=args[2], *op=args[3];
-  
-  Healpix_Base hb;
-  
-  for(i=0; i<n; i++, ip1+=is1, ip2+=is2, ip3+=is3, op+=os) 
-    {
-      hb.SetNside(*(long*)ip1,NEST);
+      hb.SetNside(*(long*)ip1, scheme);
       *(long *)op = hb.ang2pix(pointing(*(double *)ip2,
 					*(double *)ip3));
     }
 }
 
 /*
-   pix2ang_ring
+   pix2ang
 */
-static void
-ufunc_pix2ang_ring(char **args, intp *dimensions, intp *steps, void *func)
+template<Healpix_Ordering_Scheme scheme> static void
+  ufunc_pix2ang(char **args, intp *dimensions, intp *steps, void *func)
 {
   register intp i, n=dimensions[0];
   register intp is1=steps[0],is2=steps[1],os1=steps[2],os2=steps[3];
@@ -346,29 +315,7 @@ ufunc_pix2ang_ring(char **args, intp *dimensions, intp *steps, void *func)
   for(i=0; i<n; i++, ip1+=is1, ip2+=is2, op1+=os1, op2+=os2) 
     {
       pointing ptg;
-      hb.SetNside(*(long*)ip1,RING);
-      ptg = hb.pix2ang(*(long *)ip2);
-      *(double *)op1 = ptg.theta;
-      *(double *)op2 = ptg.phi;
-    }
-}
-
-/*
-   pix2ang_nest
-*/
-static void
-ufunc_pix2ang_nest(char **args, intp *dimensions, intp *steps, void *func)
-{
-  register intp i, n=dimensions[0];
-  register intp is1=steps[0],is2=steps[1],os1=steps[2],os2=steps[3];
-  char *ip1=args[0], *ip2=args[1], *op1=args[2], *op2=args[3];
-  
-  Healpix_Base hb;
-  
-  for(i=0; i<n; i++, ip1+=is1, ip2+=is2, op1+=os1, op2+=os2) 
-    {
-      pointing ptg;
-      hb.SetNside(*(long*)ip1,NEST);
+      hb.SetNside(*(long*)ip1, scheme);
       ptg = hb.pix2ang(*(long *)ip2);
       *(double *)op1 = ptg.theta;
       *(double *)op2 = ptg.phi;
@@ -398,7 +345,7 @@ ufunc_ring2nest(char **args, intp *dimensions, intp *steps, void *func)
    nest2ring
 */
 static void
-ufunc_nest2ring (char **args, intp *dimensions, intp *steps, void *func)
+ ufunc_nest2ring (char **args, intp *dimensions, intp *steps, void *func)
 {
   register intp i, n=dimensions[0];
   register intp is1=steps[0],is2=steps[1],os=steps[2];
@@ -413,11 +360,12 @@ ufunc_nest2ring (char **args, intp *dimensions, intp *steps, void *func)
     }
 }
 
+
 /*
-  pix2vec_ring
+  pix2vec
 */
-static void
-ufunc_pix2vec_ring(char **args, intp *dimensions, intp *steps, void *func)
+template<Healpix_Ordering_Scheme scheme> static void 
+  ufunc_pix2vec(char **args, intp *dimensions, intp *steps, void *func)
 {
   register intp i, n=dimensions[0];
   register intp is1=steps[0],is2=steps[1],os1=steps[2],os2=steps[3],os3=steps[4];
@@ -428,31 +376,7 @@ ufunc_pix2vec_ring(char **args, intp *dimensions, intp *steps, void *func)
   for(i=0; i<n; i++, ip1+=is1, ip2+=is2, op1+=os1, op2+=os2, op3+=os3) 
     {
       vec3 v;
-      hb.SetNside(*(long*)ip1,RING);
-      v = hb.pix2vec(*(long *)ip2);
-      *(double *)op1 = v.x;
-      *(double *)op2 = v.y;
-      *(double *)op3 = v.z;
-    }
-}
-
-
-/*
-  pix2vec_nest
-*/
-static void
-ufunc_pix2vec_nest(char **args, intp *dimensions, intp *steps, void *func)
-{
-  register intp i, n=dimensions[0];
-  register intp is1=steps[0],is2=steps[1],os1=steps[2],os2=steps[3],os3=steps[4];
-  char *ip1=args[0], *ip2=args[1], *op1=args[2], *op2=args[3], *op3=args[4];
-  
-  Healpix_Base hb;
-  
-  for(i=0; i<n; i++, ip1+=is1, ip2+=is2, op1+=os1, op2+=os2, op3+=os3) 
-    {
-      vec3 v;
-      hb.SetNside(*(long*)ip1,NEST);
+      hb.SetNside(*(long*)ip1, scheme);
       v = hb.pix2vec(*(long *)ip2);
       *(double *)op1 = v.x;
       *(double *)op2 = v.y;
@@ -461,10 +385,10 @@ ufunc_pix2vec_nest(char **args, intp *dimensions, intp *steps, void *func)
 }
 
 /*
-  vec2pix_ring
+  vec2pix
 */
-static void
-ufunc_vec2pix_ring(char **args, intp *dimensions, intp *steps, void *func)
+template<Healpix_Ordering_Scheme scheme> static void
+  ufunc_vec2pix(char **args, intp *dimensions, intp *steps, void *func)
 {
   register intp i, n=dimensions[0];
   register intp is1=steps[0],is2=steps[1],is3=steps[2],is4=steps[3],os1=steps[4];
@@ -476,32 +400,7 @@ ufunc_vec2pix_ring(char **args, intp *dimensions, intp *steps, void *func)
     {
       vec3 v;
       long ipix;
-      hb.SetNside(*(long*)ip1,RING);
-      v.x = *(double *)ip2;
-      v.y = *(double *)ip3;
-      v.z = *(double *)ip4;
-      ipix = hb.vec2pix(v);
-      *(long *)op1 = ipix;
-    }
-}
-
-/*
-  vec2pix_nest
-*/
-static void
-ufunc_vec2pix_nest(char **args, intp *dimensions, intp *steps, void *func)
-{
-  register intp i, n=dimensions[0];
-  register intp is1=steps[0],is2=steps[1],is3=steps[2],is4=steps[3],os1=steps[4];
-  char *ip1=args[0], *ip2=args[1], *ip3=args[2], *ip4=args[3], *op1=args[4];
-  
-  Healpix_Base hb;
-  
-  for(i=0; i<n; i++, ip1+=is1, ip2+=is2, ip3+=is3, ip4+=is4, op1+=os1) 
-    {
-      vec3 v;
-      long ipix;
-      hb.SetNside(*(long*)ip1,NEST);
+      hb.SetNside(*(long*)ip1, scheme);
       v.x = *(double *)ip2;
       v.y = *(double *)ip3;
       v.z = *(double *)ip4;
@@ -512,10 +411,10 @@ ufunc_vec2pix_nest(char **args, intp *dimensions, intp *steps, void *func)
 
 
 /*
-  get_interpol_ring
+  get_interpol
 */
-static void
-ufunc_get_interpol_ring(char **args, intp *dimensions, intp *steps, void *func)
+template<Healpix_Ordering_Scheme scheme> static void
+  ufunc_get_interpol(char **args, intp *dimensions, intp *steps, void *func)
 {
   register intp i, n=dimensions[0];
   register intp is1=steps[0],is2=steps[1],is3=steps[2],
@@ -533,43 +432,7 @@ ufunc_get_interpol_ring(char **args, intp *dimensions, intp *steps, void *func)
     {
       fix_arr<int,4> pix;
       fix_arr<double,4> wgt;
-      hb.SetNside(*(long*)ip1,RING);
-      hb.get_interpol(pointing(*(double*)ip2, *(double*)ip3),
-		       pix, wgt);
-      *(long*)op1 = (long)pix[0];
-      *(long*)op2 = (long)pix[1];
-      *(long*)op3 = (long)pix[2];
-      *(long*)op4 = (long)pix[3];
-      *(double*)op5 = wgt[0];
-      *(double*)op6 = wgt[1];
-      *(double*)op7 = wgt[2];
-      *(double*)op8 = wgt[3];
-    }
-}
-
-/*
-  get_interpol_nest
-*/
-static void
-ufunc_get_interpol_nest(char **args, intp *dimensions, intp *steps, void *func)
-{
-  register intp i, n=dimensions[0];
-  register intp is1=steps[0],is2=steps[1],is3=steps[2],
-    os1=steps[3],os2=steps[4],os3=steps[5],os4=steps[6],
-    os5=steps[7],os6=steps[8],os7=steps[9],os8=steps[10];
-  char *ip1=args[0], *ip2=args[1], *ip3=args[2],
-    *op1=args[3],*op2=args[4],*op3=args[5],*op4=args[6],
-    *op5=args[7],*op6=args[8],*op7=args[9],*op8=args[10];
-  
-  Healpix_Base hb;
-  
-  for(i=0; i<n; i++, ip1+=is1, ip2+=is2, ip3+=is3,
-	op1+=os1,op2+=os2,op3+=os3,op4+=os4,
-	op5+=os5,op6+=os6,op7+=os7,op8+=os8 ) 
-    {
-      fix_arr<int,4> pix;
-      fix_arr<double,4> wgt;
-      hb.SetNside(*(long*)ip1,NEST);
+      hb.SetNside(*(long*)ip1, scheme);
       hb.get_interpol(pointing(*(double*)ip2, *(double*)ip3),
 		      pix, wgt);
       *(long*)op1 = (long)pix[0];
@@ -585,10 +448,10 @@ ufunc_get_interpol_nest(char **args, intp *dimensions, intp *steps, void *func)
 
 
 /*
-  get_neighbors_ring
+  get_neighbors
 */
-static void
-ufunc_get_neighbors_ring(char **args, intp *dimensions, intp *steps, void *func)
+template<Healpix_Ordering_Scheme scheme> static void
+  ufunc_get_neighbors(char **args, intp *dimensions, intp *steps, void *func)
 {
   register intp i, n=dimensions[0];
   register intp is1=steps[0],is2=steps[1],
@@ -604,40 +467,7 @@ ufunc_get_neighbors_ring(char **args, intp *dimensions, intp *steps, void *func)
 	op5+=os5,op6+=os6,op7+=os7,op8+=os8 ) 
     {
       fix_arr<int,8> pix;
-      hb.SetNside(*(long*)ip1,RING);
-      hb.neighbors(*(long*)ip2, pix);
-      *(long*)op1 = (long)pix[0];
-      *(long*)op2 = (long)pix[1];
-      *(long*)op3 = (long)pix[2];
-      *(long*)op4 = (long)pix[3];
-      *(long*)op5 = (long)pix[4];
-      *(long*)op6 = (long)pix[5];
-      *(long*)op7 = (long)pix[6];
-      *(long*)op8 = (long)pix[7];
-    }
-}
-
-/*
-  get_neighbors_nest
-*/
-static void
-ufunc_get_neighbors_nest(char **args, intp *dimensions, intp *steps, void *func)
-{
-  register intp i, n=dimensions[0];
-  register intp is1=steps[0],is2=steps[1],
-    os1=steps[2],os2=steps[3],os3=steps[4],os4=steps[5],
-    os5=steps[6],os6=steps[7],os7=steps[8],os8=steps[9];
-  char *ip1=args[0], *ip2=args[1],
-    *op1=args[2],*op2=args[3],*op3=args[4],*op4=args[5],
-    *op5=args[6],*op6=args[7],*op7=args[8],*op8=args[9];
-
-  Healpix_Base hb;
-  for(i=0; i<n; i++, ip1+=is1, ip2+=is2,
-	op1+=os1,op2+=os2,op3+=os3,op4+=os4,
-	op5+=os5,op6+=os6,op7+=os7,op8+=os8 ) 
-    {
-      fix_arr<int,8> pix;
-      hb.SetNside(*(long*)ip1,NEST);
+      hb.SetNside(*(long*)ip1, scheme);
       hb.neighbors(*(long*)ip2, pix);
       *(long*)op1 = (long)pix[0];
       *(long*)op2 = (long)pix[1];
