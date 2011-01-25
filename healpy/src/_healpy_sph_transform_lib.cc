@@ -1,22 +1,22 @@
-/* 
+/*
  *  This file is part of Healpy.
- * 
+ *
  *  Healpy is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation; either version 2 of the License, or
  *  (at your option) any later version.
- * 
+ *
  *  Healpy is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- * 
+ *
  *  You should have received a copy of the GNU General Public License
  *  along with Healpy; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- * 
+ *
  *  For more information about Healpy, see http://code.google.com/p/healpy
- */ 
+ */
 /*
 
    This module provides Healpix functions to Python.
@@ -29,7 +29,6 @@
 #include "numpy/arrayobject.h"
 
 #include <string>
-//#include <string.h>
 #include <iostream>
 
 #include "arr.h"
@@ -60,31 +59,31 @@ static long getidx(long n, long i, long j);
 static void cholesky(int n, double *data, double *res);
 
 
-static PyObject *healpy_map2alm(PyObject *self, PyObject *args, 
-				PyObject *kwds);
+static PyObject *healpy_map2alm(PyObject *self, PyObject *args,
+                                PyObject *kwds);
 
-static PyObject *healpy_alm2map(PyObject *self, PyObject *args, 
-				PyObject *kwds);
+static PyObject *healpy_alm2map(PyObject *self, PyObject *args,
+                                PyObject *kwds);
 
-static PyObject *healpy_alm2map_der1(PyObject *self, PyObject *args, 
-				PyObject *kwds);
+static PyObject *healpy_alm2map_der1(PyObject *self, PyObject *args,
+                                PyObject *kwds);
 
-static PyObject *healpy_synalm(PyObject *self, PyObject *args, 
-			       PyObject *kwds);
+static PyObject *healpy_synalm(PyObject *self, PyObject *args,
+                               PyObject *kwds);
 
 static PyObject *healpy_getn(PyObject *self, PyObject *args);
 
 static PyMethodDef SphtMethods[] = {
-  {"_map2alm", (PyCFunction)healpy_map2alm, METH_VARARGS | METH_KEYWORDS, 
+  {"_map2alm", (PyCFunction)healpy_map2alm, METH_VARARGS | METH_KEYWORDS,
    "Compute alm or cl from an input map.\n"
    "The input map is assumed to be ordered in RING.\n"
    "anafast(map,lmax=3*nside-1,mmax=lmax,cl=False,\n"
    "        iter=3,use_weights=False,data_path=None,regression=True)"},
-  {"_alm2map", (PyCFunction)healpy_alm2map, METH_VARARGS | METH_KEYWORDS, 
+  {"_alm2map", (PyCFunction)healpy_alm2map, METH_VARARGS | METH_KEYWORDS,
    "Compute a map from alm.\n"
    "The output map is ordered in RING scheme.\n"
    "alm2map(alm,nside=64,lmax=-1,mmax=-1)"},
-  {"_alm2map_der1", (PyCFunction)healpy_alm2map_der1, METH_VARARGS | METH_KEYWORDS, 
+  {"_alm2map_der1", (PyCFunction)healpy_alm2map_der1, METH_VARARGS | METH_KEYWORDS,
    "Compute a map and derivatives from alm.\n"
    "The output map is ordered in RING scheme.\n"
    "alm2map_der1(alm,nside=64,lmax=-1,mmax=-1)"},
@@ -101,24 +100,22 @@ init_healpy_sph_transform_lib(void)
 {
   PyObject *m;
   m =  Py_InitModule("_healpy_sph_transform_lib", SphtMethods);
-  
+
   import_array();
 }
 
 /***********************************************************************
     map2alm
 
-       input: map, lmax=3*nside-1, mmax=lmax, cl=False 
+       input: map, lmax=3*nside-1, mmax=lmax, cl=False
               iter=3, use_weights=False
 
        output: alm (or cl if cl=True)
 */
-static PyObject *healpy_map2alm(PyObject *self, PyObject *args, 
-				PyObject *kwds)
+static PyObject *healpy_map2alm(PyObject *self, PyObject *args,
+                                PyObject *kwds)
 {
-  PyArrayObject *mapIin = NULL;
-  PyArrayObject *mapQin = NULL;
-  PyArrayObject *mapUin = NULL;
+  PyArrayObject *mapIin = NULL, *mapQin = NULL, *mapUin = NULL;
   int lmax=-1, mmax=-1;
   int nside=-1;
   int npix=-1;
@@ -129,159 +126,82 @@ static PyObject *healpy_map2alm(PyObject *self, PyObject *args,
   int polarisation = 0; /* not polarised by default */
   int regression=1;
 
-  static char* kwlist[] = {"","lmax", "mmax","cl","iter", 
-			   "use_weights", "data_path", "regression", NULL};
+  static const char* kwlist[] = {"","lmax", "mmax","cl","iter",
+                           "use_weights", "data_path", "regression", NULL};
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!|iiiiisi", kwlist,
-				   &PyArray_Type, &mapIin,
-				   &lmax, &mmax, &docl,
-				   &num_iter,&use_weights,&datapath,&regression))
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!|iiiiisi", (char **)kwlist,
+                                   &PyArray_Type, &mapIin,
+                                   &lmax, &mmax, &docl,
+                                   &num_iter,&use_weights,&datapath,&regression))
     {
       PyErr_Clear(); /* I want to try the other calling way */
 
       PyObject *t = NULL;
-      if( !PyArg_ParseTupleAndKeywords(args, kwds, "O|iiiiisi", kwlist,
-				   &t,
-				   &lmax, &mmax, &docl,
-				       &num_iter,&use_weights,&datapath,&regression) )	
-	return NULL;
+      if( !PyArg_ParseTupleAndKeywords(args, kwds, "O|iiiiisi", (char **)kwlist,
+                                   &t,
+                                   &lmax, &mmax, &docl,
+                                       &num_iter,&use_weights,&datapath,&regression) )
+        return NULL;
       else
-	{
-	  if( PySequence_Size(t) != 3 )
-	    {
-	      PyErr_SetString(PyExc_TypeError, 
-			      "First argument must be a sequence with "
-			      "three elements.");
-	      return NULL;
-	    }
-	  PyObject *o1 = NULL;
-	  PyObject *o2 = NULL;
-	  PyObject *o3 = NULL;
-	  o1 = PySequence_GetItem(t, 0);
-	  o2 = PySequence_GetItem(t, 1);
-	  o3 = PySequence_GetItem(t, 2);
-	  /* I decrease reference counts here,
-	     because PySequence_GetItem increase 
-	     reference count, and I just want to 
-	     borrow a reference the time of this 
-	     function. */
-	  Py_XDECREF(o1);
-	  Py_XDECREF(o2);
-	  Py_XDECREF(o3);
-	  if( ! ( PyArray_Check(o1) && PyArray_Check(o2) 
-		  && PyArray_Check(o3) ) )
-	    {
-	      PyErr_SetString(PyExc_TypeError, 
-			      "First argument must be a sequence with "
-			      "three arrays");
-	      return NULL;
-	    }
-	  else
-	    {
-	      mapIin = (PyArrayObject*) o1;
-	      mapQin = (PyArrayObject*) o2;
-	      mapUin = (PyArrayObject*) o3;
-	    }
-	}
-	polarisation = 1;  /* we have three maps : polarisation! */
+        {
+          healpyAssertType(PySequence_Size(t)==3,
+            "First argument must be a sequence with three elements.");
+          PyObject *o1 = PySequence_GetItem(t, 0),
+                   *o2 = PySequence_GetItem(t, 1),
+                   *o3 = PySequence_GetItem(t, 2);
+          /* I decrease reference counts here,
+             because PySequence_GetItem increase
+             reference count, and I just want to
+             borrow a reference the time of this
+             function. */
+          Py_XDECREF(o1);
+          Py_XDECREF(o2);
+          Py_XDECREF(o3);
+          healpyAssertType(PyArray_Check(o1)&&PyArray_Check(o2)&&PyArray_Check(o3),
+            "First argument must be a sequence with three arrays");
+
+          mapIin = (PyArrayObject*) o1;
+          mapQin = (PyArrayObject*) o2;
+          mapUin = (PyArrayObject*) o3;
+        }
+        polarisation = 1;  /* we have three maps : polarisation! */
     }
 
   /* Check array is contiguous */
-  if( !(mapIin->flags & NPY_C_CONTIGUOUS) ) 
-    {
-      PyErr_SetString(PyExc_ValueError,
-		      "Array must be C contiguous for this operation.");
-      return NULL;      
-    }
+  healpyAssertValue(mapIin->flags&NPY_C_CONTIGUOUS,
+    "Array must be C contiguous for this operation.");
 
   if( polarisation )
-    {
-      if( !(mapQin->flags & NPY_C_CONTIGUOUS) ) 
-	{
-	  PyErr_SetString(PyExc_ValueError,
-			  "Array must be C contiguous for this operation.");
-	  return NULL;      
-	}
-      if( !(mapUin->flags & NPY_C_CONTIGUOUS) ) 
-	{
-	  PyErr_SetString(PyExc_ValueError,
-			  "Array must be C contiguous for this operation.");
-	  return NULL;      
-	}
-    }
+    healpyAssertValue(mapQin->flags&mapUin->flags&NPY_C_CONTIGUOUS,
+                      "Array must be C contiguous for this operation.");
 
   /* Check type of data : must be double ('d') */
-  if( mapIin->descr->type != 'd' )
-    {
-      PyErr_SetString(PyExc_TypeError,
-		      "Type must be Float64 for this function");
-      return NULL;
-    }
+  healpyAssertType(mapIin->descr->type == 'd',
+    "Type must be Float64 for this function");
 
   if( polarisation )
     {
-      if( mapQin->descr->type != 'd' )
-	{
-	  PyErr_SetString(PyExc_TypeError,
-			  "Type must be Float64 for this function");
-	  return NULL;
-	}
-      if( mapUin->descr->type != 'd' )
-	{
-	  PyErr_SetString(PyExc_TypeError,
-			  "Type must be Float64 for this function");
-	  return NULL;
-	}
+    healpyAssertType(mapQin->descr->type == 'd',
+      "Type must be Float64 for this function");
+    healpyAssertType(mapUin->descr->type == 'd',
+      "Type must be Float64 for this function");
     }
 
   /* Check number of dimension : must be 1 */
-  if( mapIin->nd != 1 )
-    {
-      PyErr_SetString(PyExc_TypeError,
-		      "Array must be 1D.");
-      return NULL;
-    }
-  else
-    npix = mapIin->dimensions[0];
+  healpyAssertType(mapIin->nd==1,"Array must be 1D.");
+  npix = mapIin->dimensions[0];
 
   if( polarisation )
     {
-      if( mapQin->nd != 1 )
-	{
-	  PyErr_SetString(PyExc_TypeError,
-			  "Array must be 1D.");
-	  return NULL;
-	}
-      else
-	if( mapQin->dimensions[0] != npix)
-	  {
-	    PyErr_SetString(PyExc_TypeError,
-			    "All maps must have same dimension.");
-	    return NULL;
-	  }
-      if( mapUin->nd != 1 )
-	{
-	  PyErr_SetString(PyExc_TypeError,
-			  "Array must be 1D.");
-	  return NULL;
-	}
-      else
-	if( mapUin->dimensions[0] != npix)
-	  {
-	    PyErr_SetString(PyExc_TypeError,
-			    "All maps must have same dimension.");
-	    return NULL;
-	  }
+    healpyAssertType((mapQin->nd==1)&&(mapUin->nd==1),"Array must be 1D.");
+    healpyAssertType((mapQin->dimensions[0]==npix)&&
+                     (mapQin->dimensions[0]==npix),
+                      "All maps must have same dimension.");
     }
-  
+
   /* Check that the number of pixel is ok (12*nside^2) */
   nside = npix2nside(npix);
-  if( nside < 0 )
-    {
-      PyErr_SetString(PyExc_ValueError,
-		      "Number of pixel not valid for healpix map.");
-      return NULL;
-    }
+  healpyAssertValue(nside>=0,"Number of pixel not valid for healpix map.");
 
   /* lmax and mmax */
   if( lmax < 0 )
@@ -289,53 +209,45 @@ static PyObject *healpy_map2alm(PyObject *self, PyObject *args,
   if( mmax <0 || mmax > lmax )
     mmax = lmax;
 
-  Healpix_Map<double> mapI;
+  Healpix_Map<double> mapI, mapQ, mapU;
   {
-    arr<double> arr_map((double*)mapIin->data, npix);
-    mapI.Set(arr_map, RING);
+  arr<double> arr_map((double*)mapIin->data, npix);
+  mapI.Set(arr_map, RING);
   }
 
-  Healpix_Map<double> mapQ;
-  if( polarisation ) 
+  if(polarisation)
     {
-      arr<double> arr_map((double*)mapQin->data, npix);
-      mapQ.Set(arr_map, RING);
+    arr<double> arr_map((double*)mapQin->data, npix);
+    mapQ.Set(arr_map, RING);
     }
 
-  Healpix_Map<double> mapU;
   if( polarisation )
     {
-      arr<double> arr_map((double*)mapUin->data, npix);
-      mapU.Set(arr_map, RING);
+    arr<double> arr_map((double*)mapUin->data, npix);
+    mapU.Set(arr_map, RING);
     }
 
   npy_intp szalm = Alm<xcomplex<double> >::Num_Alms(lmax,mmax);
 
-  PyArrayObject *almIout = NULL;
-  almIout = (PyArrayObject*)PyArray_SimpleNew(1, (npy_intp*)&szalm, 
-					      PyArray_CDOUBLE);
+  PyArrayObject *almIout = (PyArrayObject*)PyArray_SimpleNew
+    (1, (npy_intp*)&szalm, PyArray_CDOUBLE);
   if( !almIout ) return NULL;
 
-  PyArrayObject *almGout = NULL;
+  PyArrayObject *almGout=NULL, *almCout=NULL;
   if( polarisation )
     {
-      almGout = (PyArrayObject*)PyArray_SimpleNew(1, (npy_intp*)&szalm, 
-						  PyArray_CDOUBLE);
+      almGout = (PyArrayObject*)PyArray_SimpleNew(1, (npy_intp*)&szalm,
+                                                  PyArray_CDOUBLE);
       if( !almGout ) {
-	Py_DECREF(almIout);
-	return NULL;
+        Py_DECREF(almIout);
+        return NULL;
       }
-    }
-
-  PyArrayObject *almCout = NULL;
-  if( polarisation )
-    {
-      almCout = (PyArrayObject*)PyArray_SimpleNew(1, (npy_intp*)&szalm, 
-						  PyArray_CDOUBLE);
+      almCout = (PyArrayObject*)PyArray_SimpleNew(1, (npy_intp*)&szalm,
+                                                  PyArray_CDOUBLE);
       if( !almCout ) {
-	Py_DECREF(almIout);
-	Py_DECREF(almGout);
-	return NULL;
+        Py_DECREF(almIout);
+        Py_DECREF(almGout);
+        return NULL;
       }
     }
 
@@ -364,13 +276,10 @@ static PyObject *healpy_map2alm(PyObject *self, PyObject *args,
   if( use_weights )
     {
       read_weight_ring(datapath, nside, weight);
-      for (int m=0; m<weight.size(); ++m) weight[m]+=1;
+      for (tsize m=0; m<weight.size(); ++m) weight[m]+=1;
     }
   else
-    {
-      weight.alloc(2*nside);
-      weight.fill(1.);
-    }
+      weight.allocAndFill(2*nside,1.);
 
   double avg = 0.0;
   if( regression ) {
@@ -382,7 +291,7 @@ static PyObject *healpy_map2alm(PyObject *self, PyObject *args,
     map2alm_iter(mapI,almIalm,num_iter,weight);
   else
     map2alm_pol_iter(mapI, mapQ, mapU, almIalm, almGalm, almCalm, num_iter,
-		     weight);
+                     weight);
 
   if( regression ) {
     almIalm(0,0) += avg*sqrt(fourpi);
@@ -392,68 +301,59 @@ static PyObject *healpy_map2alm(PyObject *self, PyObject *args,
   if( !docl )
     {
       if( !polarisation )
-	return Py_BuildValue("N",almIout);
+        return Py_BuildValue("N",almIout);
       else
-	return Py_BuildValue("NNN", almIout, almGout, almCout);
+        return Py_BuildValue("NNN", almIout, almGout, almCout);
     }
   else
     {
       if( !polarisation )
-	{
-	  PowSpec powspec;
-	  extract_powspec (almIalm,powspec);
-	  npy_intp szcl = (npy_intp)(powspec.Lmax()+1);
-	  
-	  PyArrayObject *ctt=NULL;
-	  
-	  ctt = (PyArrayObject*)PyArray_SimpleNew(1, (npy_intp*)&szcl, 
-						  PyArray_DOUBLE);
-	  if( !ctt ) 
-	    return NULL;
-	  
-	  for( int l=0; l<szcl; l++ )
-	    *((double*)PyArray_GETPTR1(ctt,l)) =  powspec.tt(l);
-	  return Py_BuildValue("NN",ctt,almIout);
-	}
+        {
+          PowSpec powspec;
+          extract_powspec (almIalm,powspec);
+          npy_intp szcl = (npy_intp)(powspec.Lmax()+1);
+
+          PyArrayObject *ctt=NULL;
+
+          ctt = (PyArrayObject*)PyArray_SimpleNew(1, (npy_intp*)&szcl,
+                                                  PyArray_DOUBLE);
+          if( !ctt )
+            return NULL;
+
+          for( int l=0; l<szcl; l++ )
+            *((double*)PyArray_GETPTR1(ctt,l)) =  powspec.tt(l);
+          return Py_BuildValue("NN",ctt,almIout);
+        }
       else
-	{
-	  PowSpec powspec;
-	  extract_powspec(almIalm, almGalm,almCalm,powspec);
-	  
-	  npy_intp szcl = (npy_intp)(powspec.Lmax()+1);
-	  
-	  PyArrayObject *ctt=NULL;
-	  PyArrayObject *cee=NULL;
-	  PyArrayObject *cbb=NULL;
-	  PyArrayObject *cte=NULL;
+        {
+          PowSpec powspec;
+          extract_powspec(almIalm, almGalm,almCalm,powspec);
 
-	  ctt = (PyArrayObject*)PyArray_SimpleNew(1, (npy_intp*)&szcl, 
-						  PyArray_DOUBLE);
-	  if( !ctt ) 
-	    return NULL;
-	  cee = (PyArrayObject*)PyArray_SimpleNew(1, (npy_intp*)&szcl, 
-						  PyArray_DOUBLE);
-	  if( !cee ) 
-	    return NULL;
-	  cbb = (PyArrayObject*)PyArray_SimpleNew(1, (npy_intp*)&szcl, 
-						  PyArray_DOUBLE);
-	  if( !cbb ) 
-	    return NULL;
-	  cte = (PyArrayObject*)PyArray_SimpleNew(1, (npy_intp*)&szcl, 
-						  PyArray_DOUBLE);
-	  if( !cte ) 
-	    return NULL;
+          npy_intp szcl = (npy_intp)(powspec.Lmax()+1);
 
-	  for( int l=0; l<szcl; l++ )
-	    {
-	      *((double*)PyArray_GETPTR1(ctt,l)) =  powspec.tt(l);
-	      *((double*)PyArray_GETPTR1(cee,l)) =  powspec.gg(l);
-	      *((double*)PyArray_GETPTR1(cbb,l)) =  powspec.cc(l);
-	      *((double*)PyArray_GETPTR1(cte,l)) =  powspec.tg(l);
-	    }
-	  return Py_BuildValue("(NNNN)(NNN)",ctt,cee,cbb,cte,
-			       almIout, almGout, almCout);
-	}
+          PyArrayObject *ctt = (PyArrayObject*)PyArray_SimpleNew
+            (1, (npy_intp*)&szcl, PyArray_DOUBLE);
+          if( !ctt ) return NULL;
+          PyArrayObject *cee = (PyArrayObject*)PyArray_SimpleNew
+            (1, (npy_intp*)&szcl, PyArray_DOUBLE);
+          if( !cee ) return NULL;
+          PyArrayObject *cbb = (PyArrayObject*)PyArray_SimpleNew
+            (1, (npy_intp*)&szcl, PyArray_DOUBLE);
+          if( !cbb ) return NULL;
+          PyArrayObject *cte = (PyArrayObject*)PyArray_SimpleNew
+            (1, (npy_intp*)&szcl, PyArray_DOUBLE);
+          if( !cte ) return NULL;
+
+          for( int l=0; l<szcl; l++ )
+            {
+              *((double*)PyArray_GETPTR1(ctt,l)) =  powspec.tt(l);
+              *((double*)PyArray_GETPTR1(cee,l)) =  powspec.gg(l);
+              *((double*)PyArray_GETPTR1(cbb,l)) =  powspec.cc(l);
+              *((double*)PyArray_GETPTR1(cte,l)) =  powspec.tg(l);
+            }
+          return Py_BuildValue("(NNNN)(NNN)",ctt,cee,cbb,cte,
+                               almIout, almGout, almCout);
+        }
     }
 }
 
@@ -464,143 +364,81 @@ static PyObject *healpy_map2alm(PyObject *self, PyObject *args,
 
        output: map in RING scheme
 */
-static PyObject *healpy_alm2map(PyObject *self, PyObject *args, 
-				PyObject *kwds)
+static PyObject *healpy_alm2map(PyObject *self, PyObject *args,
+                                PyObject *kwds)
 {
-  PyArrayObject *almIin = NULL;
-  PyArrayObject *almGin = NULL;
-  PyArrayObject *almCin = NULL;
+  PyArrayObject *almIin=NULL, *almGin=NULL, *almCin=NULL;
   int nside = 64;
   int lmax = -1;
   int mmax = -1;
   int polarisation = 0;
-  
-  static char* kwlist[] = {"","nside", "lmax", "mmax", NULL};
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!|iii", kwlist,
-				   &PyArray_Type, &almIin,
-				   &nside,
-				   &lmax, 
-				   &mmax))
-				   
+  static const char* kwlist[] = {"","nside", "lmax", "mmax", NULL};
+
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!|iii", (char **)kwlist,
+                                   &PyArray_Type, &almIin,
+                                   &nside,
+                                   &lmax,
+                                   &mmax))
+
     {
       PyErr_Clear(); /* I want to try the other calling way */
 
       PyObject *t = NULL;
-      if( !PyArg_ParseTupleAndKeywords(args, kwds, "O|iii", kwlist,
-				       &t,
-				       &nside,
-				       &lmax, 
-				       &mmax) )
-	return NULL;
+      if( !PyArg_ParseTupleAndKeywords(args, kwds, "O|iii", (char **)kwlist,
+                                       &t,
+                                       &nside,
+                                       &lmax,
+                                       &mmax) )
+        return NULL;
       else
-	{
-	  if( PySequence_Size(t) != 3 )
-	    {
-	      PyErr_SetString(PyExc_TypeError, 
-			      "First argument must be a sequence with "
-			      "three elements.");
-	      return NULL;
-	    }
-	  PyObject *o1 = NULL;
-	  PyObject *o2 = NULL;
-	  PyObject *o3 = NULL;
-	  o1 = PySequence_GetItem(t, 0);
-	  o2 = PySequence_GetItem(t, 1);
-	  o3 = PySequence_GetItem(t, 2);
-	  /* I decrease reference counts here,
-	     because PySequence_GetItem increase 
-	     reference count, and I just want to 
-	     borrow a reference the time of this 
-	     function. */
-	  Py_XDECREF(o1);
-	  Py_XDECREF(o2);
-	  Py_XDECREF(o3);
-	  if( ! ( PyArray_Check(o1) && PyArray_Check(o2) 
-		  && PyArray_Check(o3) ) )
-	    {
-	      PyErr_SetString(PyExc_TypeError, 
-			      "First argument must be a sequence with "
-			      "three arrays");
-	      return NULL;
-	    }
-	  else
-	    {
-	      almIin = (PyArrayObject*) o1;
-	      almGin = (PyArrayObject*) o2;
-	      almCin = (PyArrayObject*) o3;
-	    }
-	}
-	polarisation = 1;  /* we have three maps : polarisation! */
+        {
+          healpyAssertType(PySequence_Size(t)==3,
+            "First argument must be a sequence with three elements.");
+          PyObject *o1 = PySequence_GetItem(t, 0),
+                   *o2 = PySequence_GetItem(t, 1),
+                   *o3 = PySequence_GetItem(t, 2);
+          /* I decrease reference counts here,
+             because PySequence_GetItem increase
+             reference count, and I just want to
+             borrow a reference the time of this
+             function. */
+          Py_XDECREF(o1);
+          Py_XDECREF(o2);
+          Py_XDECREF(o3);
+          healpyAssertType(PyArray_Check(o1)&&PyArray_Check(o2)&&PyArray_Check(o3),
+            "First argument must be a sequence with three arrays");
+          almIin = (PyArrayObject*) o1;
+          almGin = (PyArrayObject*) o2;
+          almCin = (PyArrayObject*) o3;
+        }
+        polarisation = 1;  /* we have three maps : polarisation! */
     }
-    
+
   /* Check array is contiguous */
-  if( !(almIin->flags & NPY_C_CONTIGUOUS) ) 
-    {
-      PyErr_SetString(PyExc_ValueError,
-		      "Array must be C contiguous for this operation.");
-      return NULL;      
-    }
-  if( polarisation ) 
-    {
-      if( !(almGin->flags & NPY_C_CONTIGUOUS) ) 
-	{
-	  PyErr_SetString(PyExc_ValueError,
-			  "Array must be C contiguous for this operation.");
-	  return NULL;      
-	}
-      if( !(almCin->flags & NPY_C_CONTIGUOUS) ) 
-	{
-	  PyErr_SetString(PyExc_ValueError,
-			  "Array must be C contiguous for this operation.");
-	  return NULL;      
-	}
-    }
-  
+  healpyAssertValue(almIin->flags&NPY_C_CONTIGUOUS,
+                      "Array must be C contiguous for this operation.");
+  if( polarisation )
+    healpyAssertValue(almGin->flags&almCin->flags&NPY_C_CONTIGUOUS,
+                          "Array must be C contiguous for this operation.");
+
   /* Check type of data : must be double, real ('d') or complex ('D') */
-  if( almIin->descr->type != 'D' )
-    {
-      PyErr_SetString(PyExc_TypeError,
-		      "Type must be Complex for this function");
-      return NULL;
-    }
+  healpyAssertType(almIin->descr->type == 'D',
+                      "Type must be Complex for this function");
   if( polarisation )
     {
-      if( almIin->descr->type != 'D' )
-	{
-	  PyErr_SetString(PyExc_TypeError,
-			  "Type must be Complex for this function");
-	  return NULL;
-	}
-      if( almIin->descr->type != 'D' )
-	{
-	  PyErr_SetString(PyExc_TypeError,
-			  "Type must be Complex for this function");
-	  return NULL;
-	}
+      healpyAssertType(almGin->descr->type == 'D',
+                          "Type must be Complex for this function");
+      healpyAssertType(almCin->descr->type == 'D',
+                          "Type must be Complex for this function");
     }
 
   /* Check number of dimension : must be 1 */
-  if( almIin->nd != 1 )
-    {
-      PyErr_SetString(PyExc_ValueError,
-		      "The map must be a 1D array");
-      return NULL;
-    }
+  healpyAssertType(almIin->nd==1,"The a_lm must be a 1D array.");
   if( polarisation )
     {
-      if( almGin->nd != 1 )
-	{
-	  PyErr_SetString(PyExc_ValueError,
-			  "The map must be a 1D array");
-	  return NULL;
-	}
-      if( almCin->nd != 1 )
-	{
-	  PyErr_SetString(PyExc_ValueError,
-			  "The map must be a 1D array");
-	  return NULL;
-	}
+    healpyAssertType(almGin->nd==1,"The a_lm must be a 1D array.");
+    healpyAssertType(almCin->nd==1,"The a_lm must be a 1D array.");
     }
 
   /* Need to have lmax and mmax defined */
@@ -611,11 +449,11 @@ static PyObject *healpy_alm2map(PyObject *self, PyObject *args,
       double ell;
       ell = (-3.+sqrt(9.+8.*imax))/2.;
       if( ell != floor(ell) )
-	{
-	  PyErr_SetString(PyExc_ValueError, "Wrong alm size "
-			  "(or give lmax and mmax).\n");
-	  return NULL;
-	}
+        {
+          PyErr_SetString(PyExc_ValueError, "Wrong alm size "
+                          "(or give lmax and mmax).\n");
+          return NULL;
+        }
       lmax=(int)floor(ell);
       mmax = lmax;
     }
@@ -624,23 +462,11 @@ static PyObject *healpy_alm2map(PyObject *self, PyObject *args,
 
   /* Check lmax and mmax are ok compared to alm.size */
   int szalm = Alm< xcomplex<double> >::Num_Alms(lmax,mmax);
-  if( almIin->dimensions[0] != szalm )
-    {
-      PyErr_SetString(PyExc_ValueError, "Wrong alm size.\n");
-      return NULL;
-    }
+  healpyAssertValue(almIin->dimensions[0]==szalm,"Wrong alm size.");
   if( polarisation )
     {
-      if( almIin->dimensions[0] != szalm )
-	{
-	  PyErr_SetString(PyExc_ValueError, "Wrong alm size.\n");
-	  return NULL;
-	}
-      if( almIin->dimensions[0] != szalm )
-	{
-	  PyErr_SetString(PyExc_ValueError, "Wrong alm size.\n");
-	  return NULL;
-	}
+    healpyAssertValue(almGin->dimensions[0]==szalm,"Wrong alm size.");
+    healpyAssertValue(almCin->dimensions[0]==szalm,"Wrong alm size.");
     }
 
   /* Now we can build an Alm and give it to alm2map_iter */
@@ -650,7 +476,7 @@ static PyObject *healpy_alm2map(PyObject *self, PyObject *args,
     almIalm.Set(alm_arr, lmax, mmax);
   }
   Alm< xcomplex<double> > almGalm;
-  if( polarisation ) 
+  if( polarisation )
     {
       arr< xcomplex<double> > alm_arr((xcomplex<double>*)almGin->data, szalm);
       almGalm.Set(alm_arr, lmax, mmax);
@@ -661,32 +487,32 @@ static PyObject *healpy_alm2map(PyObject *self, PyObject *args,
       arr< xcomplex<double> > alm_arr((xcomplex<double>*)almCin->data, szalm);
       almCalm.Set(alm_arr, lmax, mmax);
     }
-  
+
   /* We must prepare the map */
-  
+
   npy_intp npix = nside2npix(nside);
   PyArrayObject *mapIout = NULL;
-  mapIout = (PyArrayObject*)PyArray_SimpleNew(1, (npy_intp*)&npix, 
-					      PyArray_DOUBLE);
-  if( !mapIout ) 
+  mapIout = (PyArrayObject*)PyArray_SimpleNew(1, (npy_intp*)&npix,
+                                              PyArray_DOUBLE);
+  if( !mapIout )
     return NULL;
 
   PyArrayObject *mapQout = NULL;
   if( polarisation )
     {
-      mapQout = (PyArrayObject*)PyArray_SimpleNew(1, (npy_intp*)&npix, 
-						  PyArray_DOUBLE);
-      if( !mapQout ) 
-	return NULL;
+      mapQout = (PyArrayObject*)PyArray_SimpleNew(1, (npy_intp*)&npix,
+                                                  PyArray_DOUBLE);
+      if( !mapQout )
+        return NULL;
     }
 
   PyArrayObject *mapUout = NULL;
   if( polarisation )
     {
-      mapUout = (PyArrayObject*)PyArray_SimpleNew(1, (npy_intp*)&npix, 
-						  PyArray_DOUBLE);
-      if( !mapUout ) 
-	return NULL;
+      mapUout = (PyArrayObject*)PyArray_SimpleNew(1, (npy_intp*)&npix,
+                                                  PyArray_DOUBLE);
+      if( !mapUout )
+        return NULL;
     }
 
   Healpix_Map<double> mapI;
@@ -696,7 +522,7 @@ static PyObject *healpy_alm2map(PyObject *self, PyObject *args,
   }
 
   Healpix_Map<double> mapQ;
-  if( polarisation ) 
+  if( polarisation )
     {
       arr<double> arr_map((double*)mapQout->data, npix);
       mapQ.Set(arr_map, RING);
@@ -707,7 +533,7 @@ static PyObject *healpy_alm2map(PyObject *self, PyObject *args,
       arr<double> arr_map((double*)mapUout->data, npix);
       mapU.Set(arr_map, RING);
     }
-  
+
   /* We now call alm2map */
 
   if( !polarisation )
@@ -739,34 +565,34 @@ static PyObject *healpy_alm2map(PyObject *self, PyObject *args,
 /***********************************************************************
     alm2map_der1
 
-       input: alm, nside, 
+       input: alm, nside,
 
        output: map in RING scheme
 */
-static PyObject *healpy_alm2map_der1(PyObject *self, PyObject *args, 
+static PyObject *healpy_alm2map_der1(PyObject *self, PyObject *args,
         PyObject *kwds) {
   PyArrayObject *almIin = NULL;
   int nside = 64;
   int lmax = -1;
   int mmax = -1;
-  
-  static char* kwlist[] = {"","nside", "lmax", "mmax", NULL};
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!|iii", kwlist,
+  static const char* kwlist[] = {"","nside", "lmax", "mmax", NULL};
+
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!|iii", (char **)kwlist,
            &PyArray_Type, &almIin,
            &nside,
-           &lmax, 
+           &lmax,
            &mmax)) {
     return NULL;
-  } 
-    
+  }
+
   /* Check array is contiguous */
   if( !(almIin->flags & NPY_C_CONTIGUOUS) ) {
       PyErr_SetString(PyExc_ValueError,
           "Array must be C contiguous for this operation.");
-      return NULL;      
+      return NULL;
   }
-  
+
   /* Check type of data : must be double, real ('d') or complex ('D') */
   if( almIin->descr->type != 'D' )  {
       PyErr_SetString(PyExc_TypeError,
@@ -780,7 +606,7 @@ static PyObject *healpy_alm2map_der1(PyObject *self, PyObject *args,
           "The map must be a 1D array");
       return NULL;
     }
-  
+
   /* Need to have lmax and mmax defined */
   if( lmax < 0 ) {
       /* Check that the dimension is compatible with lmax=mmax */
@@ -798,29 +624,29 @@ static PyObject *healpy_alm2map_der1(PyObject *self, PyObject *args,
   if( mmax < 0 || mmax > lmax) {
     mmax = lmax;
   }
-  
+
   /* Check lmax and mmax are ok compared to alm.size */
   int szalm = Alm< xcomplex<double> >::Num_Alms(lmax,mmax);
   if( almIin->dimensions[0] != szalm ) {
       PyErr_SetString(PyExc_ValueError, "Wrong alm size.\n");
       return NULL;
   }
-  
+
   /* Now we can build an Alm and give it to alm2map_iter */
   Alm< xcomplex<double> > almIalm;
   {
     arr< xcomplex<double> > alm_arr((xcomplex<double>*)almIin->data, szalm);
     almIalm.Set(alm_arr, lmax, mmax);
   }
-  
+
   /* We must prepare the map */
-  
+
   npy_intp npix = nside2npix(nside);
 
   PyArrayObject *mapIout = NULL;
-  mapIout = (PyArrayObject*)PyArray_SimpleNew(1, (npy_intp*)&npix, 
+  mapIout = (PyArrayObject*)PyArray_SimpleNew(1, (npy_intp*)&npix,
                 PyArray_DOUBLE);
-  if( !mapIout ) 
+  if( !mapIout )
     return NULL;
   Healpix_Map<double> mapI;
   {
@@ -829,9 +655,9 @@ static PyObject *healpy_alm2map_der1(PyObject *self, PyObject *args,
   }
 
   PyArrayObject *mapDtheta = NULL;
-  mapDtheta = (PyArrayObject*)PyArray_SimpleNew(1, (npy_intp*)&npix, 
+  mapDtheta = (PyArrayObject*)PyArray_SimpleNew(1, (npy_intp*)&npix,
                 PyArray_DOUBLE);
-  if( !mapDtheta ) 
+  if( !mapDtheta )
     return NULL;
   Healpix_Map<double> mapDt;
   {
@@ -840,9 +666,9 @@ static PyObject *healpy_alm2map_der1(PyObject *self, PyObject *args,
   }
 
   PyArrayObject *mapDphi = NULL;
-  mapDphi = (PyArrayObject*)PyArray_SimpleNew(1, (npy_intp*)&npix, 
+  mapDphi = (PyArrayObject*)PyArray_SimpleNew(1, (npy_intp*)&npix,
                 PyArray_DOUBLE);
-  if( !mapDphi ) 
+  if( !mapDphi )
     return NULL;
   Healpix_Map<double> mapDp;
   {
@@ -884,12 +710,12 @@ long npix2nside(long npix)
     in the polarised case.
     The idea is as follow:
       - this function take as argument a sequence of n(n+1)/2 arrays,
-        where n is the number of components 
+        where n is the number of components
       - these arrays represents the symetric correlation matrices
         of n components
       - this functions use the cholesky decomposition to compute
-        the 
-        
+        the
+
  */
 /***********************************************************************
     synalm
@@ -899,8 +725,8 @@ long npix2nside(long npix)
 
        output: alm
 */
-static PyObject *healpy_synalm(PyObject *self, PyObject *args, 
-			       PyObject *kwds)
+static PyObject *healpy_synalm(PyObject *self, PyObject *args,
+                               PyObject *kwds)
 {
   int lmax=-1, mmax=-1;
   int ncl, nalm;
@@ -908,15 +734,15 @@ static PyObject *healpy_synalm(PyObject *self, PyObject *args,
 
   /* Take also a sequence of unit variance random vectors for the alm. */
 
-  static char* kwlist[] = {"","", "", "", NULL};
+  static const char* kwlist[] = {"","", "", "", NULL};
 
   PyObject *t = NULL;
   PyObject *u = NULL;
   DBGPRINTF("Parsing keyword\n");
-  if( !PyArg_ParseTupleAndKeywords(args, kwds, "OOii", kwlist,
-				   &t, 
-				   &u,
-				   &lmax, &mmax) )
+  if( !PyArg_ParseTupleAndKeywords(args, kwds, "OOii", (char **)kwlist,
+                                   &t,
+                                   &u,
+                                   &lmax, &mmax) )
     return NULL;
 
   DBGPRINTF("Checking sequence\n");
@@ -928,18 +754,18 @@ static PyObject *healpy_synalm(PyObject *self, PyObject *args,
   DBGPRINTF("Sequence size: ncl=%d, nalm=%d\n", ncl, nalm);
   if( nalm <= 0 )
     {
-      PyErr_SetString(PyExc_TypeError, 
-		      "First argument must be a sequence with "
-		      "n(n+1)/2 elements, and second argument "
-		      "a sequence with n elements.");
+      PyErr_SetString(PyExc_TypeError,
+                      "First argument must be a sequence with "
+                      "n(n+1)/2 elements, and second argument "
+                      "a sequence with n elements.");
       return NULL;
     }
   if( PySequence_Size(u) != nalm )
     {
-      PyErr_SetString(PyExc_TypeError, 
-		      "First argument must be a sequence with "
-		      "n(n+1)/2 elements, and second argument "
-		      "a sequence with n elements.");
+      PyErr_SetString(PyExc_TypeError,
+                      "First argument must be a sequence with "
+                      "n(n+1)/2 elements, and second argument "
+                      "a sequence with n elements.");
       return NULL;
     }
 
@@ -959,7 +785,7 @@ static PyObject *healpy_synalm(PyObject *self, PyObject *args,
   /*  From now on, I should do a 'goto fail' to return from the function
       in order to free allocated memory */
   /* Get the cls objects.
-     If an object is None, set the array to NULL 
+     If an object is None, set the array to NULL
   */
   for( int i=0; i<ncl; i++ )
     {
@@ -967,25 +793,25 @@ static PyObject *healpy_synalm(PyObject *self, PyObject *args,
       PyObject *o;
       o = PySequence_GetItem(t,i);
       /* I decrease reference counts here,
-	 because PySequence_GetItem increase 
-	 reference count, and I just want to 
-	 borrow a reference the time of this 
-	 function. */	  
+         because PySequence_GetItem increase
+         reference count, and I just want to
+         borrow a reference the time of this
+         function. */
       Py_XDECREF(o);
       if( o == Py_None )
-	{
-	  cls[i] = NULL;
-	  DBGPRINTF("Cls[%d] is None\n", i);
-	}
+        {
+          cls[i] = NULL;
+          DBGPRINTF("Cls[%d] is None\n", i);
+        }
       else if( ! PyArray_Check(o) )
-	{
-	  PyErr_SetString(PyExc_TypeError, 
-			  "First argument must be a sequence of "
-			  "arrays");
-	  goto fail;
-	}
+        {
+          PyErr_SetString(PyExc_TypeError,
+                          "First argument must be a sequence of "
+                          "arrays");
+          goto fail;
+        }
       else
-	cls[i] = (PyArrayObject*) o;
+        cls[i] = (PyArrayObject*) o;
     }
   for( int i=0; i<nalm; i++ )
     {
@@ -993,24 +819,24 @@ static PyObject *healpy_synalm(PyObject *self, PyObject *args,
       DBGPRINTF("Get item alm %d/%d\n", i+1, nalm);
       o = PySequence_GetItem(u,i);
       /* I decrease reference counts here,
-	 because PySequence_GetItem increase 
-	 reference count, and I just want to 
-	 borrow a reference the time of this 
-	 function. */	  
+         because PySequence_GetItem increase
+         reference count, and I just want to
+         borrow a reference the time of this
+         function. */
       Py_XDECREF(o);
       if( ! PyArray_Check(o) )
-	{
-	  PyErr_SetString(PyExc_TypeError, 
-			  "First argument must be a sequence of "
-			  "arrays");
-	  goto fail;
-	}
+        {
+          PyErr_SetString(PyExc_TypeError,
+                          "First argument must be a sequence of "
+                          "arrays");
+          goto fail;
+        }
       alms[i] = (PyArrayObject*) o;
     }
   if( lmax<0 )
     {
-      PyErr_SetString(PyExc_ValueError, 
-		      "lmax must be positive.");
+      PyErr_SetString(PyExc_ValueError,
+                      "lmax must be positive.");
       goto fail;
     }
   if( mmax <0 || mmax >lmax )
@@ -1018,31 +844,31 @@ static PyObject *healpy_synalm(PyObject *self, PyObject *args,
 
   DBGPRINTF("lmax=%d, mmax=%d\n", lmax, mmax);
 
-  /* Now, I check the arrays cls and alms are 1D and complex for alms */ 
+  /* Now, I check the arrays cls and alms are 1D and complex for alms */
   DBGPRINTF("Check dimension and size of cls\n");
   for( int i=0; i<ncl; i++ )
     {
-      if( cls[i] == NULL ) 
-	continue;
-      if( (cls[i]->nd != 1) 
-	  || ((cls[i]->descr->type != 'd') && (cls[i]->descr->type != 'f')) )
-	{
-	  PyErr_SetString(PyExc_TypeError,
-		      "Type of cls must be float64 and arrays must be 1D.");
-	  goto fail;
-	}
+      if( cls[i] == NULL )
+        continue;
+      if( (cls[i]->nd != 1)
+          || ((cls[i]->descr->type != 'd') && (cls[i]->descr->type != 'f')) )
+        {
+          PyErr_SetString(PyExc_TypeError,
+                      "Type of cls must be float64 and arrays must be 1D.");
+          goto fail;
+        }
     }
   DBGPRINTF("Check dimension and size of alms\n");
   for( int i=0; i<nalm; i++ )
     {
       if( (alms[i]->nd != 1) || (alms[i]->descr->type != 'D') )
-	{
-	  PyErr_SetString(PyExc_TypeError,
-		      "Type of alms must be complex128 and arrays must be 1D.");
-	  goto fail;
-	}
+        {
+          PyErr_SetString(PyExc_TypeError,
+                      "Type of alms must be complex128 and arrays must be 1D.");
+          goto fail;
+        }
     }
-  
+
   /* Now, I check that all alms have the same size and that it is compatible with
      lmax and mmax */
   DBGPRINTF("Check alms have identical size\n");
@@ -1051,18 +877,18 @@ static PyObject *healpy_synalm(PyObject *self, PyObject *args,
   for( int i=0; i<nalm; i++ )
     {
       if( i==0 )
-	szalm = alms[i]->dimensions[0];
+        szalm = alms[i]->dimensions[0];
       else if( alms[i]->dimensions[0] != szalm )
-	{
-	  PyErr_SetString(PyExc_ValueError,
-			  "All alms arrays must have same size.");
-	  goto fail;
-	}      
+        {
+          PyErr_SetString(PyExc_ValueError,
+                          "All alms arrays must have same size.");
+          goto fail;
+        }
     }
   if( szalm != Alm< xcomplex<double> >::Num_Alms(lmax,mmax) )
     {
       PyErr_SetString(PyExc_ValueError,
-		      "lmax and mmax are not compatible with size of alms.");
+                      "lmax and mmax are not compatible with size of alms.");
       goto fail;
     }
   DBGPRINTF("Alms have all size %d\n", szalm);
@@ -1082,82 +908,82 @@ static PyObject *healpy_synalm(PyObject *self, PyObject *args,
 
   /* Now, I can loop over l,
      for each l, I make the Cholesky decomposition of the correlation matrix
-     given by the cls[*][l] 
+     given by the cls[*][l]
   */
   DBGPRINTF("Start loop over l\n");
   for( int l=0; l<=lmax; l++ )
-    {      
+    {
       DBGPRINTF("l=%d\n", l);
       /* fill the matrix of cls */
       for( int i=0; i<ncl; i++ )
-	{
-	  if( cls[i] == NULL )
-	    mat[i] = 0.0;
-	  else if( cls[i]->dimensions[0] < l )
-	    mat[i] = 0.0;
-	  else
-	    {
-	      if( cls[i]->descr->type == 'f' )
-		mat[i] = (double)(*((float*)PyArray_GETPTR1(cls[i],l)));
-	      else
-		mat[i] = *((double*)PyArray_GETPTR1(cls[i],l));
-	    }
-	}
+        {
+          if( cls[i] == NULL )
+            mat[i] = 0.0;
+          else if( cls[i]->dimensions[0] < l )
+            mat[i] = 0.0;
+          else
+            {
+              if( cls[i]->descr->type == 'f' )
+                mat[i] = (double)(*((float*)PyArray_GETPTR1(cls[i],l)));
+              else
+                mat[i] = *((double*)PyArray_GETPTR1(cls[i],l));
+            }
+        }
 
       /* Make the Cholesky decomposition */
       cholesky(nalm, mat, res);
 
       if( l == 400 )
-	{
-	  DBGPRINTF("matrice: ");
-	  for( int i=0; i<ncl; i++ )
-	    DBGPRINTF("%d: %lg  ", i, mat[i]);
-	  DBGPRINTF("\n");
-	  DBGPRINTF("cholesky: ");
-	  for( int i=0; i<ncl; i++ )
-	    DBGPRINTF("%d: %lg  ", i, res[i]);
-	  DBGPRINTF("\n");
-	}
+        {
+          DBGPRINTF("matrice: ");
+          for( int i=0; i<ncl; i++ )
+            DBGPRINTF("%d: %lg  ", i, mat[i]);
+          DBGPRINTF("\n");
+          DBGPRINTF("cholesky: ");
+          for( int i=0; i<ncl; i++ )
+            DBGPRINTF("%d: %lg  ", i, res[i]);
+          DBGPRINTF("\n");
+        }
 
       /* Apply the matrix to each m */
 
       /* m=0 */
       DBGPRINTF("   m=%d: ", 0);
       for( int i=nalm-1; i>=0; i-- )
-	{
-	  double x;
-	  x = 0.0;
-	  almalms[i](l,0).im = 0.0;
-	  for( int j=0; j<=i; j++ )
-	    x += res[getidx(nalm,i,j)]*almalms[j](l,0).re;
-	  almalms[i](l,0).re = x;	  
-	  DBGPRINTF(" %lg %lg ;", almalms[i](l,0).re, almalms[i](l,0).im);
-	}
+        {
+          double x;
+          x = 0.0;
+          almalms[i](l,0).im = 0.0;
+          for( int j=0; j<=i; j++ )
+            x += res[getidx(nalm,i,j)]*almalms[j](l,0).re;
+          almalms[i](l,0).re = x;
+          DBGPRINTF(" %lg %lg ;", almalms[i](l,0).re, almalms[i](l,0).im);
+        }
       DBGPRINTF("\n");
 
       /* m > 1 */
       for( int m=1; m<=l; m++ )
-	{
-	  DBGPRINTF("   m=%d: ", m);
-	  for( int i=nalm-1; i>=0; i-- )
-	    {
-	      double xr, xi;
-	      xi = xr = 0.0;
-	      for( int j=0; j<=i; j++ )
-		{
-		  xr += res[getidx(nalm,i,j)]*almalms[j](l,m).re;
-		  xi += res[getidx(nalm,i,j)]*almalms[j](l,m).im;
-		  DBGPRINTF("(res[%d]=%lg, alm=%lg,%lg) %lg %lg", (int)getidx(nalm,i,j), 
-			    res[getidx(nalm,i,j)],
-			    almalms[j](l,m).re, almalms[j](l,m).im, 
-			    xr, xi);
-		}
-	      almalms[i](l,m).re = xr/sqrt_two;
-	      almalms[i](l,m).im = xi/sqrt_two;
-	      DBGPRINTF(" xre,xim[%d]: %lg %lg ;", i, 
-			almalms[i](l,m).re, almalms[i](l,m).im);
-	    }
-	  DBGPRINTF("\n");
+        {
+          DBGPRINTF("   m=%d: ", m);
+          for( int i=nalm-1; i>=0; i-- )
+            {
+              double xr, xi;
+              xi = xr = 0.0;
+              for( int j=0; j<=i; j++ )
+                {
+                  xr += res[getidx(nalm,i,j)]*almalms[j](l,m).re;
+                  xi += res[getidx(nalm,i,j)]*almalms[j](l,m).im;
+                  DBGPRINTF("(res[%d]=%lg, alm=%lg,%lg) %lg %lg", (int)getidx(nalm,i,j),
+                            res[getidx(nalm,i,j)],
+                            almalms[j](l,m).re, almalms[j](l,m).im,
+                            xr, xi);
+                }
+              almalms[i](l,m).re = xr/sqrt_two;
+              almalms[i](l,m).im = xi/sqrt_two;
+              DBGPRINTF(" xre,xim[%d]: %lg %lg ;", i,
+                        almalms[i](l,m).re, almalms[i](l,m).im);
+            }
+          DBGPRINTF("\n");
       }
    }
 
@@ -1169,7 +995,7 @@ static PyObject *healpy_synalm(PyObject *self, PyObject *args,
   XFREE(res);
   Py_INCREF(Py_None);
   return Py_None;
- 
+
   /* To be done before returning */
  fail:
   XFREE(cls);
@@ -1231,28 +1057,28 @@ void cholesky(int n, double *data, double *res)
   for( j=0; j<n; j++ )
     {
       for( i=0; i<n; i++ )
-	{
-	  if( i==j )
-	    {
-	      sum = data[getidx(n,j,j)];
-	      for(k=0; k<j; k++ )
-		sum -= res[getidx(n,k,j)]*res[getidx(n,k,j)];
-	      if( sum <= 0 )
-		res[getidx(n,j,j)] = 0.0;
-	      else
-		res[getidx(n,j,j)] = sqrt(sum);
-	    }
-	  else if( i>j)
-	    {
-	      sum = data[getidx(n,i,j)];
-	      for( k=0; k<j; k++ )
-		sum -= res[getidx(n,i,k)]*res[getidx(n,j,k)];
-	      if( res[getidx(n,j,j)] != 0.0 )
-		res[getidx(n,i,j)] = sum/res[getidx(n,j,j)];
-	      else
-		res[getidx(n,i,j)] = 0.0;
-	    }
-	}
+        {
+          if( i==j )
+            {
+              sum = data[getidx(n,j,j)];
+              for(k=0; k<j; k++ )
+                sum -= res[getidx(n,k,j)]*res[getidx(n,k,j)];
+              if( sum <= 0 )
+                res[getidx(n,j,j)] = 0.0;
+              else
+                res[getidx(n,j,j)] = sqrt(sum);
+            }
+          else if( i>j)
+            {
+              sum = data[getidx(n,i,j)];
+              for( k=0; k<j; k++ )
+                sum -= res[getidx(n,i,k)]*res[getidx(n,j,k)];
+              if( res[getidx(n,j,j)] != 0.0 )
+                res[getidx(n,i,j)] = sum/res[getidx(n,j,j)];
+              else
+                res[getidx(n,i,j)] = 0.0;
+            }
+        }
     }
   return;
 }
