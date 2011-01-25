@@ -885,7 +885,7 @@ static PyObject *healpy_synalm(PyObject *self, PyObject *args,
           goto fail;
         }
     }
-  if( szalm != Alm< xcomplex<double> >::Num_Alms(lmax,mmax) )
+  if( szalm != int(Alm< xcomplex<double> >::Num_Alms(lmax,mmax)) )
     {
       PyErr_SetString(PyExc_ValueError,
                       "lmax and mmax are not compatible with size of alms.");

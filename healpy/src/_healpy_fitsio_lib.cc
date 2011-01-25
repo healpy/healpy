@@ -49,9 +49,9 @@ static PyObject *healpy_pixwin(PyObject *self, PyObject *args, PyObject *kwds)
   char * datapath=NULL;
   int polarisation = 0; /* not polarised by default */
 
-  static char* kwlist[] = {"","", "pol", NULL};
+  static const char* kwlist[] = {"","", "pol", NULL};
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "is|i", kwlist,
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "is|i", (char **)kwlist,
                                    &nside, &datapath, &polarisation))
     return NULL;
 
