@@ -51,57 +51,86 @@
 #define XDELETE(X) if( X ) delete[] X;
 #define DBGPRINTF(X,...) if( IS_DEBUG_ON ) printf(X, ## __VA_ARGS__)
 
-static long npix2nside(long npix);
-static long nside2npix(long nside);
-static long getn(long s);
-//static void getij(long n, long idx, long *i, long *j);
-static long getidx(long n, long i, long j);
-static void cholesky(int n, double *data, double *res);
 
-
-static PyObject *healpy_map2alm(PyObject *self, PyObject *args,
-                                PyObject *kwds);
-
-static PyObject *healpy_alm2map(PyObject *self, PyObject *args,
-                                PyObject *kwds);
-
-static PyObject *healpy_alm2map_der1(PyObject *self, PyObject *args,
-                                PyObject *kwds);
-
-static PyObject *healpy_synalm(PyObject *self, PyObject *args,
-                               PyObject *kwds);
-
-static PyObject *healpy_getn(PyObject *self, PyObject *args);
-
-static PyMethodDef SphtMethods[] = {
-  {"_map2alm", (PyCFunction)healpy_map2alm, METH_VARARGS | METH_KEYWORDS,
-   "Compute alm or cl from an input map.\n"
-   "The input map is assumed to be ordered in RING.\n"
-   "anafast(map,lmax=3*nside-1,mmax=lmax,cl=False,\n"
-   "        iter=3,use_weights=False,data_path=None,regression=True)"},
-  {"_alm2map", (PyCFunction)healpy_alm2map, METH_VARARGS | METH_KEYWORDS,
-   "Compute a map from alm.\n"
-   "The output map is ordered in RING scheme.\n"
-   "alm2map(alm,nside=64,lmax=-1,mmax=-1)"},
-  {"_alm2map_der1", (PyCFunction)healpy_alm2map_der1, METH_VARARGS | METH_KEYWORDS,
-   "Compute a map and derivatives from alm.\n"
-   "The output map is ordered in RING scheme.\n"
-   "alm2map_der1(alm,nside=64,lmax=-1,mmax=-1)"},
-  {"_synalm", (PyCFunction)healpy_synalm, METH_VARARGS | METH_KEYWORDS,
-   "Compute alm's given cl's and unit variance random arrays.\n"},
-  {"_getn", healpy_getn, METH_VARARGS,
-   "Compute number n such that n(n+1)/2 is equal to the argument.\n"},
-  {NULL, NULL, 0, NULL} /* Sentinel */
-};
-
-
-PyMODINIT_FUNC
-init_healpy_sph_transform_lib(void)
+static long nside2npix(long nside)
 {
-  PyObject *m;
-  m =  Py_InitModule("_healpy_sph_transform_lib", SphtMethods);
+  return 12*nside*nside;
+}
 
-  import_array();
+static long npix2nside(long npix)
+{
+  long nside;
+  long npix2;
+  nside = (long)floor(sqrt(npix/12.));
+  npix2 = 12*nside*nside;
+  if( npix2 == npix )
+    return nside;
+  else
+    return -1;
+}
+
+
+/* Helper functions */
+
+/*
+static void getij(long n, long idx, long *i, long *j)
+{
+  *i = (long)ceil(((2*n+1)-sqrt((2*n+1)*(2*n+1)-8*(idx-n)))/2);
+  *j = idx - (*i)*(2*n+1- (*i) )/2;
+}
+*/
+
+static long getidx(long n, long i, long j)
+{
+  long tmp;
+  if( i > j )
+    {tmp = j; j=i; i=tmp;}
+  return i*(2*n-1-i)/2+j;
+}
+
+
+static long getn(long s)
+{
+  long x;
+  x = (long)floor((-1+sqrt(1+8*s))/2);
+  if( (x*(x+1)/2) != s )
+    return -1;
+  else
+    return x;
+}
+
+static void cholesky(int n, double *data, double *res)
+{
+  int i,j,k;
+  double sum;
+
+  for( j=0; j<n; j++ )
+    {
+      for( i=0; i<n; i++ )
+        {
+          if( i==j )
+            {
+              sum = data[getidx(n,j,j)];
+              for(k=0; k<j; k++ )
+                sum -= res[getidx(n,k,j)]*res[getidx(n,k,j)];
+              if( sum <= 0 )
+                res[getidx(n,j,j)] = 0.0;
+              else
+                res[getidx(n,j,j)] = sqrt(sum);
+            }
+          else if( i>j)
+            {
+              sum = data[getidx(n,i,j)];
+              for( k=0; k<j; k++ )
+                sum -= res[getidx(n,i,k)]*res[getidx(n,j,k)];
+              if( res[getidx(n,j,j)] != 0.0 )
+                res[getidx(n,i,j)] = sum/res[getidx(n,j,j)];
+              else
+                res[getidx(n,i,j)] = 0.0;
+            }
+        }
+    }
+  return;
 }
 
 /***********************************************************************
@@ -446,14 +475,9 @@ static PyObject *healpy_alm2map(PyObject *self, PyObject *args,
     {
       /* Check that the dimension is compatible with lmax=mmax */
       long imax = almIin->dimensions[0] - 1;
-      double ell;
-      ell = (-3.+sqrt(9.+8.*imax))/2.;
-      if( ell != floor(ell) )
-        {
-          PyErr_SetString(PyExc_ValueError, "Wrong alm size "
-                          "(or give lmax and mmax).\n");
-          return NULL;
-        }
+      double ell = (-3.+sqrt(9.+8.*imax))/2.;
+      healpyAssertType(ell==floor(ell),
+        "Wrong alm size (or give lmax and mmax)");
       lmax=(int)floor(ell);
       mmax = lmax;
     }
@@ -587,37 +611,23 @@ static PyObject *healpy_alm2map_der1(PyObject *self, PyObject *args,
   }
 
   /* Check array is contiguous */
-  if( !(almIin->flags & NPY_C_CONTIGUOUS) ) {
-      PyErr_SetString(PyExc_ValueError,
-          "Array must be C contiguous for this operation.");
-      return NULL;
-  }
+  healpyAssertValue(almIin->flags & NPY_C_CONTIGUOUS,
+    "Array must be C contiguous for this operation.");
 
   /* Check type of data : must be double, real ('d') or complex ('D') */
-  if( almIin->descr->type != 'D' )  {
-      PyErr_SetString(PyExc_TypeError,
-          "Type must be Complex for this function");
-      return NULL;
-  }
+  healpyAssertType(almIin->descr->type == 'D',
+    "Type must be Complex for this function");
 
   /* Check number of dimension : must be 1 */
-  if( almIin->nd != 1 ) {
-      PyErr_SetString(PyExc_ValueError,
-          "The map must be a 1D array");
-      return NULL;
-    }
+  healpyAssertValue(almIin->nd==1, "The map must be a 1D array");
 
   /* Need to have lmax and mmax defined */
   if( lmax < 0 ) {
       /* Check that the dimension is compatible with lmax=mmax */
       long imax = almIin->dimensions[0] - 1;
-      double ell;
-      ell = (-3.+sqrt(9.+8.*imax))/2.;
-      if( ell != floor(ell) ) {
-        PyErr_SetString(PyExc_ValueError, "Wrong alm size "
-          "(or give lmax and mmax).\n");
-        return NULL;
-      }
+      double ell = (-3.+sqrt(9.+8.*imax))/2.;
+      healpyAssertValue(ell == floor(ell),
+        "Wrong alm size (or give lmax and mmax).");
       lmax=(int)floor(ell);
       mmax = lmax;
   }
@@ -627,10 +637,7 @@ static PyObject *healpy_alm2map_der1(PyObject *self, PyObject *args,
 
   /* Check lmax and mmax are ok compared to alm.size */
   int szalm = Alm< xcomplex<double> >::Num_Alms(lmax,mmax);
-  if( almIin->dimensions[0] != szalm ) {
-      PyErr_SetString(PyExc_ValueError, "Wrong alm size.\n");
-      return NULL;
-  }
+  healpyAssertValue(almIin->dimensions[0] == szalm,"Wrong alm size.");
 
   /* Now we can build an Alm and give it to alm2map_iter */
   Alm< xcomplex<double> > almIalm;
@@ -689,23 +696,6 @@ static PyObject *healpy_alm2map_der1(PyObject *self, PyObject *args,
   return Py_BuildValue("NNN",mapIout,mapDtheta,mapDphi);
 }
 
-long nside2npix(long nside)
-{
-  return 12*nside*nside;
-}
-
-long npix2nside(long npix)
-{
-  long nside;
-  long npix2;
-  nside = (long)floor(sqrt(npix/12.));
-  npix2 = 12*nside*nside;
-  if( npix2 == npix )
-    return nside;
-  else
-    return -1;
-}
-
 /*  Functions needed to create alm from cl
     in the polarised case.
     The idea is as follow:
@@ -752,22 +742,10 @@ static PyObject *healpy_synalm(PyObject *self, PyObject *args,
   ncl = PySequence_Size(t);
   nalm = getn(ncl);
   DBGPRINTF("Sequence size: ncl=%d, nalm=%d\n", ncl, nalm);
-  if( nalm <= 0 )
-    {
-      PyErr_SetString(PyExc_TypeError,
+  healpyAssertType((nalm>0)&&(PySequence_Size(u)==nalm),
                       "First argument must be a sequence with "
                       "n(n+1)/2 elements, and second argument "
                       "a sequence with n elements.");
-      return NULL;
-    }
-  if( PySequence_Size(u) != nalm )
-    {
-      PyErr_SetString(PyExc_TypeError,
-                      "First argument must be a sequence with "
-                      "n(n+1)/2 elements, and second argument "
-                      "a sequence with n elements.");
-      return NULL;
-    }
 
   DBGPRINTF("Allocating memory\n");
   /* Memory allocation */
@@ -1010,75 +988,39 @@ static PyObject *healpy_synalm(PyObject *self, PyObject *args,
 PyObject *healpy_getn(PyObject *self, PyObject *args)
 {
   long s;
-  if( ! PyArg_ParseTuple(args, "l", &s) )
-    {
-      PyErr_SetString(PyExc_TypeError, "This function takes an integer as argument.");
-      return NULL;
-    }
-  long n;
-  n = getn(s);
+  healpyAssertType (PyArg_ParseTuple(args, "l", &s),
+    "This function takes an integer as argument.");
+  long n = getn(s);
   return Py_BuildValue("l",n);
 }
 
-/* Helpers functions */
+static PyMethodDef SphtMethods[] = {
+  {"_map2alm", (PyCFunction)healpy_map2alm, METH_VARARGS | METH_KEYWORDS,
+   "Compute alm or cl from an input map.\n"
+   "The input map is assumed to be ordered in RING.\n"
+   "anafast(map,lmax=3*nside-1,mmax=lmax,cl=False,\n"
+   "        iter=3,use_weights=False,data_path=None,regression=True)"},
+  {"_alm2map", (PyCFunction)healpy_alm2map, METH_VARARGS | METH_KEYWORDS,
+   "Compute a map from alm.\n"
+   "The output map is ordered in RING scheme.\n"
+   "alm2map(alm,nside=64,lmax=-1,mmax=-1)"},
+  {"_alm2map_der1", (PyCFunction)healpy_alm2map_der1, METH_VARARGS | METH_KEYWORDS,
+   "Compute a map and derivatives from alm.\n"
+   "The output map is ordered in RING scheme.\n"
+   "alm2map_der1(alm,nside=64,lmax=-1,mmax=-1)"},
+  {"_synalm", (PyCFunction)healpy_synalm, METH_VARARGS | METH_KEYWORDS,
+   "Compute alm's given cl's and unit variance random arrays.\n"},
+  {"_getn", healpy_getn, METH_VARARGS,
+   "Compute number n such that n(n+1)/2 is equal to the argument.\n"},
+  {NULL, NULL, 0, NULL} /* Sentinel */
+};
 
-/*
-void getij(long n, long idx, long *i, long *j)
+
+PyMODINIT_FUNC
+init_healpy_sph_transform_lib(void)
 {
-  *i = (long)ceil(((2*n+1)-sqrt((2*n+1)*(2*n+1)-8*(idx-n)))/2);
-  *j = idx - (*i)*(2*n+1- (*i) )/2;
-}
-*/
+  PyObject *m;
+  m =  Py_InitModule("_healpy_sph_transform_lib", SphtMethods);
 
-long getidx(long n, long i, long j)
-{
-  long tmp;
-  if( i > j )
-    {tmp = j; j=i; i=tmp;}
-  return i*(2*n-1-i)/2+j;
-}
-
-
-long getn(long s)
-{
-  long x;
-  x = (long)floor((-1+sqrt(1+8*s))/2);
-  if( (x*(x+1)/2) != s )
-    return -1;
-  else
-    return x;
-}
-
-void cholesky(int n, double *data, double *res)
-{
-  int i,j,k;
-  double sum;
-
-  for( j=0; j<n; j++ )
-    {
-      for( i=0; i<n; i++ )
-        {
-          if( i==j )
-            {
-              sum = data[getidx(n,j,j)];
-              for(k=0; k<j; k++ )
-                sum -= res[getidx(n,k,j)]*res[getidx(n,k,j)];
-              if( sum <= 0 )
-                res[getidx(n,j,j)] = 0.0;
-              else
-                res[getidx(n,j,j)] = sqrt(sum);
-            }
-          else if( i>j)
-            {
-              sum = data[getidx(n,i,j)];
-              for( k=0; k<j; k++ )
-                sum -= res[getidx(n,i,k)]*res[getidx(n,j,k)];
-              if( res[getidx(n,j,j)] != 0.0 )
-                res[getidx(n,i,j)] = sum/res[getidx(n,j,j)];
-              else
-                res[getidx(n,i,j)] = 0.0;
-            }
-        }
-    }
-  return;
+  import_array();
 }
