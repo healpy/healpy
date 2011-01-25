@@ -1,5 +1,0 @@
-nlmax=512
-infile=test.alm
-outfile=!test.fits
-nside=256
-polarisation=true

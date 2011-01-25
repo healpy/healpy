@@ -24,7 +24,6 @@ include libfftpack/planck.make
 include libpsht/planck.make
 include cxxsupport/planck.make
 include Healpix_cxx/planck.make
-include alice/planck.make
 include docsrc/planck.make
 
 $(all_lib): %: | $(LIBDIR)_mkdir
@@ -39,7 +38,7 @@ $(all_cbin): %: | $(BINDIR)_mkdir
 	@echo "#  linking C binary $*"
 	$(CXXL) $(CXXLFLAGS) -o $@ $^ $(CXX_EXTRALIBS)
 
-compile_all: $(all_cbin) $(all_cxxbin) hdrcopy
+compile_all: $(all_lib) $(LIB_libcfitsio) hdrcopy
 
 hdrclean:
 	@if [ -d $(INCDIR) ]; then rm -rf $(INCDIR)/* ; fi
@@ -49,6 +48,3 @@ hdrcopy: | $(INCDIR)_mkdir
 
 $(notdir $(all_cbin) $(all_cxxbin)) : % : $(BINDIR)/%
 $(notdir $(all_lib)) libcfitsio.a : % : $(LIBDIR)/%
-
-test: compile_all
-	cd test; ./runtest.sh

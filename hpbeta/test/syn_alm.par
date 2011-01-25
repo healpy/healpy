@@ -1,6 +1,0 @@
-fwhm_arcmin = 60
-infile = cl.fits
-rand_seed = 1234
-nlmax = 512
-outfile = !test.alm
-polarisation = true
