@@ -8,7 +8,7 @@ FULL_INCLUDE+= -I$(SD)
 HDR_$(PKG):=$(SD)/*.h
 LIB_$(PKG):=$(LIBDIR)/libc_utils.a
 
-OBJ:=c_utils.o walltime_c.o
+OBJ:=c_utils.o
 OBJ:=$(OBJ:%=$(OD)/%)
 
 $(OBJ): $(HDR_$(PKG)) | $(OD)_mkdir
