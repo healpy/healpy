@@ -1123,6 +1123,7 @@ double *Ylmgen_get_norm (int lmax, int spin, int spinrec)
 
   if ((!spinrec) || (spin>=3))
     {
+    spinsign = (spin&1) ? -spinsign : spinsign;
     for (l=0; l<=lmax; ++l)
       res[l] = (l<spin) ? 0. : spinsign*0.5*sqrt((2*l+1)/(4*pi));
     return res;
