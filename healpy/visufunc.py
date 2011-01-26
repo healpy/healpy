@@ -76,6 +76,39 @@ def mollview(map=None,fig=None,rot=None,coord=None,unit='',
                  of the axes. Values are relative to figure (0-1).
                  Default: None
     """
+    # Create the figure
+    if not (hold or sub):
+        f=pylab.figure(fig,figsize=(8.5,5.4))
+        extent = (0.02,0.05,0.96,0.9)
+    elif hold:
+        f=pylab.gcf()
+        left,bottom,right,top = npy.array(f.gca().get_position()).ravel()
+        extent = (left,bottom,right-left,top-bottom)
+        f.delaxes(f.gca())
+    else: # using subplot syntax
+        f=pylab.gcf()
+        if hasattr(sub,'__len__'):
+            nrows, ncols, idx = sub
+        else:
+            nrows, ncols, idx = sub/100, (sub%100)/10, (sub%10)
+        if idx < 1 or idx > ncols*nrows:
+            raise ValueError('Wrong values for sub: %d, %d, %d'%(nrows,
+                                                                 ncols,
+                                                                 idx))
+        c,r = (idx-1)%ncols,(idx-1)/ncols
+        if not margins:
+            margins = (0.01,0.0,0.0,0.02)
+        extent = (c*1./ncols+margins[0], 
+                  1.-(r+1)*1./nrows+margins[1],
+                  1./ncols-margins[2]-margins[0],
+                  1./nrows-margins[3]-margins[1])
+        extent = (extent[0]+margins[0],
+                  extent[1]+margins[1],
+                  extent[2]-margins[2]-margins[0],
+                  extent[3]-margins[3]-margins[1])
+        #extent = (c*1./ncols, 1.-(r+1)*1./nrows,1./ncols,1./nrows)
+    #f=pylab.figure(fig,figsize=(8.5,5.4))
+
     # Starting to draw : turn interactive off
     wasinteractive = pylab.isinteractive()
     pylab.ioff()
@@ -83,37 +116,6 @@ def mollview(map=None,fig=None,rot=None,coord=None,unit='',
         if map is None:
             map = npy.zeros(12)+npy.inf
             cbar=False
-        if not (hold or sub):
-            f=pylab.figure(fig,figsize=(8.5,5.4))
-            extent = (0.02,0.05,0.96,0.9)
-        elif hold:
-            f=pylab.gcf()
-            left,bottom,right,top = npy.array(f.gca().get_position()).ravel()
-            extent = (left,bottom,right-left,top-bottom)
-            f.delaxes(f.gca())
-        else: # using subplot syntax
-            f=pylab.gcf()
-            if hasattr(sub,'__len__'):
-                nrows, ncols, idx = sub
-            else:
-                nrows, ncols, idx = sub/100, (sub%100)/10, (sub%10)
-            if idx < 1 or idx > ncols*nrows:
-                raise ValueError('Wrong values for sub: %d, %d, %d'%(nrows,
-                                                                     ncols,
-                                                                     idx))
-            c,r = (idx-1)%ncols,(idx-1)/ncols
-            if not margins:
-                margins = (0.01,0.0,0.0,0.02)
-            extent = (c*1./ncols+margins[0], 
-                      1.-(r+1)*1./nrows+margins[1],
-                      1./ncols-margins[2]-margins[0],
-                      1./nrows-margins[3]-margins[1])
-            extent = (extent[0]+margins[0],
-                      extent[1]+margins[1],
-                      extent[2]-margins[2]-margins[0],
-                      extent[3]-margins[3]-margins[1])
-            #extent = (c*1./ncols, 1.-(r+1)*1./nrows,1./ncols,1./nrows)
-        #f=pylab.figure(fig,figsize=(8.5,5.4))
         ax=PA.HpxMollweideAxes(f,extent,coord=coord,rot=rot,
                                format=format2,flipconv=flip)
         f.add_axes(ax)
@@ -151,9 +153,9 @@ def mollview(map=None,fig=None,rot=None,coord=None,unit='',
                        transform=cb.ax.transAxes,ha='center',va='center')
         f.sca(ax)
     finally:
+        pylab.draw()
         if wasinteractive:
             pylab.ion()
-            pylab.draw()
             #pylab.show()
 
 
@@ -205,6 +207,42 @@ def gnomview(map=None,fig=None,rot=None,coord=None,unit='',
       - notext: True: do not add resolution info text
                 Default=False
     """
+
+    if not (hold or sub):
+        f=pylab.figure(fig,figsize=(5.5,6))
+        if not margins:
+                margins = (0.075,0.05,0.075,0.05)
+        extent = (0.0,0.0,1.0,1.0)
+    elif hold:
+        f=pylab.gcf()
+        left,bottom,right,top = npy.array(pylab.gca().get_position()).ravel()
+        if not margins:
+            margins = (0.0,0.0,0.0,0.0)
+        extent = (left,bottom,right-left,top-bottom)
+        f.delaxes(pylab.gca())
+    else: # using subplot syntax
+        f=pylab.gcf()
+        if hasattr(sub,'__len__'):
+            nrows, ncols, idx = sub
+        else:
+            nrows, ncols, idx = sub/100, (sub%100)/10, (sub%10)
+        if idx < 1 or idx > ncols*nrows:
+            raise ValueError('Wrong values for sub: %d, %d, %d'%(nrows,
+                                                                 ncols,
+                                                                 idx))
+        c,r = (idx-1)%ncols,(idx-1)/ncols
+        if not margins:
+            margins = (0.01,0.0,0.0,0.02)
+        extent = (c*1./ncols+margins[0], 
+                  1.-(r+1)*1./nrows+margins[1],
+                  1./ncols-margins[2]-margins[0],
+                  1./nrows-margins[3]-margins[1])
+    extent = (extent[0]+margins[0],
+              extent[1]+margins[1],
+              extent[2]-margins[2]-margins[0],
+              extent[3]-margins[3]-margins[1])
+    #f=pylab.figure(fig,figsize=(5.5,6))
+
     # Starting to draw : turn interactive off
     wasinteractive = pylab.isinteractive()
     pylab.ioff()
@@ -212,40 +250,6 @@ def gnomview(map=None,fig=None,rot=None,coord=None,unit='',
         if map is None:
             map = npy.zeros(12)+npy.inf
             cbar=False
-        if not (hold or sub):
-            f=pylab.figure(fig,figsize=(5.5,6))
-            if not margins:
-                    margins = (0.075,0.05,0.075,0.05)
-            extent = (0.0,0.0,1.0,1.0)
-        elif hold:
-            f=pylab.gcf()
-            left,bottom,right,top = npy.array(pylab.gca().get_position()).ravel()
-            if not margins:
-                margins = (0.0,0.0,0.0,0.0)
-            extent = (left,bottom,right-left,top-bottom)
-            f.delaxes(pylab.gca())
-        else: # using subplot syntax
-            f=pylab.gcf()
-            if hasattr(sub,'__len__'):
-                nrows, ncols, idx = sub
-            else:
-                nrows, ncols, idx = sub/100, (sub%100)/10, (sub%10)
-            if idx < 1 or idx > ncols*nrows:
-                raise ValueError('Wrong values for sub: %d, %d, %d'%(nrows,
-                                                                     ncols,
-                                                                     idx))
-            c,r = (idx-1)%ncols,(idx-1)/ncols
-            if not margins:
-                margins = (0.01,0.0,0.0,0.02)
-            extent = (c*1./ncols+margins[0], 
-                      1.-(r+1)*1./nrows+margins[1],
-                      1./ncols-margins[2]-margins[0],
-                      1./nrows-margins[3]-margins[1])
-        extent = (extent[0]+margins[0],
-                  extent[1]+margins[1],
-                  extent[2]-margins[2]-margins[0],
-                  extent[3]-margins[3]-margins[1])
-        #f=pylab.figure(fig,figsize=(5.5,6))
         ax=PA.HpxGnomonicAxes(f,extent,coord=coord,rot=rot,
                               format=format,flipconv=flip)
         f.add_axes(ax)
@@ -284,9 +288,9 @@ def gnomview(map=None,fig=None,rot=None,coord=None,unit='',
                        transform=cb.ax.transAxes,ha='left',va='center')
         f.sca(ax)
     finally:
+        pylab.draw()
         if wasinteractive:
             pylab.ion()
-            pylab.draw()
             #pylab.show()
 
 
@@ -337,6 +341,41 @@ def cartview(map=None,fig=None,rot=None,zat=None,coord=None,unit='',
       - notext: True: do not add resolution info text
                 Default=False
     """
+    if not (hold or sub):
+        f=pylab.figure(fig,figsize=(8.5,5.4))
+        if not margins:
+                margins = (0.075,0.05,0.075,0.05)
+        extent = (0.0,0.0,1.0,1.0)
+    elif hold:
+        f=pylab.gcf()
+        left,bottom,right,top = npy.array(pylab.gca().get_position()).ravel()
+        if not margins:
+            margins = (0.0,0.0,0.0,0.0)
+        extent = (left,bottom,right-left,top-bottom)
+        f.delaxes(pylab.gca())
+    else: # using subplot syntax
+        f=pylab.gcf()
+        if hasattr(sub,'__len__'):
+            nrows, ncols, idx = sub
+        else:
+            nrows, ncols, idx = sub/100, (sub%100)/10, (sub%10)
+        if idx < 1 or idx > ncols*nrows:
+            raise ValueError('Wrong values for sub: %d, %d, %d'%(nrows,
+                                                                 ncols,
+                                                                 idx))
+        c,r = (idx-1)%ncols,(idx-1)/ncols
+        if not margins:
+            margins = (0.01,0.0,0.0,0.02)
+        extent = (c*1./ncols+margins[0], 
+                  1.-(r+1)*1./nrows+margins[1],
+                  1./ncols-margins[2]-margins[0],
+                  1./nrows-margins[3]-margins[1])
+    extent = (extent[0]+margins[0],
+              extent[1]+margins[1],
+              extent[2]-margins[2]-margins[0],
+              extent[3]-margins[3]-margins[1])
+
+    #f=pylab.figure(fig,figsize=(5.5,6))
     # Starting to draw : turn interactive off
     wasinteractive = pylab.isinteractive()
     pylab.ioff()
@@ -344,40 +383,6 @@ def cartview(map=None,fig=None,rot=None,zat=None,coord=None,unit='',
         if map is None:
             map = npy.zeros(12)+npy.inf
             cbar=False
-        if not (hold or sub):
-            f=pylab.figure(fig,figsize=(8.5,5.4))
-            if not margins:
-                    margins = (0.075,0.05,0.075,0.05)
-            extent = (0.0,0.0,1.0,1.0)
-        elif hold:
-            f=pylab.gcf()
-            left,bottom,right,top = npy.array(pylab.gca().get_position()).ravel()
-            if not margins:
-                margins = (0.0,0.0,0.0,0.0)
-            extent = (left,bottom,right-left,top-bottom)
-            f.delaxes(pylab.gca())
-        else: # using subplot syntax
-            f=pylab.gcf()
-            if hasattr(sub,'__len__'):
-                nrows, ncols, idx = sub
-            else:
-                nrows, ncols, idx = sub/100, (sub%100)/10, (sub%10)
-            if idx < 1 or idx > ncols*nrows:
-                raise ValueError('Wrong values for sub: %d, %d, %d'%(nrows,
-                                                                     ncols,
-                                                                     idx))
-            c,r = (idx-1)%ncols,(idx-1)/ncols
-            if not margins:
-                margins = (0.01,0.0,0.0,0.02)
-            extent = (c*1./ncols+margins[0], 
-                      1.-(r+1)*1./nrows+margins[1],
-                      1./ncols-margins[2]-margins[0],
-                      1./nrows-margins[3]-margins[1])
-        extent = (extent[0]+margins[0],
-                  extent[1]+margins[1],
-                  extent[2]-margins[2]-margins[0],
-                  extent[3]-margins[3]-margins[1])
-        #f=pylab.figure(fig,figsize=(5.5,6))
         if zat and rot:
             raise ValueError('Only give rot or zat, not both')
         if zat:
@@ -429,10 +434,10 @@ def graticule(dpar=None,dmer=None,coord=None,local=None,**kwds):
     Return:
       None
     """
+    f = pylab.gcf()
     wasinteractive = pylab.isinteractive()
     pylab.ioff()
     try:
-        f = pylab.gcf()
         if len(f.get_axes()) == 0:
             ax=PA.HpxMollweideAxes(f,(0.02,0.05,0.96,0.9),coord=coord)
             f.add_axes(ax)
@@ -443,74 +448,74 @@ def graticule(dpar=None,dmer=None,coord=None,local=None,**kwds):
                 ax.graticule(dpar=dpar,dmer=dmer,coord=coord,
                              local=local,**kwds)
     finally:
+        pylab.draw()
         if wasinteractive:
             pylab.ion()
-            pylab.draw()
             #pylab.show()
 graticule.__doc__ = PA.SphericalProjAxes.graticule.__doc__
     
 def delgraticules():
+    f = pylab.gcf()
     wasinteractive = pylab.isinteractive()
     pylab.ioff()
     try:
-        f = pylab.gcf()
         for ax in f.get_axes():
             if isinstance(ax,PA.SphericalProjAxes):
                 ax.delgraticules()
     finally:
+        pylab.draw()
         if wasinteractive:
             pylab.ion()
-            pylab.draw()
             #pylab.show()
 delgraticules.__doc__ = PA.SphericalProjAxes.delgraticules.__doc__
 
 def projplot(*args,**kwds):
+    f = pylab.gcf()
     wasinteractive = pylab.isinteractive()
     pylab.ioff()
     ret = None
     try:
-        f = pylab.gcf()
         for ax in f.get_axes():
             if isinstance(ax,PA.SphericalProjAxes):
                 ret = ax.projplot(*args,**kwds)
     finally:
+        pylab.draw()
         if wasinteractive:
             pylab.ion()
-            pylab.draw()
             #pylab.show()
     return ret
 projplot.__doc__ = PA.SphericalProjAxes.projplot.__doc__
     
 def projscatter(*args,**kwds):
+    f = pylab.gcf()
     wasinteractive = pylab.isinteractive()
     pylab.ioff()
     ret=None
     try:
-        f = pylab.gcf()
         for ax in f.get_axes():
             if isinstance(ax,PA.SphericalProjAxes):
                 ret = ax.projscatter(*args,**kwds)
     finally:
+        pylab.draw()
         if wasinteractive:
             pylab.ion()
-            pylab.draw()
             #pylab.show()
     return ret
 projscatter.__doc__ = PA.SphericalProjAxes.projscatter.__doc__
 
 def projtext(*args,**kwds):
+    f = pylab.gcf()
     wasinteractive = pylab.isinteractive()
     pylab.ioff()
     ret = None
     try:
-        f = pylab.gcf()
         for ax in f.get_axes():
             if isinstance(ax,PA.SphericalProjAxes):
                 ret = ax.projtext(*args,**kwds)
     finally:
+        pylab.draw()
         if wasinteractive:
             pylab.ion()
-            pylab.draw()
             #pylab.show()
     return ret
 projtext.__doc__ = PA.SphericalProjAxes.projtext.__doc__
