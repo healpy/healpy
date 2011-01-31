@@ -71,8 +71,8 @@
   <li>scalar map to a_lm</li>
   <li>polarised a_lm to map</li>
   <li>polarised map to a_lm</li>
-  <li>spin(1-3) a_lm to map</li>
-  <li>spin(1-3) map to a_lm</li>
+  <li>spin(1-100) a_lm to map</li>
+  <li>spin(1-100) map to a_lm</li>
   <li>scalar a_lm to maps of first derivatives</li>
   </ul>
 

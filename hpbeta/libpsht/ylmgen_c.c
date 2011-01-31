@@ -116,8 +116,8 @@ static void sylmgen_recalc (sylmgen_d *gen, const Ylmgen_C *ygen, int ith,
   int scalep = (int)(logvalp/large_exponent2)-minscale;
   int scalem = (int)(logvalm/large_exponent2)-minscale;
   double rec1p=0., rec1m=0.;
-  double rec2p = (double)(exp(ln2*(logvalp-(scalep+minscale)*large_exponent2)));
-  double rec2m = (double)(exp(ln2*(logvalm-(scalem+minscale)*large_exponent2)));
+  double rec2p = exp(ln2*(double)(logvalp-(scalep+minscale)*large_exponent2));
+  double rec2m = exp(ln2*(double)(logvalm-(scalem+minscale)*large_exponent2));
   double corfacp,corfacm;
   double tp,tm;
 
@@ -311,11 +311,11 @@ static void sylmgen_recalc_sse2 (sylmgen_d *gen, const Ylmgen_C *ygen,
 
   v2df rec1p =_mm_setzero_pd(), rec1m=_mm_setzero_pd();
   v2df rec2p = build_v2df(
-    (double)(exp(ln2*(logval1p-(scale1p+minscale)*large_exponent2))),
-    (double)(exp(ln2*(logval2p-(scale2p+minscale)*large_exponent2))));
+    exp(ln2*(double)(logval1p-(scale1p+minscale)*large_exponent2)),
+    exp(ln2*(double)(logval2p-(scale2p+minscale)*large_exponent2)));
   v2df rec2m = build_v2df(
-    (double)(exp(ln2*(logval1m-(scale1m+minscale)*large_exponent2))),
-    (double)(exp(ln2*(logval2m-(scale2m+minscale)*large_exponent2))));
+    exp(ln2*(double)(logval1m-(scale1m+minscale)*large_exponent2)),
+    exp(ln2*(double)(logval2m-(scale2m+minscale)*large_exponent2)));
   v2df corfacp=build_v2df((scale1p<0) ? 0. : ygen->cf[scale1p],
                           (scale2p<0) ? 0. : ygen->cf[scale2p]),
        corfacm=build_v2df((scale1m<0) ? 0. : ygen->cf[scale1m],

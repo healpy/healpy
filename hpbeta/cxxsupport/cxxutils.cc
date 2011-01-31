@@ -192,12 +192,14 @@ void SSE_status()
 
 void announce (const string &name)
   {
+  string version = "v2.20";
+  string name2 = name+" "+version;
   cout << endl << "+-";
-  for (tsize m=0; m<name.length(); ++m) cout << "-";
+  for (tsize m=0; m<name2.length(); ++m) cout << "-";
   cout << "-+" << endl;
-  cout << "| " << name << " |" << endl;
+  cout << "| " << name2 << " |" << endl;
   cout << "+-";
-  for (tsize m=0; m<name.length(); ++m) cout << "-";
+  for (tsize m=0; m<name2.length(); ++m) cout << "-";
   cout << "-+" << endl << endl;
   SSE_status();
   openmp_status();
@@ -263,6 +265,8 @@ void calcShareGeneral (int64 glo, int64 ghi, int64 nshares, int64 myshare,
   hi = lo+nbase+(myshare<additional);
   }
 
+namespace {
+
 template<typename T> void split (istream &stream, vector<T> &list)
   {
   while (stream)
@@ -275,6 +279,8 @@ template<typename T> void split (istream &stream, vector<T> &list)
     if (stream) list.push_back(stringToData<T>(word));
     }
   }
+
+} // unnamed namespace
 
 template<typename T> void split (const string &inp, vector<T> &list)
   {

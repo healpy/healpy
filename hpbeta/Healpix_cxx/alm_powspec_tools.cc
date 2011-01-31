@@ -25,7 +25,7 @@
  */
 
 /*
- *  Copyright (C) 2003-2010 Max-Planck-Society
+ *  Copyright (C) 2003-2011 Max-Planck-Society
  *  Author: Martin Reinecke
  */
 
@@ -179,6 +179,8 @@ template void extract_powspec
 template void extract_powspec
   (const Alm<xcomplex<double> > &alm, PowSpec &powspec);
 
+namespace {
+
 template<typename T> void extract_crosspowspec
   (const Alm<xcomplex<T> > &almT1,
    const Alm<xcomplex<T> > &almG1,
@@ -222,6 +224,8 @@ template<typename T> void extract_crosspowspec
     }
   powspec.Set(tt,gg,cc,tg,tc,gc);
   }
+
+} // unnamed namespace
 
 template<typename T> void extract_powspec
   (const Alm<xcomplex<T> > &almT,

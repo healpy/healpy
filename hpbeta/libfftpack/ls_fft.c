@@ -38,7 +38,7 @@ complex_plan make_complex_plan (size_t length)
   {
   complex_plan plan = RALLOC(complex_plan_i,1);
   size_t pfsum = prime_factor_sum(length);
-  double comp1 = length*pfsum;
+  double comp1 = (double)(length*pfsum);
   double comp2 = 2*3*length*log(3.*length);
   comp2*=3.; /* fudge factor that appears to give good overall performance */
   plan->length=length;
