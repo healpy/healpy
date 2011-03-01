@@ -29,7 +29,7 @@ try:
 except Exception:
   from distutils.command.build_ext import build_ext
   ext = "c"
-  print "No Cython>0.12 found, defaulting to pregenerated c version."
+  print "No Cython >= 0.12 found, defaulting to pregenerated c version."
   
 from numpy import get_include
 numpy_inc = get_include()
