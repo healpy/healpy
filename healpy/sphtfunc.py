@@ -41,7 +41,7 @@ def anafast(m,lmax=None,mmax=None,iter=1,alm=False, use_weights=False, regressio
                returned in a tuple)
       - regression : if True, map average is removed before computing alm. Default: True.
     Return:
-      - if alm==False: return cl or a list of cl's (TT,TE,EE,BB)
+      - if alm==False: return cl or a list of cl's (TT,EE,BB,TE)
       - if alm==True: return a tuple with cl or a list of cl's and alm
                       or a list of alm's
     """
@@ -57,7 +57,8 @@ def anafast(m,lmax=None,mmax=None,iter=1,alm=False, use_weights=False, regressio
         if not os.path.isfile(datapath+'/'+weightfile):
             raise IOError('File not found : '+datapath+'/'+weightfile)
     clout,almout = sphtlib._map2alm(m,lmax=lmax,mmax=mmax,iter=iter,cl=True,
-                                    use_weights=use_weights,data_path=datapath,regression=regression)
+                                    use_weights=use_weights,data_path=datapath,
+                                    regression=regression)
     if alm:
         return (clout,almout)
     else:
@@ -90,7 +91,8 @@ def map2alm(m,lmax=None,mmax=None,iter=1,use_weights=False,regression=True):
             raise IOError('File not found : '+datapath+'/'+weightfile)
     alm = sphtlib._map2alm(m,lmax=lmax,mmax=mmax,cl=False,
                            iter=iter,
-                           use_weights=use_weights,data_path=datapath,regression=regression)
+                           use_weights=use_weights,data_path=datapath,
+                           regression=regression)
     return alm
 
 
