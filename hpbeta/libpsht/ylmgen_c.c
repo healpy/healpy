@@ -34,7 +34,7 @@
 #include "ylmgen_c.h"
 #include "c_utils.h"
 
-enum { large_exponent2=90, minscale=-4, maxscale=11, max_spin=100 };
+enum { large_exponent2=90, minscale=-4, maxscale=11 };
 
 static void sylmgen_init (sylmgen_d *gen, const Ylmgen_C *ygen, int spin)
   {
@@ -416,7 +416,7 @@ static void sylmgen_recalc_sse2 (sylmgen_d *gen, const Ylmgen_C *ygen,
 
 #endif
 
-void Ylmgen_init (Ylmgen_C *gen, int l_max, int m_max, int spinrec,
+void Ylmgen_init (Ylmgen_C *gen, int l_max, int m_max, int s_max, int spinrec,
   double epsilon)
   {
   int m;
@@ -431,11 +431,12 @@ void Ylmgen_init (Ylmgen_C *gen, int l_max, int m_max, int spinrec,
   gen->nth = 0;
   gen->lmax = l_max;
   gen->mmax = m_max;
+  gen->smax = s_max;
   gen->spinrec = spinrec;
   gen->m_cur = -1;
   gen->m_crit = gen->mmax+1;
-  gen->firstl = RALLOC(int,max_spin+1);
-  for (m=0; m<=max_spin; ++m) gen->firstl[m]=-1;
+  gen->firstl = RALLOC(int,gen->smax+1);
+  for (m=0; m<=gen->smax; ++m) gen->firstl[m]=-1;
   gen->cf = RALLOC(double,maxscale-minscale+1);
   for (m=0; m<(maxscale-minscale+1); ++m)
     gen->cf[m] = ldexp(1.,(m+minscale)*large_exponent2);
@@ -456,17 +457,17 @@ void Ylmgen_init (Ylmgen_C *gen, int l_max, int m_max, int spinrec,
 
   gen->lamfact = RALLOC(double,gen->lmax+1);
   gen->ylm = RALLOC(double,gen->lmax+1);
-  ALLOC(gen->lambda_wx,ylmgen_dbl2 *,max_spin+1);
-  for (m=0; m<=max_spin; ++m)
+  ALLOC(gen->lambda_wx,ylmgen_dbl2 *,gen->smax+1);
+  for (m=0; m<=gen->smax; ++m)
     gen->lambda_wx[m]=NULL;
 
-  gen->sylm = RALLOC(sylmgen_d *,max_spin+1);
-  for (m=0; m<=max_spin; ++m)
+  gen->sylm = RALLOC(sylmgen_d *,gen->smax+1);
+  for (m=0; m<=gen->smax; ++m)
     gen->sylm[m]=NULL;
 
   gen->ylm_uptodate = 0;
-  gen->lwx_uptodate = RALLOC(int,max_spin+1);
-  SET_ARRAY(gen->lwx_uptodate,0,max_spin+1,0);
+  gen->lwx_uptodate = RALLOC(int,gen->smax+1);
+  SET_ARRAY(gen->lwx_uptodate,0,gen->smax+1,0);
   gen->recfac_uptodate = 0;
   gen->lamfact_uptodate = 0;
 
@@ -475,12 +476,12 @@ void Ylmgen_init (Ylmgen_C *gen, int l_max, int m_max, int spinrec,
 #ifdef PLANCK_HAVE_SSE2
   gen->ith1 = gen->ith2 = -1;
   gen->ylm_sse2 = RALLOC(v2df,gen->lmax+1);
-  ALLOC(gen->lambda_wx_sse2,v2df2 *,max_spin+1);
-  for (m=0; m<=max_spin; ++m)
+  ALLOC(gen->lambda_wx_sse2,v2df2 *,gen->smax+1);
+  for (m=0; m<=gen->smax; ++m)
     gen->lambda_wx_sse2[m]=NULL;
   gen->ylm_uptodate_sse2 = 0;
-  gen->lwx_uptodate_sse2 = RALLOC(int,max_spin+1);
-  SET_ARRAY(gen->lwx_uptodate_sse2,0,max_spin+1,0);
+  gen->lwx_uptodate_sse2 = RALLOC(int,gen->smax+1);
+  SET_ARRAY(gen->lwx_uptodate_sse2,0,gen->smax+1,0);
 #endif
 
   ALLOC(gen->logsum,long double,2*gen->lmax+1);
@@ -515,10 +516,10 @@ void Ylmgen_destroy (Ylmgen_C *gen)
   DEALLOC(gen->lamfact);
   DEALLOC(gen->ylm);
   DEALLOC(gen->lwx_uptodate);
-  for (m=0; m<=max_spin; ++m)
+  for (m=0; m<=gen->smax; ++m)
     DEALLOC(gen->lambda_wx[m]);
   DEALLOC(gen->lambda_wx);
-  for (m=0; m<=max_spin; ++m)
+  for (m=0; m<=gen->smax; ++m)
     if (gen->sylm[m])
       {
       sylmgen_destroy (gen->sylm[m]);
@@ -537,7 +538,7 @@ void Ylmgen_destroy (Ylmgen_C *gen)
   DEALLOC(gen->xl);
 #ifdef PLANCK_HAVE_SSE2
   DEALLOC(gen->ylm_sse2);
-  for (m=0; m<=max_spin; ++m)
+  for (m=0; m<=gen->smax; ++m)
     DEALLOC(gen->lambda_wx_sse2[m]);
   DEALLOC(gen->lambda_wx_sse2);
   DEALLOC(gen->lwx_uptodate_sse2);
@@ -588,7 +589,7 @@ void Ylmgen_prepare (Ylmgen_C *gen, int ith, int m)
   if ((ith==gen->ith) && (m==gen->m_cur)) return;
 
   gen->ylm_uptodate = 0;
-  SET_ARRAY(gen->lwx_uptodate,0,max_spin+1,0);
+  SET_ARRAY(gen->lwx_uptodate,0,gen->smax+1,0);
 
   gen->ith = ith;
 
@@ -797,7 +798,7 @@ static void Ylmgen_recalc_lambda_wx2 (Ylmgen_C *gen)
 
 void Ylmgen_recalc_lambda_wx (Ylmgen_C *gen, int spin)
   {
-  UTIL_ASSERT ((spin>0) && (spin<=max_spin),
+  UTIL_ASSERT ((spin>0) && (spin<=gen->smax),
     "invalid spin in Ylmgen_recalc_lambda_wx");
 
   if (!gen->lambda_wx[spin])
@@ -825,7 +826,7 @@ void Ylmgen_prepare_sse2 (Ylmgen_C *gen, int ith1, int ith2, int m)
   if ((ith1==gen->ith1) && (ith2==gen->ith2) && (m==gen->m_cur)) return;
 
   gen->ylm_uptodate_sse2 = 0;
-  SET_ARRAY(gen->lwx_uptodate_sse2,0,max_spin+1,0);
+  SET_ARRAY(gen->lwx_uptodate_sse2,0,gen->smax+1,0);
 
   gen->ith1 = ith1; gen->ith2 = ith2;
 
@@ -1078,7 +1079,7 @@ static void Ylmgen_recalc_lambda_wx2_sse2 (Ylmgen_C *gen)
 
 void Ylmgen_recalc_lambda_wx_sse2 (Ylmgen_C *gen, int spin)
   {
-  UTIL_ASSERT ((spin>0) && (spin<=max_spin),
+  UTIL_ASSERT ((spin>0) && (spin<=gen->smax),
     "invalid spin in Ylmgen_recalc_lambda_wx_sse2");
 
   if (!gen->lambda_wx_sse2[spin])
@@ -1146,6 +1147,3 @@ double *Ylmgen_get_norm (int lmax, int spin, int spinrec)
   UTIL_FAIL ("error in Ylmgen_get_norm");
   return NULL;
   }
-
-int Ylmgen_maxspin(void)
-  { return max_spin; }

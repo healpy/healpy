@@ -25,12 +25,9 @@
 /*! \file psht_inc.c
  *  Type-dependent included code for the spherical transform library
  *
- *  Copyright (C) 2006-2010 Max-Planck-Society
+ *  Copyright (C) 2006-2011 Max-Planck-Society
  *  \author Martin Reinecke
  */
-
-#define COMPMUL_(a_,b_,c_) \
-  { a_.re = b_.re*c_.re - b_.im*c_.im; a_.im = b_.re*c_.im + b_.im*c_.re; }
 
 static void X(ringhelper_phase2ring) (ringhelper *self,
   const psht_ringinfo *info, FLT *data, int mmax, const pshtd_cmplx *phase)
@@ -69,12 +66,11 @@ static void X(ringhelper_phase2ring) (ringhelper *self,
 static void X(ringhelper_ring2phase) (ringhelper *self,
   const psht_ringinfo *info, const FLT *data, int mmax, pshtd_cmplx *phase)
   {
-  int m;
-  int nph = info->nph;
-  int maxidx = IMIN(nph-1,mmax);
-/* Enable this for traditional Healpix compatibility */
+  int m, nph = info->nph;
 #if 1
-  maxidx = mmax;
+  int maxidx = mmax; /* Enable this for traditional Healpix compatibility */
+#else
+  int maxidx = IMIN(nph-1,mmax);
 #endif
 
   ringhelper_update (self, nph, mmax, -info->phi0);
@@ -116,7 +112,6 @@ static void X(ringhelper_phase2pair) (ringhelper *self, int mmax,
     X(ringhelper_phase2ring) (self, &(pair->r2), data, mmax, phase2);
   }
 
-
 static void X(fill_map) (const psht_geom_info *ginfo, FLT *map, double value)
   {
   int i,j;
@@ -132,10 +127,10 @@ static void X(fill_map) (const psht_geom_info *ginfo, FLT *map, double value)
 static void X(fill_alm) (const psht_alm_info *ainfo, X(cmplx) *alm,
   X(cmplx) value)
   {
-  int l,m;
-  for (m=0;m<=ainfo->mmax;++m)
-    for (l=m;l<=ainfo->lmax;++l)
-      alm[ainfo->mstart[m]+l*ainfo->stride] = value;
+  int l,mi;
+  for (mi=0;mi<ainfo->nm;++mi)
+    for (l=ainfo->mval[mi];l<=ainfo->lmax;++l)
+      alm[psht_alm_index(ainfo,l,mi)] = value;
   }
 
 static void X(init_output) (X(joblist) *jobs, const psht_geom_info *ginfo,
@@ -146,24 +141,18 @@ static void X(init_output) (X(joblist) *jobs, const psht_geom_info *ginfo,
     {
     X(job) *curjob = &jobs->job[ijob];
     if (!curjob->add_output)
-      switch (curjob->type)
-        {
-        case MAP2ALM:
-          for (i=0; i<curjob->nalm; ++i)
-            X(fill_alm) (alm,curjob->alm[i],X(cmplx_null));
-          break;
-        case ALM2MAP:
-        case ALM2MAP_DERIV1:
-          for (i=0; i<curjob->nmaps; ++i)
-            X(fill_map) (ginfo,curjob->map[i],0);
-          break;
-        default:
-          break;
-        }
+      {
+      if (curjob->type == MAP2ALM)
+        for (i=0; i<curjob->nalm; ++i)
+          X(fill_alm) (alm,curjob->alm[i],X(cmplx_null));
+      else
+        for (i=0; i<curjob->nmaps; ++i)
+          X(fill_map) (ginfo,curjob->map[i],0);
+      }
     }
   }
 
-static void X(alloc_phase) (X(joblist) *jobs, int mmax, int chunksize)
+static void X(alloc_phase) (X(joblist) *jobs, int nm, int ntheta)
   {
   int ijob,i;
   for (ijob=0; ijob<jobs->njobs; ++ijob)
@@ -171,11 +160,62 @@ static void X(alloc_phase) (X(joblist) *jobs, int mmax, int chunksize)
     X(job) *curjob = &jobs->job[ijob];
     for (i=0; i<curjob->nmaps; ++i)
       {
-      curjob->phas1[i]=RALLOC(pshtd_cmplx,(mmax+1)*chunksize);
-      curjob->phas2[i]=RALLOC(pshtd_cmplx,(mmax+1)*chunksize);
+      curjob->phas1[i]=RALLOC(pshtd_cmplx,nm*ntheta);
+      curjob->phas2[i]=RALLOC(pshtd_cmplx,nm*ntheta);
       }
     }
   }
+
+#ifdef USE_MPI
+
+static void X(alloc_phase_mpi) (X(joblist) *jobs, int nm, int ntheta,
+  int nmfull, int nthetafull)
+  {
+  int ijob,i;
+  for (ijob=0; ijob<jobs->njobs; ++ijob)
+    {
+    X(job) *curjob = &jobs->job[ijob];
+    ptrdiff_t phase_size = (curjob->type==MAP2ALM) ?
+      (ptrdiff_t)(nmfull)*ntheta : (ptrdiff_t)(nm)*nthetafull;
+    for (i=0; i<curjob->nmaps; ++i)
+      {
+      curjob->phas1[i]=RALLOC(pshtd_cmplx,phase_size);
+      curjob->phas2[i]=RALLOC(pshtd_cmplx,phase_size);
+      }
+    }
+  }
+
+static void X(alm2map_comm) (X(joblist) *jobs, const psht_mpi_info *minfo)
+  {
+  int ijob,i;
+  for (ijob=0; ijob<jobs->njobs; ++ijob)
+    {
+    X(job) *curjob = &jobs->job[ijob];
+    if (curjob->type != MAP2ALM)
+      for (i=0; i<curjob->nmaps; ++i)
+        {
+        psht_communicate_alm2map (minfo,&curjob->phas1[i]);
+        psht_communicate_alm2map (minfo,&curjob->phas2[i]);
+        }
+    }
+  }
+
+static void X(map2alm_comm) (X(joblist) *jobs, const psht_mpi_info *minfo)
+  {
+  int ijob,i;
+  for (ijob=0; ijob<jobs->njobs; ++ijob)
+    {
+    X(job) *curjob = &jobs->job[ijob];
+    if (curjob->type == MAP2ALM)
+      for (i=0; i<curjob->nmaps; ++i)
+        {
+        psht_communicate_map2alm (minfo,&curjob->phas1[i]);
+        psht_communicate_map2alm (minfo,&curjob->phas2[i]);
+        }
+    }
+  }
+
+#endif
 
 static void X(dealloc_phase) (X(joblist) *jobs)
   {
@@ -204,19 +244,13 @@ static void X(map2phase) (X(joblist) *jobs, const psht_geom_info *ginfo,
     for (ijob=0; ijob<jobs->njobs; ++ijob)
       {
       X(job) *curjob = &jobs->job[ijob];
-      switch (curjob->type)
-        {
-        case MAP2ALM:
-          for (i=0; i<curjob->nmaps; ++i)
-            X(ringhelper_pair2phase)(&helper,mmax,&ginfo->pair[ith],
-              curjob->map[i], &curjob->phas1[i][dim2], &curjob->phas2[i][dim2]);
-          break;
-        default:
-          break;
-        }
+      if (curjob->type == MAP2ALM)
+        for (i=0; i<curjob->nmaps; ++i)
+          X(ringhelper_pair2phase)(&helper,mmax,&ginfo->pair[ith],
+            curjob->map[i], &curjob->phas1[i][dim2], &curjob->phas2[i][dim2]);
       }
     }
-    ringhelper_destroy(&helper);
+  ringhelper_destroy(&helper);
 } /* end of parallel region */
   }
 
@@ -256,77 +290,54 @@ static void X(dealloc_almtmp) (X(joblist) *jobs)
     }
   }
 
-static void X(alm2almtmp) (X(joblist) *jobs, int lmax, int m,
+static void X(alm2almtmp) (X(joblist) *jobs, int lmax, int mi,
   const psht_alm_info *alm)
   {
   int ijob,i,l;
   for (ijob=0; ijob<jobs->njobs; ++ijob)
     {
     X(job) *curjob = &jobs->job[ijob];
-    switch (curjob->type)
+    if (curjob->type!=MAP2ALM)
       {
-      case ALM2MAP:
+      const double *norm_l = curjob->norm_l;
+      for (i=0; i<curjob->nalm; ++i)
         {
-        const double *norm_l = curjob->norm_l;
-        for (i=0; i<curjob->nalm; ++i)
+        X(cmplx) *curalm = curjob->alm[i];
+        for (l=alm->mval[mi]; l<=lmax; ++l)
           {
-          X(cmplx) *curalm = curjob->alm[i];
-          for (l=m; l<=lmax; ++l)
-            {
-            ptrdiff_t aidx = psht_alm_index(alm,l,m);
-#ifdef PLANCK_HAVE_SSE2
-            if (curjob->spin==0)
-              curjob->alm_tmp.v[i][l] = build_v2df(curalm[aidx].re*norm_l[l],
-                                                   curalm[aidx].im*norm_l[l]);
-            else
-              {
-              curjob->alm_tmp.v2[i][l].a = _mm_set1_pd(curalm[aidx].re*norm_l[l]);
-              curjob->alm_tmp.v2[i][l].b = _mm_set1_pd(curalm[aidx].im*norm_l[l]);
-              }
-#else
-            curjob->alm_tmp.c[i][l].re = curalm[aidx].re*norm_l[l];
-            curjob->alm_tmp.c[i][l].im = curalm[aidx].im*norm_l[l];
-#endif
-            }
-          }
-        break;
-        }
-      case ALM2MAP_DERIV1:
-        {
-        const double *norm_l = curjob->norm_l;
-        for (i=0; i<curjob->nalm; ++i)
-          {
-          X(cmplx) *curalm = curjob->alm[i];
-          for (l=m; l<=lmax; ++l)
-            {
-            ptrdiff_t aidx = psht_alm_index(alm,l,m);
-            double fct = fabs(norm_l[l])*sqrt(l*(l+1.));
-#ifdef PLANCK_HAVE_SSE2
-            curjob->alm_tmp.v2[i][l].a = _mm_set1_pd(-curalm[aidx].re*fct);
-            curjob->alm_tmp.v2[i][l].b = _mm_set1_pd(-curalm[aidx].im*fct);
-#else
-            curjob->alm_tmp.c[i][l].re = -curalm[aidx].re*fct;
-            curjob->alm_tmp.c[i][l].im = -curalm[aidx].im*fct;
-#endif
-            }
-          }
-        break;
-        }
-      case MAP2ALM:
-        for (i=0; i<curjob->nalm; ++i)
-          {
+          ptrdiff_t aidx = psht_alm_index(alm,l,mi);
+          double fct = (curjob->type==ALM2MAP) ? norm_l[l] :
+                        -fabs(norm_l[l])*sqrt(l*(l+1.));
 #ifdef PLANCK_HAVE_SSE2
           if (curjob->spin==0)
-            SET_ARRAY(curjob->alm_tmp.v[i],m,lmax+1,_mm_setzero_pd());
+            curjob->alm_tmp.v[i][l] = build_v2df(curalm[aidx].re*fct,
+                                                 curalm[aidx].im*fct);
           else
-            SET_ARRAY(curjob->alm_tmp.v2[i],m,lmax+1,zero_v2df2());
+            {
+            curjob->alm_tmp.v2[i][l].a=_mm_set1_pd(curalm[aidx].re*fct);
+            curjob->alm_tmp.v2[i][l].b=_mm_set1_pd(curalm[aidx].im*fct);
+            }
 #else
-          SET_ARRAY(curjob->alm_tmp.c[i],m,lmax+1,pshtd_cmplx_null);
+          curjob->alm_tmp.c[i][l].re = curalm[aidx].re*fct;
+          curjob->alm_tmp.c[i][l].im = curalm[aidx].im*fct;
 #endif
           }
-        break;
-      default:
-        break;
+        }
+      }
+    else
+      {
+      for (i=0; i<curjob->nalm; ++i)
+        {
+        int m=alm->mval[mi];
+#ifdef PLANCK_HAVE_SSE2
+        if (curjob->spin==0)
+          SET_ARRAY(curjob->alm_tmp.v[i],m,lmax+1,_mm_setzero_pd());
+        else
+          SET_ARRAY(curjob->alm_tmp.v2[i],m,lmax+1,zero_v2df2());
+#else
+        SET_ARRAY(curjob->alm_tmp.c[i],m,lmax+1,pshtd_cmplx_null);
+#endif
+        }
       }
     }
   }
@@ -417,19 +428,21 @@ static void X(alm2almtmp) (X(joblist) *jobs, int lmax, int m,
   pb.b = build_v2df(pha.im-phb.im,phc.im-phd.im); \
   }
 
-static void X(inner_loop) (X(joblist) *jobs, const psht_geom_info *ginfo,
-  int lmax, int mmax, int llim, int ulim, Ylmgen_C *generator, int m)
+static void X(inner_loop) (X(joblist) *jobs, const int *ispair,
+  const psht_alm_info *ainfo, int llim, int ulim, Ylmgen_C *generator, int mi)
   {
   const v2df2 v2df2_zero = zero_v2df2();
   int ith,ijob;
+  const int lmax = ainfo->lmax;
+  const int m = ainfo->mval[mi];
   for (ith=0; ith<ulim-llim; ith+=2)
     {
     pshtd_cmplx dum;
     int dual = (ith+1)<(ulim-llim),
-        rpair1 = ginfo->pair[ith+llim].r2.nph>0,
-        rpair2 = dual && (ginfo->pair[ith+1+llim].r2.nph>0);
-    int phas_idx1 =  ith   *(mmax+1)+m,
-        phas_idx2 = (ith+1)*(mmax+1)+m;
+        rpair1 = ispair[ith],
+        rpair2 = dual && ispair[ith+1];
+    int phas_idx1 =  ith   *ainfo->nm+mi,
+        phas_idx2 = (ith+1)*ainfo->nm+mi;
     Ylmgen_prepare_sse2(generator,ith,dual?(ith+1):ith,m);
 
     for (ijob=0; ijob<jobs->njobs; ++ijob)
@@ -439,74 +452,68 @@ static void X(inner_loop) (X(joblist) *jobs, const psht_geom_info *ginfo,
         {
         case ALM2MAP:
           {
-          switch (curjob->spin)
+          if (curjob->spin==0)
             {
-            case 0:
+            pshtd_cmplx *ph1 =          &curjob->phas1[0][phas_idx1],
+                        *ph2 = rpair1 ? &curjob->phas2[0][phas_idx1] : &dum,
+                        *ph3 = dual   ? &curjob->phas1[0][phas_idx2] : &dum,
+                        *ph4 = rpair2 ? &curjob->phas2[0][phas_idx2] : &dum;
+            *ph1 = *ph2 = *ph3 = *ph4 = pshtd_cmplx_null;
+            Ylmgen_recalc_Ylm_sse2 (generator);
+            if (generator->firstl[0]<=lmax)
               {
-              pshtd_cmplx *ph1 =          &curjob->phas1[0][phas_idx1],
-                          *ph2 = rpair1 ? &curjob->phas2[0][phas_idx1] : &dum,
-                          *ph3 = dual   ? &curjob->phas1[0][phas_idx2] : &dum,
-                          *ph4 = rpair2 ? &curjob->phas2[0][phas_idx2] : &dum;
-              *ph1 = *ph2 = *ph3 = *ph4 = pshtd_cmplx_null;
-              Ylmgen_recalc_Ylm_sse2 (generator);
-              if (generator->firstl[0]<=lmax)
+              int l = generator->firstl[0];
+              v2df2 p1=v2df2_zero, p2=v2df2_zero;
+              const v2df *Ylm = generator->ylm_sse2;
+              const v2df *almtmp = curjob->alm_tmp.v[0];
+
+              if ((l-m)&1)
+                ALM2MAP_MACRO(p2)
+              for (;l<lmax;)
                 {
-                int l = generator->firstl[0];
-                v2df2 p1=v2df2_zero, p2=v2df2_zero;
-                const v2df *Ylm = generator->ylm_sse2;
-                const v2df *almtmp = curjob->alm_tmp.v[0];
-
-                if ((l-m)&1)
-                  ALM2MAP_MACRO(p2)
-                for (;l<lmax;)
-                  {
-                  ALM2MAP_MACRO(p1)
-                  ALM2MAP_MACRO(p2)
-                  }
-                if (l==lmax)
-                  ALM2MAP_MACRO(p1)
-
-                EXTRACT (p1,p2,ph1,ph2,ph3,ph4)
+                ALM2MAP_MACRO(p1)
+                ALM2MAP_MACRO(p2)
                 }
-              break;
+              if (l==lmax)
+                ALM2MAP_MACRO(p1)
+
+              EXTRACT (p1,p2,ph1,ph2,ph3,ph4)
               }
-
-            default:
+            }
+          else /* curjob->spin > 0 */
+            {
+            pshtd_cmplx *ph1Q =          &curjob->phas1[0][phas_idx1],
+                        *ph1U =          &curjob->phas1[1][phas_idx1],
+                        *ph2Q = rpair1 ? &curjob->phas2[0][phas_idx1] : &dum,
+                        *ph2U = rpair1 ? &curjob->phas2[1][phas_idx1] : &dum,
+                        *ph3Q = dual   ? &curjob->phas1[0][phas_idx2] : &dum,
+                        *ph3U = dual   ? &curjob->phas1[1][phas_idx2] : &dum,
+                        *ph4Q = rpair2 ? &curjob->phas2[0][phas_idx2] : &dum,
+                        *ph4U = rpair2 ? &curjob->phas2[1][phas_idx2] : &dum;
+            *ph1Q = *ph2Q = *ph1U = *ph2U = *ph3Q = *ph4Q = *ph3U = *ph4U
+              = pshtd_cmplx_null;
+            Ylmgen_recalc_lambda_wx_sse2 (generator,curjob->spin);
+            if (generator->firstl[curjob->spin]<=lmax)
               {
-              pshtd_cmplx *ph1Q =          &curjob->phas1[0][phas_idx1],
-                          *ph1U =          &curjob->phas1[1][phas_idx1],
-                          *ph2Q = rpair1 ? &curjob->phas2[0][phas_idx1] : &dum,
-                          *ph2U = rpair1 ? &curjob->phas2[1][phas_idx1] : &dum,
-                          *ph3Q = dual   ? &curjob->phas1[0][phas_idx2] : &dum,
-                          *ph3U = dual   ? &curjob->phas1[1][phas_idx2] : &dum,
-                          *ph4Q = rpair2 ? &curjob->phas2[0][phas_idx2] : &dum,
-                          *ph4U = rpair2 ? &curjob->phas2[1][phas_idx2] : &dum;
-              *ph1Q = *ph2Q = *ph1U = *ph2U = *ph3Q = *ph4Q = *ph3U = *ph4U
-                = pshtd_cmplx_null;
-              Ylmgen_recalc_lambda_wx_sse2 (generator,curjob->spin);
-              if (generator->firstl[curjob->spin]<=lmax)
+              int l = generator->firstl[curjob->spin];
+              v2df2 p1Q=v2df2_zero, p2Q=v2df2_zero,
+                    p1U=v2df2_zero, p2U=v2df2_zero;
+              const v2df2 *lwx = generator->lambda_wx_sse2[curjob->spin];
+              const v2df2 *almtmpG = curjob->alm_tmp.v2[0],
+                          *almtmpC = curjob->alm_tmp.v2[1];
+
+              if ((l-m+curjob->spin)&1)
+                ALM2MAP_SPIN_MACRO(p2Q,p1Q,p2U,p1U)
+              for (;l<lmax;)
                 {
-                int l = generator->firstl[curjob->spin];
-                v2df2 p1Q=v2df2_zero, p2Q=v2df2_zero,
-                      p1U=v2df2_zero, p2U=v2df2_zero;
-                const v2df2 *lwx = generator->lambda_wx_sse2[curjob->spin];
-                const v2df2 *almtmpG = curjob->alm_tmp.v2[0],
-                            *almtmpC = curjob->alm_tmp.v2[1];
-
-                if ((l-m+curjob->spin)&1)
-                  ALM2MAP_SPIN_MACRO(p2Q,p1Q,p2U,p1U)
-                for (;l<lmax;)
-                  {
-                  ALM2MAP_SPIN_MACRO(p1Q,p2Q,p1U,p2U)
-                  ALM2MAP_SPIN_MACRO(p2Q,p1Q,p2U,p1U)
-                  }
-                if (l==lmax)
-                  ALM2MAP_SPIN_MACRO(p1Q,p2Q,p1U,p2U)
-
-                EXTRACT (p1Q,p2Q,ph1Q,ph2Q,ph3Q,ph4Q)
-                EXTRACT (p1U,p2U,ph1U,ph2U,ph3U,ph4U)
+                ALM2MAP_SPIN_MACRO(p1Q,p2Q,p1U,p2U)
+                ALM2MAP_SPIN_MACRO(p2Q,p1Q,p2U,p1U)
                 }
-              break;
+              if (l==lmax)
+                ALM2MAP_SPIN_MACRO(p1Q,p2Q,p1U,p2U)
+
+              EXTRACT (p1Q,p2Q,ph1Q,ph2Q,ph3Q,ph4Q)
+              EXTRACT (p1U,p2U,ph1U,ph2U,ph3U,ph4U)
               }
             }
           break;
@@ -549,70 +556,64 @@ static void X(inner_loop) (X(joblist) *jobs, const psht_geom_info *ginfo,
           }
         case MAP2ALM:
           {
-          switch (curjob->spin)
+          if (curjob->spin==0)
             {
-            case 0:
+            Ylmgen_recalc_Ylm_sse2 (generator);
+            if (generator->firstl[0]<=lmax)
               {
-              Ylmgen_recalc_Ylm_sse2 (generator);
-              if (generator->firstl[0]<=lmax)
-                {
-                int l = generator->firstl[0];
-                const v2df *Ylm = generator->ylm_sse2;
-                v2df *almtmp = curjob->alm_tmp.v[0];
-                pshtd_cmplx
-                  ph1 =          curjob->phas1[0][phas_idx1],
-                  ph2 = rpair1 ? curjob->phas2[0][phas_idx1] : pshtd_cmplx_null,
-                  ph3 = dual   ? curjob->phas1[0][phas_idx2] : pshtd_cmplx_null,
-                  ph4 = rpair2 ? curjob->phas2[0][phas_idx2] : pshtd_cmplx_null;
-                v2df2 p1,p2;
-                COMPOSE (p1,p2,ph1,ph2,ph3,ph4)
+              int l = generator->firstl[0];
+              const v2df *Ylm = generator->ylm_sse2;
+              v2df *almtmp = curjob->alm_tmp.v[0];
+              pshtd_cmplx
+                ph1 =          curjob->phas1[0][phas_idx1],
+                ph2 = rpair1 ? curjob->phas2[0][phas_idx1] : pshtd_cmplx_null,
+                ph3 = dual   ? curjob->phas1[0][phas_idx2] : pshtd_cmplx_null,
+                ph4 = rpair2 ? curjob->phas2[0][phas_idx2] : pshtd_cmplx_null;
+              v2df2 p1,p2;
+              COMPOSE (p1,p2,ph1,ph2,ph3,ph4)
 
-                if ((l-m)&1)
-                  MAP2ALM_MACRO(p2)
-                for (;l<lmax;)
-                  {
-                  MAP2ALM_MACRO(p1)
-                  MAP2ALM_MACRO(p2)
-                  }
-                if (l==lmax)
-                  MAP2ALM_MACRO(p1)
+              if ((l-m)&1)
+                MAP2ALM_MACRO(p2)
+              for (;l<lmax;)
+                {
+                MAP2ALM_MACRO(p1)
+                MAP2ALM_MACRO(p2)
                 }
-              break;
+              if (l==lmax)
+                MAP2ALM_MACRO(p1)
               }
-
-            default:
+            }
+          else /* curjob->spin > 0 */
+            {
+            Ylmgen_recalc_lambda_wx_sse2 (generator,curjob->spin);
+            if (generator->firstl[curjob->spin]<=lmax)
               {
-              Ylmgen_recalc_lambda_wx_sse2 (generator,curjob->spin);
-              if (generator->firstl[curjob->spin]<=lmax)
-                {
-                int l = generator->firstl[curjob->spin];
-                const v2df2 *lwx = generator->lambda_wx_sse2[curjob->spin];
-                v2df2 *almtmpG = curjob->alm_tmp.v2[0],
-                      *almtmpC = curjob->alm_tmp.v2[1];
-                pshtd_cmplx
-                  ph1Q =          curjob->phas1[0][phas_idx1],
-                  ph1U =          curjob->phas1[1][phas_idx1],
-                  ph2Q = rpair1 ? curjob->phas2[0][phas_idx1] :pshtd_cmplx_null,
-                  ph2U = rpair1 ? curjob->phas2[1][phas_idx1] :pshtd_cmplx_null,
-                  ph3Q = dual   ? curjob->phas1[0][phas_idx2] :pshtd_cmplx_null,
-                  ph3U = dual   ? curjob->phas1[1][phas_idx2] :pshtd_cmplx_null,
-                  ph4Q = rpair2 ? curjob->phas2[0][phas_idx2] :pshtd_cmplx_null,
-                  ph4U = rpair2 ? curjob->phas2[1][phas_idx2] :pshtd_cmplx_null;
-                v2df2 p1Q, p2Q, p1U, p2U;
-                COMPOSE (p1Q,p2Q,ph1Q,ph2Q,ph3Q,ph4Q)
-                COMPOSE (p1U,p2U,ph1U,ph2U,ph3U,ph4U)
+              int l = generator->firstl[curjob->spin];
+              const v2df2 *lwx = generator->lambda_wx_sse2[curjob->spin];
+              v2df2 *almtmpG = curjob->alm_tmp.v2[0],
+                    *almtmpC = curjob->alm_tmp.v2[1];
+              pshtd_cmplx
+                ph1Q =          curjob->phas1[0][phas_idx1],
+                ph1U =          curjob->phas1[1][phas_idx1],
+                ph2Q = rpair1 ? curjob->phas2[0][phas_idx1] :pshtd_cmplx_null,
+                ph2U = rpair1 ? curjob->phas2[1][phas_idx1] :pshtd_cmplx_null,
+                ph3Q = dual   ? curjob->phas1[0][phas_idx2] :pshtd_cmplx_null,
+                ph3U = dual   ? curjob->phas1[1][phas_idx2] :pshtd_cmplx_null,
+                ph4Q = rpair2 ? curjob->phas2[0][phas_idx2] :pshtd_cmplx_null,
+                ph4U = rpair2 ? curjob->phas2[1][phas_idx2] :pshtd_cmplx_null;
+              v2df2 p1Q, p2Q, p1U, p2U;
+              COMPOSE (p1Q,p2Q,ph1Q,ph2Q,ph3Q,ph4Q)
+              COMPOSE (p1U,p2U,ph1U,ph2U,ph3U,ph4U)
 
-                if ((l-m+curjob->spin)&1)
-                  MAP2ALM_SPIN_MACRO(p2Q,p1Q,p2U,p1U)
-                for (;l<lmax;)
-                  {
-                  MAP2ALM_SPIN_MACRO(p1Q,p2Q,p1U,p2U)
-                  MAP2ALM_SPIN_MACRO(p2Q,p1Q,p2U,p1U)
-                  }
-                if (l==lmax)
-                  MAP2ALM_SPIN_MACRO(p1Q,p2Q,p1U,p2U)
+              if ((l-m+curjob->spin)&1)
+                MAP2ALM_SPIN_MACRO(p2Q,p1Q,p2U,p1U)
+              for (;l<lmax;)
+                {
+                MAP2ALM_SPIN_MACRO(p1Q,p2Q,p1U,p2U)
+                MAP2ALM_SPIN_MACRO(p2Q,p1Q,p2U,p1U)
                 }
-              break;
+              if (l==lmax)
+                MAP2ALM_SPIN_MACRO(p1Q,p2Q,p1U,p2U)
               }
             }
           break;
@@ -662,15 +663,29 @@ static void X(inner_loop) (X(joblist) *jobs, const psht_geom_info *ginfo,
   ++l; \
   }
 
-static void X(inner_loop) (X(joblist) *jobs, const psht_geom_info *ginfo,
-  int lmax, int mmax, int llim, int ulim, Ylmgen_C *generator, int m)
+#define EXTRACT(pa,pb,pha,phb) \
+  { \
+  pha->re = pa.re+pb.re; pha->im = pa.im+pb.im; \
+  phb->re = pa.re-pb.re; phb->im = pa.im-pb.im; \
+  }
+
+#define COMPOSE(pa,pb,pha,phb) \
+  { \
+  pa.re = pha.re+phb.re; pa.im = pha.im+phb.im; \
+  pb.re = pha.re-phb.re; pb.im = pha.im-phb.im; \
+  }
+
+static void X(inner_loop) (X(joblist) *jobs, const int *ispair,
+  const psht_alm_info *ainfo, int llim, int ulim, Ylmgen_C *generator, int mi)
   {
   int ith,ijob;
+  const int lmax = ainfo->lmax;
+  const int m = ainfo->mval[mi];
   for (ith=0; ith<ulim-llim; ++ith)
     {
     pshtd_cmplx dum;
-    int rpair = ginfo->pair[ith+llim].r2.nph>0;
-    int phas_idx = ith*(mmax+1)+m;
+    int rpair = ispair[ith];
+    int phas_idx = ith*ainfo->nm+mi;
     Ylmgen_prepare(generator,ith,m);
 
     for (ijob=0; ijob<jobs->njobs; ++ijob)
@@ -680,70 +695,61 @@ static void X(inner_loop) (X(joblist) *jobs, const psht_geom_info *ginfo,
         {
         case ALM2MAP:
           {
-          switch (curjob->spin)
+          if (curjob->spin==0)
             {
-            case 0:
+            pshtd_cmplx *ph1 =         &curjob->phas1[0][phas_idx],
+                        *ph2 = rpair ? &curjob->phas2[0][phas_idx] : &dum;
+            *ph1 = *ph2 = pshtd_cmplx_null;
+            Ylmgen_recalc_Ylm (generator);
+            if (generator->firstl[0]<=lmax)
               {
-              pshtd_cmplx *ph1 =         &curjob->phas1[0][phas_idx],
-                          *ph2 = rpair ? &curjob->phas2[0][phas_idx] : &dum;
-              *ph1 = *ph2 = pshtd_cmplx_null;
-              Ylmgen_recalc_Ylm (generator);
-              if (generator->firstl[0]<=lmax)
+              int l = generator->firstl[0];
+              pshtd_cmplx p1=pshtd_cmplx_null,p2=pshtd_cmplx_null;
+              const double *Ylm = generator->ylm;
+              const pshtd_cmplx *almtmp = curjob->alm_tmp.c[0];
+
+              if ((l-m)&1)
+                ALM2MAP_MACRO(p2)
+              for (;l<lmax;)
                 {
-                int l = generator->firstl[0];
-                pshtd_cmplx p1=pshtd_cmplx_null,p2=pshtd_cmplx_null;
-                const double *Ylm = generator->ylm;
-                const pshtd_cmplx *almtmp = curjob->alm_tmp.c[0];
-
-                if ((l-m)&1)
-                  ALM2MAP_MACRO(p2)
-                for (;l<lmax;)
-                  {
-                  ALM2MAP_MACRO(p1)
-                  ALM2MAP_MACRO(p2)
-                  }
-                if (l==lmax)
-                  ALM2MAP_MACRO(p1)
-
-                ph1->re = p1.re+p2.re; ph1->im = p1.im+p2.im;
-                ph2->re = p1.re-p2.re; ph2->im = p1.im-p2.im;
+                ALM2MAP_MACRO(p1)
+                ALM2MAP_MACRO(p2)
                 }
-              break;
+              if (l==lmax)
+                ALM2MAP_MACRO(p1)
+
+              EXTRACT(p1,p2,ph1,ph2)
               }
-
-            default:
+            }
+          else /* curjob->spin > 0 */
+            {
+            pshtd_cmplx *ph1Q =         &curjob->phas1[0][phas_idx],
+                        *ph1U =         &curjob->phas1[1][phas_idx],
+                        *ph2Q = rpair ? &curjob->phas2[0][phas_idx] : &dum,
+                        *ph2U = rpair ? &curjob->phas2[1][phas_idx] : &dum;
+            *ph1Q = *ph2Q = *ph1U = *ph2U = pshtd_cmplx_null;
+            Ylmgen_recalc_lambda_wx (generator,curjob->spin);
+            if (generator->firstl[curjob->spin]<=lmax)
               {
-              pshtd_cmplx *ph1Q =         &curjob->phas1[0][phas_idx],
-                          *ph1U =         &curjob->phas1[1][phas_idx],
-                          *ph2Q = rpair ? &curjob->phas2[0][phas_idx] : &dum,
-                          *ph2U = rpair ? &curjob->phas2[1][phas_idx] : &dum;
-              *ph1Q = *ph2Q = *ph1U = *ph2U = pshtd_cmplx_null;
-              Ylmgen_recalc_lambda_wx (generator,curjob->spin);
-              if (generator->firstl[curjob->spin]<=lmax)
+              int l = generator->firstl[curjob->spin];
+              pshtd_cmplx p1Q=pshtd_cmplx_null,p2Q=pshtd_cmplx_null,
+                          p1U=pshtd_cmplx_null,p2U=pshtd_cmplx_null;
+              ylmgen_dbl2 *lwx = generator->lambda_wx[curjob->spin];
+              const pshtd_cmplx *almtmpG = curjob->alm_tmp.c[0],
+                                *almtmpC = curjob->alm_tmp.c[1];
+
+              if ((l-m+curjob->spin)&1)
+                ALM2MAP_SPIN_MACRO(p2Q,p1Q,p2U,p1U)
+              for (;l<lmax;)
                 {
-                int l = generator->firstl[curjob->spin];
-                pshtd_cmplx p1Q=pshtd_cmplx_null,p2Q=pshtd_cmplx_null,
-                            p1U=pshtd_cmplx_null,p2U=pshtd_cmplx_null;
-                ylmgen_dbl2 *lwx = generator->lambda_wx[curjob->spin];
-                const pshtd_cmplx *almtmpG = curjob->alm_tmp.c[0],
-                                  *almtmpC = curjob->alm_tmp.c[1];
-
-                if ((l-m+curjob->spin)&1)
-                  ALM2MAP_SPIN_MACRO(p2Q,p1Q,p2U,p1U)
-                for (;l<lmax;)
-                  {
-                  ALM2MAP_SPIN_MACRO(p1Q,p2Q,p1U,p2U)
-                  ALM2MAP_SPIN_MACRO(p2Q,p1Q,p2U,p1U)
-                  }
-                if (l==lmax)
-                  ALM2MAP_SPIN_MACRO(p1Q,p2Q,p1U,p2U)
-
-                ph1Q->re = p1Q.re+p2Q.re; ph1Q->im = p1Q.im+p2Q.im;
-                ph1U->re = p1U.re+p2U.re; ph1U->im = p1U.im+p2U.im;
-                ph2Q->re = p1Q.re-p2Q.re; ph2Q->im = p1Q.im-p2Q.im;
-                ph2U->re = p1U.re-p2U.re; ph2U->im = p1U.im-p2U.im;
+                ALM2MAP_SPIN_MACRO(p1Q,p2Q,p1U,p2U)
+                ALM2MAP_SPIN_MACRO(p2Q,p1Q,p2U,p1U)
                 }
-              break;
+              if (l==lmax)
+                ALM2MAP_SPIN_MACRO(p1Q,p2Q,p1U,p2U)
+
+              EXTRACT(p1Q,p2Q,ph1Q,ph2Q)
+              EXTRACT(p1U,p2U,ph1U,ph2U)
               }
             }
           break;
@@ -774,76 +780,65 @@ static void X(inner_loop) (X(joblist) *jobs, const psht_geom_info *ginfo,
             if (l==lmax)
               ALM2MAP_DERIV1_MACRO(p1Q,p2U)
 
-            ph1Q->re = p1Q.re+p2Q.re; ph1Q->im = p1Q.im+p2Q.im;
-            ph1U->re = p1U.re+p2U.re; ph1U->im = p1U.im+p2U.im;
-            ph2Q->re = p1Q.re-p2Q.re; ph2Q->im = p1Q.im-p2Q.im;
-            ph2U->re = p1U.re-p2U.re; ph2U->im = p1U.im-p2U.im;
+            EXTRACT(p1Q,p2Q,ph1Q,ph2Q)
+            EXTRACT(p1U,p2U,ph1U,ph2U)
             }
           break;
           }
         case MAP2ALM:
           {
-          switch (curjob->spin)
+          if (curjob->spin==0)
             {
-            case 0:
+            Ylmgen_recalc_Ylm (generator);
+            if (generator->firstl[0]<=lmax)
               {
-              Ylmgen_recalc_Ylm (generator);
-              if (generator->firstl[0]<=lmax)
-                {
-                int l = generator->firstl[0];
-                const double *Ylm = generator->ylm;
-                pshtd_cmplx *almtmp = curjob->alm_tmp.c[0];
-                const pshtd_cmplx
-                  ph1 =         curjob->phas1[0][phas_idx],
-                  ph2 = rpair ? curjob->phas2[0][phas_idx] : pshtd_cmplx_null;
-                pshtd_cmplx p1,p2;
-                p1.re = ph1.re+ph2.re; p1.im = ph1.im+ph2.im;
-                p2.re = ph1.re-ph2.re; p2.im = ph1.im-ph2.im;
+              int l = generator->firstl[0];
+              const double *Ylm = generator->ylm;
+              pshtd_cmplx *almtmp = curjob->alm_tmp.c[0];
+              const pshtd_cmplx
+                ph1 =         curjob->phas1[0][phas_idx],
+                ph2 = rpair ? curjob->phas2[0][phas_idx] : pshtd_cmplx_null;
+              pshtd_cmplx p1,p2;
+              COMPOSE(p1,p2,ph1,ph2)
 
-                if ((l-m)&1)
-                  MAP2ALM_MACRO(p2)
-                for (;l<lmax;)
-                  {
-                  MAP2ALM_MACRO(p1)
-                  MAP2ALM_MACRO(p2)
-                  }
-                if (l==lmax)
-                  MAP2ALM_MACRO(p1)
+              if ((l-m)&1)
+                MAP2ALM_MACRO(p2)
+              for (;l<lmax;)
+                {
+                MAP2ALM_MACRO(p1)
+                MAP2ALM_MACRO(p2)
                 }
-              break;
+              if (l==lmax)
+                MAP2ALM_MACRO(p1)
               }
-
-            default:
+            }
+          else /* curjob->spin > 0 */
+            {
+            Ylmgen_recalc_lambda_wx (generator,curjob->spin);
+            if (generator->firstl[curjob->spin]<=lmax)
               {
-              Ylmgen_recalc_lambda_wx (generator,curjob->spin);
-              if (generator->firstl[curjob->spin]<=lmax)
-                {
-                int l = generator->firstl[curjob->spin];
-                ylmgen_dbl2 *lwx = generator->lambda_wx[curjob->spin];
-                pshtd_cmplx *almtmpG = curjob->alm_tmp.c[0],
-                            *almtmpC = curjob->alm_tmp.c[1];
-                const pshtd_cmplx
-                  ph1Q =         curjob->phas1[0][phas_idx],
-                  ph1U =         curjob->phas1[1][phas_idx],
-                  ph2Q = rpair ? curjob->phas2[0][phas_idx] : pshtd_cmplx_null,
-                  ph2U = rpair ? curjob->phas2[1][phas_idx] : pshtd_cmplx_null;
-                pshtd_cmplx p1Q,p2Q,p1U,p2U;
-                p1Q.re = ph1Q.re+ph2Q.re; p1Q.im = ph1Q.im+ph2Q.im;
-                p2Q.re = ph1Q.re-ph2Q.re; p2Q.im = ph1Q.im-ph2Q.im;
-                p1U.re = ph1U.re+ph2U.re; p1U.im = ph1U.im+ph2U.im;
-                p2U.re = ph1U.re-ph2U.re; p2U.im = ph1U.im-ph2U.im;
+              int l = generator->firstl[curjob->spin];
+              ylmgen_dbl2 *lwx = generator->lambda_wx[curjob->spin];
+              pshtd_cmplx *almtmpG = curjob->alm_tmp.c[0],
+                          *almtmpC = curjob->alm_tmp.c[1];
+              const pshtd_cmplx
+                ph1Q =         curjob->phas1[0][phas_idx],
+                ph1U =         curjob->phas1[1][phas_idx],
+                ph2Q = rpair ? curjob->phas2[0][phas_idx] : pshtd_cmplx_null,
+                ph2U = rpair ? curjob->phas2[1][phas_idx] : pshtd_cmplx_null;
+              pshtd_cmplx p1Q,p2Q,p1U,p2U;
+              COMPOSE(p1Q,p2Q,ph1Q,ph2Q)
+              COMPOSE(p1U,p2U,ph1U,ph2U)
 
-                if ((l-m+curjob->spin)&1)
-                  MAP2ALM_SPIN_MACRO(p2Q,p1Q,p2U,p1U)
-                for (;l<lmax;)
-                  {
-                  MAP2ALM_SPIN_MACRO(p1Q,p2Q,p1U,p2U)
-                  MAP2ALM_SPIN_MACRO(p2Q,p1Q,p2U,p1U)
-                  }
-                if (l==lmax)
-                  MAP2ALM_SPIN_MACRO(p1Q,p2Q,p1U,p2U)
+              if ((l-m+curjob->spin)&1)
+                MAP2ALM_SPIN_MACRO(p2Q,p1Q,p2U,p1U)
+              for (;l<lmax;)
+                {
+                MAP2ALM_SPIN_MACRO(p1Q,p2Q,p1U,p2U)
+                MAP2ALM_SPIN_MACRO(p2Q,p1Q,p2U,p1U)
                 }
-              break;
+              if (l==lmax)
+                MAP2ALM_SPIN_MACRO(p1Q,p2Q,p1U,p2U)
               }
             }
           break;
@@ -855,47 +850,41 @@ static void X(inner_loop) (X(joblist) *jobs, const psht_geom_info *ginfo,
 
 #endif
 
-static void X(almtmp2alm) (X(joblist) *jobs, int lmax, int m,
+static void X(almtmp2alm) (X(joblist) *jobs, int lmax, int mi,
   const psht_alm_info *alm)
   {
   int ijob,i,l;
   for (ijob=0; ijob<jobs->njobs; ++ijob)
     {
     X(job) *curjob = &jobs->job[ijob];
-    switch (curjob->type)
+    if (curjob->type == MAP2ALM)
       {
-      case MAP2ALM:
+      const double *norm_l = curjob->norm_l;
+      for (i=0;i<curjob->nalm;++i)
         {
-        const double *norm_l = curjob->norm_l;
-        for (i=0;i<curjob->nalm;++i)
+        X(cmplx) *curalm = curjob->alm[i];
+        for (l=alm->mval[mi]; l<=lmax; ++l)
           {
-          X(cmplx) *curalm = curjob->alm[i];
-          for (l=m; l<=lmax; ++l)
-            {
-            ptrdiff_t aidx = psht_alm_index(alm,l,m);
+          ptrdiff_t aidx = psht_alm_index(alm,l,mi);
 #ifdef PLANCK_HAVE_SSE2
-            if (curjob->spin==0)
-              {
-              V2DF t; t.v = curjob->alm_tmp.v[i][l];
-              curalm[aidx].re += (FLT)(t.d[0]*norm_l[l]);
-              curalm[aidx].im += (FLT)(t.d[1]*norm_l[l]);
-              }
-            else
-              {
-              V2DF2 t = to_V2DF2(curjob->alm_tmp.v2[i][l]);
-              curalm[aidx].re += (FLT)((t.a.d[0]+t.a.d[1])*norm_l[l]);
-              curalm[aidx].im += (FLT)((t.b.d[0]+t.b.d[1])*norm_l[l]);
-              }
-#else
-            curalm[aidx].re += (FLT)(curjob->alm_tmp.c[i][l].re*norm_l[l]);
-            curalm[aidx].im += (FLT)(curjob->alm_tmp.c[i][l].im*norm_l[l]);
-#endif
+          if (curjob->spin==0)
+            {
+            V2DF t; t.v = curjob->alm_tmp.v[i][l];
+            curalm[aidx].re += (FLT)(t.d[0]*norm_l[l]);
+            curalm[aidx].im += (FLT)(t.d[1]*norm_l[l]);
             }
+          else
+            {
+            V2DF2 t = to_V2DF2(curjob->alm_tmp.v2[i][l]);
+            curalm[aidx].re += (FLT)((t.a.d[0]+t.a.d[1])*norm_l[l]);
+            curalm[aidx].im += (FLT)((t.b.d[0]+t.b.d[1])*norm_l[l]);
+            }
+#else
+          curalm[aidx].re += (FLT)(curjob->alm_tmp.c[i][l].re*norm_l[l]);
+          curalm[aidx].im += (FLT)(curjob->alm_tmp.c[i][l].im*norm_l[l]);
+#endif
           }
-        break;
         }
-      default:
-        break;
       }
     }
   }
@@ -916,31 +905,109 @@ static void X(phase2map) (X(joblist) *jobs, const psht_geom_info *ginfo,
     for (ijob=0; ijob<jobs->njobs; ++ijob)
       {
       X(job) *curjob = &jobs->job[ijob];
-      switch (curjob->type)
-        {
-        case ALM2MAP:
-        case ALM2MAP_DERIV1:
-          for (i=0; i<curjob->nmaps; ++i)
-            X(ringhelper_phase2pair)(&helper,mmax,&curjob->phas1[i][dim2],
-              &curjob->phas2[i][dim2],&ginfo->pair[ith],curjob->map[i]);
-          break;
-        default:
-          break;
-        }
+      if (curjob->type != MAP2ALM)
+        for (i=0; i<curjob->nmaps; ++i)
+          X(ringhelper_phase2pair)(&helper,mmax,&curjob->phas1[i][dim2],
+            &curjob->phas2[i][dim2],&ginfo->pair[ith],curjob->map[i]);
       }
     }
   ringhelper_destroy(&helper);
 } /* end of parallel region */
   }
 
+#ifdef USE_MPI
+
+void X(execute_jobs_mpi) (X(joblist) *joblist, const psht_geom_info *geom_info,
+  const psht_alm_info *alm_info, MPI_Comm comm)
+  {
+  {
+  int ntasks;
+  MPI_Comm_size(comm, &ntasks);
+  if (ntasks==1) /* fall back to scalar implementation */
+    {
+    X(execute_jobs) (joblist, geom_info, alm_info);
+    return;
+    }
+  }
+  {
+  int lmax = alm_info->lmax;
+  int spinrec=0, max_spin=0, ijob;
+  psht_mpi_info minfo;
+  psht_make_mpi_info(comm, alm_info, geom_info, &minfo);
+
+  for (ijob=0; ijob<joblist->njobs; ++ijob)
+    {
+    if (joblist->job[ijob].spin<=1) spinrec=1;
+    if (joblist->job[ijob].spin>max_spin) max_spin=joblist->job[ijob].spin;
+    }
+
+  for (ijob=0; ijob<joblist->njobs; ++ijob)
+    joblist->job[ijob].norm_l =
+      Ylmgen_get_norm (lmax, joblist->job[ijob].spin, spinrec);
+
+/* clear output arrays if requested */
+  X(init_output) (joblist, geom_info, alm_info);
+
+  X(alloc_phase_mpi) (joblist,alm_info->nm,geom_info->npairs,minfo.mmax+1,
+    minfo.npairtotal);
+
+/* map->phase where necessary */
+  X(map2phase) (joblist, geom_info, minfo.mmax, 0, geom_info->npairs);
+
+  X(map2alm_comm) (joblist, &minfo);
+
+#pragma omp parallel
+{
+  int mi;
+  X(joblist) ljobs = *joblist;
+  Ylmgen_C generator;
+  Ylmgen_init (&generator,lmax,minfo.mmax,max_spin,spinrec,1e-30);
+  Ylmgen_set_theta (&generator,minfo.theta,minfo.npairtotal);
+  X(alloc_almtmp)(&ljobs,lmax);
+
+#pragma omp for schedule(dynamic,1)
+  for (mi=0; mi<alm_info->nm; ++mi)
+    {
+/* alm->alm_tmp where necessary */
+    X(alm2almtmp) (&ljobs, lmax, mi, alm_info);
+
+/* inner conversion loop */
+    X(inner_loop) (&ljobs, minfo.ispair, alm_info, 0, minfo.npairtotal,
+      &generator, mi);
+
+/* alm_tmp->alm where necessary */
+    X(almtmp2alm) (&ljobs, lmax, mi, alm_info);
+    }
+
+  Ylmgen_destroy(&generator);
+  X(dealloc_almtmp)(&ljobs);
+} /* end of parallel region */
+
+  X(alm2map_comm) (joblist, &minfo);
+
+/* phase->map where necessary */
+  X(phase2map) (joblist, geom_info, minfo.mmax, 0, geom_info->npairs);
+
+  for (ijob=0; ijob<joblist->njobs; ++ijob)
+    DEALLOC(joblist->job[ijob].norm_l);
+  X(dealloc_phase) (joblist);
+  psht_destroy_mpi_info(&minfo);
+  }
+  }
+
+#endif
+
 void X(execute_jobs) (X(joblist) *joblist, const psht_geom_info *geom_info,
   const psht_alm_info *alm_info)
   {
-  int lmax = alm_info->lmax, mmax = alm_info->mmax;
-  int nchunks, chunksize, chunk, spinrec=0, ijob;
+  int lmax = alm_info->lmax, mmax=psht_get_mmax(alm_info->mval, alm_info->nm);
+  int nchunks, chunksize, chunk, spinrec=0, max_spin=0, ijob;
 
   for (ijob=0; ijob<joblist->njobs; ++ijob)
-    if (joblist->job[ijob].spin<=1) { spinrec=1; break; }
+    {
+    if (joblist->job[ijob].spin<=1) spinrec=1;
+    if (joblist->job[ijob].spin>max_spin) max_spin=joblist->job[ijob].spin;
+    }
 
   for (ijob=0; ijob<joblist->njobs; ++ijob)
     joblist->job[ijob].norm_l =
@@ -950,7 +1017,7 @@ void X(execute_jobs) (X(joblist) *joblist, const psht_geom_info *geom_info,
   X(init_output) (joblist, geom_info, alm_info);
 
   get_chunk_info(geom_info->npairs,&nchunks,&chunksize);
-  X(alloc_phase) (joblist,mmax,chunksize);
+  X(alloc_phase) (joblist,mmax+1,chunksize);
 
 /* chunk loop */
   for (chunk=0; chunk<nchunks; ++chunk)
@@ -962,30 +1029,34 @@ void X(execute_jobs) (X(joblist) *joblist, const psht_geom_info *geom_info,
 
 #pragma omp parallel
 {
-    int m;
+    int mi,i;
     X(joblist) ljobs = *joblist;
     Ylmgen_C generator;
     double *theta = RALLOC(double,ulim-llim);
-    for (m=0; m<ulim-llim; ++m)
-      theta[m] = geom_info->pair[m+llim].r1.theta;
-    Ylmgen_init (&generator,lmax,mmax,spinrec,1e-30);
+    int *ispair = RALLOC(int,ulim-llim);
+    for (i=0; i<ulim-llim; ++i)
+      theta[i] = geom_info->pair[i+llim].r1.theta;
+    Ylmgen_init (&generator,lmax,mmax,max_spin,spinrec,1e-30);
     Ylmgen_set_theta (&generator,theta,ulim-llim);
     DEALLOC(theta);
+    for (i=0; i<ulim-llim; ++i)
+      ispair[i] = geom_info->pair[i+llim].r2.nph>0;
     X(alloc_almtmp)(&ljobs,lmax);
 
 #pragma omp for schedule(dynamic,1)
-    for (m=0; m<=mmax; ++m)
+    for (mi=0; mi<alm_info->nm; ++mi)
       {
 /* alm->alm_tmp where necessary */
-      X(alm2almtmp) (&ljobs, lmax, m, alm_info);
+      X(alm2almtmp) (&ljobs, lmax, mi, alm_info);
 
 /* inner conversion loop */
-      X(inner_loop) (&ljobs, geom_info, lmax, mmax, llim, ulim, &generator, m);
+      X(inner_loop) (&ljobs, ispair, alm_info, llim, ulim, &generator, mi);
 
 /* alm_tmp->alm where necessary */
-      X(almtmp2alm) (&ljobs, lmax, m, alm_info);
+      X(almtmp2alm) (&ljobs, lmax, mi, alm_info);
       }
 
+    DEALLOC(ispair);
     Ylmgen_destroy(&generator);
     X(dealloc_almtmp)(&ljobs);
 } /* end of parallel region */
@@ -1046,8 +1117,6 @@ void X(add_job_map2alm) (X(joblist) *joblist, const FLT *map, X(cmplx) *alm,
 void X(add_job_alm2map_spin) (X(joblist) *joblist, const X(cmplx) *alm1,
   const X(cmplx) *alm2, FLT *map1, FLT *map2, int spin, int add_output)
   {
-  UTIL_ASSERT((spin>0)&&(spin<=Ylmgen_maxspin()),
-    "bad spin in add_job_alm2map_spin()");
   X(addjob) (joblist, ALM2MAP, spin, add_output, 2, 2,
     (X(cmplx) *)alm1, (X(cmplx) *)alm2, NULL, map1, map2, NULL);
   }
@@ -1061,8 +1130,6 @@ void X(add_job_alm2map_pol) (X(joblist) *joblist, const X(cmplx) *almT,
 void X(add_job_map2alm_spin) (X(joblist) *joblist, const FLT *map1,
   const FLT *map2, X(cmplx) *alm1, X(cmplx) *alm2, int spin, int add_output)
   {
-  UTIL_ASSERT((spin>0)&&(spin<=Ylmgen_maxspin()),
-    "bad spin in add_job_map2alm_spin()");
   X(addjob) (joblist, MAP2ALM, spin, add_output, 2, 2,
     alm1, alm2, NULL, (FLT *)map1, (FLT *)map2, NULL);
   }

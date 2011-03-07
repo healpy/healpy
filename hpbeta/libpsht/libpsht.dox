@@ -38,8 +38,8 @@
 
   The a_lm array is a one-dimensional array of type <i>pshts_cmplx</i> or
   <i>pshtd_cmplx</i>, which contains all spherical harmonic coefficients
-  for 0<=m<=mmax and m<=l<=lmax. There is only one constraint on the
-  internal structure of the array, which is:
+  for a full or partial set of m quantum numbers with 0<=m<=mmax and m<=l<=lmax.
+  There is only one constraint on the internal structure of the array, which is:
 
   <code>Index[a_l+1,m] = Index[a_l,m] + stride</code>
 
@@ -71,8 +71,8 @@
   <li>scalar map to a_lm</li>
   <li>polarised a_lm to map</li>
   <li>polarised map to a_lm</li>
-  <li>spin(1-100) a_lm to map</li>
-  <li>spin(1-100) map to a_lm</li>
+  <li>spin a_lm to map</li>
+  <li>spin map to a_lm</li>
   <li>scalar a_lm to maps of first derivatives</li>
   </ul>
 
@@ -85,6 +85,9 @@
   PSHT will also make use of SSE2 instructions when compiled for a platform
   known to support them (basically all Intel/AMD processors running a 64bit
   operating system).
+
+  Experimental support for MPI-parallel transforms is available; in this mode,
+  every MPI task must provide a unique subset of the map and a_lm coefficients.
 
   The spherical harmonic transforms can ce executed on double-precision and
   single-precision maps and a_lm, but for accuracy reasons the computations

@@ -25,7 +25,7 @@
 /*! \file psht_almhelpers.h
  *  PSHT helper function for the creation of a_lm data structures
  *
- *  Copyright (C) 2008 Max-Planck-Society
+ *  Copyright (C) 2008-2011 Max-Planck-Society
  *  \author Martin Reinecke
  */
 

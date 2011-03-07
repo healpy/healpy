@@ -1,6 +1,17 @@
-Healpix_cxx requires the file cfitsio3250.tar.gz to be present in
+Starting with HEALPix 2.20, Healpix_cxx supports compilation using a
+pre-installed libcfitsio. In order to use this feature, simply set
+the following environment variables before running "make":
+
+EXTERNAL_CFITSIO=yes
+CFITSIO_EXT_LIB=<full name including path of the cfitsio library file>
+CFITSIO_EXT_INC=<full name of a directory containing fitsio.h and longnam.h>
+
+The installed version of libcfitsio should be at least 3.23.
+
+Alternatively, Healpix_cxx can be instructed to compile its own libcfitsio.
+For that purpose the file cfitsio3260.tar.gz needs to be present in
 the subdirectory libcfitsio/. It can be obtained from
-http://heasarc.gsfc.nasa.gov/docs/software/fitsio/fitsio.html
+http://heasarc.gsfc.nasa.gov/FTP/software/fitsio/c/cfitsio3260.tar.gz
 Please simply put the .tar.gz file into the libcfitsio/ directory; it will
 be unpacked and compiled automatically.
 
@@ -12,7 +23,7 @@ GNU make is also required for compilation.
 To compile the package, set the environment variable
 HEALPIX_TARGET to the target for which you want to compile
 (e.g. generic_gcc, linux_icc etc.). If a fairly recent version
-(4.0 or higher) of gcc and g++ is installed on the system, the target
+(4.2 or higher) of gcc and g++ is installed on the system, the target
 "generic_gcc" should work in most cases; however, for Mac OS X, "osx" is
 recommended. For each possible target there exists a configuration file with
 the name config.$HEALPIX_TARGET in the directory config/.

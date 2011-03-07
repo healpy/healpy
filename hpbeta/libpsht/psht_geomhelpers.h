@@ -25,7 +25,7 @@
 /*! \file psht_geomhelpers.h
  *  PSHT helper function for the creation of grid geometries
  *
- *  Copyright (C) 2006, 2007, 2008 Max-Planck-Society
+ *  Copyright (C) 2006-2011 Max-Planck-Society
  *  \author Martin Reinecke
  */
 

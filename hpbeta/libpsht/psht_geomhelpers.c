@@ -25,7 +25,7 @@
 /*! \file psht_geomhelpers.c
  *  Spherical transform library
  *
- *  Copyright (C) 2006-2010 Max-Planck-Society
+ *  Copyright (C) 2006-2011 Max-Planck-Society
  *  \author Martin Reinecke
  */
 

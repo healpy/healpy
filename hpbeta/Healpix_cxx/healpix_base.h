@@ -25,7 +25,7 @@
  */
 
 /*! \file healpix_base.h
- *  Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009 Max-Planck-Society
+ *  Copyright (C) 2003-2011 Max-Planck-Society
  *  \author Martin Reinecke
  */
 
@@ -36,6 +36,7 @@
 #include "cxxutils.h"
 #include "pointing.h"
 #include "arr.h"
+#include "rangeset.h"
 
 /*! The two possible ordering schemes of a HEALPix map. */
 enum Healpix_Ordering_Scheme { RING, /*!< RING scheme */
@@ -76,8 +77,10 @@ class Healpix_Base
     Healpix_Ordering_Scheme scheme_;
 
     inline int ring_above (double z) const;
-    void in_ring (int iz, double phi0, double dphi,
-      std::vector<int> &listir) const;
+    void in_ring (int iz, double phi0, double dphi, rangeset<int> &pixset)
+      const;
+    void query_disc_ring (const pointing &dir, double radius,
+      rangeset<int> &pixset) const;
 
     int xyf2nest(int ix, int iy, int face_num) const;
     void nest2xyf(int pix, int &ix, int &iy, int &face_num) const;
@@ -159,37 +162,56 @@ class Healpix_Base
     /*! Translates a pixel number from its Peano index to NEST. */
     int peano2nest (int pix) const;
 
-    int ang2pix_z_phi (double z, double phi) const;
+    int zphi2pix (double z, double phi) const;
 
     /*! Returns the number of the pixel which contains the angular coordinates
         \a ang. */
     int ang2pix (const pointing &ang) const
-      { return ang2pix_z_phi (cos(ang.theta), ang.phi); }
+      { return zphi2pix (cos(ang.theta), ang.phi); }
     /*! Returns the number of the pixel which contains the vector \a vec
         (\a vec is normalized if necessary). */
     int vec2pix (const vec3 &vec) const
-      { return ang2pix_z_phi (vec.z/vec.Length(), safe_atan2(vec.y,vec.x)); }
+      { return zphi2pix (vec.z/vec.Length(), safe_atan2(vec.y,vec.x)); }
 
-    void pix2ang_z_phi (int pix, double &z, double &phi) const;
+    void pix2zphi (int pix, double &z, double &phi) const;
 
     /*! Returns the angular coordinates of the center of the pixel with
         number \a pix. */
     pointing pix2ang (int pix) const
       {
       double z, phi;
-      pix2ang_z_phi (pix,z,phi);
+      pix2zphi (pix,z,phi);
       return pointing(acos(z),phi);
       }
     /*! Returns the vector to the center of the pixel with number \a pix. */
     vec3 pix2vec (int pix) const
       {
       double z, phi;
-      pix2ang_z_phi (pix,z,phi);
+      pix2zphi (pix,z,phi);
       vec3 res;
       res.set_z_phi (z, phi);
       return res;
       }
 
+    /*! Returns a set of pixel ranges whose centers lie within \a radius
+        of \a dir in \a pixset.
+        \param dir the angular coordinates of the disc center
+        \param radius the radius (in radians) of the disc
+        \param pixset a rangeset object containing the indices of all pixels
+               within the disc
+        \note This method is more efficient in the RING scheme. */
+    void query_disc (const pointing &dir, double radius,
+      rangeset<int> &pixset) const;
+    /*! Returns a set of pixel ranges that lie at least partially within
+        \a radius of \a dir in \a pixset. It may also return a few pixels
+        which do not lie in the disk at all.
+        \param dir the angular coordinates of the disc center
+        \param radius the radius (in radians) of the disc
+        \param pixset a rangeset object containing the indices of all pixels
+               within the disc
+        \note This method is more efficient in the RING scheme. */
+    void query_disc_inclusive (const pointing &dir, double radius,
+      rangeset<int> &pixset) const;
     /*! Returns the numbers of all pixels whose centers lie within \a radius
         of \a dir in \a listpix.
         \param dir the angular coordinates of the disc center
@@ -206,14 +228,14 @@ class Healpix_Base
         \param radius the radius (in radians) of the disc
         \param listpix a vector containing the numbers of all pixels within
                the disc
-        \note This method works in both RING and NEST schemes, but is
-          considerably faster in the RING scheme. */
+        \note This method is more efficient in the RING scheme. */
     void query_disc_inclusive (const pointing &dir, double radius,
       std::vector<int> &listpix) const;
 
     /*! Returns useful information about a given ring of the map.
         \param ring the ring number (the number of the first ring is 1)
         \param startpix the number of the first pixel in the ring
+               (NOTE: this is always given in the RING numbering scheme!)
         \param ringpix the number of pixels in the ring
         \param costheta the cosine of the colatitude of the ring
         \param sintheta the sine of the colatitude of the ring
@@ -224,13 +246,19 @@ class Healpix_Base
     /*! Returns useful information about a given ring of the map.
         \param ring the ring number (the number of the first ring is 1)
         \param startpix the number of the first pixel in the ring
+               (NOTE: this is always given in the RING numbering scheme!)
         \param ringpix the number of pixels in the ring
         \param theta the colatitude (in radians) of the ring
         \param shifted if \a true, the center of the first pixel is not at
                \a phi=0 */
     void get_ring_info2 (int ring, int &startpix, int &ringpix,
       double &theta, bool &shifted) const;
-
+    /*! Returns useful information about a given ring of the map.
+        \param ring the ring number (the number of the first ring is 1)
+        \param startpix the number of the first pixel in the ring
+               (NOTE: this is always given in the RING numbering scheme!)
+        \param ringpix the number of pixels in the ring */
+    void get_ring_info_small (int ring, int &startpix, int &ringpix) const;
     /*! Returns the neighboring pixels of \a pix in \a result.
         On exit, \a result contains (in this order)
         the pixel numbers of the SW, W, NW, N, NE, E, SE and S neighbor

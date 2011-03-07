@@ -25,7 +25,7 @@
 /*! \file psht_almhelpers.c
  *  Spherical transform library
  *
- *  Copyright (C) 2008, 2009, 2010 Max-Planck-Society
+ *  Copyright (C) 2008-2011 Max-Planck-Society
  *  \author Martin Reinecke
  */
 
@@ -39,12 +39,16 @@ void psht_make_triangular_alm_info (int lmax, int mmax, int stride,
   int tval;
   psht_alm_info *info = RALLOC(psht_alm_info,1);
   info->lmax = lmax;
-  info->mmax = mmax;
-  info->mstart = RALLOC(ptrdiff_t,mmax+1);
+  info->nm = mmax+1;
+  info->mval = RALLOC(int,mmax+1);
+  info->mvstart = RALLOC(ptrdiff_t,mmax+1);
   info->stride = stride;
   tval = 2*lmax+1;
   for (m=0; m<=mmax; ++m)
-    info->mstart[m] = stride*((m*(tval-m))>>1);
+    {
+    info->mval[m] = m;
+    info->mvstart[m] = stride*((m*(tval-m))>>1);
+    }
   *alm_info = info;
   }
 
@@ -54,10 +58,14 @@ void psht_make_rectangular_alm_info (int lmax, int mmax, int stride,
   ptrdiff_t m;
   psht_alm_info *info = RALLOC(psht_alm_info,1);
   info->lmax = lmax;
-  info->mmax = mmax;
-  info->mstart = RALLOC(ptrdiff_t,mmax+1);
+  info->nm = mmax+1;
+  info->mval = RALLOC(int,mmax+1);
+  info->mvstart = RALLOC(ptrdiff_t,mmax+1);
   info->stride = stride;
   for (m=0; m<=mmax; ++m)
-    info->mstart[m] = stride*m*(lmax+1);
+    {
+    info->mval[m] = m;
+    info->mvstart[m] = stride*m*(lmax+1);
+    }
   *alm_info = info;
   }

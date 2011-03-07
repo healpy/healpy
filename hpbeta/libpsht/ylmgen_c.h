@@ -55,7 +55,7 @@ typedef struct
 typedef struct
   {
   double fsmall, fbig, eps, cth_crit;
-  int lmax, mmax, m_cur, ith, nth, m_crit, spinrec;
+  int lmax, mmax, smax, m_cur, ith, nth, m_crit, spinrec;
   /*! The index of the first non-negligible Y_lm value. */
   int *firstl;
   double *cf, *mfac, *t1fac, *t2fac, *th, *cth, *sth, *logsth;
@@ -93,7 +93,7 @@ typedef struct
     magnitude is smaller than \a epsilon as zero. If \a spinrec is nonzero,
     the spin-1 and spin-2 Y_lm will be calculated by recursion from the spin-0
     ones, otherwise Wigner d matrix elements will be used. */
-void Ylmgen_init (Ylmgen_C *gen, int l_max, int m_max, int spinrec,
+void Ylmgen_init (Ylmgen_C *gen, int l_max, int m_max, int s_max, int spinrec,
    double epsilon);
 
 /*! Passes am array \a theta of \a nth colatitudes that will be used in
@@ -130,9 +130,6 @@ void Ylmgen_recalc_lambda_wx_sse2 (Ylmgen_C *gen, int spin);
     given \a spinrec flag. The array must be deallocated (using free()) by the
     user. */
 double *Ylmgen_get_norm (int lmax, int spin, int spinrec);
-
-/*! Returns the maximum spin quantum number supported by the Ylmgen code. */
-int Ylmgen_maxspin(void);
 
 #ifdef __cplusplus
 }
