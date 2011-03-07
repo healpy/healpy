@@ -85,7 +85,7 @@ if 'CFITSIO_EXT_LIB' in os.environ:
     library_dirs.append(cfitsio_lib_dir)
 
 healpix_libs =['healpix_cxx','cxxsupport','psht','fftpack','c_utils','cfitsio','gomp']
-healpix_args =['-fopenmp']
+healpix_args =['-fopenmp','-fpermissive']
 
 #start with base extension
 pixel_lib = Extension('healpy._healpy_pixel_lib',
