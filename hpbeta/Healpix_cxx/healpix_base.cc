@@ -69,6 +69,12 @@ Healpix_Base::Tablefiller Healpix_Base::Filler;
 const int Healpix_Base::jrll[] = { 2,2,2,2,3,3,3,3,4,4,4,4 },
           Healpix_Base::jpll[] = { 1,3,5,7,0,2,4,6,1,3,5,7 };
 
+int Healpix_Base::nside2order (int nside)
+  {
+  planck_assert (nside>0, "invalid value for Nside");
+  if ((nside)&(nside-1)) return -1;
+  return ilog2(nside);
+  }
 int Healpix_Base::npix2nside (int npix)
   {
   int res=isqrt(npix/12);
@@ -114,71 +120,297 @@ void Healpix_Base::in_ring(int iz, double phi0, double dphi,
   int ipix2 = ipix1 + nr - 1;       // highest pixel number in the ring
 
   if (dphi > (pi-1e-12))
-    pixset.add(ipix1,ipix2+1);
+    pixset.append(ipix1,ipix2+1);
   else
     {
     int ip_lo = ifloor<int>(nr*inv_twopi*(phi0-dphi) - shift)+1;
     int ip_hi = ifloor<int>(nr*inv_twopi*(phi0+dphi) - shift);
     if (ip_lo<0)
       {
-      pixset.add(ipix1,ipix1+ip_hi+1);
-      pixset.add(ipix1+ip_lo+nr,ipix2+1);
+      pixset.append(ipix1,ipix1+ip_hi+1);
+      pixset.append(ipix1+ip_lo+nr,ipix2+1);
       }
     else if (ip_hi>=nr)
       {
-      pixset.add(ipix1,ipix1+ip_hi-nr+1);
-      pixset.add(ipix1+ip_lo,ipix2+1);
+      pixset.append(ipix1,ipix1+ip_hi-nr+1);
+      pixset.append(ipix1+ip_lo,ipix2+1);
       }
     else
-      pixset.add(ipix1+ip_lo,ipix1+ip_hi+1);
+      pixset.append(ipix1+ip_lo,ipix1+ip_hi+1);
     }
   }
 
-void Healpix_Base::query_disc_ring (const pointing &ptg, double radius,
+namespace {
+
+/* Short note on the "zone":
+   zone = 0: pixel lies completely outside the queried shape
+          1: pixel may overlap with the shape, pixel center is outside
+          2: pixel center is inside the shape, but maybe not the complete pixel
+          3: pixel lies completely inside the shape */
+
+inline void check_pixel (int o, int order_, int omax, int zone,
+  rangeset<int> &pixset, int pix, vector<pair<int,int> > &stk, bool inclusive,
+  int &stacktop)
+  {
+  if (zone==0) return;
+
+  if (o<order_)
+    {
+    if (zone>=3)
+      {
+      int sdist=2*(order_-o); // the "bit-shift distance" between map orders
+      pixset.append(pix<<sdist,(pix+1)<<sdist); // output all subpixels
+      }
+    else // (zone>=1)
+      for (int i=0; i<4; ++i)
+        stk.push_back(make_pair(4*pix+3-i,o+1)); // add children
+    }
+  else if (o>order_) // this implies that inclusive==true
+    {
+    if (zone>=2) // pixel center in shape
+      {
+      pixset.append(pix>>(2*(o-order_))); // output the parent pixel at order_
+      stk.resize(stacktop); // unwind the stack
+      }
+    else // (zone>=1): pixel center in safety range
+      {
+      if (o<omax) // check sublevels
+        for (int i=0; i<4; ++i) // add children in reverse order
+          stk.push_back(make_pair(4*pix+3-i,o+1));
+      else // at resolution limit
+        {
+        pixset.append(pix>>(2*(o-order_))); // output the parent pixel at order_
+        stk.resize(stacktop); // unwind the stack
+        }
+      }
+    }
+  else // o==order_
+    {
+    if (zone>=2)
+      pixset.append(pix);
+    else if (inclusive) // and (zone>=1)
+      {
+      if (order_<omax) // check sublevels
+        {
+        stacktop=stk.size(); // remember current stack position
+        for (int i=0; i<4; ++i) // add children in reverse order
+          stk.push_back(make_pair(4*pix+3-i,o+1));
+        }
+      else // at resolution limit
+        pixset.append(pix); // output the pixel
+      }
+    }
+  }
+
+/* The following three functions implement the algorithm for finding the
+   smallest enclosing cone for a point set on the sphere according to
+   Barequet&Elber: Information Processing Letters 93(2005), p.83.
+   All points are expected to be passed as unit vectors.
+   The enclosing cone must have an opening angle <pi/2. */
+
+void get_circle (const arr<vec3> &point, tsize q1, tsize q2, vec3 &center,
+  double &cosrad)
+  {
+  center = (point[q1]+point[q2]).Norm();
+  cosrad = dotprod(point[q1],center);
+  for (tsize i=0; i<q1; ++i)
+    if (dotprod(point[i],center)<cosrad) // point outside the current circle
+      {
+      center=crossprod(point[q1]-point[i],point[q2]-point[i]).Norm();
+      cosrad=dotprod(point[i],center);
+      }
+  }
+void get_circle (const arr<vec3> &point, tsize q, vec3 &center,
+  double &cosrad)
+  {
+  center = (point[0]+point[q]).Norm();
+  cosrad = dotprod(point[0],center);
+  for (tsize i=1; i<q; ++i)
+    if (dotprod(point[i],center)<cosrad) // point outside the current circle
+      get_circle(point,i,q,center,cosrad);
+  }
+void find_enclosing_circle (const arr<vec3> &point, vec3 &center,
+  double &cosrad)
+  {
+  tsize np=point.size();
+  planck_assert(np>=3,"too few points");
+  center = (point[0]+point[1]).Norm();
+  cosrad = dotprod(point[0],center);
+  for (tsize i=2; i<np; ++i)
+    if (dotprod(point[i],center)<cosrad) // point outside the current circle
+      get_circle(point,i,center,cosrad);
+  }
+} // unnamed namespace
+
+void Healpix_Base::query_disc (pointing ptg, double radius, bool inclusive,
   rangeset<int> &pixset) const
   {
   pixset.clear();
-  if (radius>=pi)
-    { pixset.add(0,npix_); return; }
+  ptg.normalize();
 
-  double cosang = cos(radius);
-
-  double z0 = cos(ptg.theta);
-  double xa = 1./sqrt((1-z0)*(1+z0));
-
-  double rlat1  = ptg.theta - radius;
-  double zmax = cos(rlat1);
-  int irmin = ring_above (zmax)+1;
-
-  if ((rlat1<=0) && (irmin>1)) // north pole in the disc
+  if (scheme_==RING)
     {
-    int sp,rp;
-    get_ring_info_small(irmin-1,sp,rp);
-    pixset.add(0,sp+rp);
+    if (inclusive) radius+=max_pixrad();
+    if (radius>=pi)
+      { pixset.append(0,npix_); return; }
+
+    double cosang = cos(radius);
+
+    double z0 = cos(ptg.theta);
+    double xa = 1./sqrt((1-z0)*(1+z0));
+
+    double rlat1  = ptg.theta - radius;
+    double zmax = cos(rlat1);
+    int irmin = ring_above (zmax)+1;
+
+    if ((rlat1<=0) && (irmin>1)) // north pole in the disc
+      {
+      int sp,rp;
+      get_ring_info_small(irmin-1,sp,rp);
+      pixset.append(0,sp+rp);
+      }
+
+    double rlat2  = ptg.theta + radius;
+    double zmin = cos(rlat2);
+    int irmax = ring_above (zmin);
+
+    // ------------- loop on ring number ---------------------
+    for (int iz=irmin; iz<=irmax; ++iz) // rings partially in the disc
+      {
+      double z=ring2z(iz);
+
+      // --------- phi range in the disc for each z ---------
+      double x = (cosang-z*z0)*xa;
+      double ysq = 1-z*z-x*x;
+      planck_assert(ysq>=0, "error in query_disc()");
+      double dphi=atan2(sqrt(ysq),x);
+      in_ring (iz, ptg.phi, dphi, pixset);
+      }
+
+    if ((rlat2>=pi) && (irmax+1<4*nside_)) // south pole in the disc
+      {
+      int sp,rp;
+      get_ring_info_small(irmax+1,sp,rp);
+      pixset.append(sp,npix_);
+      }
     }
-
-  double rlat2  = ptg.theta + radius;
-  double zmin = cos(rlat2);
-  int irmax = ring_above (zmin);
-
-// ------------- loop on ring number ---------------------
-  for (int iz=irmin; iz<=irmax; ++iz) // rings partially in the disc
+  else // scheme_==NEST
     {
-    double z=ring2z(iz);
+    if (radius>=pi) // disc covers the whole sphere
+      { pixset.append(0,npix_); return; }
 
-// --------- phi range in the disc for each z ---------
-    double x = (cosang-z*z0)*xa;
-    double ysq = 1-z*z-x*x;
-    planck_assert(ysq>=0, "error in query_disc()");
-    double dphi=atan2(sqrt(ysq),x);
-    in_ring (iz, ptg.phi, dphi, pixset);
+    int oplus=inclusive ? 2 : 0;
+    int omax=min(int(order_max),order_+oplus); // the order up to which we test
+
+    vec3 vptg(ptg);
+    arr<Healpix_Base> base(omax+1);
+    arr<double> crpdr(omax+1), crmdr(omax+1);
+    double cosrad=cos(radius);
+    for (int o=0; o<=omax; ++o) // prepare data at the required orders
+      {
+      base[o].Set(o,NEST);
+      double dr=base[o].max_pixrad(); // safety distance
+      crpdr[o] = (radius+dr>pi) ? -1. : cos(radius+dr);
+      crmdr[o] = (radius-dr<0.) ?  1. : cos(radius-dr);
+      }
+    vector<pair<int,int> > stk; // stack for pixel numbers and their orders
+    stk.reserve(12+3*omax); // reserve maximum size to avoid reallocation
+    for (int i=0; i<12; ++i) // insert the 12 base pixels in reverse order
+      stk.push_back(make_pair(11-i,0));
+
+    int stacktop=0; // a place to save a stack position
+
+    while (!stk.empty()) // as long as there are pixels on the stack
+      {
+      // pop current pixel number and order from the stack
+      int pix=stk.back().first,
+          o  =stk.back().second;
+      stk.pop_back();
+
+      double z,phi;
+      base[o].pix2zphi(pix,z,phi);
+      // cosine of angular distance between pixel center and disc center
+      double cangdist=cosdist_zphi(vptg.z,ptg.phi,z,phi);
+
+      if (cangdist>crpdr[o])
+        {
+        int zone=3;
+        if (cangdist<cosrad)
+          zone=1;
+        else if (cangdist<=crmdr[o])
+          zone=2;
+
+        check_pixel (o, order_, omax, zone, pixset, pix, stk, inclusive,
+          stacktop);
+        }
+      }
     }
+  }
 
-  if ((rlat2>=pi) && (irmax+1<4*nside_)) // south pole in the disc
+void Healpix_Base::query_multidisc (const arr<vec3> &norm,
+  const arr<double> &rad, bool inclusive, rangeset<int> &pixset) const
+  {
+  tsize nv=norm.size();
+  planck_assert(nv==rad.size(),"inconsistent input arrays");
+  pixset.clear();
+
+  if (scheme_==RING)
     {
-    int sp,rp;
-    get_ring_info_small(irmax+1,sp,rp);
-    pixset.add(sp,npix_);
+    planck_fail ("query_multidisc in RING scheme not (yet) supported");
+    }
+  else // scheme_ == NEST
+    {
+    int oplus=inclusive ? 2 : 0;
+    int omax=min(int(order_max),order_+oplus); // the order up to which we test
+
+    // TODO: ignore all discs with radius>=pi
+
+    arr<Healpix_Base> base(omax+1);
+    arr3<double> crlimit(omax+1,nv,3);
+    arr<double> cr(nv);
+    for (tsize i=0; i<nv; ++i)
+      cr[i]=cos(rad[i]);
+    for (int o=0; o<=omax; ++o) // prepare data at the required orders
+      {
+      base[o].Set(o,NEST);
+      double dr=base[o].max_pixrad(); // safety distance
+      for (tsize i=0; i<nv; ++i)
+        {
+        crlimit(o,i,0) = (rad[i]+dr>pi) ? -1. : cos(rad[i]+dr);
+        crlimit(o,i,1) = cr[i];
+        crlimit(o,i,2) = (rad[i]-dr<0.) ?  1. : cos(rad[i]-dr);
+        }
+      }
+
+    vector<pair<int,int> > stk; // stack for pixel numbers and their orders
+    stk.reserve(12+3*omax); // reserve maximum size to avoid reallocation
+    for (int i=0; i<12; ++i) // insert the 12 base pixels in reverse order
+      stk.push_back(make_pair(11-i,0));
+
+    int stacktop=0; // a place to save a stack position
+
+    while (!stk.empty()) // as long as there are pixels on the stack
+      {
+      // pop current pixel number and order from the stack
+      int pix=stk.back().first,
+          o  =stk.back().second;
+      stk.pop_back();
+
+      vec3 pv(base[o].pix2vec(pix));
+
+      tsize zone=3;
+      for (tsize i=0; i<nv; ++i)
+        {
+        double crad=dotprod(pv,norm[i]);
+        for (tsize iz=0; iz<zone; ++iz)
+          if (crad<crlimit(o,i,iz))
+            if ((zone=iz)==0) goto bailout;
+        }
+
+      check_pixel (o, order_, omax, zone, pixset, pix, stk, inclusive,
+        stacktop);
+      bailout:;
+      }
     }
   }
 
@@ -290,6 +522,36 @@ int Healpix_Base::xyf2ring (int ix, int iy, int face_num) const
   return n_before + jp - 1;
   }
 
+Healpix_Base::Healpix_Base ()
+  : order_(-1), nside_(0), npface_(0), ncap_(0), npix_(0),
+    fact1_(0), fact2_(0), scheme_(RING) {}
+
+void Healpix_Base::Set (int order, Healpix_Ordering_Scheme scheme)
+  {
+  planck_assert ((order>=0)&&(order<=order_max), "bad order");
+  order_  = order;
+  nside_  = 1<<order;
+  npface_ = nside_<<order_;
+  ncap_   = (npface_-nside_)<<1;
+  npix_   = 12*npface_;
+  fact2_  = 4./npix_;
+  fact1_  = (nside_<<1)*fact2_;
+  scheme_ = scheme;
+  }
+void Healpix_Base::SetNside (int nside, Healpix_Ordering_Scheme scheme)
+  {
+  order_  = nside2order(nside);
+  planck_assert ((scheme!=NEST) || (order_>=0),
+    "SetNside: nside must be power of 2 for nested maps");
+  nside_  = nside;
+  npface_ = nside_*nside_;
+  ncap_   = (npface_-nside_)<<1;
+  npix_   = 12*npface_;
+  fact2_  = 4./npix_;
+  fact1_  = (nside_<<1)*fact2_;
+  scheme_ = scheme;
+  }
+
 double Healpix_Base::ring2z (int ring) const
   {
   if (ring<nside_)
@@ -309,7 +571,7 @@ int Healpix_Base::pix2ring (int pix) const
     else if (pix<(npix_-ncap_)) // Equatorial region
       return (pix-ncap_)/(4*nside_) + nside_; // counted from North pole
     else // South Polar cap
-      return 4*nside_ - ((1+isqrt(2*(npix_-pix)-1))>>1); //counted from South pole
+      return 4*nside_-((1+isqrt(2*(npix_-pix)-1))>>1); //counted from South pole
     }
   else
     {
@@ -537,47 +799,37 @@ void Healpix_Base::pix2zphi (int pix, double &z, double &phi) const
     }
   }
 
-void Healpix_Base::query_disc (const pointing &ptg, double radius,
-  rangeset<int>& pixset) const
+void Healpix_Base::query_polygon (const vector<pointing> &vertex,
+  bool inclusive, rangeset<int> &pixset) const
   {
-  pixset.clear();
-  query_disc_ring (ptg, radius, pixset);
-  if (scheme_==NEST)
+  tsize nv=vertex.size();
+  tsize ncirc = inclusive ? nv+1 : nv;
+  planck_assert(nv>=3,"not enough vertices in polygon");
+  arr<vec3> vv(nv);
+  for (tsize i=0; i<nv; ++i)
+    vv[i]=vertex[i].to_vec3();
+  arr<vec3> normal(ncirc);
+  int flip=0;
+  for (tsize i=0; i<nv; ++i)
     {
-    rangeset<int> pixset2;
-    for (rangeset<int>::const_iterator it=pixset.begin();it!=pixset.end();++it)
-      for (int m=it->first; m<it->second; ++m)
-        pixset2.add(ring2nest(m));
-    pixset2.swap(pixset);
+    normal[i]=crossprod(vv[i],vv[(i+1)%nv]);
+    double hnd=-dotprod(normal[i],vv[(i+2)%nv]);
+    planck_assert(abs(hnd)>1e-10,"degenerate corner");
+    if (i==0)
+      flip = (hnd>0.) ? -1 : 1;
+    else
+      planck_assert(flip*hnd>0,"polygon is not convex");
+    normal[i]*=flip/normal[i].Length();
     }
+  arr<double> rad(ncirc,halfpi);
+  if (inclusive)
+    {
+    double cosrad;
+    find_enclosing_circle (vv, normal[nv], cosrad);
+    rad[nv]=acos(cosrad);
+    }
+  query_multidisc(normal,rad,inclusive,pixset);
   }
-
-void Healpix_Base::query_disc (const pointing &ptg, double radius,
-  vector<int>& listpix) const
-  {
-  listpix.clear();
-  rangeset<int> pixset;
-  query_disc_ring (ptg, radius, pixset);
-  tsize pixcnt=0;
-  for (rangeset<int>::const_iterator it=pixset.begin(); it!=pixset.end(); ++it)
-    pixcnt+=it->second-it->first;
-  listpix.reserve(pixcnt);
-  if (scheme_==RING)
-    for (rangeset<int>::const_iterator it=pixset.begin();it!=pixset.end();++it)
-      for (int m=it->first; m<it->second; ++m)
-        listpix.push_back(m);
-  else
-    for (rangeset<int>::const_iterator it=pixset.begin();it!=pixset.end();++it)
-      for (int m=it->first; m<it->second; ++m)
-        listpix.push_back(ring2nest(m));
-  }
-
-void Healpix_Base::query_disc_inclusive (const pointing &dir, double radius,
-  vector<int> &listpix) const
-    { query_disc (dir,radius+1.362*pi/(4*nside_),listpix); }
-void Healpix_Base::query_disc_inclusive (const pointing &dir, double radius,
-  rangeset<int>& pixset) const
-    { query_disc (dir,radius+1.362*pi/(4*nside_),pixset); }
 
 void Healpix_Base::get_ring_info_small (int ring, int &startpix, int &ringpix)
   const
@@ -788,6 +1040,18 @@ void Healpix_Base::get_interpol (const pointing &ptg, fix_arr<int,4> &pix,
       pix[m] = ring2nest(pix[m]);
   }
 
+void Healpix_Base::swap (Healpix_Base &other)
+  {
+  std::swap(order_,other.order_);
+  std::swap(nside_,other.nside_);
+  std::swap(npface_,other.npface_);
+  std::swap(ncap_,other.ncap_);
+  std::swap(npix_,other.npix_);
+  std::swap(fact1_,other.fact1_);
+  std::swap(fact2_,other.fact2_);
+  std::swap(scheme_,other.scheme_);
+  }
+
 double Healpix_Base::max_pixrad() const
   {
   vec3 va,vb;
@@ -796,4 +1060,53 @@ double Healpix_Base::max_pixrad() const
   t1*=t1;
   vb.set_z_phi (1-t1/3, 0);
   return v_angle(va,vb);
+  }
+
+double Healpix_Base::max_pixrad(int ring) const
+  {
+  if (ring>=2*nside_) ring=4*nside_-ring;
+  double z=ring2z(ring), z_up=(ring>1) ? ring2z(ring-1) : 1.;
+  vec3 mypos, uppos;
+  uppos.set_z_phi(z_up,0);
+  if (ring<=nside_)
+    {
+    mypos.set_z_phi(z,pi/(4*ring));
+    return v_angle(mypos,uppos);
+    }
+  mypos.set_z_phi(z,0);
+  double vdist=v_angle(mypos,uppos);
+  double hdist=sqrt(1.-z*z)*pi/(4*nside_);
+  return max(hdist,vdist);
+  }
+
+arr<int> Healpix_Base::swap_cycles() const
+  {
+  static const int clen[] = { 0,7,5,4,12,10,13,18,14,19,18,17,27,21 };
+  static const int cycle[] = {
+    0,1,8,12,16,21,40,
+    0,1,2,40,114,
+    0,4,160,263,
+    0,4,30,49,51,87,526,1027,1105,1387,1807,2637,
+    0,8,10,18,39,74,146,307,452,4737,
+    0,1,2,7,9,17,80,410,1526,1921,32859,33566,38931,
+    0,5,6,10,12,24,27,95,372,494,924,1409,3492,4248,9137,66043,103369,156899,
+    0,1,2,3,4,45,125,351,697,24337,102940,266194,341855,419857,
+    0,1,2,3,9,16,1705,2082,2126,8177,12753,15410,52642,80493,83235,88387,99444,
+      1675361,2495125,
+    0,2,6,8,9,11,20,50,93,152,183,2137,13671,44794,486954,741908,4803258,
+      5692573,
+    0,1,5,6,44,53,470,2847,3433,4906,13654,14710,400447,1797382,2744492,
+      18775974,23541521,
+    0,4,9,10,16,33,83,117,318,451,5759,10015,128975,171834,211256,347608,
+      1278690,2154097,2590798,3427694,5581717,21012301,27023976,72522811,
+      95032729,139166747,171822389,
+    0,5,10,267,344,363,2968,3159,9083,18437,76602,147614,1246902,1593138,
+      2035574,6529391,9511830,11340287,29565945,281666026,677946848 };
+
+  planck_assert(order_>=0, "swap_cycles(): need hierarchical map");
+  arr<int> result(clen[order_]);
+  tsize ofs=0;
+  for (int m=0; m<order_;++m) ofs+=clen[m];
+  for (tsize m=0; m<result.size();++m) result[m]=cycle[m+ofs];
+  return result;
   }

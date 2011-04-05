@@ -61,7 +61,7 @@ template <typename T, int align> class alignAlloc__
     void dealloc(T *ptr) const
       {
       using namespace std;
-      if (ptr) free(ptr);
+      free(ptr);
       }
   };
 

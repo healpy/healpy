@@ -22,38 +22,42 @@
  *  (DLR).
  */
 
-/*
- *  Utilities for error reporting
+/*! \file pointing.cc
+ *  Class representing a direction in 3D space
  *
  *  Copyright (C) 2003-2011 Max-Planck-Society
- *  Author: Martin Reinecke
+ *  \author Martin Reinecke
  */
 
-#include "error_handling.h"
-
-#include <iostream>
-#include <string>
+#include "pointing.h"
+#include "lsconstants.h"
 
 using namespace std;
 
-PlanckError::PlanckError(const string &message) : msg (message) {}
-PlanckError::PlanckError(const char *message) : msg (message) {}
-
-//virtual
-PlanckError::~PlanckError() {}
-
-void planck_failure__(const char *file, int line, const char *func,
-  const string &msg)
+vec3 pointing::to_vec3() const
   {
-  cerr << "Error encountered at " << file << ", line " << line << endl;
-  if (func) cerr << "(function " << func << ")" << endl;
-  if (msg!="") cerr << endl << msg << endl;
-  cerr << endl;
+  double st=sin(theta);
+  return vec3 (st*cos(phi), st*sin(phi), cos(theta));
+  }
+void pointing::from_vec3 (const vec3 &inp)
+  {
+  theta = atan2(sqrt(inp.x*inp.x+inp.y*inp.y),inp.z);
+  phi = safe_atan2 (inp.y,inp.x);
+  if (phi<0.) phi += twopi;
+  }
+void pointing::normalize()
+  {
+  theta=fmodulo(theta,twopi);
+  if (theta>pi)
+    {
+    phi+=pi;
+    theta=twopi-theta;
+    }
+  phi=fmodulo(phi,twopi);
   }
 
-void planck_failure__(const char *file, int line, const char *func,
-  const char *msg)
-  { planck_failure__ (file,line,func,string(msg)); }
-
-void killjob__()
-  { throw; }
+ostream &operator<< (ostream &os, const pointing &p)
+  {
+  os << p.theta << ", " << p.phi << std::endl;
+  return os;
+  }

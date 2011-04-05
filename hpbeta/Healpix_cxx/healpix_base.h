@@ -76,11 +76,14 @@ class Healpix_Base
     /*! The map's ordering scheme. */
     Healpix_Ordering_Scheme scheme_;
 
+    /*! Returns the number of the next ring to the north of \a z=cos(theta).
+        It may return 0; in this case \a z lies north of all rings. */
     inline int ring_above (double z) const;
     void in_ring (int iz, double phi0, double dphi, rangeset<int> &pixset)
       const;
-    void query_disc_ring (const pointing &dir, double radius,
-      rangeset<int> &pixset) const;
+
+    void query_multidisc (const arr<vec3> &norm, const arr<double> &rad,
+      bool inclusive, rangeset<int> &pixset) const;
 
     int xyf2nest(int ix, int iy, int face_num) const;
     void nest2xyf(int pix, int &ix, int &iy, int &face_num) const;
@@ -96,19 +99,12 @@ class Healpix_Base
     /*! Calculates the map order from its \a N_side parameter.
         Returns -1 if \a nside is not a power of 2.
         \param nside the \a N_side parameter */
-    static int nside2order (int nside)
-      {
-      planck_assert (nside>0, "invalid value for Nside");
-      if ((nside)&(nside-1)) return -1;
-      return ilog2(nside);
-      }
+    static int nside2order (int nside);
     /*! Calculates the \a N_side parameter from the number of pixels.
         \param npix the number of pixels */
     static int npix2nside (int npix);
     /*! Constructs an unallocated object. */
-    Healpix_Base ()
-      : order_(-1), nside_(0), npface_(0), ncap_(0), npix_(0),
-        fact1_(0), fact2_(0), scheme_(RING) {}
+    Healpix_Base ();
     /*! Constructs an object with a given \a order and the ordering
         scheme \a scheme. */
     Healpix_Base (int order, Healpix_Ordering_Scheme scheme)
@@ -119,33 +115,10 @@ class Healpix_Base
     Healpix_Base (int nside, Healpix_Ordering_Scheme scheme, const nside_dummy)
       { SetNside (nside, scheme); }
 
-    /* Adjusts the object to \a order and \a scheme. */
-    void Set (int order, Healpix_Ordering_Scheme scheme)
-      {
-      planck_assert ((order>=0)&&(order<=order_max), "bad order");
-      order_  = order;
-      nside_  = 1<<order;
-      npface_ = nside_<<order_;
-      ncap_   = (npface_-nside_)<<1;
-      npix_   = 12*npface_;
-      fact2_  = 4./npix_;
-      fact1_  = (nside_<<1)*fact2_;
-      scheme_ = scheme;
-      }
-    /* Adjusts the object to \a nside and \a scheme. */
-    void SetNside (int nside, Healpix_Ordering_Scheme scheme)
-      {
-      order_  = nside2order(nside);
-      planck_assert ((scheme!=NEST) || (order_>=0),
-        "SetNside: nside must be power of 2 for nested maps");
-      nside_  = nside;
-      npface_ = nside_*nside_;
-      ncap_   = (npface_-nside_)<<1;
-      npix_   = 12*npface_;
-      fact2_  = 4./npix_;
-      fact1_  = (nside_<<1)*fact2_;
-      scheme_ = scheme;
-      }
+    /*! Adjusts the object to \a order and \a scheme. */
+    void Set (int order, Healpix_Ordering_Scheme scheme);
+    /*! Adjusts the object to \a nside and \a scheme. */
+    void SetNside (int nside, Healpix_Ordering_Scheme scheme);
 
     /*! Returns the z-coordinate of the ring \a ring. This also works
         for the (not really existing) rings 0 and 4*nside. */
@@ -162,6 +135,8 @@ class Healpix_Base
     /*! Translates a pixel number from its Peano index to NEST. */
     int peano2nest (int pix) const;
 
+    /*! Returns the number of the pixel which contains the angular coordinates
+        (\a z:=cos(theta), \a phi). */
     int zphi2pix (double z, double phi) const;
 
     /*! Returns the number of the pixel which contains the angular coordinates
@@ -173,6 +148,8 @@ class Healpix_Base
     int vec2pix (const vec3 &vec) const
       { return zphi2pix (vec.z/vec.Length(), safe_atan2(vec.y,vec.x)); }
 
+    /*! Returns the angular coordinates (\a z:=cos(theta), \a phi) of the center
+        of the pixel with number \a pix. */
     void pix2zphi (int pix, double &z, double &phi) const;
 
     /*! Returns the angular coordinates of the center of the pixel with
@@ -193,44 +170,49 @@ class Healpix_Base
       return res;
       }
 
-    /*! Returns a set of pixel ranges whose centers lie within \a radius
-        of \a dir in \a pixset.
-        \param dir the angular coordinates of the disc center
-        \param radius the radius (in radians) of the disc
-        \param pixset a rangeset object containing the indices of all pixels
-               within the disc
-        \note This method is more efficient in the RING scheme. */
-    void query_disc (const pointing &dir, double radius,
+    /*! Returns a range set of pixels whose centers lie within the disk
+        defined by \a dir and \a radius (if \a inclusive==false), or which
+        overlap with this disk (if \a inclusive==true).
+        \param dir the angular coordinates of the disk center
+        \param radius the radius (in radians) of the disk
+        \param inclusive if \a false, return the exact set of pixels whose
+           pixels centers lie within the disk; if \a true, return all pixels
+           that overlap with the disk, and maybe a few more.
+        \param pixset a \a rangeset object containing the indices of all pixels
+           within the disk
+        \note This method is more efficient in the RING scheme, but the
+           algorithm used for \a inclusive==true returns fewer false positives
+           in the NEST scheme. */
+    void query_disc (pointing ptg, double radius, bool inclusive,
       rangeset<int> &pixset) const;
-    /*! Returns a set of pixel ranges that lie at least partially within
-        \a radius of \a dir in \a pixset. It may also return a few pixels
-        which do not lie in the disk at all.
-        \param dir the angular coordinates of the disc center
-        \param radius the radius (in radians) of the disc
-        \param pixset a rangeset object containing the indices of all pixels
-               within the disc
-        \note This method is more efficient in the RING scheme. */
-    void query_disc_inclusive (const pointing &dir, double radius,
-      rangeset<int> &pixset) const;
-    /*! Returns the numbers of all pixels whose centers lie within \a radius
-        of \a dir in \a listpix.
-        \param dir the angular coordinates of the disc center
-        \param radius the radius (in radians) of the disc
-        \param listpix a vector containing the numbers of all pixels within
-               the disc
-        \note This method is more efficient in the RING scheme. */
+
+    /*! \deprecated Please use the version based on \a rangeset */
     void query_disc (const pointing &dir, double radius,
-      std::vector<int> &listpix) const;
-    /*! Returns the numbers of all pixels that lie at least partially within
-        \a radius of \a dir in \a listpix. It may also return a few pixels
-        which do not lie in the disk at all.
-        \param dir the angular coordinates of the disc center
-        \param radius the radius (in radians) of the disc
-        \param listpix a vector containing the numbers of all pixels within
-               the disc
-        \note This method is more efficient in the RING scheme. */
+      std::vector<int> &listpix) const
+      {
+      rangeset<int> pixset;
+      query_disc(dir,radius,false,pixset);
+      pixset.toVector(listpix);
+      }
+    /*! \deprecated Please use the version based on \a rangeset */
     void query_disc_inclusive (const pointing &dir, double radius,
-      std::vector<int> &listpix) const;
+      std::vector<int> &listpix) const
+      {
+      rangeset<int> pixset;
+      query_disc(dir,radius,true,pixset);
+      pixset.toVector(listpix);
+      }
+
+    /*! Returns a range set of pixels whose centers lie within the convex
+        polygon defined by the \a vertex array (if \a inclusive==false), or
+        which overlap with this polygon (if \a inclusive==true).
+        \param vertex array containing the vertices of the polygon.
+        \param inclusive if \a false, return the exact set of pixels whose
+           pixels centers lie within the polygon; if \a true, return all pixels
+           that overlap with the polygon, and maybe a few more.
+        \note This method is currently only implemented in the NEST scheme. */
+    void query_polygon (const std::vector<pointing> &vertex, bool inclusive,
+      rangeset<int> &pixset) const;
 
     /*! Returns useful information about a given ring of the map.
         \param ring the ring number (the number of the first ring is 1)
@@ -291,21 +273,17 @@ class Healpix_Base
       { return ((nside_==other.nside_) && (scheme_==other.scheme_)); }
 
     /*! Swaps the contents of two Healpix_Base objects. */
-    void swap (Healpix_Base &other)
-      {
-      std::swap(order_,other.order_);
-      std::swap(nside_,other.nside_);
-      std::swap(npface_,other.npface_);
-      std::swap(ncap_,other.ncap_);
-      std::swap(npix_,other.npix_);
-      std::swap(fact1_,other.fact1_);
-      std::swap(fact2_,other.fact2_);
-      std::swap(scheme_,other.scheme_);
-      }
+    void swap (Healpix_Base &other);
 
     /*! Returns the maximum angular distance (in radian) between any pixel
         center and its corners. */
     double max_pixrad() const;
+
+    /*! Returns the maximum angular distance (in radian) between any pixel
+        center and its corners in a given ring. */
+    double max_pixrad(int ring) const;
+
+    arr<int> swap_cycles() const;
   };
 
 #endif

@@ -25,7 +25,7 @@
  */
 
 /*
- *  Copyright (C) 2003-2010 Max-Planck-Society
+ *  Copyright (C) 2003-2011 Max-Planck-Society
  *  Author: Martin Reinecke
  */
 
@@ -43,6 +43,28 @@ void PowSpec::dealloc()
   tc_.dealloc();
   gc_.dealloc();
   }
+
+PowSpec::PowSpec(int nspec, int lmax)
+  : num_specs(nspec)
+  {
+  planck_assert ((num_specs==1) || (num_specs==4) || (num_specs==6),
+    "wrong number of spectrums");
+  tt_.alloc(lmax+1);
+  if (num_specs>1)
+    {
+    gg_.alloc(lmax+1);
+    cc_.alloc(lmax+1);
+    tg_.alloc(lmax+1);
+    }
+  if (num_specs>4)
+    {
+    tc_.alloc(lmax+1);
+    gc_.alloc(lmax+1);
+    }
+  }
+
+PowSpec::~PowSpec()
+  {}
 
 void PowSpec::assertArraySizes() const
   {

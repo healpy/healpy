@@ -25,7 +25,7 @@
  */
 
 /*
- *  Copyright (C) 2003-2010 Max-Planck-Society
+ *  Copyright (C) 2003-2011 Max-Planck-Society
  *  Author: Martin Reinecke
  */
 
@@ -49,24 +49,9 @@ class PowSpec
     /*! Constructs a \a PowSpec with \a nspec components and a maximum
         multipole of \a lmax. \a nspec can be 1 (TT), 4 (TT,GG,CC,TG) or
         6 (TT,GG,CC,TG,TC,GC). */
-    PowSpec(int nspec, int lmax)
-      : num_specs(nspec)
-      {
-      planck_assert ((num_specs==1) || (num_specs==4) || (num_specs==6),
-        "wrong number of spectrums");
-      tt_.alloc(lmax+1);
-      if (num_specs>1)
-        {
-        gg_.alloc(lmax+1);
-        cc_.alloc(lmax+1);
-        tg_.alloc(lmax+1);
-        }
-      if (num_specs>4)
-        {
-        tc_.alloc(lmax+1);
-        gc_.alloc(lmax+1);
-        }
-      }
+    PowSpec(int nspec, int lmax);
+
+    ~PowSpec();
 
     /*! Ensures that the internal array sizes are consistent with the
         \a num_specs variable. */

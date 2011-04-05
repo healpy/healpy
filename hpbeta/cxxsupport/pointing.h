@@ -25,7 +25,7 @@
 /*! \file pointing.h
  *  Class representing a direction in 3D space
  *
- *  Copyright (C) 2003-2010 Max-Planck-Society
+ *  Copyright (C) 2003-2011 Max-Planck-Society
  *  \author Martin Reinecke
  */
 
@@ -64,42 +64,16 @@ class pointing
     operator vec3() const
       { return to_vec3(); }
     /*! Returns a normalized vector pointing in the same direction. */
-    vec3 to_vec3() const
-      {
-      double st=sin(theta);
-      return vec3 (st*cos(phi), st*sin(phi), cos(theta));
-      }
+    vec3 to_vec3() const;
     /*! Converts \a inp to \a ptg. \a inp need not be normalized. */
-    void from_vec3 (const vec3 &inp)
-      {
-      using namespace std;
-      const double twopi_=6.283185307179586476925286766559005768394;
-      theta = atan2(sqrt(inp.x*inp.x+inp.y*inp.y),inp.z);
-      phi = safe_atan2 (inp.y,inp.x);
-      if (phi<0.) phi += twopi_;
-      }
+    void from_vec3 (const vec3 &inp);
     /*! Changes the angles so that \a 0<=theta<=pi and \a 0<=phi<2*pi. */
-    void normalize()
-      {
-      const double pi_=3.141592653589793238462643383279502884197;
-      const double twopi_=6.283185307179586476925286766559005768394;
-      theta=fmodulo(theta,twopi_);
-      if (theta>pi_)
-        {
-        phi+=pi_;
-        theta=twopi_-theta;
-        }
-      phi=fmodulo(phi,twopi_);
-      }
+    void normalize();
   };
 
 /*! Writes \a p to \a os.
     \relates pointing */
-inline std::ostream &operator<< (std::ostream &os, const pointing &p)
-  {
-  os << p.theta << ", " << p.phi << std::endl;
-  return os;
-  }
+std::ostream &operator<< (std::ostream &os, const pointing &p);
 
 /*! \} */
 

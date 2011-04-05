@@ -25,11 +25,13 @@
 /*! \file trafos.cc
  *  Celestial coordinate transformations.
  *
- *  Copyright (C) 2005 Max-Planck-Society
+ *  Copyright (C) 2005-2011 Max-Planck-Society
  * \author Martin Reinecke
  */
 
 #include "trafos.h"
+#include "cxxutils.h"
+#include "geom_utils.h"
 #include "lsconstants.h"
 
 using namespace std;
@@ -155,4 +157,29 @@ void Trafo::coordsys2matrix (double iepoch, double oepoch,
        v3p = xcc_v_convert(vec3(0,0,1),iepoch,oepoch,isys,osys);
   v1p.Normalize(); v2p.Normalize(); v3p.Normalize();
   matrix=rotmatrix(v1p,v2p,v3p);
+  }
+
+Trafo::Trafo (double iepoch, double oepoch, coordsys isys, coordsys osys)
+  { coordsys2matrix (iepoch, oepoch, isys, osys, mat); }
+
+pointing Trafo::operator() (const pointing &ptg) const
+  { return pointing(operator()(vec3(ptg))); }
+
+void Trafo::rotatefull (const pointing &ptg, pointing &newptg,
+  double &delta_psi) const
+  {
+  vec3 vec (ptg);
+  vec3 east (-vec.y,vec.x,0.);
+  vec3 newvec = operator()(vec);
+  vec3 neweast = operator()(east);
+  delta_psi = orientation(newvec,neweast)+halfpi;
+  newptg = newvec;
+  }
+
+void Trafo::rotatefull (const vec3 &vec, vec3 &newvec, double &delta_psi) const
+  {
+  vec3 east (-vec.y,vec.x,0.);
+  newvec = operator()(vec);
+  vec3 neweast = operator()(east);
+  delta_psi = orientation(newvec,neweast)+halfpi;
   }

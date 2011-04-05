@@ -23,7 +23,7 @@
  */
 
 /*! \file rangeset.h
- *  Class for storing sets of ranges of inteeger numbers
+ *  Class for storing sets of ranges of integer numbers
  *
  *  Copyright (C) 2011 Max-Planck-Society
  *  \author Martin Reinecke
@@ -32,41 +32,49 @@
 #ifndef PLANCK_RANGESET_H
 #define PLANCK_RANGESET_H
 
-#include <map>
+#include <vector>
+#include <utility>
+#include "cxxutils.h"
 
 /*! Class for storing sets of ranges of integer numbers */
-template<typename T> class rangeset: public std::map<T,T>
+template<typename T> class rangeset: public std::vector<std::pair<T,T> >
   {
   public:
-    /*! Add the interval [\a vbegin; \a vend[.
+    /*! Append the interval [\a vbegin; \a vend[.
         \note \a vend is not included in the interval. */
-    void add(T vbegin, T vend)
+    void append(T vbegin, T vend)
       {
       if (vend<=vbegin) return;
-      rangeset<int>::iterator left=this->lower_bound(vbegin);
-      if (left!=this->begin())
+      if (!(this->empty()) && (vbegin<=this->back().second))
         {
-        rangeset<int>::iterator preleft=left;
-        --preleft;
-        if (vbegin<=preleft->second) left=preleft;
+        planck_assert (vbegin==this->back().second,"bad append operation");
+        this->back().second = vend;
         }
-      rangeset<int>::iterator pastright=this->lower_bound(vend);
-      if ((pastright!=this->end())&&(vend==pastright->first))++pastright;
-      if (left==pastright) // between two intervals
-        this->insert(std::pair<T,T>(vbegin,vend));
       else
-        {
-        rangeset<int>::iterator right = pastright;
-        if (right!=this->begin()) --right;
-        vbegin=std::min(vbegin,left->first);
-        vend=std::max(vend,right->second);
-        this->erase(left,pastright);
-        this->insert(std::pair<T,T>(vbegin,vend));
-        }
+        this->push_back(std::pair<T,T>(vbegin,vend));
       }
-    /*! Add the one-number interval containing \a value. */
-    void add(T value)
-      { add (value, value+1); }
+    /*! Append the one-number interval containing \a value. */
+    void append(T value)
+      { append (value, value+1); }
+
+    T nval() const
+      {
+      T result=T(0);
+      typename rangeset::const_iterator it;
+      for (it=this->begin(); it!=this->end(); ++it)
+        result+=it->second-it->first;
+      return result;
+      }
+
+    void toVector (std::vector<T> &res)
+      {
+      res.clear();
+      res.reserve(nval());
+      typename rangeset::const_iterator it;
+      for (it=this->begin(); it!=this->end(); ++it)
+        for (T m=it->first; m<it->second; ++m)
+          res.push_back(m);
+      }
   };
 
 #endif

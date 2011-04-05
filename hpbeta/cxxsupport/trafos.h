@@ -25,7 +25,7 @@
 /*! \file trafos.h
  *  Celestial coordinate transformations.
  *
- *  Copyright (C) 2005 Max-Planck-Society
+ *  Copyright (C) 2005-2011 Max-Planck-Society
  * \author Martin Reinecke
  */
 #ifndef PLANCK_TRAFOS_H
@@ -34,8 +34,6 @@
 #include "vec3.h"
 #include "pointing.h"
 #include "rotmatrix.h"
-#include "cxxutils.h"
-#include "geom_utils.h"
 
 enum coordsys { Ecliptic, Equatorial, Galactic };
 
@@ -59,41 +57,23 @@ class Trafo
   public:
     /*! Creates a \a Trafo for transformation from \a iepoch and \a isys
         to \a oepoch and \a osys. */
-    Trafo (double iepoch, double oepoch, coordsys isys, coordsys osys)
-      { coordsys2matrix (iepoch, oepoch, isys, osys, mat); }
+    Trafo (double iepoch, double oepoch, coordsys isys, coordsys osys);
 
     /*! Transforms the vector \a vec and returns the result. */
     vec3 operator() (const vec3 &vec) const
       { return mat.Transform(vec); }
 
     /*! Transforms the pointing \a ptg and returns the result. */
-    pointing operator() (const pointing &ptg) const
-      { return pointing(operator()(vec3(ptg))); }
+    pointing operator() (const pointing &ptg) const;
 
     /*! Transforms the pointing \a ptg and returns it in \a newptg.
         On exit, \a delta_psi holds the change in orientation. */
     void rotatefull (const pointing &ptg, pointing &newptg,
-      double &delta_psi) const
-      {
-      const double halfpi_=1.570796326794896619231321691639751442099;
-      vec3 vec (ptg);
-      vec3 east (-vec.y,vec.x,0.);
-      vec3 newvec = operator()(vec);
-      vec3 neweast = operator()(east);
-      delta_psi = orientation(newvec,neweast)+halfpi_;
-      newptg = newvec;
-      }
+      double &delta_psi) const;
 
     /*! Transforms the vector \a vec and returns it in \a newvec.
         On exit, \a delta_psi holds the change in orientation. */
-    void rotatefull (const vec3 &vec, vec3 &newvec, double &delta_psi) const
-      {
-      const double halfpi_=1.570796326794896619231321691639751442099;
-      vec3 east (-vec.y,vec.x,0.);
-      newvec = operator()(vec);
-      vec3 neweast = operator()(east);
-      delta_psi = orientation(newvec,neweast)+halfpi_;
-      }
+    void rotatefull (const vec3 &vec, vec3 &newvec, double &delta_psi) const;
 
     /*! Returns the internally used rotation matrix. */
     const rotmatrix &Matrix() const

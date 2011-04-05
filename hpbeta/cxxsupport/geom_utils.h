@@ -25,7 +25,7 @@
 /*! \file geom_utils.h
  *  Geometric utility functions.
  *
- *  Copyright (C) 2003, 2006 Max-Planck-Society
+ *  Copyright (C) 2003-2011 Max-Planck-Society
  *  \author Martin Reinecke
  *  \author Reinhard Hell
  */
@@ -55,6 +55,18 @@ inline double orientation (const vec3 &loc, const vec3 &dir)
 
 /*! Returns the angle between \a v1 and \a v2 in radians. */
 inline double v_angle (const vec3 &v1, const vec3 &v2)
-  { return atan2 (crossprod(v1,v2).Length(), dotprod(v1,v2)); }
+  {
+  using namespace std;
+  return atan2 (crossprod(v1,v2).Length(), dotprod(v1,v2));
+  }
+
+/*! Returns the cosine of the angle between the two points on the sphere defined
+    by (\a z1, \a phi1) and (\a z2, \a phi2), respectively. \a z is the cosine
+    of the colatitude, and \a phi is the longitude. */
+inline double cosdist_zphi (double z1, double phi1, double z2, double phi2)
+  {
+  using namespace std;
+  return z1*z2+cos(phi1-phi2)*sqrt((1.-z1*z1)*(1.-z2*z2));
+  }
 
 #endif

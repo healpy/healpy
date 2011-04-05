@@ -26,7 +26,7 @@
  *  This file contains the implementation of the FITS I/O helper class
  *  used by the Planck LevelS package.
  *
- *  Copyright (C) 2002 - 2009 Max-Planck-Society
+ *  Copyright (C) 2002-2011 Max-Planck-Society
  *  Author: Martin Reinecke
  */
 
@@ -145,6 +145,8 @@ fitscolumn::fitscolumn()
 
 fitscolumn::fitscolumn (const string &nm, const string &un, int64 rc, PDT tp)
   : name_(nm), unit_(un), repcount_(rc), type_(tp) {}
+
+fitscolumn::~fitscolumn () {}
 
 void fitshandle::check_errors() const
   {
@@ -292,6 +294,12 @@ void fitshandle::getKeyHelper(const string &name) const
     }
   check_errors();
   }
+
+fitshandle::fitshandle ()
+  : status(0), fptr(0), hdutype_(INVALID), bitpix_(INVALID), nrows_(0) {}
+
+fitshandle::~fitshandle()
+  { clean_all(); }
 
 void fitshandle::open (const string &fname)
   {

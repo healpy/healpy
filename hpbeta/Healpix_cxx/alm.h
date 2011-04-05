@@ -27,7 +27,7 @@
 /*! \file alm.h
  *  Class for storing spherical harmonic coefficients.
  *
- *  Copyright (C) 2003 - 2009 Max-Planck-Society
+ *  Copyright (C) 2003-2011 Max-Planck-Society
  *  \author Martin Reinecke
  */
 
@@ -46,11 +46,8 @@ class Alm_Base
   public:
     /*! Returns the total number of coefficients for maximum quantum numbers
         \a l and \a m. */
-    static tsize Num_Alms (int l, int m)
-      {
-      planck_assert(m<=l,"mmax must not be larger than lmax");
-      return ((m+1)*(m+2))/2 + (m+1)*(l-m);
-      }
+    static tsize Num_Alms (int l, int m);
+
     /*! Constructs an Alm_Base object with given \a lmax and \a mmax. */
     Alm_Base (int lmax_=0, int mmax_=0)
       : lmax(lmax_), mmax(mmax_), tval(2*lmax+1) {}
@@ -83,12 +80,7 @@ class Alm_Base
       { return ((lmax==other.lmax) && (mmax==other.mmax)); }
 
     /*! Swaps the contents of two Alm_Base objects. */
-    void swap (Alm_Base &other)
-      {
-      std::swap(lmax, other.lmax);
-      std::swap(mmax, other.mmax);
-      std::swap(tval, other.tval);
-      }
+    void swap (Alm_Base &other);
   };
 
 /*! Class for storing spherical harmonic coefficients. */

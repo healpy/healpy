@@ -27,7 +27,7 @@
  *  If any of the requested types is not available, compilation aborts
  *  with an error (unfortunately a rather obscure one).
  *
- *  Copyright (C) 2004, 2008, 2009, 2010 Max-Planck-Society
+ *  Copyright (C) 2004, 2008, 2009, 2010, 2011 Max-Planck-Society
  *  \author Martin Reinecke
  */
 
@@ -215,6 +215,8 @@ template<> inline const char *type2typename<float> ()
   { return "float"; }
 template<> inline const char *type2typename<double> ()
   { return "double"; }
+template<> inline const char *type2typename<long double> ()
+  { return "long double"; }
 template<> inline const char *type2typename<bool> ()
   { return "bool"; }
 template<> inline const char *type2typename<std::string> ()
@@ -236,7 +238,8 @@ enum NDT {
        NAT_FLOAT,
        NAT_DOUBLE,
        NAT_LONGDOUBLE,
-       NAT_BOOL };
+       NAT_BOOL,
+       NAT_STRING };
 
 /*! Returns the \a NDT constant associated with \a T. */
 template<typename T> inline NDT nativeType();
@@ -255,6 +258,7 @@ template<> inline NDT nativeType<float>             () { return NAT_FLOAT;     }
 template<> inline NDT nativeType<double>            () { return NAT_DOUBLE;    }
 template<> inline NDT nativeType<long double>       () { return NAT_LONGDOUBLE;}
 template<> inline NDT nativeType<bool>              () { return NAT_BOOL;      }
+template<> inline NDT nativeType<std::string>       () { return NAT_STRING;    }
 
 /*! Returns the size (in bytes) of the native data type \a type. */
 inline int ndt2size (NDT type)

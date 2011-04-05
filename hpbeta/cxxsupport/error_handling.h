@@ -25,7 +25,7 @@
 /*
  *  Utilities for error reporting
  *
- *  Copyright (C) 2003 - 2010 Max-Planck-Society
+ *  Copyright (C) 2003-2011 Max-Planck-Society
  *  Authors: Reinhard Hell, Martin Reinecke
  */
 
@@ -59,7 +59,7 @@ class PlanckError
     virtual const char* what() const
       { return msg.c_str(); }
 
-    virtual ~PlanckError() {}
+    virtual ~PlanckError();
   };
 
 /*! \defgroup errorgroup Error handling */

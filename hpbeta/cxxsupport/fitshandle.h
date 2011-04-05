@@ -25,7 +25,7 @@
 /*! \file fitshandle.h
  *  Declaration of the FITS I/O helper class used by LevelS
  *
- *  Copyright (C) 2002 - 2009 Max-Planck-Society
+ *  Copyright (C) 2002-2011 Max-Planck-Society
  *  \author Martin Reinecke
  */
 
@@ -54,6 +54,7 @@ class fitscolumn
     /*! Creates a \a fitscolumn with name \a nm, unit \a un, a repetition
         count of \a rc, and a Planck type of \a tp. */
     fitscolumn (const std::string &nm, const std::string &un, int64 rc, PDT tp);
+    ~fitscolumn();
 
     /*! Returns the column name. */
     const std::string &name() const {return name_;}
@@ -109,10 +110,9 @@ class fitshandle
     /*! \{ */
 
     /*! Creates an unconnected \a fitshandle. */
-    fitshandle ()
-      : status(0), fptr(0), hdutype_(INVALID), bitpix_(INVALID), nrows_(0) {}
+    fitshandle ();
     /*! Performs all necessary cleanups. */
-    ~fitshandle() { clean_all(); }
+    ~fitshandle();
 
     /*! Connects to the file \a fname. */
     void open (const std::string &fname);

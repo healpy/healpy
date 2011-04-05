@@ -25,7 +25,7 @@
 /*! \file cxxutils.h
  *  Various convenience functions used by the Planck LevelS package.
  *
- *  Copyright (C) 2002 - 2010 Max-Planck-Society
+ *  Copyright (C) 2002-2011 Max-Planck-Society
  *  \author Martin Reinecke \author Reinhard Hell
  */
 
@@ -285,6 +285,7 @@ template<> std::string dataToString (const bool &x);
 template<> std::string dataToString (const std::string &x);
 template<> std::string dataToString (const float &x);
 template<> std::string dataToString (const double &x);
+template<> std::string dataToString (const long double &x);
 
 /*! Returns a string containing the text representation of \a x, padded
     with leading zeroes to \a width characters. */

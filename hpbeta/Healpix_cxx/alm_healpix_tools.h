@@ -25,7 +25,7 @@
  */
 
 /*! \file alm_healpix_tools.h
- *  Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008 Max-Planck-Society
+ *  Copyright (C) 2003-2011 Max-Planck-Society
  *  \author Martin Reinecke
  */
 
@@ -67,8 +67,7 @@ template<typename T> void map2alm_iter (const Healpix_Map<T> &map,
 template<typename T> inline void map2alm_iter (const Healpix_Map<T> &map,
   Alm<xcomplex<T> > &alm, int num_iter)
   {
-  arr<double> wgt(2*map.Nside());
-  wgt.fill(1);
+  arr<double> wgt(2*map.Nside(),1.);
   map2alm_iter(map,alm,num_iter,wgt);
   }
 
@@ -141,8 +140,7 @@ template<typename T> inline void map2alm_pol_iter
    Alm<xcomplex<T> > &almC,
    int num_iter)
   {
-  arr<double> wgt(2*mapT.Nside());
-  wgt.fill(1);
+  arr<double> wgt(2*mapT.Nside(),1.);
   map2alm_pol_iter(mapT,mapQ,mapU,almT,almG,almC,num_iter,wgt);
   }
 

@@ -25,14 +25,14 @@
 /*
  *  Class for rotation transforms in 3D space
  *
- *  Copyright (C) 2003 Max-Planck-Society
+ *  Copyright (C) 2003-2011 Max-Planck-Society
  *  Author: Martin Reinecke
  */
 
+#include <algorithm>
 #include "rotmatrix.h"
 #include "vec3.h"
 #include "lsconstants.h"
-#include <algorithm>
 
 using namespace std;
 
@@ -115,6 +115,24 @@ void rotmatrix::toAxisAngle (vec3 &axis, double &angle) const
   axis.y = half_inv*entry[1][2];
   }
 
+void rotmatrix::Make_Axis_Rotation_Transform (const vec3 &axis, double angle)
+  {
+  double sa=sin(angle), ca=cos(angle);
+  double ica=1-ca;
+  entry[0][0] = axis.x*axis.x*ica + ca;
+  entry[1][1] = axis.y*axis.y*ica + ca;
+  entry[2][2] = axis.z*axis.z*ica + ca;
+  double t1 = axis.x*axis.y*ica, t2 = axis.z*sa;
+  entry[1][0] = t1 + t2;
+  entry[0][1] = t1 - t2;
+  t1 = axis.x*axis.z*ica; t2 = axis.y*sa;
+  entry[2][0] = t1 - t2;
+  entry[0][2] = t1 + t2;
+  t1 = axis.y*axis.z*ica; t2 = axis.x*sa;
+  entry[1][2] = t1 - t2;
+  entry[2][1] = t1 + t2;
+  }
+
 void rotmatrix::Make_CPAC_Euler_Matrix
   (double alpha, double beta, double gamma)
   {
@@ -156,6 +174,15 @@ rotmatrix operator* (const rotmatrix &a, const rotmatrix &b)
                       + a.entry[i][1] * b.entry[1][j]
                       + a.entry[i][2] * b.entry[2][j];
   return res;
+  }
+
+void matmult (const rotmatrix &a, const rotmatrix &b, rotmatrix &res)
+  {
+  for (int i=0; i<3; ++i)
+    for (int j=0; j<3; ++j)
+      res.entry[i][j] = a.entry[i][0] * b.entry[0][j]
+                      + a.entry[i][1] * b.entry[1][j]
+                      + a.entry[i][2] * b.entry[2][j];
   }
 
 void TransposeTimes (const rotmatrix &a, const rotmatrix &b, rotmatrix &res)
