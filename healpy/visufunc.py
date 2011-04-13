@@ -149,7 +149,7 @@ def mollview(map=None,fig=None,rot=None,coord=None,unit='',
             ax.text(0.86,0.05,ax.proj.coordsysstr,fontsize=14,
                     fontweight='bold',transform=ax.transAxes)
         if cbar:
-            cb.ax.text(0.5,0.10,unit,fontsize=14,fontweight='bold',
+            cb.ax.text(0.5,-1.0,unit,fontsize=14,
                        transform=cb.ax.transAxes,ha='center',va='center')
         f.sca(ax)
     finally:
@@ -209,7 +209,7 @@ def gnomview(map=None,fig=None,rot=None,coord=None,unit='',
     """
 
     if not (hold or sub):
-        f=pylab.figure(fig,figsize=(5.5,6))
+        f=pylab.figure(fig,figsize=(5.8,6.4))
         if not margins:
                 margins = (0.075,0.05,0.075,0.05)
         extent = (0.0,0.0,1.0,1.0)
@@ -280,7 +280,7 @@ def gnomview(map=None,fig=None,rot=None,coord=None,unit='',
             ax.text(-0.07,0.6,ax.proj.coordsysstr,fontsize=14,
                      fontweight='bold',rotation=90,transform=ax.transAxes)
             lon,lat = npy.around(ax.proj.get_center(lonlat=True),ax._coordprec)
-            ax.text(0.5,-0.03,'on (%g,%g)'%(lon,lat),
+            ax.text(0.5,-0.03,'(%g,%g)'%(lon,lat),
                     verticalalignment='center', horizontalalignment='center',
                     transform=ax.transAxes)
         if cbar:

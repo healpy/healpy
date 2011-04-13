@@ -37,7 +37,7 @@ nm = npy
 
 
 
-from pixelfunc import (ma,vec2ang,ang2vec,ang2pix,
+from pixelfunc import (ma,mask_good,mask_bad,vec2ang,ang2vec,ang2pix,
                        pix2ang,pix2vec,vec2pix,ang2vec,
                        nside2npix,npix2nside,isnsideok,
                        ring2nest, nest2ring, get_neighbours,

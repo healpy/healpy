@@ -191,7 +191,10 @@ def read_map(filename,field=0,dtype=npy.float64,nest=False,hdu=1,h=False,
                 idx = pixelfunc.ring2nest(nside,npy.arange(m.size,dtype=npy.int32))
                 m = m[idx]
                 if verbose: print 'Ordering converted to RING'
-        m[m<-1.637e30] = UNSEEN
+        try:
+            m[pixelfunc.mask_bad(m)] = UNSEEN
+        except OverflowError, e:
+            pass
         ret.append(m)
     
     if len(ret) == 1:
