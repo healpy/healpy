@@ -1,3 +1,231 @@
+2011-04-14 16:32  cyrille.rosset@gmail.com
+
+	* [r178] healpy/__init__.py, healpy/pixelfunc.py,
+	  healpy/projaxes.py, healpy/projector.py, healpy/zoomtool.py:
+	  Solve issue 51 ; add support for explicit pixellization through
+	  dict (keys are pixel numbers, 'nside' key define the nside)
+
+2011-04-13 15:08  cyrille.rosset@gmail.com
+
+	* [r177] healpy/__init__.py, healpy/fitsfunc.py,
+	  healpy/visufunc.py: Change setting to UNSEEN in read_map ;
+	  position of unit ; remove 'on' in gnomonic position text
+
+2011-04-13 13:38  cyrille.rosset@gmail.com
+
+	* [r176] setup.py: force use of libcfitsio.a instead of the shared
+	  library through extra_link_args
+
+2011-04-13 10:05  cyrille.rosset@gmail.com
+
+	* [r175] setup.py: remove unnecessary compilation options
+
+2011-04-05 11:13  martin.reinecke1@gmx.de
+
+	* [r174] hpbeta/Healpix_cxx/alm.cc, hpbeta/Healpix_cxx/alm.h,
+	  hpbeta/Healpix_cxx/alm_healpix_tools.h,
+	  hpbeta/Healpix_cxx/healpix_base.cc,
+	  hpbeta/Healpix_cxx/healpix_base.h,
+	  hpbeta/Healpix_cxx/healpix_map.h, hpbeta/Healpix_cxx/planck.make,
+	  hpbeta/Healpix_cxx/powspec.cc, hpbeta/Healpix_cxx/powspec.h,
+	  hpbeta/cxxsupport/arr.h, hpbeta/cxxsupport/cxxutils.cc,
+	  hpbeta/cxxsupport/cxxutils.h, hpbeta/cxxsupport/datatypes.h,
+	  hpbeta/cxxsupport/error_handling.cc,
+	  hpbeta/cxxsupport/error_handling.h,
+	  hpbeta/cxxsupport/fitshandle.cc, hpbeta/cxxsupport/fitshandle.h,
+	  hpbeta/cxxsupport/geom_utils.h, hpbeta/cxxsupport/paramfile.cc,
+	  hpbeta/cxxsupport/paramfile.h, hpbeta/cxxsupport/planck.make,
+	  hpbeta/cxxsupport/pointing.cc, hpbeta/cxxsupport/pointing.h,
+	  hpbeta/cxxsupport/rangeset.h, hpbeta/cxxsupport/rotmatrix.cc,
+	  hpbeta/cxxsupport/rotmatrix.h, hpbeta/cxxsupport/trafos.cc,
+	  hpbeta/cxxsupport/trafos.h: sync with master sources
+
+2011-03-07 09:49  martin.reinecke1@gmx.de
+
+	* [r173] hpbeta/Healpix_cxx/healpix_base.cc,
+	  hpbeta/Healpix_cxx/healpix_base.h, hpbeta/README.compilation,
+	  hpbeta/config/rules.common, hpbeta/cxxsupport/cxxutils.cc,
+	  hpbeta/cxxsupport/levels_facilities.h,
+	  hpbeta/cxxsupport/rangeset.h, hpbeta/docsrc/planck.make,
+	  hpbeta/libcfitsio/planck.make, hpbeta/libpsht/libpsht.dox,
+	  hpbeta/libpsht/psht.c, hpbeta/libpsht/psht.h,
+	  hpbeta/libpsht/psht_almhelpers.c,
+	  hpbeta/libpsht/psht_almhelpers.h,
+	  hpbeta/libpsht/psht_geomhelpers.c,
+	  hpbeta/libpsht/psht_geomhelpers.h, hpbeta/libpsht/psht_inc.c,
+	  hpbeta/libpsht/ylmgen_c.c, hpbeta/libpsht/ylmgen_c.h: sync with
+	  master sources
+
+2011-03-07 09:19  martin.reinecke1@gmx.de
+
+	* [r172] setup.py: add "-fpermissive" flag to allow cfitsio
+	  compilation on some platforms
+
+2011-03-01 16:02  cyrille.rosset@gmail.com
+
+	* [r168] healpy/sphtfunc.py: Change documentation of anafast to
+	  match real output of code (consistent with order of alm2cl
+	  output)
+
+2011-03-01 12:40  cyrille.rosset@gmail.com
+
+	* [r167] healpy/version.py: update version.py
+
+2011-03-01 12:19  cyrille.rosset@gmail.com
+
+	* [r166] pshyt/pshyt.c, setup.py: remove cython-generated pshyt.c
+
+2011-01-31 12:07  martin.reinecke1@gmx.de
+
+	* [r165] hpbeta/Healpix_cxx/alm_powspec_tools.cc,
+	  hpbeta/config/config.aix64, hpbeta/config/config.generic_gcc,
+	  hpbeta/config/config.healpy, hpbeta/config/config.healpy_osx,
+	  hpbeta/config/config.irix64, hpbeta/config/config.linux_icc,
+	  hpbeta/config/config.osx, hpbeta/cxxsupport/cxxutils.cc,
+	  hpbeta/docsrc/Healpix_cxx.dox, hpbeta/docsrc/cxxsupport.dox,
+	  hpbeta/docsrc/libfftpack.dox, hpbeta/libfftpack/ls_fft.c,
+	  hpbeta/libpsht/libpsht.dox, hpbeta/libpsht/ylmgen_c.c: warning
+	  fixes and cleanups
+
+2011-01-26 15:34  martin.reinecke1@gmx.de
+
+	* [r164] hpbeta/libpsht/ylmgen_c.c: hopefully fix a sign error
+
+2011-01-26 13:38  cyrille.rosset@gmail.com
+
+	* [r163] healpy/visufunc.py: remove the pylab.show() call in
+	  visufunc (blocking for some backend and unnecessary)
+
+2011-01-26 12:22  martin.reinecke1@gmx.de
+
+	* [r162] hpbeta/Healpix_cxx/alm2map_cxx.cc,
+	  hpbeta/Healpix_cxx/alm2map_cxx.par.txt,
+	  hpbeta/Healpix_cxx/alm_fitsio.cc,
+	  hpbeta/Healpix_cxx/alm_fitsio.h,
+	  hpbeta/Healpix_cxx/anafast_cxx.cc,
+	  hpbeta/Healpix_cxx/anafast_cxx.par.txt,
+	  hpbeta/Healpix_cxx/calc_powspec.cc,
+	  hpbeta/Healpix_cxx/healpix_base2.cc,
+	  hpbeta/Healpix_cxx/healpix_base2.h,
+	  hpbeta/Healpix_cxx/healpix_map_fitsio.cc,
+	  hpbeta/Healpix_cxx/healpix_map_fitsio.h,
+	  hpbeta/Healpix_cxx/hotspots_cxx.cc,
+	  hpbeta/Healpix_cxx/hpxtest.cc, hpbeta/Healpix_cxx/map2tga.cc,
+	  hpbeta/Healpix_cxx/map2tga.par.txt,
+	  hpbeta/Healpix_cxx/median_filter_cxx.cc,
+	  hpbeta/Healpix_cxx/mult_alm.cc,
+	  hpbeta/Healpix_cxx/mult_alm.par.txt,
+	  hpbeta/Healpix_cxx/planck.make,
+	  hpbeta/Healpix_cxx/powspec_fitsio.cc,
+	  hpbeta/Healpix_cxx/powspec_fitsio.h,
+	  hpbeta/Healpix_cxx/rotalm_cxx.cc,
+	  hpbeta/Healpix_cxx/smoothing_cxx.cc,
+	  hpbeta/Healpix_cxx/smoothing_cxx.par.txt,
+	  hpbeta/Healpix_cxx/syn_alm_cxx.cc,
+	  hpbeta/Healpix_cxx/syn_alm_cxx.par.txt,
+	  hpbeta/Healpix_cxx/udgrade_cxx.cc, hpbeta/c_utils/planck.make,
+	  hpbeta/c_utils/walltime_c.c, hpbeta/c_utils/walltime_c.h,
+	  hpbeta/cxxsupport/bstream.h, hpbeta/cxxsupport/fftpack_support.h,
+	  hpbeta/cxxsupport/font_data.inc, hpbeta/cxxsupport/ls_image.cc,
+	  hpbeta/cxxsupport/ls_image.h, hpbeta/cxxsupport/planck.make:
+	  remove more unused C++ sources
+
+2011-01-25 16:12  martin.reinecke1@gmx.de
+
+	* [r161] healpy/src/_healpy_sph_transform_lib.cc: more rearranging
+	  and usage of assertions
+
+2011-01-25 13:29  martin.reinecke1@gmx.de
+
+	* [r160] hpbeta/Healpix_cxx/alm2map_cxx_module.cc,
+	  hpbeta/Healpix_cxx/anafast_cxx_module.cc,
+	  hpbeta/Healpix_cxx/calc_powspec_module.cc,
+	  hpbeta/Healpix_cxx/hotspots_cxx_module.cc,
+	  hpbeta/Healpix_cxx/map2tga_module.cc,
+	  hpbeta/Healpix_cxx/median_filter_cxx_module.cc,
+	  hpbeta/Healpix_cxx/mult_alm_module.cc,
+	  hpbeta/Healpix_cxx/planck.make,
+	  hpbeta/Healpix_cxx/smoothing_cxx_module.cc,
+	  hpbeta/Healpix_cxx/syn_alm_cxx_module.cc,
+	  hpbeta/Healpix_cxx/udgrade_cxx_module.cc, hpbeta/Makefile,
+	  hpbeta/alice, hpbeta/libpsht/planck.make,
+	  hpbeta/libpsht/psht_perftest.c, hpbeta/libpsht/psht_test.c,
+	  hpbeta/test: get rid of unused C++ code
+
+2011-01-25 13:16  martin.reinecke1@gmx.de
+
+	* [r159] healpy/src/_healpy_fitsio_lib.cc,
+	  healpy/src/_healpy_pixel_lib.cc,
+	  healpy/src/_healpy_sph_transform_lib.cc,
+	  healpy/src/_healpy_utils.h: - restructure _healpy_pixel_lib.cc
+	  * re-order functions to avoid the need for prototypes
+	  * only call setNside() if really needed; this should save time
+	  - avoid compiler warnings
+
+2011-01-25 10:34  martin.reinecke1@gmx.de
+
+	* [r158] healpy/src/_healpy_pixel_lib.cc: apply patch provided with
+	  issue #39 to avoid code duplication
+
+2011-01-25 10:16  martin.reinecke1@gmx.de
+
+	* [r157] healpy/src/_healpy_sph_transform_lib.cc: - whitespace
+	  cleanup
+	  - make use of assert() macros to shorten code
+
+2011-01-24 17:28  andrea.zonca@gmail.com
+
+	* [r156] healpy/__init__.py: added write_alm to __init__
+
+2011-01-17 14:52  martin.reinecke1@gmx.de
+
+	* [r155] hpbeta/c_utils/walltime_c.c, hpbeta/c_utils/walltime_c.h,
+	  hpbeta/config/config.healpy, hpbeta/cxxsupport/bstream.h,
+	  hpbeta/cxxsupport/xcomplex.h, hpbeta/libpsht/psht.c,
+	  hpbeta/libpsht/psht.h, hpbeta/libpsht/psht_almhelpers.c,
+	  hpbeta/libpsht/psht_cxx.h, hpbeta/libpsht/psht_geomhelpers.c,
+	  hpbeta/libpsht/psht_inc.c, hpbeta/libpsht/psht_perftest.c,
+	  hpbeta/libpsht/psht_test.c, hpbeta/libpsht/ylmgen_c.c,
+	  hpbeta/libpsht/ylmgen_c.h: synchronize with master sources
+
+2011-01-17 14:51  martin.reinecke1@gmx.de
+
+	* [r154] INSTALL: update testing instructions
+
+2010-12-30 11:33  andrea.zonca@gmail.com
+
+	* [r153] healpy/test/test_fitsfunc.py: Use the new return_mmax
+	  mechanism
+
+2010-12-30 11:33  andrea.zonca@gmail.com
+
+	* [r152] healpy/fitsfunc.py: Added more detailed documentation for
+	  read_alm
+
+2010-12-30 11:33  andrea.zonca@gmail.com
+
+	* [r151] healpy/fitsfunc.py: Added support for optionally returning
+	  mmax in read_alm
+
+2010-12-27 17:06  andrea.zonca@gmail.com
+
+	* [r150] healpy/fitsfunc.py, healpy/test/test_fitsfunc.py: fixed
+	  bug in write_alm and test case
+
+2010-12-27 17:06  andrea.zonca@gmail.com
+
+	* [r149] healpy/fitsfunc.py, healpy/test/test_fitsfunc.py: merged
+	  patch and test case, NEEDS VERIFICATION
+
+2010-12-06 16:54  cyrille.rosset
+
+	* [r148] pshyt/pshyt.c, setup.py: Add cfitsio library dir (from
+	  CFITSIO_EXT_LIB etc.) to setup call
+
+2010-12-06 14:22  cyrille.rosset
+
+	* [r147] ChangeLog: Update ChangeLog
+
 2010-12-06 14:20  cyrille.rosset
 
 	* [r146] MANIFEST.in, healpy/__init__.py, healpy/version.py,
