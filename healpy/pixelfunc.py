@@ -195,19 +195,49 @@ def npix2nside(npix):
 
 def isnsideok(nside):
     """Return True if nside is a valid nside parameter, False otherwise.
+    Accept sequence as input, in this case return a bool array.
     """
-    if( npy.log2(nside) == npy.floor(npy.log2(nside)) ):
-        return True
-    else:
+    if hasattr(nside, '__len__'):
+        return nside == 2**npy.int32(npy.around(npy.ma.log2(nside).filled(0)))
+    elif nside <= 0:
         return False
+    else:
+        return nside == 2**int(round(npy.log2(nside)))
 
 def isnpixok(npix):
+    """Return True if npix is a valid value for healpix map size, False otherwise.
+    Accept sequence as input, in this case return a bool array.
+    """
     if hasattr(npix,'__len__'):
         nside = npy.sqrt(npy.asarray(npix)/12.)
-        return (nside == npy.floor(nside))
+        return isnsideok(nside)
     else:
         nside = npy.sqrt(npix/12.)
-        return (nside == npy.floor(nside))
+        return isnsideok(nside)
+
+def get_map_size(map):
+    """Try to figure out the size of the given map :
+     - if map is a dict type (explicit pixel) : use nside key if present, or
+       use nside attribute if present, otherwise use the smallest valid
+       npix given the maximum key value
+     - otherwise, return len(map)
+    """
+    if isinstance(map, dict):
+        if 'nside' in map:
+            return nside2npix(map['nside'])
+        elif hasattr(map, 'nside'):
+            return nside2npix(map.nside)
+        else:
+            nside = get_min_valid_nside(max(map.keys())+1)
+            return nside2npix(nside)
+    else:
+        return len(map)
+
+def get_min_valid_nside(npix):
+    """Return the minimum acceptable nside so that npix <= nside2npix(nside)
+    """
+    order = 0.5 * npy.log2(npix / 12.)
+    return 2**int(npy.ceil(order))
 
 def get_interp_val(m,theta,phi,nest=False):
     """Return the bi-linear interpolation value of a map at given direction.

@@ -29,6 +29,7 @@ GnomonicProj : Gnomonic projection
 import rotator as R
 import numpy as npy
 import pixelfunc
+from pixelfunc import UNSEEN
 
 pi = npy.pi
 dtor = npy.pi/180.
@@ -158,7 +159,7 @@ class SphericalProj(object):
         Input:
           - vec2pix_func: a function taking theta,phi and returning pixel number
           - map: an array containing the spherical map to project,
-                 the pixelisation is described by ang2pix_func
+                 the pixelisation is described by vec2pix_func
         Return:
           - a 2D array with the projection of the map.
 
@@ -166,21 +167,33 @@ class SphericalProj(object):
         """
         x,y = self.ij2xy()
         if npy.__version__ >= '1.1':
-            if ( type(x) is npy.ma.core.MaskedArray
-                 and x.mask is not npy.ma.nomask ):
-                w = (x.mask == False)
-            else:
-                w = slice(None)
+            matype = npy.ma.core.MaskedArray
         else:
-            if type(x) is npy.ma.array and x.mask is not npy.ma.nomask:
-                w = (x.mask == False)
-            else:
-                w = slice(None)
+            matype = npy.ma.array
+        if type(x) is matype and x.mask is not npy.ma.nomask:
+            w = (x.mask == False)
+        else:
+            w = slice(None)
         img=npy.zeros(x.shape,npy.float64)-npy.inf
         vec = self.xy2vec(npy.asarray(x[w]),npy.asarray(y[w]))
         vec = (R.Rotator(rot=rot,coord=self.mkcoord(coord))).I(vec)
         pix=vec2pix_func(vec[0],vec[1],vec[2])
-        img[w] = map[pix]
+        # support masked array for map, or a dictionnary (for explicit pixelisation)
+        if isinstance(map, matype) and map.mask is not npy.ma.nomask:
+            mpix = map[pix]
+            mpix[map.mask[pix]] = UNSEEN
+        elif isinstance(map, dict):
+            is_pix_seen = npy.in1d(pix, map.keys()).reshape(pix.shape)
+            is_pix_unseen = ~is_pix_seen
+            mpix = npy.zeros_like(img[w])
+            mpix[is_pix_unseen] = UNSEEN
+            pix_seen = pix[is_pix_seen]
+            iterable = (map[p] for p in pix_seen)
+            mpix[is_pix_seen] = npy.fromiter(iterable, mpix.dtype,
+                                             count = pix_seen.size)
+        else:
+            mpix = map[pix]
+        img[w] = mpix
         return img
         
     def set_flip(self, flipconv):

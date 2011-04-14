@@ -536,7 +536,7 @@ class GnomonicAxes(SphericalProjAxes):
         
 class HpxGnomonicAxes(GnomonicAxes):
     def projmap(self,map,nest=False,**kwds):
-        nside = pixelfunc.npix2nside(len(map))
+        nside = pixelfunc.npix2nside(pixelfunc.get_map_size(map))
         f = lambda x,y,z: pixelfunc.vec2pix(nside,x,y,z,nest=nest)
         xsize = kwds.pop('xsize',200)
         ysize = kwds.pop('ysize',None)
@@ -569,7 +569,7 @@ class MollweideAxes(SphericalProjAxes):
         
 class HpxMollweideAxes(MollweideAxes):
     def projmap(self,map,nest=False,**kwds):
-        nside = pixelfunc.npix2nside(len(map))
+        nside = pixelfunc.npix2nside(pixelfunc.get_map_size(map))
         f = lambda x,y,z: pixelfunc.vec2pix(nside,x,y,z,nest=nest)
         super(HpxMollweideAxes,self).projmap(map,f,**kwds)
 
@@ -590,7 +590,7 @@ class CartesianAxes(SphericalProjAxes):
         
 class HpxCartesianAxes(CartesianAxes):
     def projmap(self,map,nest=False,**kwds):
-        nside = pixelfunc.npix2nside(len(map))
+        nside = pixelfunc.npix2nside(pixelfunc.get_map_size(map))
         f = lambda x,y,z: pixelfunc.vec2pix(nside,x,y,z,nest=nest)
         super(HpxCartesianAxes,self).projmap(map,f,**kwds)
 

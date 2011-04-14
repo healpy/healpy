@@ -200,12 +200,19 @@ class ZoomTool(object):
         self._range_status = 0 #0:normal, 1:global map min,max, 2: saved
         self.save_min = self.save_max = None
         self._graton = False
-        mgood = m[m!=UNSEEN]
-        if mgood.size == 0:
-            self._mapmin, self._mapmax = -1., 1.
+        # find min, max of map
+        if isinstance(m, dict):
+            if len(m) == 0:
+                self._mapmin, self._mapmax = -1., 1.
+            else:
+                self._mapmin,self._mapmax = min(m.values()), max(m.values())
         else:
-            self._mapmin,self._mapmax = mgood.min(),mgood.max()
-        del mgood
+            mgood = m[m!=UNSEEN]
+            if mgood.size == 0:
+                self._mapmin, self._mapmax = -1., 1.
+            else:
+                self._mapmin,self._mapmax = mgood.min(),mgood.max()
+            del mgood
         if fig is None: f=pylab.gcf()
         else: f=pylab.figure(fig)
         self.f = f
