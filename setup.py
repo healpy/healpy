@@ -73,26 +73,34 @@ if sys.argv[1] != 'sdist':
 ###############################################
 
 library_dirs = [healpix_cxx_lib]
+include_dirs = [numpy_inc, healpix_cxx_inc]
+extra_link = []
 
 if 'CFITSIO_EXT_PREFIX' in os.environ:
     cfitsio_inc_dir = os.path.join(os.environ['CFITSIO_EXT_PREFIX'], 'include')
     cfitsio_lib_dir = os.path.join(os.environ['CFITSIO_EXT_PREFIX'], 'lib')
-    library_dirs.append(cfitsio_lib_dir)
+    include_dirs.append(cfitsio_inc_dir)
+    #library_dirs.append(cfitsio_lib_dir)
+    extra_link.append(os.path.join(cfitsio_lib_dir, 'libcfitsio.a'))
 if 'CFITSIO_EXT_INC' in os.environ:
     cfitsio_inc_dir = os.environ['CFITSIO_EXT_INC']
+    include_dirs.append(cfitsio_inc_dir)
 if 'CFITSIO_EXT_LIB' in os.environ:
     cfitsio_lib_dir = os.environ['CFITSIO_EXT_LIB']
-    library_dirs.append(cfitsio_lib_dir)
+    #library_dirs.append(cfitsio_lib_dir)
+    extra_link.append(os.path.join(cfitsio_lib_dir, 'libcfitsio.a'))
 
 healpix_libs =['healpix_cxx','cxxsupport','psht','fftpack','c_utils','gomp']
+if not extra_link:
+    healpix_libs.append('cfitsio')
+
 healpix_args =['-fopenmp', '-fpermissive']
-extra_link = [os.path.join(cfitsio_lib_dir, 'libcfitsio.a')]
 
 #start with base extension
 pixel_lib = Extension('healpy._healpy_pixel_lib',
                       sources=[join('healpy','src',s)
                                for s in healpy_pixel_lib_src],
-                      include_dirs=[numpy_inc,healpix_cxx_inc],
+                      include_dirs=include_dirs,
                       library_dirs=library_dirs,
                       libraries=healpix_libs,
                       extra_compile_args = healpix_args,
@@ -101,7 +109,7 @@ pixel_lib = Extension('healpy._healpy_pixel_lib',
 
 spht_lib = Extension('healpy._healpy_sph_transform_lib',
                      sources=[join('healpy','src',s) for s in healpy_spht_src],
-                     include_dirs=[numpy_inc,healpix_cxx_inc],
+                     include_dirs=include_dirs,
                      library_dirs=library_dirs,
                      libraries=healpix_libs,
                      extra_compile_args=healpix_args,
@@ -111,7 +119,7 @@ spht_lib = Extension('healpy._healpy_sph_transform_lib',
 hfits_lib = Extension('healpy._healpy_fitsio_lib',
                       sources=[join('healpy','src',s)
                                for s in healpy_fitsio_src],
-                      include_dirs=[numpy_inc,healpix_cxx_inc],
+                      include_dirs=include_dirs,
                       library_dirs=library_dirs,
                       libraries=healpix_libs,
                       extra_compile_args=healpix_args,
