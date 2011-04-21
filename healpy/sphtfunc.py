@@ -390,7 +390,7 @@ def smoothalm(alm,fwhm=0.0,sigma=None,degree=False,
             lmax = Alm.getlmax(a.size,mmax)
             if lmax < 0:
                 raise TypeError('Wrong alm size for the given '
-                                'mmax (alms[%d]).'%i)
+                                'mmax (alms[%d]).'%(a.size))
             if mmax<0:
                 mmax=lmax
             ell = npy.arange(lmax+1)
@@ -401,7 +401,7 @@ def smoothalm(alm,fwhm=0.0,sigma=None,degree=False,
         lmax = Alm.getlmax(alm.size,mmax)
         if lmax < 0:
             raise TypeError('Wrong alm size for the given '
-                            'mmax (alms[%d]).'%i)
+                            'mmax (alms[%d]).'%(a.size))
         if mmax<0:
             mmax=lmax
         ell = npy.arange(lmax+1)
