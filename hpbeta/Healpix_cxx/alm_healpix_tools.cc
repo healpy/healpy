@@ -25,7 +25,7 @@
  */
 
 /*
- *  Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008 Max-Planck-Society
+ *  Copyright (C) 2003-2011 Max-Planck-Society
  *  Author: Martin Reinecke
  */
 
@@ -99,7 +99,6 @@ template<typename T> void map2alm_iter2 (const Healpix_Map<T> &map,
       errmeasure = max(errmeasure,min(err*x_err_abs,rel*x_err_rel));
       map2[m] = map[m]-map2[m];
       }
-cout << "map error measure: " << errmeasure << endl;
     if (errmeasure<1) break;
     }
   }
@@ -164,7 +163,6 @@ template<typename T> void map2alm_spin_iter2
       errmeasure = max(errmeasure,min(err/err_abs,rel/err_rel));
       map2b[m] = map2[m]-map2b[m];
       }
-cout << "map error measure: " << errmeasure << endl;
     if (errmeasure<1) break;
     }
   }
@@ -301,7 +299,6 @@ template<typename T> void map2alm_pol_iter2
       errmeasure = max(errmeasure,min(err/err_abs,rel/err_rel));
       mapU2[m] = mapU[m]-mapU2[m];
       }
-cout << "map error measure: " << errmeasure << endl;
     if (errmeasure<1) break;
     }
   }

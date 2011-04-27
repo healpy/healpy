@@ -206,8 +206,15 @@ template<typename T> class Healpix_Map: public Healpix_Base
     T interpolation (const fix_arr<int,4> &pix,
       const fix_arr<double,4> &wgt) const
       {
-      return T(map[pix[0]]*wgt[0] + map[pix[1]]*wgt[1]
-             + map[pix[2]]*wgt[2] + map[pix[3]]*wgt[3]);
+      double wtot=0;
+      T res=T(0);
+      for (tsize i=0; i<4; ++i)
+        {
+        T val=map[pix[i]];
+        if (!approx<double>(val,Healpix_undef))
+          { res+=T(val*wgt[i]); wtot+=wgt[i]; }
+        }
+      return (wtot==0.) ? T(Healpix_undef) : T(res/wtot);
       }
     /*! Returns the interpolated map value at \a ptg */
     T interpolated_value (const pointing &ptg) const
@@ -242,7 +249,7 @@ template<typename T> class Healpix_Map: public Healpix_Base
       for (int m=0; m<npix_; ++m)
         if (!approx<double>(map[m],Healpix_undef))
           { ++pix; avg+=map[m]; }
-      return avg/pix;
+      return (pix>0) ? avg/pix : Healpix_undef;
       }
 
     /*! Adds \a val to all defined map pixels. */
@@ -272,7 +279,7 @@ template<typename T> class Healpix_Map: public Healpix_Base
       for (int m=0; m<npix_; ++m)
         if (!approx<double>(map[m],Healpix_undef))
           { ++pix; result+=map[m]*map[m]; }
-      return sqrt(result/pix);
+      return (pix>0) ? sqrt(result/pix) : Healpix_undef;
       }
     /*! Returns the maximum absolute value in the map, ignoring undefined
         pixels. */

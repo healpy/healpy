@@ -31,6 +31,7 @@
 
 #include "pointing.h"
 #include "lsconstants.h"
+#include "math_utils.h"
 
 using namespace std;
 

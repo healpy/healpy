@@ -27,7 +27,7 @@
  *  If any of the requested types is not available, compilation aborts
  *  with an error (unfortunately a rather obscure one).
  *
- *  Copyright (C) 2004, 2008, 2009, 2010, 2011 Max-Planck-Society
+ *  Copyright (C) 2004-2011 Max-Planck-Society
  *  \author Martin Reinecke
  */
 

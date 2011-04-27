@@ -30,7 +30,6 @@
  */
 
 #include "trafos.h"
-#include "cxxutils.h"
 #include "geom_utils.h"
 #include "lsconstants.h"
 

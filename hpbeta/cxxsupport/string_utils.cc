@@ -27,26 +27,16 @@
  *  used by the Planck LevelS package.
  *
  *  Copyright (C) 2002-2011 Max-Planck-Society
- *  Authors: Martin Reinecke, Reinhard Hell
+ *  Author: Martin Reinecke
  */
 
-// if we are using g++, check for version 3.0 or higher
-#ifdef __GNUC__
-#if (__GNUC__<3)
-#error your C++ compiler is too old. g++ version 3.0 or higher is required.
-#endif
-#endif
-
-#include <fstream>
 #include <sstream>
+#include <fstream>
 #include <iostream>
 #include <iomanip>
 #include <string>
 #include <cstring>
-#include "cxxutils.h"
-#include "datatypes.h"
-#include "openmp_support.h"
-#include "sse_utils.h"
+#include "string_utils.h"
 
 using namespace std;
 
@@ -172,60 +162,6 @@ string tolower(const string &input)
   return result;
   }
 
-namespace {
-
-void openmp_status()
-  {
-#ifndef _OPENMP
-  cout << "OpenMP: not supported by this binary" << endl;
-#else
-  int threads = openmp_max_threads();
-  if (threads>1)
-    cout << "OpenMP active: max. " << threads << " threads." << endl;
-  else
-    cout << "OpenMP active, but running with 1 thread only." << endl;
-#endif
-  }
-
-void SSE_status()
-  {
-  cout << "Vector math: ";
-#if(defined(PLANCK_HAVE_SSE)&&defined(PLANCK_HAVE_SSE2))
-  cout << "SSE, SSE2" << endl;
-#elif(defined(PLANCK_HAVE_SSE))
-  cout << "SSE" << endl;
-#else
-  cout << "not supported by this binary" << endl;
-#endif
-  }
-
-} //unnamed namespace
-
-void announce (const string &name)
-  {
-  string version = "v2.21pre";
-  string name2 = name+" "+version;
-  cout << endl << "+-";
-  for (tsize m=0; m<name2.length(); ++m) cout << "-";
-  cout << "-+" << endl;
-  cout << "| " << name2 << " |" << endl;
-  cout << "+-";
-  for (tsize m=0; m<name2.length(); ++m) cout << "-";
-  cout << "-+" << endl << endl;
-  SSE_status();
-  openmp_status();
-  cout << endl;
-  }
-
-void module_startup (const string &name, int argc, const char **,
-  int argc_expected, const string &argv_expected, bool verbose)
-  {
-  if (verbose) announce (name);
-  if (argc==argc_expected) return;
-  if (verbose) cerr << "Usage: " << name << " " << argv_expected << endl;
-  planck_fail_quietly ("Incorrect usage");
-  }
-
 void parse_file (const string &filename, map<string,string> &dict)
   {
   int lineno=0;
@@ -266,20 +202,11 @@ void parse_file (const string &filename, map<string,string> &dict)
     }
   }
 
-void calcShareGeneral (int64 glo, int64 ghi, int64 nshares, int64 myshare,
-  int64 &lo, int64 &hi)
-  {
-  int64 nwork = ghi-glo;
-  int64 nbase = nwork/nshares;
-  int64 additional = nwork%nshares;
-  lo = glo+myshare*nbase + ((myshare<additional) ? myshare : additional);
-  hi = lo+nbase+(myshare<additional);
-  }
-
 namespace {
 
 template<typename T> void split (istream &stream, vector<T> &list)
   {
+  list.clear();
   while (stream)
     {
     string word;

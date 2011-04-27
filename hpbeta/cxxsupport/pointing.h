@@ -34,7 +34,6 @@
 
 #include <cmath>
 #include "vec3.h"
-#include "cxxutils.h"
 
 /*! \defgroup pointinggroup Pointings */
 /*! \{ */

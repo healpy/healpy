@@ -23,7 +23,7 @@
  */
 
 /*
- *  Copyright (C) 2005, 2006, 2007, 2009, 2010 Max-Planck-Society
+ *  Copyright (C) 2005-2011 Max-Planck-Society
  *  \author Martin Reinecke
  */
 
@@ -34,7 +34,7 @@
 #include <omp.h>
 #endif
 
-#include "cxxutils.h"
+#include "share_utils.h"
 
 inline bool openmp_enabled()
   {

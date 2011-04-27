@@ -31,7 +31,6 @@
 
 #include <algorithm>
 #include "rotmatrix.h"
-#include "vec3.h"
 #include "lsconstants.h"
 
 using namespace std;

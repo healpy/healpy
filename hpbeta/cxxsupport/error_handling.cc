@@ -31,9 +31,6 @@
 
 #include "error_handling.h"
 
-#include <iostream>
-#include <string>
-
 using namespace std;
 
 PlanckError::PlanckError(const string &message) : msg (message) {}

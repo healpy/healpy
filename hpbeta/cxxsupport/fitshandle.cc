@@ -35,8 +35,7 @@
 #include <vector>
 #include "fitsio.h"
 #include "fitshandle.h"
-#include "cxxutils.h"
-#include "safe_cast.h"
+#include "string_utils.h"
 
 #define FPTR (static_cast<fitsfile *> (fptr))
 #define OFPTR (static_cast<fitsfile *> (orig.fptr))

@@ -31,6 +31,7 @@
 
 #include <iostream>
 #include "paramfile.h"
+#include "string_utils.h"
 
 using namespace std;
 

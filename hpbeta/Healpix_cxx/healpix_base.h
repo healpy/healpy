@@ -33,135 +33,116 @@
 #define HEALPIX_BASE_H
 
 #include <vector>
-#include "cxxutils.h"
+#include "healpix_tables.h"
 #include "pointing.h"
 #include "arr.h"
 #include "rangeset.h"
 
-/*! The two possible ordering schemes of a HEALPix map. */
-enum Healpix_Ordering_Scheme { RING, /*!< RING scheme */
-                               NEST  /*!< NESTED scheme */
-                             };
-
-Healpix_Ordering_Scheme string2HealpixScheme (const std::string &inp);
-
-class nside_dummy {};
-extern const nside_dummy SET_NSIDE;
-
 /*! Functionality related to the HEALPix pixelisation. */
-class Healpix_Base
+template<typename I> class T_Healpix_Base: public Healpix_Tables
   {
   protected:
-    enum { order_max=13 };
-
-    class Tablefiller
-      {
-      public:
-        Tablefiller();
-      };
-    static Tablefiller Filler;
-    friend class Tablefiller;
-
-    static short ctab[0x100], utab[0x100];
-
-    static const int jrll[];
-    static const int jpll[];
-
     /*! The order of the map; -1 for nonhierarchical map. */
     int order_;
     /*! The N_side parameter of the map; 0 if not allocated. */
-    int nside_;
-    int npface_, ncap_, npix_;
+    I nside_;
+    I npface_, ncap_, npix_;
     double fact1_, fact2_;
     /*! The map's ordering scheme. */
     Healpix_Ordering_Scheme scheme_;
 
     /*! Returns the number of the next ring to the north of \a z=cos(theta).
         It may return 0; in this case \a z lies north of all rings. */
-    inline int ring_above (double z) const;
-    void in_ring (int iz, double phi0, double dphi, rangeset<int> &pixset)
-      const;
+    inline I ring_above (double z) const;
+    void in_ring (I iz, double phi0, double dphi, rangeset<I> &pixset) const;
 
     void query_multidisc (const arr<vec3> &norm, const arr<double> &rad,
-      bool inclusive, rangeset<int> &pixset) const;
+      bool inclusive, rangeset<I> &pixset) const;
 
-    int xyf2nest(int ix, int iy, int face_num) const;
-    void nest2xyf(int pix, int &ix, int &iy, int &face_num) const;
-    int xyf2ring(int ix, int iy, int face_num) const;
-    void ring2xyf(int pix, int &ix, int &iy, int &face_num) const;
+    inline I spread_bits (int v) const;
+    inline int compress_bits (I v) const;
 
-    typedef int (Healpix_Base::*swapfunc)(int pix) const;
-    typedef void (Healpix_Base::*pix2xyf)
-                 (int pix, int &x, int &y, int &f) const;
-    typedef int (Healpix_Base::*xyf2pix) (int x, int y, int f) const;
+    I xyf2nest(int ix, int iy, int face_num) const;
+    void nest2xyf(I pix, int &ix, int &iy, int &face_num) const;
+    I xyf2ring(int ix, int iy, int face_num) const;
+    void ring2xyf(I pix, int &ix, int &iy, int &face_num) const;
+
+    I nest_peano_helper (I pix, int dir) const;
+
+    typedef I (T_Healpix_Base::*swapfunc)(I pix) const;
+    typedef void (T_Healpix_Base::*pix2xyf)
+                 (I pix, int &x, int &y, int &f) const;
+    typedef I (T_Healpix_Base::*xyf2pix) (int x, int y, int f) const;
 
   public:
+    static const int order_max;
+
     /*! Calculates the map order from its \a N_side parameter.
         Returns -1 if \a nside is not a power of 2.
         \param nside the \a N_side parameter */
-    static int nside2order (int nside);
+    static int nside2order (I nside);
     /*! Calculates the \a N_side parameter from the number of pixels.
         \param npix the number of pixels */
-    static int npix2nside (int npix);
+    static I npix2nside (I npix);
     /*! Constructs an unallocated object. */
-    Healpix_Base ();
+    T_Healpix_Base ();
     /*! Constructs an object with a given \a order and the ordering
         scheme \a scheme. */
-    Healpix_Base (int order, Healpix_Ordering_Scheme scheme)
+    T_Healpix_Base (int order, Healpix_Ordering_Scheme scheme)
       { Set (order, scheme); }
     /*! Constructs an object with a given \a nside and the ordering
         scheme \a scheme. The \a nside_dummy parameter must be set to
         SET_NSIDE. */
-    Healpix_Base (int nside, Healpix_Ordering_Scheme scheme, const nside_dummy)
+    T_Healpix_Base (I nside, Healpix_Ordering_Scheme scheme, const nside_dummy)
       { SetNside (nside, scheme); }
 
     /*! Adjusts the object to \a order and \a scheme. */
     void Set (int order, Healpix_Ordering_Scheme scheme);
     /*! Adjusts the object to \a nside and \a scheme. */
-    void SetNside (int nside, Healpix_Ordering_Scheme scheme);
+    void SetNside (I nside, Healpix_Ordering_Scheme scheme);
 
     /*! Returns the z-coordinate of the ring \a ring. This also works
         for the (not really existing) rings 0 and 4*nside. */
-    double ring2z (int ring) const;
+    double ring2z (I ring) const;
     /*! Returns the number of the ring in which \a pix lies. */
-    int pix2ring (int pix) const;
+    I pix2ring (I pix) const;
 
     /*! Translates a pixel number from NEST to RING. */
-    int nest2ring (int pix) const;
+    I nest2ring (I pix) const;
     /*! Translates a pixel number from RING to NEST. */
-    int ring2nest (int pix) const;
+    I ring2nest (I pix) const;
     /*! Translates a pixel number from NEST to its Peano index. */
-    int nest2peano (int pix) const;
+    I nest2peano (I pix) const;
     /*! Translates a pixel number from its Peano index to NEST. */
-    int peano2nest (int pix) const;
+    I peano2nest (I pix) const;
 
     /*! Returns the number of the pixel which contains the angular coordinates
         (\a z:=cos(theta), \a phi). */
-    int zphi2pix (double z, double phi) const;
+    I zphi2pix (double z, double phi) const;
 
     /*! Returns the number of the pixel which contains the angular coordinates
         \a ang. */
-    int ang2pix (const pointing &ang) const
+    I ang2pix (const pointing &ang) const
       { return zphi2pix (cos(ang.theta), ang.phi); }
     /*! Returns the number of the pixel which contains the vector \a vec
         (\a vec is normalized if necessary). */
-    int vec2pix (const vec3 &vec) const
+    I vec2pix (const vec3 &vec) const
       { return zphi2pix (vec.z/vec.Length(), safe_atan2(vec.y,vec.x)); }
 
     /*! Returns the angular coordinates (\a z:=cos(theta), \a phi) of the center
         of the pixel with number \a pix. */
-    void pix2zphi (int pix, double &z, double &phi) const;
+    void pix2zphi (I pix, double &z, double &phi) const;
 
     /*! Returns the angular coordinates of the center of the pixel with
         number \a pix. */
-    pointing pix2ang (int pix) const
+    pointing pix2ang (I pix) const
       {
       double z, phi;
       pix2zphi (pix,z,phi);
       return pointing(acos(z),phi);
       }
     /*! Returns the vector to the center of the pixel with number \a pix. */
-    vec3 pix2vec (int pix) const
+    vec3 pix2vec (I pix) const
       {
       double z, phi;
       pix2zphi (pix,z,phi);
@@ -184,21 +165,21 @@ class Healpix_Base
            algorithm used for \a inclusive==true returns fewer false positives
            in the NEST scheme. */
     void query_disc (pointing ptg, double radius, bool inclusive,
-      rangeset<int> &pixset) const;
+      rangeset<I> &pixset) const;
 
     /*! \deprecated Please use the version based on \a rangeset */
     void query_disc (const pointing &dir, double radius,
-      std::vector<int> &listpix) const
+      std::vector<I> &listpix) const
       {
-      rangeset<int> pixset;
+      rangeset<I> pixset;
       query_disc(dir,radius,false,pixset);
       pixset.toVector(listpix);
       }
     /*! \deprecated Please use the version based on \a rangeset */
     void query_disc_inclusive (const pointing &dir, double radius,
-      std::vector<int> &listpix) const
+      std::vector<I> &listpix) const
       {
-      rangeset<int> pixset;
+      rangeset<I> pixset;
       query_disc(dir,radius,true,pixset);
       pixset.toVector(listpix);
       }
@@ -212,7 +193,7 @@ class Healpix_Base
            that overlap with the polygon, and maybe a few more.
         \note This method is currently only implemented in the NEST scheme. */
     void query_polygon (const std::vector<pointing> &vertex, bool inclusive,
-      rangeset<int> &pixset) const;
+      rangeset<I> &pixset) const;
 
     /*! Returns useful information about a given ring of the map.
         \param ring the ring number (the number of the first ring is 1)
@@ -223,7 +204,7 @@ class Healpix_Base
         \param sintheta the sine of the colatitude of the ring
         \param shifted if \a true, the center of the first pixel is not at
                \a phi=0 */
-    void get_ring_info (int ring, int &startpix, int &ringpix,
+    void get_ring_info (I ring, I &startpix, I &ringpix,
       double &costheta, double &sintheta, bool &shifted) const;
     /*! Returns useful information about a given ring of the map.
         \param ring the ring number (the number of the first ring is 1)
@@ -233,14 +214,17 @@ class Healpix_Base
         \param theta the colatitude (in radians) of the ring
         \param shifted if \a true, the center of the first pixel is not at
                \a phi=0 */
-    void get_ring_info2 (int ring, int &startpix, int &ringpix,
+    void get_ring_info2 (I ring, I &startpix, I &ringpix,
       double &theta, bool &shifted) const;
     /*! Returns useful information about a given ring of the map.
         \param ring the ring number (the number of the first ring is 1)
         \param startpix the number of the first pixel in the ring
                (NOTE: this is always given in the RING numbering scheme!)
-        \param ringpix the number of pixels in the ring */
-    void get_ring_info_small (int ring, int &startpix, int &ringpix) const;
+        \param ringpix the number of pixels in the ring
+        \param shifted if \a true, the center of the first pixel is not at
+               \a phi=0 */
+    void get_ring_info_small (I ring, I &startpix, I &ringpix,
+        bool &shifted) const;
     /*! Returns the neighboring pixels of \a pix in \a result.
         On exit, \a result contains (in this order)
         the pixel numbers of the SW, W, NW, N, NE, E, SE and S neighbor
@@ -249,31 +233,31 @@ class Healpix_Base
 
         \note This method works in both RING and NEST schemes, but is
           considerably faster in the NEST scheme. */
-    void neighbors (int pix, fix_arr<int,8> &result) const;
+    void neighbors (I pix, fix_arr<I,8> &result) const;
     /*! Returns interpolation information for the direction \a ptg.
         The surrounding pixels are returned in \a pix, their corresponding
         weights in \a wgt.
         \note This method works in both RING and NEST schemes, but is
           considerably faster in the RING scheme. */
-    void get_interpol (const pointing &ptg, fix_arr<int,4> &pix,
+    void get_interpol (const pointing &ptg, fix_arr<I,4> &pix,
                        fix_arr<double,4> &wgt) const;
 
     /*! Returns the order parameter of the object. */
     int Order() const { return order_; }
     /*! Returns the \a N_side parameter of the object. */
-    int Nside() const { return nside_; }
+    I Nside() const { return nside_; }
     /*! Returns the number of pixels of the object. */
-    int Npix() const { return npix_; }
+    I Npix() const { return npix_; }
     /*! Returns the ordering scheme of the object. */
     Healpix_Ordering_Scheme Scheme() const { return scheme_; }
 
     /*! Returns \a true, if both objects have the same nside and scheme,
         else  \a false. */
-    bool conformable (const Healpix_Base &other) const
+    bool conformable (const T_Healpix_Base &other) const
       { return ((nside_==other.nside_) && (scheme_==other.scheme_)); }
 
     /*! Swaps the contents of two Healpix_Base objects. */
-    void swap (Healpix_Base &other);
+    void swap (T_Healpix_Base &other);
 
     /*! Returns the maximum angular distance (in radian) between any pixel
         center and its corners. */
@@ -281,9 +265,12 @@ class Healpix_Base
 
     /*! Returns the maximum angular distance (in radian) between any pixel
         center and its corners in a given ring. */
-    double max_pixrad(int ring) const;
+    double max_pixrad(I ring) const;
 
     arr<int> swap_cycles() const;
   };
+
+typedef T_Healpix_Base<int> Healpix_Base;
+typedef T_Healpix_Base<int64> Healpix_Base2;
 
 #endif

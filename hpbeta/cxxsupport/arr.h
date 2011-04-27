@@ -25,7 +25,7 @@
 /*! \file arr.h
  *  Various high-performance array classes used by the Planck LevelS package.
  *
- *  Copyright (C) 2002 - 2010 Max-Planck-Society
+ *  Copyright (C) 2002-2011 Max-Planck-Society
  *  \author Martin Reinecke
  */
 
@@ -34,7 +34,9 @@
 
 #include <algorithm>
 #include <cstdlib>
-#include "cxxutils.h"
+#include "datatypes.h"
+#include "math_utils.h"
+#include "string_utils.h"
 
 /*! \defgroup arraygroup Array classes */
 /*! \{ */

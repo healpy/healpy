@@ -33,8 +33,10 @@
 #ifndef PLANCK_GEOM_UTILS_H
 #define PLANCK_GEOM_UTILS_H
 
-#include "cxxutils.h"
+#include "math_utils.h"
 #include "vec3.h"
+
+template<typename T> class arr;
 
 /*! Returns the orientation when looking from point \a loc on the unit
     sphere in the direction \a dir. \a loc must be normalized. The result
@@ -68,5 +70,12 @@ inline double cosdist_zphi (double z1, double phi1, double z2, double phi2)
   using namespace std;
   return z1*z2+cos(phi1-phi2)*sqrt((1.-z1*z1)*(1.-z2*z2));
   }
+
+/*! Finds the smallest enclosing cone for a point set on the sphere according to
+    Barequet & Elber: Information Processing Letters 93(2005), p.83.
+    All points are expected to be passed as unit vectors.
+    The enclosing cone must have an opening angle <pi/2. */
+void find_enclosing_circle (const arr<vec3> &point, vec3 &center,
+  double &cosrad);
 
 #endif
