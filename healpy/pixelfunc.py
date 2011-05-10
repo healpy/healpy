@@ -393,7 +393,7 @@ def fit_dipole(m,nest=False,bad=pixlib.UNSEEN,gal_cut=0):
     for ibunch in range(npix/bunchsize):
         ipix = npy.arange(ibunch*bunchsize,
                           (ibunch+1)*bunchsize)
-        ipix = ipix[m.flat[ipix]!=bad]
+        ipix = ipix[(m.flat[ipix]!=bad) & (npy.isfinite(m.flat[ipix]))]
         x,y,z = pix2vec(nside, ipix, nest)
         if gal_cut>0:
             w = (npy.abs(z)>=npy.sin(gal_cut*npy.pi/180))
@@ -453,7 +453,7 @@ def remove_dipole(m,nest=False,bad=pixlib.UNSEEN,gal_cut=0,fitval=False,
     for ibunch in range(npix/bunchsize):
         ipix = npy.arange(ibunch*bunchsize,
                           (ibunch+1)*bunchsize)
-        ipix = ipix[m.flat[ipix]!=bad]
+        ipix = ipix[(m.flat[ipix]!=bad) & (npy.isfinite(m.flat[ipix]))]
         x,y,z = pix2vec(nside, ipix, nest)
         m.flat[ipix] -= (dipole[0]*x)
         m.flat[ipix] -= dipole[1]*y
@@ -492,7 +492,7 @@ def fit_monopole(m,nest=False,bad=pixlib.UNSEEN,gal_cut=0):
     for ibunch in range(npix/bunchsize):
         ipix = npy.arange(ibunch*bunchsize,
                           (ibunch+1)*bunchsize)
-        ipix = ipix[m.flat[ipix]!=bad]
+        ipix = ipix[(m.flat[ipix]!=bad) & (npy.isfinite(m.flat[ipix]))]
         x,y,z = pix2vec(nside, ipix, nest)
         aa = v = 0.0
         if gal_cut>0:
@@ -533,7 +533,7 @@ def remove_monopole(m,nest=False,bad=pixlib.UNSEEN,gal_cut=0,fitval=False,
     for ibunch in range(npix/bunchsize):
         ipix = npy.arange(ibunch*bunchsize,
                           (ibunch+1)*bunchsize)
-        ipix = ipix[m.flat[ipix]!=bad]
+        ipix = ipix[(m.flat[ipix]!=bad) & (npy.isfinite(m.flat[ipix]))]
         x,y,z = pix2vec(nside, ipix, nest)
         m.flat[ipix] -= mono
     if verbose:
@@ -603,7 +603,7 @@ def _ud_grade_core(m,nside_out,pess=False,power=None, dtype=None):
         map_out = npy.outer(m,fact).reshape(npix_out)
     elif nside_out < nside_in:
         rat2 = npix_in/npix_out
-        bads = npy.where(m==UNSEEN)
+        bads = (npy.where(m==UNSEEN)) | (~npy.isfinite(m))
         hit = npy.ones(npix_in,dtype=npy.int16)
         hit[bads] = 0
         m[bads] = 0
