@@ -65,15 +65,15 @@ def mollzoom(map=None,fig=None,rot=None,coord=None,unit='',
       - gal_cut: galactic cut for the dipole/monopole fit
       - format: the format of the scale. Default: '%g'
     """
-        # Starting to draw : turn interactive off
+    # create the figure (if interactive, it will open the window now)
+    f=pylab.figure(fig,figsize=(10.5,5.4))
+    extent = (0.02,0.25,0.56,0.72)
+    # Starting to draw : turn interactive off
     wasinteractive = pylab.isinteractive()
     pylab.ioff()
     try:
         if map is None:
             map = npy.zeros(12)+npy.inf
-        f=pylab.figure(fig,figsize=(10.5,5.4))
-        extent = (0.02,0.25,0.56,0.72)
-        #f=pylab.figure(fig,figsize=(8.5,5.4))
         ax=PA.HpxMollweideAxes(f,extent,coord=coord,rot=rot,
                                format=format,flipconv=flip)
         f.add_axes(ax)
@@ -165,10 +165,9 @@ def mollzoom(map=None,fig=None,rot=None,coord=None,unit='',
         # Set up the zoom capability
         zt=ZoomTool(map,fig=f.number,nest=nest,cmap=cmap,norm=norm,coord=coord)
     finally:
+        pylab.draw()
         if wasinteractive:
             pylab.ion()
-            pylab.draw()
-            pylab.show()
 
 def set_g_clim(vmin,vmax):
     """Set min/max value of the gnomview part of a mollzoom.
