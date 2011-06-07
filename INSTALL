@@ -21,6 +21,10 @@ The installation procedure is very simple:
 $ cd healpy-0.9.3.1
 $ python setup.py build
 
+OR, if you do not want OpenMP support (sometimes, it causes SegFault)
+
+$ python setup.py build --without-openmp
+
 If everything goes fine, you can give a test:
 $ cd build/lib*
 $ ipython -pylab

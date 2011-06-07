@@ -2,19 +2,44 @@
 
 import platform
 import os
+import sys
+import shutil
 
 TARGET_DICT = {
     'linux': 'healpy',
     'darwin': 'healpy_osx'
 }
 
+# Option to use OpenMP in healpix routines
+opt_without_openmp = '--without-openmp'
+without_openmp = opt_without_openmp in sys.argv
+if without_openmp:
+    sys.argv.remove(opt_without_openmp)
+with_openmp = not without_openmp
+
 SYSTEM_STRING = platform.system().lower ()
 try:
     HEALPIX_TARGET=TARGET_DICT[SYSTEM_STRING]
+    if with_openmp:
+        HEALPIX_TARGET += '_openmp'
     print 'Using Healpix configuration "%s" for system "%s"' % \
             (HEALPIX_TARGET, SYSTEM_STRING)
 except KeyError:
     raise AssertionError ('Unsupported platform: %s' % SYSTEM_STRING)
+
+if 'distclean' in sys.argv:
+    # Remove build directory of healpy and hpbeta
+    build_hpx = os.path.join('hpbeta', 'build.' + HEALPIX_TARGET)
+    print 'Removing ', build_hpx, ' directory...'
+    shutil.rmtree(build_hpx, True)
+    hpx = os.path.join('hpbeta', HEALPIX_TARGET)
+    print 'Removing ', hpx, 'directory...'
+    shutil.rmtree(hpx, True)
+    hpy = 'build'
+    print 'Removing ', hpy, ' directory...'
+    shutil.rmtree(hpy, True)
+    sys.exit(0)
+                  
 
 from distutils.core import setup, Extension
 from os.path import join,isdir
@@ -90,11 +115,16 @@ if 'CFITSIO_EXT_LIB' in os.environ:
     #library_dirs.append(cfitsio_lib_dir)
     extra_link.append(os.path.join(cfitsio_lib_dir, 'libcfitsio.a'))
 
-healpix_libs =['healpix_cxx','cxxsupport','psht','fftpack','c_utils','gomp']
+healpix_libs =['healpix_cxx','cxxsupport','psht','fftpack','c_utils']
+if with_openmp:
+    healpix_libs.append('gomp')
+
 if not extra_link:
     healpix_libs.append('cfitsio')
 
-healpix_args =['-fopenmp', '-fpermissive']
+healpix_args =['-fpermissive']
+if with_openmp:
+    healpix_args.append('-fopenmp')
 
 #start with base extension
 pixel_lib = Extension('healpy._healpy_pixel_lib',
