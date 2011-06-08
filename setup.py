@@ -17,13 +17,24 @@ if without_openmp:
     sys.argv.remove(opt_without_openmp)
 with_openmp = not without_openmp
 
+# Option to use compiler flag "-march=native"
+opt_without_native = '--without-native'
+without_native = opt_without_native in sys.argv
+if without_native:
+    sys.argv.remove(opt_without_native)
+with_native = not without_native
+
 SYSTEM_STRING = platform.system().lower ()
 try:
     HEALPIX_TARGET=TARGET_DICT[SYSTEM_STRING]
+    HEALPIX_EXTRAFLAGS=""
     if with_openmp:
-        HEALPIX_TARGET += '_openmp'
+        HEALPIX_EXTRAFLAGS += "-fopenmp "
+    if with_native:
+        HEALPIX_EXTRAFLAGS += "-march=native "
     print 'Using Healpix configuration "%s" for system "%s"' % \
             (HEALPIX_TARGET, SYSTEM_STRING)
+    print 'Extra flags used: "%s"' % (HEALPIX_EXTRAFLAGS)
 except KeyError:
     raise AssertionError ('Unsupported platform: %s' % SYSTEM_STRING)
 
@@ -39,7 +50,6 @@ if 'distclean' in sys.argv:
     print 'Removing ', hpy, ' directory...'
     shutil.rmtree(hpy, True)
     sys.exit(0)
-                  
 
 from distutils.core import setup, Extension
 from os.path import join,isdir

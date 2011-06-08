@@ -25,6 +25,10 @@ OR, if you do not want OpenMP support (sometimes, it causes SegFault)
 
 $ python setup.py build --without-openmp
 
+If you do not want the "-march=native" flag (if your g++ is too old)
+
+$ python setup.py build --without-native
+
 If everything goes fine, you can give a test:
 $ cd build/lib*
 $ ipython -pylab
