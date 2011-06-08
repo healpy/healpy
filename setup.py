@@ -73,7 +73,7 @@ def compile_healpix_cxx(target):
     import os
     print "Compiling healpix_cxx (this may take a while)"
     compil_result = os.system('cd hpbeta && '
-                              'HEALPIX_TARGET=%s make '%(target))
+                              'HEALPIX_TARGET=%s HEALPIX_EXTRAFLAGS="%s" make '%(target,HEALPIX_EXTRAFLAGS) )
     if compil_result != 0:
         raise Exception('Error while compiling healpix_cxx')
 
