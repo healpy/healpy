@@ -24,10 +24,12 @@ $ python setup.py build
 OR, if you do not want OpenMP support (sometimes, it causes SegFault)
 
 $ python setup.py build --without-openmp
+(alternatively, you can define the environment variable HEALPY_WITHOUT_OPENMP)
 
 If you do not want the "-march=native" flag (if your g++ is too old)
 
 $ python setup.py build --without-native
+(alternatively, you can define the environment variable HEALPY_WITHOUT_NATIVE)
 
 If everything goes fine, you can give a test:
 $ cd build/lib*
