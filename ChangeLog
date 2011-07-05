@@ -1,1825 +1,1112 @@
+2011-07-05 12:54  cyrille.rosset@gmail.com
+
+	* [r194] healpy/pixelfunc.py: correct bug in _ud_grade_core (wrong
+	  masking of bad pixel). Now uses function mask_bad. Solve issue 59
+
+2011-06-21 13:17  cyrille.rosset@gmail.com
+
+	* [r193] INSTALL, setup.py: Modify setup.py to allow setting option
+	  through environment variable - see INSTALL
+
+2011-06-08 15:08  martin.reinecke1@gmx.de
+
+	* [r192] setup.py: try to fix issue 60 for real this time
+
+2011-06-08 09:53  martin.reinecke1@gmx.de
+
+	* [r191] INSTALL, hpbeta/config/config.healpy,
+	  hpbeta/config/config.healpy_openmp,
+	  hpbeta/config/config.healpy_osx,
+	  hpbeta/config/config.healpy_osx_openmp, setup.py: try to fix
+	  issue 60 (by adding a flag "--without-native" to setup.py)
+	  use the same mechanism for controlling OpenMP
+
+2011-06-07 16:36  cyrille.rosset@gmail.com
+
+	* [r190] hpbeta/config/config.healpy_openmp,
+	  hpbeta/config/config.healpy_osx_openmp: Forgot files for with and
+	  without openmp_support
+
+2011-06-07 16:35  cyrille.rosset@gmail.com
+
+	* [r189] INSTALL, hpbeta/config/config.healpy,
+	  hpbeta/config/config.healpy_osx, setup.py: Add option
+	  --without-openmp, as openmp seems to cause segfaults on some
+	  platforms ; also add command distclean to setup.py, which remove
+	  any build results to ensure full recompilation (both healpix_cxx
+	  and healpy)
+
+2011-05-10 15:54  cyrille.rosset@gmail.com
+
+	* [r188] healpy/version.py: update version.py
+
+2011-05-10 15:53  cyrille.rosset@gmail.com
+
+	* [r187] healpy/zoomtool.py: remove show() call in mollzoom (avoid
+	  blocking in interactive session on some platforms)
+
+2011-05-10 01:09  andrea.zonca@gmail.com
+
+	* [r186] healpy/pixelfunc.py: Merge pull request #5 from
+	  ziotom78/patch-1
+	  
+	  Properly take into account NaNs and INFs
+
+2011-04-27 09:50  martin.reinecke1@gmx.de
+
+	* [r185] hpbeta/Healpix_cxx/alm_healpix_tools.cc,
+	  hpbeta/Healpix_cxx/healpix_base.cc,
+	  hpbeta/Healpix_cxx/healpix_base.h,
+	  hpbeta/Healpix_cxx/healpix_map.h,
+	  hpbeta/Healpix_cxx/healpix_tables.cc,
+	  hpbeta/Healpix_cxx/healpix_tables.h,
+	  hpbeta/Healpix_cxx/planck.make, hpbeta/c_utils/c_utils.c,
+	  hpbeta/c_utils/c_utils.h, hpbeta/cxxsupport/arr.h,
+	  hpbeta/cxxsupport/cxxutils.cc, hpbeta/cxxsupport/cxxutils.h,
+	  hpbeta/cxxsupport/datatypes.h,
+	  hpbeta/cxxsupport/error_handling.cc,
+	  hpbeta/cxxsupport/fitshandle.cc, hpbeta/cxxsupport/geom_utils.cc,
+	  hpbeta/cxxsupport/geom_utils.h, hpbeta/cxxsupport/math_utils.h,
+	  hpbeta/cxxsupport/openmp_support.h,
+	  hpbeta/cxxsupport/paramfile.cc, hpbeta/cxxsupport/paramfile.h,
+	  hpbeta/cxxsupport/planck.make, hpbeta/cxxsupport/pointing.cc,
+	  hpbeta/cxxsupport/pointing.h, hpbeta/cxxsupport/rangeset.h,
+	  hpbeta/cxxsupport/rotmatrix.cc, hpbeta/cxxsupport/rotmatrix.h,
+	  hpbeta/cxxsupport/share_utils.h,
+	  hpbeta/cxxsupport/string_utils.cc,
+	  hpbeta/cxxsupport/string_utils.h, hpbeta/cxxsupport/trafos.cc:
+	  sync with master sources
+
+2011-04-21 12:25  cyrille.rosset@gmail.com
+
+	* [r184] healpy/sphtfunc.py: correct issue 52 (undefined variable i
+	  in smoothalm)
+
+2011-04-15 09:01  cyrille.rosset@gmail.com
+
+	* [r183] setup.py: correction in setup.py
+
+2011-04-14 16:44  cyrille.rosset@gmail.com
+
+	* [r182] ChangeLog: update ChangeLog
+
 2011-04-14 16:42  cyrille.rosset@gmail.com
 
-	* [r181] /tags/healpy-0.10.1/ChangeLog, /trunk/ChangeLog: update
-	  ChangeLog
-
-2011-04-14 16:37  cyrille.rosset@gmail.com
-
-	* [r180] /tags/healpy-0.10.1/healpy/version.py: update version
-	  number
-
-2011-04-14 16:36  cyrille.rosset@gmail.com
-
-	* [r179] /tags/healpy-0.10.1,
-	  /tags/healpy-0.10.1/healpy/__init__.py,
-	  /tags/healpy-0.10.1/healpy/fitsfunc.py,
-	  /tags/healpy-0.10.1/healpy/pixelfunc.py,
-	  /tags/healpy-0.10.1/healpy/projaxes.py,
-	  /tags/healpy-0.10.1/healpy/projector.py,
-	  /tags/healpy-0.10.1/healpy/visufunc.py,
-	  /tags/healpy-0.10.1/healpy/zoomtool.py,
-	  /tags/healpy-0.10.1/setup.py: version 0.10.1
+	* [r181] ChangeLog: update ChangeLog
 
 2011-04-14 16:32  cyrille.rosset@gmail.com
 
-	* [r178] /trunk/healpy/__init__.py, /trunk/healpy/pixelfunc.py,
-	  /trunk/healpy/projaxes.py, /trunk/healpy/projector.py,
-	  /trunk/healpy/zoomtool.py: Solve issue 51 ; add support for
-	  explicit pixellization through dict (keys are pixel numbers,
-	  'nside' key define the nside)
+	* [r178] healpy/__init__.py, healpy/pixelfunc.py,
+	  healpy/projaxes.py, healpy/projector.py, healpy/zoomtool.py:
+	  Solve issue 51 ; add support for explicit pixellization through
+	  dict (keys are pixel numbers, 'nside' key define the nside)
 
 2011-04-13 15:08  cyrille.rosset@gmail.com
 
-	* [r177] /trunk/healpy/__init__.py, /trunk/healpy/fitsfunc.py,
-	  /trunk/healpy/visufunc.py: Change setting to UNSEEN in read_map ;
+	* [r177] healpy/__init__.py, healpy/fitsfunc.py,
+	  healpy/visufunc.py: Change setting to UNSEEN in read_map ;
 	  position of unit ; remove 'on' in gnomonic position text
 
 2011-04-13 13:38  cyrille.rosset@gmail.com
 
-	* [r176] /trunk/setup.py: force use of libcfitsio.a instead of the
-	  shared library through extra_link_args
+	* [r176] setup.py: force use of libcfitsio.a instead of the shared
+	  library through extra_link_args
 
 2011-04-13 10:05  cyrille.rosset@gmail.com
 
-	* [r175] /trunk/setup.py: remove unnecessary compilation options
+	* [r175] setup.py: remove unnecessary compilation options
 
 2011-04-05 11:13  martin.reinecke1@gmx.de
 
-	* [r174] /trunk/hpbeta/Healpix_cxx/alm.cc,
-	  /trunk/hpbeta/Healpix_cxx/alm.h,
-	  /trunk/hpbeta/Healpix_cxx/alm_healpix_tools.h,
-	  /trunk/hpbeta/Healpix_cxx/healpix_base.cc,
-	  /trunk/hpbeta/Healpix_cxx/healpix_base.h,
-	  /trunk/hpbeta/Healpix_cxx/healpix_map.h,
-	  /trunk/hpbeta/Healpix_cxx/planck.make,
-	  /trunk/hpbeta/Healpix_cxx/powspec.cc,
-	  /trunk/hpbeta/Healpix_cxx/powspec.h,
-	  /trunk/hpbeta/cxxsupport/arr.h,
-	  /trunk/hpbeta/cxxsupport/cxxutils.cc,
-	  /trunk/hpbeta/cxxsupport/cxxutils.h,
-	  /trunk/hpbeta/cxxsupport/datatypes.h,
-	  /trunk/hpbeta/cxxsupport/error_handling.cc,
-	  /trunk/hpbeta/cxxsupport/error_handling.h,
-	  /trunk/hpbeta/cxxsupport/fitshandle.cc,
-	  /trunk/hpbeta/cxxsupport/fitshandle.h,
-	  /trunk/hpbeta/cxxsupport/geom_utils.h,
-	  /trunk/hpbeta/cxxsupport/paramfile.cc,
-	  /trunk/hpbeta/cxxsupport/paramfile.h,
-	  /trunk/hpbeta/cxxsupport/planck.make,
-	  /trunk/hpbeta/cxxsupport/pointing.cc,
-	  /trunk/hpbeta/cxxsupport/pointing.h,
-	  /trunk/hpbeta/cxxsupport/rangeset.h,
-	  /trunk/hpbeta/cxxsupport/rotmatrix.cc,
-	  /trunk/hpbeta/cxxsupport/rotmatrix.h,
-	  /trunk/hpbeta/cxxsupport/trafos.cc,
-	  /trunk/hpbeta/cxxsupport/trafos.h: sync with master sources
+	* [r174] hpbeta/Healpix_cxx/alm.cc, hpbeta/Healpix_cxx/alm.h,
+	  hpbeta/Healpix_cxx/alm_healpix_tools.h,
+	  hpbeta/Healpix_cxx/healpix_base.cc,
+	  hpbeta/Healpix_cxx/healpix_base.h,
+	  hpbeta/Healpix_cxx/healpix_map.h, hpbeta/Healpix_cxx/planck.make,
+	  hpbeta/Healpix_cxx/powspec.cc, hpbeta/Healpix_cxx/powspec.h,
+	  hpbeta/cxxsupport/arr.h, hpbeta/cxxsupport/cxxutils.cc,
+	  hpbeta/cxxsupport/cxxutils.h, hpbeta/cxxsupport/datatypes.h,
+	  hpbeta/cxxsupport/error_handling.cc,
+	  hpbeta/cxxsupport/error_handling.h,
+	  hpbeta/cxxsupport/fitshandle.cc, hpbeta/cxxsupport/fitshandle.h,
+	  hpbeta/cxxsupport/geom_utils.h, hpbeta/cxxsupport/paramfile.cc,
+	  hpbeta/cxxsupport/paramfile.h, hpbeta/cxxsupport/planck.make,
+	  hpbeta/cxxsupport/pointing.cc, hpbeta/cxxsupport/pointing.h,
+	  hpbeta/cxxsupport/rangeset.h, hpbeta/cxxsupport/rotmatrix.cc,
+	  hpbeta/cxxsupport/rotmatrix.h, hpbeta/cxxsupport/trafos.cc,
+	  hpbeta/cxxsupport/trafos.h: sync with master sources
 
 2011-03-07 09:49  martin.reinecke1@gmx.de
 
-	* [r173] /trunk/hpbeta/Healpix_cxx/healpix_base.cc,
-	  /trunk/hpbeta/Healpix_cxx/healpix_base.h,
-	  /trunk/hpbeta/README.compilation,
-	  /trunk/hpbeta/config/rules.common,
-	  /trunk/hpbeta/cxxsupport/cxxutils.cc,
-	  /trunk/hpbeta/cxxsupport/levels_facilities.h,
-	  /trunk/hpbeta/cxxsupport/rangeset.h,
-	  /trunk/hpbeta/docsrc/planck.make,
-	  /trunk/hpbeta/libcfitsio/planck.make,
-	  /trunk/hpbeta/libpsht/libpsht.dox, /trunk/hpbeta/libpsht/psht.c,
-	  /trunk/hpbeta/libpsht/psht.h,
-	  /trunk/hpbeta/libpsht/psht_almhelpers.c,
-	  /trunk/hpbeta/libpsht/psht_almhelpers.h,
-	  /trunk/hpbeta/libpsht/psht_geomhelpers.c,
-	  /trunk/hpbeta/libpsht/psht_geomhelpers.h,
-	  /trunk/hpbeta/libpsht/psht_inc.c,
-	  /trunk/hpbeta/libpsht/ylmgen_c.c,
-	  /trunk/hpbeta/libpsht/ylmgen_c.h: sync with master sources
+	* [r173] hpbeta/Healpix_cxx/healpix_base.cc,
+	  hpbeta/Healpix_cxx/healpix_base.h, hpbeta/README.compilation,
+	  hpbeta/config/rules.common, hpbeta/cxxsupport/cxxutils.cc,
+	  hpbeta/cxxsupport/levels_facilities.h,
+	  hpbeta/cxxsupport/rangeset.h, hpbeta/docsrc/planck.make,
+	  hpbeta/libcfitsio/planck.make, hpbeta/libpsht/libpsht.dox,
+	  hpbeta/libpsht/psht.c, hpbeta/libpsht/psht.h,
+	  hpbeta/libpsht/psht_almhelpers.c,
+	  hpbeta/libpsht/psht_almhelpers.h,
+	  hpbeta/libpsht/psht_geomhelpers.c,
+	  hpbeta/libpsht/psht_geomhelpers.h, hpbeta/libpsht/psht_inc.c,
+	  hpbeta/libpsht/ylmgen_c.c, hpbeta/libpsht/ylmgen_c.h: sync with
+	  master sources
 
 2011-03-07 09:19  martin.reinecke1@gmx.de
 
-	* [r172] /trunk/setup.py: add "-fpermissive" flag to allow cfitsio
+	* [r172] setup.py: add "-fpermissive" flag to allow cfitsio
 	  compilation on some platforms
-
-2011-03-01 18:28  cyrille.rosset@gmail.com
-
-	* [r171] /tags/healpy-0.10/ChangeLog: update ChangeLog
-
-2011-03-01 18:22  cyrille.rosset@gmail.com
-
-	* [r170] /tags/healpy-0.10/healpy/version.py: update version.py
-
-2011-03-01 18:17  cyrille.rosset@gmail.com
-
-	* [r169] /tags/healpy-0.10, /tags/healpy-0.10/healpy/sphtfunc.py,
-	  /tags/healpy-0.10/healpy/version.py,
-	  /tags/healpy-0.10/pshyt/pshyt.c, /tags/healpy-0.10/setup.py: new
-	  version healpy 0.10
 
 2011-03-01 16:02  cyrille.rosset@gmail.com
 
-	* [r168] /trunk/healpy/sphtfunc.py: Change documentation of anafast
-	  to match real output of code (consistent with order of alm2cl
+	* [r168] healpy/sphtfunc.py: Change documentation of anafast to
+	  match real output of code (consistent with order of alm2cl
 	  output)
 
 2011-03-01 12:40  cyrille.rosset@gmail.com
 
-	* [r167] /trunk/healpy/version.py: update version.py
+	* [r167] healpy/version.py: update version.py
 
 2011-03-01 12:19  cyrille.rosset@gmail.com
 
-	* [r166] /trunk/pshyt/pshyt.c, /trunk/setup.py: remove
-	  cython-generated pshyt.c
+	* [r166] pshyt/pshyt.c, setup.py: remove cython-generated pshyt.c
 
 2011-01-31 12:07  martin.reinecke1@gmx.de
 
-	* [r165] /trunk/hpbeta/Healpix_cxx/alm_powspec_tools.cc,
-	  /trunk/hpbeta/config/config.aix64,
-	  /trunk/hpbeta/config/config.generic_gcc,
-	  /trunk/hpbeta/config/config.healpy,
-	  /trunk/hpbeta/config/config.healpy_osx,
-	  /trunk/hpbeta/config/config.irix64,
-	  /trunk/hpbeta/config/config.linux_icc,
-	  /trunk/hpbeta/config/config.osx,
-	  /trunk/hpbeta/cxxsupport/cxxutils.cc,
-	  /trunk/hpbeta/docsrc/Healpix_cxx.dox,
-	  /trunk/hpbeta/docsrc/cxxsupport.dox,
-	  /trunk/hpbeta/docsrc/libfftpack.dox,
-	  /trunk/hpbeta/libfftpack/ls_fft.c,
-	  /trunk/hpbeta/libpsht/libpsht.dox,
-	  /trunk/hpbeta/libpsht/ylmgen_c.c: warning fixes and cleanups
+	* [r165] hpbeta/Healpix_cxx/alm_powspec_tools.cc,
+	  hpbeta/config/config.aix64, hpbeta/config/config.generic_gcc,
+	  hpbeta/config/config.healpy, hpbeta/config/config.healpy_osx,
+	  hpbeta/config/config.irix64, hpbeta/config/config.linux_icc,
+	  hpbeta/config/config.osx, hpbeta/cxxsupport/cxxutils.cc,
+	  hpbeta/docsrc/Healpix_cxx.dox, hpbeta/docsrc/cxxsupport.dox,
+	  hpbeta/docsrc/libfftpack.dox, hpbeta/libfftpack/ls_fft.c,
+	  hpbeta/libpsht/libpsht.dox, hpbeta/libpsht/ylmgen_c.c: warning
+	  fixes and cleanups
 
 2011-01-26 15:34  martin.reinecke1@gmx.de
 
-	* [r164] /trunk/hpbeta/libpsht/ylmgen_c.c: hopefully fix a sign
-	  error
+	* [r164] hpbeta/libpsht/ylmgen_c.c: hopefully fix a sign error
 
 2011-01-26 13:38  cyrille.rosset@gmail.com
 
-	* [r163] /trunk/healpy/visufunc.py: remove the pylab.show() call in
+	* [r163] healpy/visufunc.py: remove the pylab.show() call in
 	  visufunc (blocking for some backend and unnecessary)
 
 2011-01-26 12:22  martin.reinecke1@gmx.de
 
-	* [r162] /trunk/hpbeta/Healpix_cxx/alm2map_cxx.cc,
-	  /trunk/hpbeta/Healpix_cxx/alm2map_cxx.par.txt,
-	  /trunk/hpbeta/Healpix_cxx/alm_fitsio.cc,
-	  /trunk/hpbeta/Healpix_cxx/alm_fitsio.h,
-	  /trunk/hpbeta/Healpix_cxx/anafast_cxx.cc,
-	  /trunk/hpbeta/Healpix_cxx/anafast_cxx.par.txt,
-	  /trunk/hpbeta/Healpix_cxx/calc_powspec.cc,
-	  /trunk/hpbeta/Healpix_cxx/healpix_base2.cc,
-	  /trunk/hpbeta/Healpix_cxx/healpix_base2.h,
-	  /trunk/hpbeta/Healpix_cxx/healpix_map_fitsio.cc,
-	  /trunk/hpbeta/Healpix_cxx/healpix_map_fitsio.h,
-	  /trunk/hpbeta/Healpix_cxx/hotspots_cxx.cc,
-	  /trunk/hpbeta/Healpix_cxx/hpxtest.cc,
-	  /trunk/hpbeta/Healpix_cxx/map2tga.cc,
-	  /trunk/hpbeta/Healpix_cxx/map2tga.par.txt,
-	  /trunk/hpbeta/Healpix_cxx/median_filter_cxx.cc,
-	  /trunk/hpbeta/Healpix_cxx/mult_alm.cc,
-	  /trunk/hpbeta/Healpix_cxx/mult_alm.par.txt,
-	  /trunk/hpbeta/Healpix_cxx/planck.make,
-	  /trunk/hpbeta/Healpix_cxx/powspec_fitsio.cc,
-	  /trunk/hpbeta/Healpix_cxx/powspec_fitsio.h,
-	  /trunk/hpbeta/Healpix_cxx/rotalm_cxx.cc,
-	  /trunk/hpbeta/Healpix_cxx/smoothing_cxx.cc,
-	  /trunk/hpbeta/Healpix_cxx/smoothing_cxx.par.txt,
-	  /trunk/hpbeta/Healpix_cxx/syn_alm_cxx.cc,
-	  /trunk/hpbeta/Healpix_cxx/syn_alm_cxx.par.txt,
-	  /trunk/hpbeta/Healpix_cxx/udgrade_cxx.cc,
-	  /trunk/hpbeta/c_utils/planck.make,
-	  /trunk/hpbeta/c_utils/walltime_c.c,
-	  /trunk/hpbeta/c_utils/walltime_c.h,
-	  /trunk/hpbeta/cxxsupport/bstream.h,
-	  /trunk/hpbeta/cxxsupport/fftpack_support.h,
-	  /trunk/hpbeta/cxxsupport/font_data.inc,
-	  /trunk/hpbeta/cxxsupport/ls_image.cc,
-	  /trunk/hpbeta/cxxsupport/ls_image.h,
-	  /trunk/hpbeta/cxxsupport/planck.make: remove more unused C++
-	  sources
+	* [r162] hpbeta/Healpix_cxx/alm2map_cxx.cc,
+	  hpbeta/Healpix_cxx/alm2map_cxx.par.txt,
+	  hpbeta/Healpix_cxx/alm_fitsio.cc,
+	  hpbeta/Healpix_cxx/alm_fitsio.h,
+	  hpbeta/Healpix_cxx/anafast_cxx.cc,
+	  hpbeta/Healpix_cxx/anafast_cxx.par.txt,
+	  hpbeta/Healpix_cxx/calc_powspec.cc,
+	  hpbeta/Healpix_cxx/healpix_base2.cc,
+	  hpbeta/Healpix_cxx/healpix_base2.h,
+	  hpbeta/Healpix_cxx/healpix_map_fitsio.cc,
+	  hpbeta/Healpix_cxx/healpix_map_fitsio.h,
+	  hpbeta/Healpix_cxx/hotspots_cxx.cc,
+	  hpbeta/Healpix_cxx/hpxtest.cc, hpbeta/Healpix_cxx/map2tga.cc,
+	  hpbeta/Healpix_cxx/map2tga.par.txt,
+	  hpbeta/Healpix_cxx/median_filter_cxx.cc,
+	  hpbeta/Healpix_cxx/mult_alm.cc,
+	  hpbeta/Healpix_cxx/mult_alm.par.txt,
+	  hpbeta/Healpix_cxx/planck.make,
+	  hpbeta/Healpix_cxx/powspec_fitsio.cc,
+	  hpbeta/Healpix_cxx/powspec_fitsio.h,
+	  hpbeta/Healpix_cxx/rotalm_cxx.cc,
+	  hpbeta/Healpix_cxx/smoothing_cxx.cc,
+	  hpbeta/Healpix_cxx/smoothing_cxx.par.txt,
+	  hpbeta/Healpix_cxx/syn_alm_cxx.cc,
+	  hpbeta/Healpix_cxx/syn_alm_cxx.par.txt,
+	  hpbeta/Healpix_cxx/udgrade_cxx.cc, hpbeta/c_utils/planck.make,
+	  hpbeta/c_utils/walltime_c.c, hpbeta/c_utils/walltime_c.h,
+	  hpbeta/cxxsupport/bstream.h, hpbeta/cxxsupport/fftpack_support.h,
+	  hpbeta/cxxsupport/font_data.inc, hpbeta/cxxsupport/ls_image.cc,
+	  hpbeta/cxxsupport/ls_image.h, hpbeta/cxxsupport/planck.make:
+	  remove more unused C++ sources
 
 2011-01-25 16:12  martin.reinecke1@gmx.de
 
-	* [r161] /trunk/healpy/src/_healpy_sph_transform_lib.cc: more
-	  rearranging and usage of assertions
+	* [r161] healpy/src/_healpy_sph_transform_lib.cc: more rearranging
+	  and usage of assertions
 
 2011-01-25 13:29  martin.reinecke1@gmx.de
 
-	* [r160] /trunk/hpbeta/Healpix_cxx/alm2map_cxx_module.cc,
-	  /trunk/hpbeta/Healpix_cxx/anafast_cxx_module.cc,
-	  /trunk/hpbeta/Healpix_cxx/calc_powspec_module.cc,
-	  /trunk/hpbeta/Healpix_cxx/hotspots_cxx_module.cc,
-	  /trunk/hpbeta/Healpix_cxx/map2tga_module.cc,
-	  /trunk/hpbeta/Healpix_cxx/median_filter_cxx_module.cc,
-	  /trunk/hpbeta/Healpix_cxx/mult_alm_module.cc,
-	  /trunk/hpbeta/Healpix_cxx/planck.make,
-	  /trunk/hpbeta/Healpix_cxx/smoothing_cxx_module.cc,
-	  /trunk/hpbeta/Healpix_cxx/syn_alm_cxx_module.cc,
-	  /trunk/hpbeta/Healpix_cxx/udgrade_cxx_module.cc,
-	  /trunk/hpbeta/Makefile, /trunk/hpbeta/alice,
-	  /trunk/hpbeta/libpsht/planck.make,
-	  /trunk/hpbeta/libpsht/psht_perftest.c,
-	  /trunk/hpbeta/libpsht/psht_test.c, /trunk/hpbeta/test: get rid of
-	  unused C++ code
+	* [r160] hpbeta/Healpix_cxx/alm2map_cxx_module.cc,
+	  hpbeta/Healpix_cxx/anafast_cxx_module.cc,
+	  hpbeta/Healpix_cxx/calc_powspec_module.cc,
+	  hpbeta/Healpix_cxx/hotspots_cxx_module.cc,
+	  hpbeta/Healpix_cxx/map2tga_module.cc,
+	  hpbeta/Healpix_cxx/median_filter_cxx_module.cc,
+	  hpbeta/Healpix_cxx/mult_alm_module.cc,
+	  hpbeta/Healpix_cxx/planck.make,
+	  hpbeta/Healpix_cxx/smoothing_cxx_module.cc,
+	  hpbeta/Healpix_cxx/syn_alm_cxx_module.cc,
+	  hpbeta/Healpix_cxx/udgrade_cxx_module.cc, hpbeta/Makefile,
+	  hpbeta/alice, hpbeta/libpsht/planck.make,
+	  hpbeta/libpsht/psht_perftest.c, hpbeta/libpsht/psht_test.c,
+	  hpbeta/test: get rid of unused C++ code
 
 2011-01-25 13:16  martin.reinecke1@gmx.de
 
-	* [r159] /trunk/healpy/src/_healpy_fitsio_lib.cc,
-	  /trunk/healpy/src/_healpy_pixel_lib.cc,
-	  /trunk/healpy/src/_healpy_sph_transform_lib.cc,
-	  /trunk/healpy/src/_healpy_utils.h: - restructure
-	  _healpy_pixel_lib.cc
+	* [r159] healpy/src/_healpy_fitsio_lib.cc,
+	  healpy/src/_healpy_pixel_lib.cc,
+	  healpy/src/_healpy_sph_transform_lib.cc,
+	  healpy/src/_healpy_utils.h: - restructure _healpy_pixel_lib.cc
 	  * re-order functions to avoid the need for prototypes
 	  * only call setNside() if really needed; this should save time
 	  - avoid compiler warnings
 
 2011-01-25 10:34  martin.reinecke1@gmx.de
 
-	* [r158] /trunk/healpy/src/_healpy_pixel_lib.cc: apply patch
-	  provided with issue #39 to avoid code duplication
+	* [r158] healpy/src/_healpy_pixel_lib.cc: apply patch provided with
+	  issue #39 to avoid code duplication
 
 2011-01-25 10:16  martin.reinecke1@gmx.de
 
-	* [r157] /trunk/healpy/src/_healpy_sph_transform_lib.cc: -
-	  whitespace cleanup
+	* [r157] healpy/src/_healpy_sph_transform_lib.cc: - whitespace
+	  cleanup
 	  - make use of assert() macros to shorten code
 
 2011-01-24 17:28  andrea.zonca@gmail.com
 
-	* [r156] /trunk/healpy/__init__.py: added write_alm to __init__
+	* [r156] healpy/__init__.py: added write_alm to __init__
 
 2011-01-17 14:52  martin.reinecke1@gmx.de
 
-	* [r155] /trunk/hpbeta/c_utils/walltime_c.c,
-	  /trunk/hpbeta/c_utils/walltime_c.h,
-	  /trunk/hpbeta/config/config.healpy,
-	  /trunk/hpbeta/cxxsupport/bstream.h,
-	  /trunk/hpbeta/cxxsupport/xcomplex.h,
-	  /trunk/hpbeta/libpsht/psht.c, /trunk/hpbeta/libpsht/psht.h,
-	  /trunk/hpbeta/libpsht/psht_almhelpers.c,
-	  /trunk/hpbeta/libpsht/psht_cxx.h,
-	  /trunk/hpbeta/libpsht/psht_geomhelpers.c,
-	  /trunk/hpbeta/libpsht/psht_inc.c,
-	  /trunk/hpbeta/libpsht/psht_perftest.c,
-	  /trunk/hpbeta/libpsht/psht_test.c,
-	  /trunk/hpbeta/libpsht/ylmgen_c.c,
-	  /trunk/hpbeta/libpsht/ylmgen_c.h: synchronize with master sources
+	* [r155] hpbeta/c_utils/walltime_c.c, hpbeta/c_utils/walltime_c.h,
+	  hpbeta/config/config.healpy, hpbeta/cxxsupport/bstream.h,
+	  hpbeta/cxxsupport/xcomplex.h, hpbeta/libpsht/psht.c,
+	  hpbeta/libpsht/psht.h, hpbeta/libpsht/psht_almhelpers.c,
+	  hpbeta/libpsht/psht_cxx.h, hpbeta/libpsht/psht_geomhelpers.c,
+	  hpbeta/libpsht/psht_inc.c, hpbeta/libpsht/psht_perftest.c,
+	  hpbeta/libpsht/psht_test.c, hpbeta/libpsht/ylmgen_c.c,
+	  hpbeta/libpsht/ylmgen_c.h: synchronize with master sources
 
 2011-01-17 14:51  martin.reinecke1@gmx.de
 
-	* [r154] /trunk/INSTALL: update testing instructions
+	* [r154] INSTALL: update testing instructions
 
 2010-12-30 11:33  andrea.zonca@gmail.com
 
-	* [r153] /trunk/healpy/test/test_fitsfunc.py: Use the new
-	  return_mmax mechanism
+	* [r153] healpy/test/test_fitsfunc.py: Use the new return_mmax
+	  mechanism
 
 2010-12-30 11:33  andrea.zonca@gmail.com
 
-	* [r152] /trunk/healpy/fitsfunc.py: Added more detailed
-	  documentation for read_alm
+	* [r152] healpy/fitsfunc.py: Added more detailed documentation for
+	  read_alm
 
 2010-12-30 11:33  andrea.zonca@gmail.com
 
-	* [r151] /trunk/healpy/fitsfunc.py: Added support for optionally
-	  returning mmax in read_alm
+	* [r151] healpy/fitsfunc.py: Added support for optionally returning
+	  mmax in read_alm
 
 2010-12-27 17:06  andrea.zonca@gmail.com
 
-	* [r150] /trunk/healpy/fitsfunc.py,
-	  /trunk/healpy/test/test_fitsfunc.py: fixed bug in write_alm and
-	  test case
+	* [r150] healpy/fitsfunc.py, healpy/test/test_fitsfunc.py: fixed
+	  bug in write_alm and test case
 
 2010-12-27 17:06  andrea.zonca@gmail.com
 
-	* [r149] /trunk/healpy/fitsfunc.py,
-	  /trunk/healpy/test/test_fitsfunc.py: merged patch and test case,
-	  NEEDS VERIFICATION
+	* [r149] healpy/fitsfunc.py, healpy/test/test_fitsfunc.py: merged
+	  patch and test case, NEEDS VERIFICATION
 
 2010-12-06 16:54  cyrille.rosset
 
-	* [r148] /trunk/pshyt/pshyt.c, /trunk/setup.py: Add cfitsio library
-	  dir (from CFITSIO_EXT_LIB etc.) to setup call
+	* [r148] pshyt/pshyt.c, setup.py: Add cfitsio library dir (from
+	  CFITSIO_EXT_LIB etc.) to setup call
 
 2010-12-06 14:22  cyrille.rosset
 
-	* [r147] /trunk/ChangeLog: Update ChangeLog
+	* [r147] ChangeLog: Update ChangeLog
 
 2010-12-06 14:20  cyrille.rosset
 
-	* [r146] /trunk/MANIFEST.in, /trunk/healpy/__init__.py,
-	  /trunk/healpy/version.py, /trunk/pshyt/pshyt.c,
-	  /trunk/pshyt/pshyt.pyx, /trunk/setup.py: Add doc to pshyt module
+	* [r146] MANIFEST.in, healpy/__init__.py, healpy/version.py,
+	  pshyt/pshyt.c, pshyt/pshyt.pyx, setup.py: Add doc to pshyt module
 	  ; move pshyt into healpy for installation ; add alias for numpy
 	  (nm=np=npy=numpy in healpy and pshyt)
 
 2010-12-06 13:08  lejeune@apc.univ-paris7.fr
 
-	* [r145] /trunk/healpy/__init__.py, /trunk/pshyt,
-	  /trunk/pshyt/pshyt.c, /trunk/pshyt/pshyt.pyx, /trunk/setup.py:
-	  include Karim's pshyt module
+	* [r145] healpy/__init__.py, pshyt, pshyt/pshyt.c, pshyt/pshyt.pyx,
+	  setup.py: include Karim's pshyt module
 
 2010-12-06 11:22  lejeune@apc.univ-paris7.fr
 
-	* [r144] /trunk/healpy/__init__.py: add numpy to init
+	* [r144] healpy/__init__.py: add numpy to init
 
 2010-12-03 14:04  cyrille.rosset
 
-	* [r143] /trunk/MANIFEST.in, /trunk/healpy/version.py,
-	  /trunk/hpbeta/config/config.healpy: Change default PREFIX to /usr
+	* [r143] MANIFEST.in, healpy/version.py,
+	  hpbeta/config/config.healpy: Change default PREFIX to /usr
 	  instead of /usr/local, update MANIFEST.in
 
 2010-12-01 10:12  lejeune@apc.univ-paris7.fr
 
-	* [r142] /trunk/setup.py: from now, no need to compile twice
+	* [r142] setup.py: from now, no need to compile twice
 
 2010-11-25 17:20  cyrille.rosset
 
-	* [r141] /trunk/healpy/version.py, /trunk/healpy/visufunc.py:
-	  remove pylab.show() at the end of plotting commands
+	* [r141] healpy/version.py, healpy/visufunc.py: remove pylab.show()
+	  at the end of plotting commands
 
 2010-11-25 14:04  martin.reinecke1@gmx.de
 
-	* [r140] /trunk, /trunk/INSTALL, /trunk/healpy/__init__.py,
-	  /trunk/healpy/sphtfunc.py,
-	  /trunk/healpy/src/_healpy_fitsio_lib.cc,
-	  /trunk/healpy/src/_healpy_pixel_lib.cc,
-	  /trunk/healpy/src/_healpy_sph_transform_lib.cc,
-	  /trunk/healpy/src/_healpy_utils.h,
-	  /trunk/hpbeta/Healpix_cxx/Healpix_cxx.dox,
-	  /trunk/hpbeta/Healpix_cxx/alm.h,
-	  /trunk/hpbeta/Healpix_cxx/alm2map_cxx.cc,
-	  /trunk/hpbeta/Healpix_cxx/alm2map_cxx_module.cc,
-	  /trunk/hpbeta/Healpix_cxx/alm_fitsio.cc,
-	  /trunk/hpbeta/Healpix_cxx/alm_fitsio.h,
-	  /trunk/hpbeta/Healpix_cxx/alm_healpix_tools.cc,
-	  /trunk/hpbeta/Healpix_cxx/alm_healpix_tools.h,
-	  /trunk/hpbeta/Healpix_cxx/alm_map_tools.cc,
-	  /trunk/hpbeta/Healpix_cxx/alm_map_tools.h,
-	  /trunk/hpbeta/Healpix_cxx/alm_powspec_tools.cc,
-	  /trunk/hpbeta/Healpix_cxx/alm_powspec_tools.h,
-	  /trunk/hpbeta/Healpix_cxx/anafast_cxx.cc,
-	  /trunk/hpbeta/Healpix_cxx/anafast_cxx.par.txt,
-	  /trunk/hpbeta/Healpix_cxx/anafast_cxx_module.cc,
-	  /trunk/hpbeta/Healpix_cxx/calc_powspec.cc,
-	  /trunk/hpbeta/Healpix_cxx/calc_powspec_module.cc,
-	  /trunk/hpbeta/Healpix_cxx/healpix_base.cc,
-	  /trunk/hpbeta/Healpix_cxx/healpix_base.h,
-	  /trunk/hpbeta/Healpix_cxx/healpix_base2.cc,
-	  /trunk/hpbeta/Healpix_cxx/healpix_base2.h,
-	  /trunk/hpbeta/Healpix_cxx/healpix_data_io.cc,
-	  /trunk/hpbeta/Healpix_cxx/healpix_data_io.h,
-	  /trunk/hpbeta/Healpix_cxx/healpix_map.cc,
-	  /trunk/hpbeta/Healpix_cxx/healpix_map.h,
-	  /trunk/hpbeta/Healpix_cxx/healpix_map_fitsio.cc,
-	  /trunk/hpbeta/Healpix_cxx/healpix_map_fitsio.h,
-	  /trunk/hpbeta/Healpix_cxx/hotspots_cxx.cc,
-	  /trunk/hpbeta/Healpix_cxx/hotspots_cxx_module.cc,
-	  /trunk/hpbeta/Healpix_cxx/hpxtest.cc,
-	  /trunk/hpbeta/Healpix_cxx/map2tga.cc,
-	  /trunk/hpbeta/Healpix_cxx/map2tga_module.cc,
-	  /trunk/hpbeta/Healpix_cxx/median_filter.cc,
-	  /trunk/hpbeta/Healpix_cxx/median_filter_cxx.cc,
-	  /trunk/hpbeta/Healpix_cxx/median_filter_cxx_module.cc,
-	  /trunk/hpbeta/Healpix_cxx/mult_alm.cc,
-	  /trunk/hpbeta/Healpix_cxx/mult_alm_module.cc,
-	  /trunk/hpbeta/Healpix_cxx/planck.make,
-	  /trunk/hpbeta/Healpix_cxx/powspec.cc,
-	  /trunk/hpbeta/Healpix_cxx/powspec.h,
-	  /trunk/hpbeta/Healpix_cxx/powspec_fitsio.cc,
-	  /trunk/hpbeta/Healpix_cxx/powspec_fitsio.h,
-	  /trunk/hpbeta/Healpix_cxx/rotalm_cxx.cc,
-	  /trunk/hpbeta/Healpix_cxx/smoothing_cxx.cc,
-	  /trunk/hpbeta/Healpix_cxx/smoothing_cxx.par.txt,
-	  /trunk/hpbeta/Healpix_cxx/smoothing_cxx_module.cc,
-	  /trunk/hpbeta/Healpix_cxx/syn_alm_cxx.cc,
-	  /trunk/hpbeta/Healpix_cxx/syn_alm_cxx_module.cc,
-	  /trunk/hpbeta/Healpix_cxx/udgrade_cxx.cc,
-	  /trunk/hpbeta/Healpix_cxx/udgrade_cxx_module.cc,
-	  /trunk/hpbeta/Healpix_cxx/ylmgen.h, /trunk/hpbeta/Makefile,
-	  /trunk/hpbeta/README.compilation,
-	  /trunk/hpbeta/alice/MollweideSkyMap.cc,
-	  /trunk/hpbeta/alice/OrthogonalSkyMap.h,
-	  /trunk/hpbeta/alice/PolarizationHolder.cc,
-	  /trunk/hpbeta/alice/PolarizationHolder.h,
-	  /trunk/hpbeta/alice/RectSkyMap.h, /trunk/hpbeta/alice/SkyMap.h,
-	  /trunk/hpbeta/alice/SoSSkyMap.cc,
-	  /trunk/hpbeta/alice/SoSSkyMap.h,
-	  /trunk/hpbeta/alice/TextureHolder.cc,
-	  /trunk/hpbeta/alice/TextureHolder.h,
-	  /trunk/hpbeta/alice/alice2.cc,
-	  /trunk/hpbeta/alice/alice_usage.txt,
-	  /trunk/hpbeta/alice/alice_utils.h, /trunk/hpbeta/alice/color.cc,
-	  /trunk/hpbeta/alice/generateTexture.cc,
-	  /trunk/hpbeta/alice/planck.make, /trunk/hpbeta/alice/test.cc,
-	  /trunk/hpbeta/alice/testMollweideSkyMap.cc,
-	  /trunk/hpbeta/alice/testOrthogonalSkyMap.cc,
-	  /trunk/hpbeta/alice/testSoSSkyMap.cc, /trunk/hpbeta/c_utils,
-	  /trunk/hpbeta/c_utils/c_utils.c, /trunk/hpbeta/c_utils/c_utils.h,
-	  /trunk/hpbeta/c_utils/planck.make,
-	  /trunk/hpbeta/c_utils/sse_utils.h,
-	  /trunk/hpbeta/c_utils/walltime_c.c,
-	  /trunk/hpbeta/c_utils/walltime_c.h,
-	  /trunk/hpbeta/config/config.gcc_omp,
-	  /trunk/hpbeta/config/config.generic_gcc,
-	  /trunk/hpbeta/config/config.healpy,
-	  /trunk/hpbeta/config/config.healpy_osx,
-	  /trunk/hpbeta/config/config.linux_icc,
-	  /trunk/hpbeta/config/config.osx,
-	  /trunk/hpbeta/config/rules.common,
-	  /trunk/hpbeta/cxxsupport/arr.h,
-	  /trunk/hpbeta/cxxsupport/bstream.h,
-	  /trunk/hpbeta/cxxsupport/compat_headers,
-	  /trunk/hpbeta/cxxsupport/cxxutils.cc,
-	  /trunk/hpbeta/cxxsupport/cxxutils.h,
-	  /trunk/hpbeta/cxxsupport/datatypes.h,
-	  /trunk/hpbeta/cxxsupport/error_handling.cc,
-	  /trunk/hpbeta/cxxsupport/error_handling.h,
-	  /trunk/hpbeta/cxxsupport/fftpack_support.h,
-	  /trunk/hpbeta/cxxsupport/fitshandle.cc,
-	  /trunk/hpbeta/cxxsupport/fitshandle.h,
-	  /trunk/hpbeta/cxxsupport/font_data.inc,
-	  /trunk/hpbeta/cxxsupport/geom_utils.h,
-	  /trunk/hpbeta/cxxsupport/levels_facilities.h,
-	  /trunk/hpbeta/cxxsupport/ls_image.cc,
-	  /trunk/hpbeta/cxxsupport/ls_image.h,
-	  /trunk/hpbeta/cxxsupport/lsconstants.h,
-	  /trunk/hpbeta/cxxsupport/message_error.h,
-	  /trunk/hpbeta/cxxsupport/openmp_support.h,
-	  /trunk/hpbeta/cxxsupport/paramfile.h,
-	  /trunk/hpbeta/cxxsupport/planck.make,
-	  /trunk/hpbeta/cxxsupport/planck_rng.h,
-	  /trunk/hpbeta/cxxsupport/pointing.h,
-	  /trunk/hpbeta/cxxsupport/rotmatrix.cc,
-	  /trunk/hpbeta/cxxsupport/rotmatrix.h,
-	  /trunk/hpbeta/cxxsupport/safe_cast.h,
-	  /trunk/hpbeta/cxxsupport/simparams.cc,
-	  /trunk/hpbeta/cxxsupport/simparams.h,
-	  /trunk/hpbeta/cxxsupport/tga_image.cc,
-	  /trunk/hpbeta/cxxsupport/tga_image.h,
-	  /trunk/hpbeta/cxxsupport/trafos.cc,
-	  /trunk/hpbeta/cxxsupport/trafos.h,
-	  /trunk/hpbeta/cxxsupport/vec3.h,
-	  /trunk/hpbeta/cxxsupport/wigner.cc,
-	  /trunk/hpbeta/cxxsupport/wigner.h,
-	  /trunk/hpbeta/cxxsupport/xcomplex.h, /trunk/hpbeta/doc,
-	  /trunk/hpbeta/docsrc/Healpix_cxx.dox,
-	  /trunk/hpbeta/docsrc/cxxsupport.dox,
-	  /trunk/hpbeta/docsrc/libfftpack.dox,
-	  /trunk/hpbeta/docsrc/planck.make,
-	  /trunk/hpbeta/libcfitsio/cfitsio3100.tar.gz,
-	  /trunk/hpbeta/libcfitsio/planck.make,
-	  /trunk/hpbeta/libfftpack/README,
-	  /trunk/hpbeta/libfftpack/bluestein.c,
-	  /trunk/hpbeta/libfftpack/bluestein.h,
-	  /trunk/hpbeta/libfftpack/fftpack.c,
-	  /trunk/hpbeta/libfftpack/fftpack.h,
-	  /trunk/hpbeta/libfftpack/fftpack_inc.c,
-	  /trunk/hpbeta/libfftpack/ls_fft.c,
-	  /trunk/hpbeta/libfftpack/ls_fft.h,
-	  /trunk/hpbeta/libfftpack/planck.make, /trunk/hpbeta/libpsht,
-	  /trunk/hpbeta/libpsht/libpsht.dox,
-	  /trunk/hpbeta/libpsht/planck.make, /trunk/hpbeta/libpsht/psht.c,
-	  /trunk/hpbeta/libpsht/psht.h,
-	  /trunk/hpbeta/libpsht/psht_almhelpers.c,
-	  /trunk/hpbeta/libpsht/psht_almhelpers.h,
-	  /trunk/hpbeta/libpsht/psht_cxx.h,
-	  /trunk/hpbeta/libpsht/psht_geomhelpers.c,
-	  /trunk/hpbeta/libpsht/psht_geomhelpers.h,
-	  /trunk/hpbeta/libpsht/psht_inc.c,
-	  /trunk/hpbeta/libpsht/psht_perftest.c,
-	  /trunk/hpbeta/libpsht/psht_test.c,
-	  /trunk/hpbeta/libpsht/ylmgen_c.c,
-	  /trunk/hpbeta/libpsht/ylmgen_c.h, /trunk/hpbeta/test/cl.fits,
-	  /trunk/setup.py: merge revision 132 to 139 on the
+	* [r140] ., INSTALL, healpy/__init__.py, healpy/sphtfunc.py,
+	  healpy/src/_healpy_fitsio_lib.cc,
+	  healpy/src/_healpy_pixel_lib.cc,
+	  healpy/src/_healpy_sph_transform_lib.cc,
+	  healpy/src/_healpy_utils.h, hpbeta/Healpix_cxx/Healpix_cxx.dox,
+	  hpbeta/Healpix_cxx/alm.h, hpbeta/Healpix_cxx/alm2map_cxx.cc,
+	  hpbeta/Healpix_cxx/alm2map_cxx_module.cc,
+	  hpbeta/Healpix_cxx/alm_fitsio.cc,
+	  hpbeta/Healpix_cxx/alm_fitsio.h,
+	  hpbeta/Healpix_cxx/alm_healpix_tools.cc,
+	  hpbeta/Healpix_cxx/alm_healpix_tools.h,
+	  hpbeta/Healpix_cxx/alm_map_tools.cc,
+	  hpbeta/Healpix_cxx/alm_map_tools.h,
+	  hpbeta/Healpix_cxx/alm_powspec_tools.cc,
+	  hpbeta/Healpix_cxx/alm_powspec_tools.h,
+	  hpbeta/Healpix_cxx/anafast_cxx.cc,
+	  hpbeta/Healpix_cxx/anafast_cxx.par.txt,
+	  hpbeta/Healpix_cxx/anafast_cxx_module.cc,
+	  hpbeta/Healpix_cxx/calc_powspec.cc,
+	  hpbeta/Healpix_cxx/calc_powspec_module.cc,
+	  hpbeta/Healpix_cxx/healpix_base.cc,
+	  hpbeta/Healpix_cxx/healpix_base.h,
+	  hpbeta/Healpix_cxx/healpix_base2.cc,
+	  hpbeta/Healpix_cxx/healpix_base2.h,
+	  hpbeta/Healpix_cxx/healpix_data_io.cc,
+	  hpbeta/Healpix_cxx/healpix_data_io.h,
+	  hpbeta/Healpix_cxx/healpix_map.cc,
+	  hpbeta/Healpix_cxx/healpix_map.h,
+	  hpbeta/Healpix_cxx/healpix_map_fitsio.cc,
+	  hpbeta/Healpix_cxx/healpix_map_fitsio.h,
+	  hpbeta/Healpix_cxx/hotspots_cxx.cc,
+	  hpbeta/Healpix_cxx/hotspots_cxx_module.cc,
+	  hpbeta/Healpix_cxx/hpxtest.cc, hpbeta/Healpix_cxx/map2tga.cc,
+	  hpbeta/Healpix_cxx/map2tga_module.cc,
+	  hpbeta/Healpix_cxx/median_filter.cc,
+	  hpbeta/Healpix_cxx/median_filter_cxx.cc,
+	  hpbeta/Healpix_cxx/median_filter_cxx_module.cc,
+	  hpbeta/Healpix_cxx/mult_alm.cc,
+	  hpbeta/Healpix_cxx/mult_alm_module.cc,
+	  hpbeta/Healpix_cxx/planck.make, hpbeta/Healpix_cxx/powspec.cc,
+	  hpbeta/Healpix_cxx/powspec.h,
+	  hpbeta/Healpix_cxx/powspec_fitsio.cc,
+	  hpbeta/Healpix_cxx/powspec_fitsio.h,
+	  hpbeta/Healpix_cxx/rotalm_cxx.cc,
+	  hpbeta/Healpix_cxx/smoothing_cxx.cc,
+	  hpbeta/Healpix_cxx/smoothing_cxx.par.txt,
+	  hpbeta/Healpix_cxx/smoothing_cxx_module.cc,
+	  hpbeta/Healpix_cxx/syn_alm_cxx.cc,
+	  hpbeta/Healpix_cxx/syn_alm_cxx_module.cc,
+	  hpbeta/Healpix_cxx/udgrade_cxx.cc,
+	  hpbeta/Healpix_cxx/udgrade_cxx_module.cc,
+	  hpbeta/Healpix_cxx/ylmgen.h, hpbeta/Makefile,
+	  hpbeta/README.compilation, hpbeta/alice/MollweideSkyMap.cc,
+	  hpbeta/alice/OrthogonalSkyMap.h,
+	  hpbeta/alice/PolarizationHolder.cc,
+	  hpbeta/alice/PolarizationHolder.h, hpbeta/alice/RectSkyMap.h,
+	  hpbeta/alice/SkyMap.h, hpbeta/alice/SoSSkyMap.cc,
+	  hpbeta/alice/SoSSkyMap.h, hpbeta/alice/TextureHolder.cc,
+	  hpbeta/alice/TextureHolder.h, hpbeta/alice/alice2.cc,
+	  hpbeta/alice/alice_usage.txt, hpbeta/alice/alice_utils.h,
+	  hpbeta/alice/color.cc, hpbeta/alice/generateTexture.cc,
+	  hpbeta/alice/planck.make, hpbeta/alice/test.cc,
+	  hpbeta/alice/testMollweideSkyMap.cc,
+	  hpbeta/alice/testOrthogonalSkyMap.cc,
+	  hpbeta/alice/testSoSSkyMap.cc, hpbeta/c_utils,
+	  hpbeta/c_utils/c_utils.c, hpbeta/c_utils/c_utils.h,
+	  hpbeta/c_utils/planck.make, hpbeta/c_utils/sse_utils.h,
+	  hpbeta/c_utils/walltime_c.c, hpbeta/c_utils/walltime_c.h,
+	  hpbeta/config/config.gcc_omp, hpbeta/config/config.generic_gcc,
+	  hpbeta/config/config.healpy, hpbeta/config/config.healpy_osx,
+	  hpbeta/config/config.linux_icc, hpbeta/config/config.osx,
+	  hpbeta/config/rules.common, hpbeta/cxxsupport/arr.h,
+	  hpbeta/cxxsupport/bstream.h, hpbeta/cxxsupport/compat_headers,
+	  hpbeta/cxxsupport/cxxutils.cc, hpbeta/cxxsupport/cxxutils.h,
+	  hpbeta/cxxsupport/datatypes.h,
+	  hpbeta/cxxsupport/error_handling.cc,
+	  hpbeta/cxxsupport/error_handling.h,
+	  hpbeta/cxxsupport/fftpack_support.h,
+	  hpbeta/cxxsupport/fitshandle.cc, hpbeta/cxxsupport/fitshandle.h,
+	  hpbeta/cxxsupport/font_data.inc, hpbeta/cxxsupport/geom_utils.h,
+	  hpbeta/cxxsupport/levels_facilities.h,
+	  hpbeta/cxxsupport/ls_image.cc, hpbeta/cxxsupport/ls_image.h,
+	  hpbeta/cxxsupport/lsconstants.h,
+	  hpbeta/cxxsupport/message_error.h,
+	  hpbeta/cxxsupport/openmp_support.h,
+	  hpbeta/cxxsupport/paramfile.h, hpbeta/cxxsupport/planck.make,
+	  hpbeta/cxxsupport/planck_rng.h, hpbeta/cxxsupport/pointing.h,
+	  hpbeta/cxxsupport/rotmatrix.cc, hpbeta/cxxsupport/rotmatrix.h,
+	  hpbeta/cxxsupport/safe_cast.h, hpbeta/cxxsupport/simparams.cc,
+	  hpbeta/cxxsupport/simparams.h, hpbeta/cxxsupport/tga_image.cc,
+	  hpbeta/cxxsupport/tga_image.h, hpbeta/cxxsupport/trafos.cc,
+	  hpbeta/cxxsupport/trafos.h, hpbeta/cxxsupport/vec3.h,
+	  hpbeta/cxxsupport/wigner.cc, hpbeta/cxxsupport/wigner.h,
+	  hpbeta/cxxsupport/xcomplex.h, hpbeta/doc,
+	  hpbeta/docsrc/Healpix_cxx.dox, hpbeta/docsrc/cxxsupport.dox,
+	  hpbeta/docsrc/libfftpack.dox, hpbeta/docsrc/planck.make,
+	  hpbeta/libcfitsio/cfitsio3100.tar.gz,
+	  hpbeta/libcfitsio/planck.make, hpbeta/libfftpack/README,
+	  hpbeta/libfftpack/bluestein.c, hpbeta/libfftpack/bluestein.h,
+	  hpbeta/libfftpack/fftpack.c, hpbeta/libfftpack/fftpack.h,
+	  hpbeta/libfftpack/fftpack_inc.c, hpbeta/libfftpack/ls_fft.c,
+	  hpbeta/libfftpack/ls_fft.h, hpbeta/libfftpack/planck.make,
+	  hpbeta/libpsht, hpbeta/libpsht/libpsht.dox,
+	  hpbeta/libpsht/planck.make, hpbeta/libpsht/psht.c,
+	  hpbeta/libpsht/psht.h, hpbeta/libpsht/psht_almhelpers.c,
+	  hpbeta/libpsht/psht_almhelpers.h, hpbeta/libpsht/psht_cxx.h,
+	  hpbeta/libpsht/psht_geomhelpers.c,
+	  hpbeta/libpsht/psht_geomhelpers.h, hpbeta/libpsht/psht_inc.c,
+	  hpbeta/libpsht/psht_perftest.c, hpbeta/libpsht/psht_test.c,
+	  hpbeta/libpsht/ylmgen_c.c, hpbeta/libpsht/ylmgen_c.h,
+	  hpbeta/test/cl.fits, setup.py: merge revision 132 to 139 on the
 	  cxx_integration_nov_2010 branch to trunk
-
-2010-11-25 13:16  cyrille.rosset
-
-	* [r139] /branches/cxx_integration_nov_2010/INSTALL,
-	  /branches/cxx_integration_nov_2010/hpbeta/config/config.healpy,
-	  /branches/cxx_integration_nov_2010/hpbeta/config/config.healpy_osx:
-	  provide possibility of defining cfitsio place with environment
-	  variable
-
-2010-11-05 14:54  martin.reinecke1@gmx.de
-
-	* [r138] /branches/cxx_integration_nov_2010,
-	  /branches/cxx_integration_nov_2010/hpbeta/config/config.healpy,
-	  /branches/cxx_integration_nov_2010/hpbeta/config/config.healpy_osx,
-	  /branches/cxx_integration_nov_2010/setup.py: merge fix for Issue
-	  137, improve compilation on Linux and OSX
 
 2010-11-05 13:54  cyrille.rosset
 
-	* [r137] /trunk/setup.py: correct get_version()
-
-2010-11-04 15:50  martin.reinecke1@gmx.de
-
-	* [r136] /branches/cxx_integration_nov_2010/setup.py: always enable
-	  OpenMP
-
-2010-11-04 15:43  martin.reinecke1@gmx.de
-
-	* [r135] /branches/cxx_integration_nov_2010/healpy/__init__.py,
-	  /branches/cxx_integration_nov_2010/healpy/sphtfunc.py,
-	  /branches/cxx_integration_nov_2010/healpy/src/_healpy_fitsio_lib.cc,
-	  /branches/cxx_integration_nov_2010/healpy/src/_healpy_pixel_lib.cc,
-	  /branches/cxx_integration_nov_2010/healpy/src/_healpy_sph_transform_lib.cc,
-	  /branches/cxx_integration_nov_2010/healpy/src/_healpy_utils.h:
-	  healpy adaptations to make it work with the new HEalpix C++
-	  library
-
-2010-11-04 15:09  martin.reinecke1@gmx.de
-
-	* [r134] /branches/cxx_integration_nov_2010/setup.py: new targets
-	  for C++ library, fix typos
-
-2010-11-04 15:04  martin.reinecke1@gmx.de
-
-	* [r133]
-	  /branches/cxx_integration_nov_2010/hpbeta/Healpix_cxx/Healpix_cxx.dox,
-	  /branches/cxx_integration_nov_2010/hpbeta/Healpix_cxx/alm.h,
-	  /branches/cxx_integration_nov_2010/hpbeta/Healpix_cxx/alm2map_cxx.cc,
-	  /branches/cxx_integration_nov_2010/hpbeta/Healpix_cxx/alm2map_cxx_module.cc,
-	  /branches/cxx_integration_nov_2010/hpbeta/Healpix_cxx/alm_fitsio.cc,
-	  /branches/cxx_integration_nov_2010/hpbeta/Healpix_cxx/alm_fitsio.h,
-	  /branches/cxx_integration_nov_2010/hpbeta/Healpix_cxx/alm_healpix_tools.cc,
-	  /branches/cxx_integration_nov_2010/hpbeta/Healpix_cxx/alm_healpix_tools.h,
-	  /branches/cxx_integration_nov_2010/hpbeta/Healpix_cxx/alm_powspec_tools.cc,
-	  /branches/cxx_integration_nov_2010/hpbeta/Healpix_cxx/alm_powspec_tools.h,
-	  /branches/cxx_integration_nov_2010/hpbeta/Healpix_cxx/anafast_cxx.cc,
-	  /branches/cxx_integration_nov_2010/hpbeta/Healpix_cxx/anafast_cxx.par.txt,
-	  /branches/cxx_integration_nov_2010/hpbeta/Healpix_cxx/anafast_cxx_module.cc,
-	  /branches/cxx_integration_nov_2010/hpbeta/Healpix_cxx/calc_powspec.cc,
-	  /branches/cxx_integration_nov_2010/hpbeta/Healpix_cxx/calc_powspec_module.cc,
-	  /branches/cxx_integration_nov_2010/hpbeta/Healpix_cxx/healpix_base.cc,
-	  /branches/cxx_integration_nov_2010/hpbeta/Healpix_cxx/healpix_base.h,
-	  /branches/cxx_integration_nov_2010/hpbeta/Healpix_cxx/healpix_base2.cc,
-	  /branches/cxx_integration_nov_2010/hpbeta/Healpix_cxx/healpix_base2.h,
-	  /branches/cxx_integration_nov_2010/hpbeta/Healpix_cxx/healpix_data_io.cc,
-	  /branches/cxx_integration_nov_2010/hpbeta/Healpix_cxx/healpix_data_io.h,
-	  /branches/cxx_integration_nov_2010/hpbeta/Healpix_cxx/healpix_map.cc,
-	  /branches/cxx_integration_nov_2010/hpbeta/Healpix_cxx/healpix_map.h,
-	  /branches/cxx_integration_nov_2010/hpbeta/Healpix_cxx/healpix_map_fitsio.cc,
-	  /branches/cxx_integration_nov_2010/hpbeta/Healpix_cxx/healpix_map_fitsio.h,
-	  /branches/cxx_integration_nov_2010/hpbeta/Healpix_cxx/hotspots_cxx.cc,
-	  /branches/cxx_integration_nov_2010/hpbeta/Healpix_cxx/hotspots_cxx_module.cc,
-	  /branches/cxx_integration_nov_2010/hpbeta/Healpix_cxx/hpxtest.cc,
-	  /branches/cxx_integration_nov_2010/hpbeta/Healpix_cxx/map2tga.cc,
-	  /branches/cxx_integration_nov_2010/hpbeta/Healpix_cxx/map2tga_module.cc,
-	  /branches/cxx_integration_nov_2010/hpbeta/Healpix_cxx/median_filter_cxx.cc,
-	  /branches/cxx_integration_nov_2010/hpbeta/Healpix_cxx/median_filter_cxx_module.cc,
-	  /branches/cxx_integration_nov_2010/hpbeta/Healpix_cxx/mult_alm.cc,
-	  /branches/cxx_integration_nov_2010/hpbeta/Healpix_cxx/mult_alm_module.cc,
-	  /branches/cxx_integration_nov_2010/hpbeta/Healpix_cxx/planck.make,
-	  /branches/cxx_integration_nov_2010/hpbeta/Healpix_cxx/powspec.cc,
-	  /branches/cxx_integration_nov_2010/hpbeta/Healpix_cxx/powspec.h,
-	  /branches/cxx_integration_nov_2010/hpbeta/Healpix_cxx/powspec_fitsio.cc,
-	  /branches/cxx_integration_nov_2010/hpbeta/Healpix_cxx/powspec_fitsio.h,
-	  /branches/cxx_integration_nov_2010/hpbeta/Healpix_cxx/rotalm_cxx.cc,
-	  /branches/cxx_integration_nov_2010/hpbeta/Healpix_cxx/smoothing_cxx.cc,
-	  /branches/cxx_integration_nov_2010/hpbeta/Healpix_cxx/smoothing_cxx.par.txt,
-	  /branches/cxx_integration_nov_2010/hpbeta/Healpix_cxx/smoothing_cxx_module.cc,
-	  /branches/cxx_integration_nov_2010/hpbeta/Healpix_cxx/syn_alm_cxx.cc,
-	  /branches/cxx_integration_nov_2010/hpbeta/Healpix_cxx/syn_alm_cxx_module.cc,
-	  /branches/cxx_integration_nov_2010/hpbeta/Healpix_cxx/udgrade_cxx.cc,
-	  /branches/cxx_integration_nov_2010/hpbeta/Healpix_cxx/udgrade_cxx_module.cc,
-	  /branches/cxx_integration_nov_2010/hpbeta/Makefile,
-	  /branches/cxx_integration_nov_2010/hpbeta/README.compilation,
-	  /branches/cxx_integration_nov_2010/hpbeta/alice/MollweideSkyMap.cc,
-	  /branches/cxx_integration_nov_2010/hpbeta/alice/OrthogonalSkyMap.h,
-	  /branches/cxx_integration_nov_2010/hpbeta/alice/PolarizationHolder.cc,
-	  /branches/cxx_integration_nov_2010/hpbeta/alice/PolarizationHolder.h,
-	  /branches/cxx_integration_nov_2010/hpbeta/alice/RectSkyMap.h,
-	  /branches/cxx_integration_nov_2010/hpbeta/alice/SkyMap.h,
-	  /branches/cxx_integration_nov_2010/hpbeta/alice/SoSSkyMap.cc,
-	  /branches/cxx_integration_nov_2010/hpbeta/alice/SoSSkyMap.h,
-	  /branches/cxx_integration_nov_2010/hpbeta/alice/TextureHolder.cc,
-	  /branches/cxx_integration_nov_2010/hpbeta/alice/TextureHolder.h,
-	  /branches/cxx_integration_nov_2010/hpbeta/alice/alice2.cc,
-	  /branches/cxx_integration_nov_2010/hpbeta/alice/alice_usage.txt,
-	  /branches/cxx_integration_nov_2010/hpbeta/alice/alice_utils.h,
-	  /branches/cxx_integration_nov_2010/hpbeta/alice/color.cc,
-	  /branches/cxx_integration_nov_2010/hpbeta/alice/generateTexture.cc,
-	  /branches/cxx_integration_nov_2010/hpbeta/alice/planck.make,
-	  /branches/cxx_integration_nov_2010/hpbeta/alice/test.cc,
-	  /branches/cxx_integration_nov_2010/hpbeta/alice/testMollweideSkyMap.cc,
-	  /branches/cxx_integration_nov_2010/hpbeta/alice/testOrthogonalSkyMap.cc,
-	  /branches/cxx_integration_nov_2010/hpbeta/alice/testSoSSkyMap.cc,
-	  /branches/cxx_integration_nov_2010/hpbeta/c_utils,
-	  /branches/cxx_integration_nov_2010/hpbeta/c_utils/c_utils.c,
-	  /branches/cxx_integration_nov_2010/hpbeta/c_utils/c_utils.h,
-	  /branches/cxx_integration_nov_2010/hpbeta/c_utils/planck.make,
-	  /branches/cxx_integration_nov_2010/hpbeta/c_utils/sse_utils.h,
-	  /branches/cxx_integration_nov_2010/hpbeta/c_utils/walltime_c.c,
-	  /branches/cxx_integration_nov_2010/hpbeta/c_utils/walltime_c.h,
-	  /branches/cxx_integration_nov_2010/hpbeta/config/config.generic_gcc,
-	  /branches/cxx_integration_nov_2010/hpbeta/config/config.healpy,
-	  /branches/cxx_integration_nov_2010/hpbeta/config/config.linux_icc,
-	  /branches/cxx_integration_nov_2010/hpbeta/config/config.osx,
-	  /branches/cxx_integration_nov_2010/hpbeta/config/rules.common,
-	  /branches/cxx_integration_nov_2010/hpbeta/cxxsupport/arr.h,
-	  /branches/cxx_integration_nov_2010/hpbeta/cxxsupport/bstream.h,
-	  /branches/cxx_integration_nov_2010/hpbeta/cxxsupport/cxxutils.cc,
-	  /branches/cxx_integration_nov_2010/hpbeta/cxxsupport/cxxutils.h,
-	  /branches/cxx_integration_nov_2010/hpbeta/cxxsupport/datatypes.h,
-	  /branches/cxx_integration_nov_2010/hpbeta/cxxsupport/error_handling.cc,
-	  /branches/cxx_integration_nov_2010/hpbeta/cxxsupport/error_handling.h,
-	  /branches/cxx_integration_nov_2010/hpbeta/cxxsupport/fftpack_support.h,
-	  /branches/cxx_integration_nov_2010/hpbeta/cxxsupport/fitshandle.cc,
-	  /branches/cxx_integration_nov_2010/hpbeta/cxxsupport/fitshandle.h,
-	  /branches/cxx_integration_nov_2010/hpbeta/cxxsupport/font_data.inc,
-	  /branches/cxx_integration_nov_2010/hpbeta/cxxsupport/geom_utils.h,
-	  /branches/cxx_integration_nov_2010/hpbeta/cxxsupport/levels_facilities.h,
-	  /branches/cxx_integration_nov_2010/hpbeta/cxxsupport/ls_image.cc,
-	  /branches/cxx_integration_nov_2010/hpbeta/cxxsupport/ls_image.h,
-	  /branches/cxx_integration_nov_2010/hpbeta/cxxsupport/lsconstants.h,
-	  /branches/cxx_integration_nov_2010/hpbeta/cxxsupport/openmp_support.h,
-	  /branches/cxx_integration_nov_2010/hpbeta/cxxsupport/paramfile.h,
-	  /branches/cxx_integration_nov_2010/hpbeta/cxxsupport/planck.make,
-	  /branches/cxx_integration_nov_2010/hpbeta/cxxsupport/planck_rng.h,
-	  /branches/cxx_integration_nov_2010/hpbeta/cxxsupport/pointing.h,
-	  /branches/cxx_integration_nov_2010/hpbeta/cxxsupport/rotmatrix.cc,
-	  /branches/cxx_integration_nov_2010/hpbeta/cxxsupport/rotmatrix.h,
-	  /branches/cxx_integration_nov_2010/hpbeta/cxxsupport/safe_cast.h,
-	  /branches/cxx_integration_nov_2010/hpbeta/cxxsupport/trafos.cc,
-	  /branches/cxx_integration_nov_2010/hpbeta/cxxsupport/trafos.h,
-	  /branches/cxx_integration_nov_2010/hpbeta/cxxsupport/vec3.h,
-	  /branches/cxx_integration_nov_2010/hpbeta/cxxsupport/wigner.cc,
-	  /branches/cxx_integration_nov_2010/hpbeta/cxxsupport/wigner.h,
-	  /branches/cxx_integration_nov_2010/hpbeta/cxxsupport/xcomplex.h,
-	  /branches/cxx_integration_nov_2010/hpbeta/docsrc/Healpix_cxx.dox,
-	  /branches/cxx_integration_nov_2010/hpbeta/docsrc/cxxsupport.dox,
-	  /branches/cxx_integration_nov_2010/hpbeta/docsrc/libfftpack.dox,
-	  /branches/cxx_integration_nov_2010/hpbeta/docsrc/planck.make,
-	  /branches/cxx_integration_nov_2010/hpbeta/libcfitsio/planck.make,
-	  /branches/cxx_integration_nov_2010/hpbeta/libfftpack/README,
-	  /branches/cxx_integration_nov_2010/hpbeta/libfftpack/bluestein.c,
-	  /branches/cxx_integration_nov_2010/hpbeta/libfftpack/bluestein.h,
-	  /branches/cxx_integration_nov_2010/hpbeta/libfftpack/fftpack.c,
-	  /branches/cxx_integration_nov_2010/hpbeta/libfftpack/fftpack.h,
-	  /branches/cxx_integration_nov_2010/hpbeta/libfftpack/fftpack_inc.c,
-	  /branches/cxx_integration_nov_2010/hpbeta/libfftpack/ls_fft.c,
-	  /branches/cxx_integration_nov_2010/hpbeta/libfftpack/ls_fft.h,
-	  /branches/cxx_integration_nov_2010/hpbeta/libfftpack/planck.make,
-	  /branches/cxx_integration_nov_2010/hpbeta/libpsht,
-	  /branches/cxx_integration_nov_2010/hpbeta/libpsht/libpsht.dox,
-	  /branches/cxx_integration_nov_2010/hpbeta/libpsht/planck.make,
-	  /branches/cxx_integration_nov_2010/hpbeta/libpsht/psht.c,
-	  /branches/cxx_integration_nov_2010/hpbeta/libpsht/psht.h,
-	  /branches/cxx_integration_nov_2010/hpbeta/libpsht/psht_almhelpers.c,
-	  /branches/cxx_integration_nov_2010/hpbeta/libpsht/psht_almhelpers.h,
-	  /branches/cxx_integration_nov_2010/hpbeta/libpsht/psht_cxx.h,
-	  /branches/cxx_integration_nov_2010/hpbeta/libpsht/psht_geomhelpers.c,
-	  /branches/cxx_integration_nov_2010/hpbeta/libpsht/psht_geomhelpers.h,
-	  /branches/cxx_integration_nov_2010/hpbeta/libpsht/psht_inc.c,
-	  /branches/cxx_integration_nov_2010/hpbeta/libpsht/psht_perftest.c,
-	  /branches/cxx_integration_nov_2010/hpbeta/libpsht/psht_test.c,
-	  /branches/cxx_integration_nov_2010/hpbeta/libpsht/ylmgen_c.c,
-	  /branches/cxx_integration_nov_2010/hpbeta/libpsht/ylmgen_c.h,
-	  /branches/cxx_integration_nov_2010/hpbeta/test/cl.fits: update
-	  C++ package
-
-2010-11-04 14:55  martin.reinecke1@gmx.de
-
-	* [r132]
-	  /branches/cxx_integration_nov_2010/hpbeta/Healpix_cxx/alm_map_tools.cc,
-	  /branches/cxx_integration_nov_2010/hpbeta/Healpix_cxx/alm_map_tools.h,
-	  /branches/cxx_integration_nov_2010/hpbeta/Healpix_cxx/median_filter.cc,
-	  /branches/cxx_integration_nov_2010/hpbeta/Healpix_cxx/ylmgen.h,
-	  /branches/cxx_integration_nov_2010/hpbeta/config/config.gcc_omp,
-	  /branches/cxx_integration_nov_2010/hpbeta/cxxsupport/compat_headers,
-	  /branches/cxx_integration_nov_2010/hpbeta/cxxsupport/message_error.h,
-	  /branches/cxx_integration_nov_2010/hpbeta/cxxsupport/simparams.cc,
-	  /branches/cxx_integration_nov_2010/hpbeta/cxxsupport/simparams.h,
-	  /branches/cxx_integration_nov_2010/hpbeta/cxxsupport/tga_image.cc,
-	  /branches/cxx_integration_nov_2010/hpbeta/cxxsupport/tga_image.h,
-	  /branches/cxx_integration_nov_2010/hpbeta/doc,
-	  /branches/cxx_integration_nov_2010/hpbeta/libcfitsio/cfitsio3100.tar.gz:
-	  remove all files no longer present in the new release
-
-2010-11-04 14:42  martin.reinecke1@gmx.de
-
-	* [r131] /branches/cxx_integration_nov_2010: new branch for
-	  integrating a recent version of Healpix C++
+	* [r137] setup.py: correct get_version()
 
 2010-11-04 12:33  martin.reinecke1@gmx.de
 
-	* [r130] /trunk/healpy/src/_healpy_sph_transform_lib.cc: fix a bug
-	  in sky_signal_direct()
+	* [r130] healpy/src/_healpy_sph_transform_lib.cc: fix a bug in
+	  sky_signal_direct()
 
 2010-10-12 00:57  andrea.zonca@gmail.com
 
-	* [r129] /trunk/healpy/pixelfunc.py: get_neighbours bug issue 45
-	  fixed
+	* [r129] healpy/pixelfunc.py: get_neighbours bug issue 45 fixed
 
 2010-10-12 00:40  andrea.zonca@gmail.com
 
-	* [r128] /trunk/healpy/fitsfunc.py,
-	  /trunk/healpy/test/test_fitsfunc.py: fixed issue 24, added test
-	  case
+	* [r128] healpy/fitsfunc.py, healpy/test/test_fitsfunc.py: fixed
+	  issue 24, added test case
 
 2010-10-11 18:15  andrea.zonca@gmail.com
 
-	* [r127] /trunk/healpy/pixelfunc.py: docstring for resol fixed
+	* [r127] healpy/pixelfunc.py: docstring for resol fixed
 
 2010-10-11 18:00  andrea.zonca@gmail.com
 
-	* [r126] /trunk/healpy/__init__.py: nside2resol and nside2pixarea
-	  exported
+	* [r126] healpy/__init__.py: nside2resol and nside2pixarea exported
 
 2010-10-11 18:00  andrea.zonca@gmail.com
 
-	* [r125] /trunk/healpy/pixelfunc.py, /trunk/healpy/test,
-	  /trunk/healpy/test/test_pixelfunc.py: pixel area and resolution
-	  from nside, with test case
-
-2010-10-11 14:42  cyrille.rosset
-
-	* [r124] /tags/healpy-0.9.13/ChangeLog: updating ChangeLog and
-	  version number
-
-2010-10-11 14:42  cyrille.rosset
-
-	* [r123] /tags/healpy-0.9.13, /tags/healpy-0.9.13/ChangeLog,
-	  /tags/healpy-0.9.13/healpy/version.py: create new version 0.9.13
+	* [r125] healpy/pixelfunc.py, healpy/test,
+	  healpy/test/test_pixelfunc.py: pixel area and resolution from
+	  nside, with test case
 
 2010-10-11 14:38  cyrille.rosset
 
-	* [r122] /trunk/healpy/version.py: update version.py
+	* [r122] healpy/version.py: update version.py
 
 2010-10-11 14:29  cyrille.rosset
 
-	* [r121] /trunk/healpy/projaxes.py, /trunk/healpy/zoomtool.py:
-	  correct bug in zoomtool - redisplays scatter plot when changing
-	  the gnomview
+	* [r121] healpy/projaxes.py, healpy/zoomtool.py: correct bug in
+	  zoomtool - redisplays scatter plot when changing the gnomview
 
 2010-10-02 02:12  andrea.zonca@gmail.com
 
-	* [r120] /trunk/healpy/fitsfunc.py, /trunk/healpy/sphtfunc.py,
-	  /trunk/hpbeta/config/config.osx, /trunk/setup.py: Merge branch
-	  'devel'
+	* [r120] healpy/fitsfunc.py, healpy/sphtfunc.py,
+	  hpbeta/config/config.osx, setup.py: Merge branch 'devel'
 
 2010-10-02 01:53  andrea.zonca@gmail.com
 
-	* [r119] /trunk/healpy/version.py: fixed version number also for
-	  github repo
-
-2010-09-30 16:37  cyrille.rosset
-
-	* [r118] /tags/healpy-0.9.12/ChangeLog,
-	  /tags/healpy-0.9.12/healpy/version.py: updating ChangeLog and
-	  version number
-
-2010-09-30 16:34  cyrille.rosset
-
-	* [r117] /tags/healpy-0.9.12: New release 0.9.12
+	* [r119] healpy/version.py: fixed version number also for github
+	  repo
 
 2010-09-07 20:07  andrea.zonca@gmail.com
 
-	* [r116] /trunk/healpy/__init__.py, /trunk/healpy/fitsfunc.py:
-	  first implementation of read cl and write cl for T only, needs
-	  testing with IDL
+	* [r116] healpy/__init__.py, healpy/fitsfunc.py: first
+	  implementation of read cl and write cl for T only, needs testing
+	  with IDL
 
 2010-08-30 20:21  andrea.zonca@gmail.com
 
-	* [r115] /trunk/healpy/pixelfunc.py: bug fixed in theta check
+	* [r115] healpy/pixelfunc.py: bug fixed in theta check
 
 2010-08-20 07:51  andrea.zonca@gmail.com
 
-	* [r114] /trunk/healpy/pixelfunc.py: fixed bug in vec2ang in case
-	  of monodimensional arrays
+	* [r114] healpy/pixelfunc.py: fixed bug in vec2ang in case of
+	  monodimensional arrays
 
 2010-08-20 00:02  andrea.zonca@gmail.com
 
-	* [r113] /trunk/healpy/__init__.py, /trunk/healpy/pixelfunc.py:
-	  implemented vec2ang
+	* [r113] healpy/__init__.py, healpy/pixelfunc.py: implemented
+	  vec2ang
 
 2010-07-30 09:36  cyrille.rosset
 
-	* [r112] /tags/healpy-0.9.11/ChangeLog, /trunk/ChangeLog: update
-	  ChangeLog
+	* [r112] ChangeLog: update ChangeLog
 
 2010-07-30 09:28  cyrille.rosset
 
-	* [r111] /tags/healpy-0.9.11/ChangeLog, /trunk/ChangeLog: update
-	  ChangeLog
-
-2010-07-30 09:27  cyrille.rosset
-
-	* [r110] /tags/healpy-0.9.11/healpy/version.py: update version
-	  number
-
-2010-07-30 09:25  cyrille.rosset
-
-	* [r109] /tags/healpy-0.9.11: new version 0.9.11
+	* [r111] ChangeLog: update ChangeLog
 
 2010-07-29 16:37  cyrille.rosset
 
-	* [r108] /trunk/ChangeLog, /trunk/healpy/sphtfunc.py,
-	  /trunk/healpy/src/_healpy_sph_transform_lib.cc: Add an option to
-	  map2alm and anafast not to subtract map average before computing
-	  alm (issue 40)
+	* [r108] ChangeLog, healpy/sphtfunc.py,
+	  healpy/src/_healpy_sph_transform_lib.cc: Add an option to map2alm
+	  and anafast not to subtract map average before computing alm
+	  (issue 40)
 
 2010-07-29 16:28  cyrille.rosset
 
-	* [r107] /trunk/healpy/pixelfunc.py, /trunk/healpy/projaxes.py,
-	  /trunk/healpy/version.py: UNSEEN is now taken into account
-	  properly (was broken for float32 maps)
+	* [r107] healpy/pixelfunc.py, healpy/projaxes.py,
+	  healpy/version.py: UNSEEN is now taken into account properly (was
+	  broken for float32 maps)
 
 2010-07-14 18:30  andrea.zonca@gmail.com
 
-	* [r106] /trunk/healpy/fitsfunc.py: nest=None for reading a map in
-	  the same ordering whichever it is
+	* [r106] healpy/fitsfunc.py: nest=None for reading a map in the
+	  same ordering whichever it is
 
 2010-06-22 20:54  andrea.zonca@gmail.com
 
-	* [r105] /trunk/healpy/fitsfunc.py: fix if the UNSEEN value read
-	  from fits file is not exaclty -1.6375e30
+	* [r105] healpy/fitsfunc.py: fix if the UNSEEN value read from fits
+	  file is not exaclty -1.6375e30
 
 2010-06-22 20:08  andrea.zonca@gmail.com
 
-	* [r104] /trunk/healpy/__init__.py, /trunk/healpy/pixelfunc.py:
-	  create a masked array for map, useful for summing, averaging and
-	  making histograms (using .compressed())
+	* [r104] healpy/__init__.py, healpy/pixelfunc.py: create a masked
+	  array for map, useful for summing, averaging and making
+	  histograms (using .compressed())
 
 2010-06-22 19:48  andrea.zonca@gmail.com
 
-	* [r103] /trunk/healpy/fitsfunc.py: fix in case the NSIDE is stored
-	  as string in the header
+	* [r103] healpy/fitsfunc.py: fix in case the NSIDE is stored as
+	  string in the header
 
 2010-06-17 22:46  andrea.zonca@gmail.com
 
-	* [r102] /trunk/healpy/pixelfunc.py: removed import math, not used
-	  anymore
+	* [r102] healpy/pixelfunc.py: removed import math, not used anymore
 
 2010-06-17 22:44  andrea.zonca@gmail.com
 
-	* [r101] /trunk/healpy/__init__.py, /trunk/healpy/pixelfunc.py:
-	  implementation of ang2vec (in python, with support for vectors
-
-2010-06-10 15:19  cyrille.rosset@gmail.com
-
-	* [r100] /tags/healpy-0.9.10/ChangeLog: update ChangeLog
-
-2010-06-10 15:18  cyrille.rosset@gmail.com
-
-	* [r99] /tags/healpy-0.9.10/healpy/query_disc_func.py,
-	  /tags/healpy-0.9.10/healpy/version.py: update query_disc
+	* [r101] healpy/__init__.py, healpy/pixelfunc.py: implementation of
+	  ang2vec (in python, with support for vectors
 
 2010-06-10 15:12  cyrille.rosset@gmail.com
 
-	* [r98] /trunk/healpy/query_disc_func.py: query_disc now returns
-	  int64 array
-
-2010-06-10 13:11  cyrille.rosset@gmail.com
-
-	* [r97] /tags/healpy-0.9.10/setup.py: update setup.py correction
-	  for openmp support
+	* [r98] healpy/query_disc_func.py: query_disc now returns int64
+	  array
 
 2010-06-07 12:54  lejeune@apc.univ-paris7.fr
 
-	* [r96] /trunk/setup.py: omp compilation affects spht_lib only
-
-2010-06-04 08:50  cyrille.rosset@gmail.com
-
-	* [r95] /tags/healpy-0.9.10/ChangeLog,
-	  /tags/healpy-0.9.10/healpy/version.py: update version.py to
-	  0.9.10 and ChangeLog
-
-2010-06-04 08:36  cyrille.rosset@gmail.com
-
-	* [r94] /tags/healpy-0.9.10, /tags/healpy-0.9.10/healpy/rotator.py,
-	  /tags/healpy-0.9.10/healpy/sphtfunc.py,
-	  /tags/healpy-0.9.10/healpy/src/_healpy_fitsio_lib.cc: New version
-	  0.9.10
+	* [r96] setup.py: omp compilation affects spht_lib only
 
 2010-06-03 10:00  cyrille.rosset@gmail.com
 
-	* [r93] /trunk/healpy/rotator.py, /trunk/healpy/sphtfunc.py,
-	  /trunk/healpy/src/_healpy_fitsio_lib.cc: use pyfits to get pixwin
+	* [r93] healpy/rotator.py, healpy/sphtfunc.py,
+	  healpy/src/_healpy_fitsio_lib.cc: use pyfits to get pixwin
 	  function (segfault with c++ version)
 
 2010-05-28 23:27  andrea.zonca@gmail.com
 
-	* [r92] /trunk/healpy: ignore pyc and so files
+	* [r92] healpy: ignore pyc and so files
 
 2010-05-28 23:11  andrea.zonca@gmail.com
 
-	* [r91] /trunk/healpy/visufunc.py: added norm documentation to
-	  mollview
+	* [r91] healpy/visufunc.py: added norm documentation to mollview
 
 2010-05-28 23:05  andrea.zonca@gmail.com
 
-	* [r90] /trunk/healpy/fitsfunc.py: added documentation to read_map
-	  for reading polarization
+	* [r90] healpy/fitsfunc.py: added documentation to read_map for
+	  reading polarization
 
 2010-05-27 10:31  lejeune@apc.univ-paris7.fr
 
-	* [r89] /trunk/setup.py: license option restored
+	* [r89] setup.py: license option restored
 
 2010-05-27 10:27  lejeune@apc.univ-paris7.fr
 
-	* [r88] /trunk/hpbeta/config/config.gcc_omp, /trunk/setup.py: +
-	  openmp
+	* [r88] hpbeta/config/config.gcc_omp, setup.py: + openmp
 
 2010-05-03 10:33  cyrille.rosset@gmail.com
 
-	* [r87] /trunk/healpy/version.py: change version.py
+	* [r87] healpy/version.py: change version.py
 
 2010-05-03 10:30  cyrille.rosset@gmail.com
 
-	* [r86] /trunk/doc/healpy_fits.rst, /trunk/healpy/__init__.py,
-	  /trunk/healpy/fitsfunc.py, /trunk/healpy/projaxes.py,
-	  /trunk/healpy/projector.py, /trunk/healpy/rotator.py,
-	  /trunk/healpy/sphtfunc.py, /trunk/healpy/visufunc.py,
-	  /trunk/healpy/zoomtool.py: Correct doc typos
+	* [r86] doc/healpy_fits.rst, healpy/__init__.py,
+	  healpy/fitsfunc.py, healpy/projaxes.py, healpy/projector.py,
+	  healpy/rotator.py, healpy/sphtfunc.py, healpy/visufunc.py,
+	  healpy/zoomtool.py: Correct doc typos
 
 2010-05-03 10:11  cyrille.rosset@gmail.com
 
-	* [r85] /trunk/healpy/pixelfunc.py: correct error message for bad
+	* [r85] healpy/pixelfunc.py: correct error message for bad
 	  npix/nside values
 
 2010-04-19 17:00  cyrille.rosset@gmail.com
 
-	* [r84] /trunk/healpy/query_disc_func.py: Correct bug in query_disc
-	  (error when no pixel in disc). Solve issue 31.
+	* [r84] healpy/query_disc_func.py: Correct bug in query_disc (error
+	  when no pixel in disc). Solve issue 31.
 
 2010-04-19 16:33  cyrille.rosset@gmail.com
 
-	* [r83] /trunk/healpy/pixelfunc.py: Correct bug in ud_grade for
-	  bool maps
-
-2009-09-24 10:07  cyrille.rosset
-
-	* [r82] /tags/healpy-0.9.9/healpy/zoomtool.py: missing correction
-	  in zoomtool
-
-2009-09-24 10:00  cyrille.rosset
-
-	* [r81] /tags/healpy-0.9.9/healpy/version.py: update version.py
-
-2009-09-24 09:59  cyrille.rosset
-
-	* [r80] /tags/healpy-0.9.9, /tags/healpy-0.9.9/healpy/projaxes.py,
-	  /tags/healpy-0.9.9/healpy/zoomtool.py: Version 0.9.9
+	* [r83] healpy/pixelfunc.py: Correct bug in ud_grade for bool maps
 
 2009-09-24 05:41  cyrille.rosset
 
-	* [r79] /trunk/healpy/zoomtool.py: adjust position of help text
+	* [r79] healpy/zoomtool.py: adjust position of help text
 
 2009-09-23 17:51  cyrille.rosset
 
-	* [r78] /trunk/healpy/projaxes.py, /trunk/healpy/zoomtool.py: add
-	  info display to mollzoom; correct bug for graticule near south
-	  pole
+	* [r78] healpy/projaxes.py, healpy/zoomtool.py: add info display to
+	  mollzoom; correct bug for graticule near south pole
 
 2009-08-11 20:14  cyrille.rosset
 
-	* [r77] /trunk/healpy/src/_healpy_pixel_lib.cc: remove const
-	  qualifier to solve issue 19 (in python 2.4
+	* [r77] healpy/src/_healpy_pixel_lib.cc: remove const qualifier to
+	  solve issue 19 (in python 2.4
 
 2009-08-11 13:52  cyrille.rosset
 
-	* [r76] /trunk/healpy/sphtfunc.py: add npy. in sphtfunc.py/alm2cl.
-	  Solve issue 22.
+	* [r76] healpy/sphtfunc.py: add npy. in sphtfunc.py/alm2cl. Solve
+	  issue 22.
 
 2009-08-11 13:50  cyrille.rosset
 
-	* [r75] /trunk/healpy/projaxes.py, /trunk/healpy/rotator.py:
-	  correct bug in rotator (missing npy) and in projaxes (missing
-	  verbose keyword)
+	* [r75] healpy/projaxes.py, healpy/rotator.py: correct bug in
+	  rotator (missing npy) and in projaxes (missing verbose keyword)
 
 2009-07-22 16:21  cyrille.rosset
 
-	* [r74] /trunk/healpy/sphtfunc.py, /trunk/healpy/version.py:
-	  correctionf for issue 20
-
-2009-07-22 09:27  cyrille.rosset
-
-	* [r73] /tags/healpy-0.9.6.3/healpy/version.py,
-	  /tags/healpy-0.9.6.3/hpbeta/alice/testMollweideSkyMap.cc,
-	  /tags/healpy-0.9.6.3/hpbeta/alice/testOrthogonalSkyMap.cc:
-	  correct bug 19 for python 2.4
-
-2009-07-22 09:04  cyrille.rosset
-
-	* [r72] /tags/healpy-0.9.6.3/healpy/src/_healpy_pixel_lib.cc,
-	  /tags/healpy-0.9.6.3/healpy/version.py: correct verion to work
-	  with python 2.4
-
-2009-07-22 09:02  cyrille.rosset
-
-	* [r71] /tags/healpy-0.9.6.3: correct a small bug for python 2.4
-	  compatibility
+	* [r74] healpy/sphtfunc.py, healpy/version.py: correctionf for
+	  issue 20
 
 2009-07-21 15:41  cyrille.rosset
 
-	* [r70] /tags/healpy-0.9.8/ChangeLog,
-	  /tags/healpy-0.9.8/healpy/version.py, /trunk/ChangeLog,
-	  /trunk/healpy/version.py: new tag 0.9.8
-
-2009-07-21 15:23  cyrille.rosset
-
-	* [r69] /tags/healpy-0.9.8: tag version 0.9.8 with mollzoom
+	* [r70] ChangeLog, healpy/version.py: new tag 0.9.8
 
 2009-07-21 15:14  cyrille.rosset
 
-	* [r68] /trunk/healpy/__init__.py,
-	  /trunk/hpbeta/alice/testMollweideSkyMap.cc,
-	  /trunk/hpbeta/alice/testOrthogonalSkyMap.cc: correct bug in
-	  __init__; add cstdio in some files of hpbeta
+	* [r68] healpy/__init__.py, hpbeta/alice/testMollweideSkyMap.cc,
+	  hpbeta/alice/testOrthogonalSkyMap.cc: correct bug in __init__;
+	  add cstdio in some files of hpbeta
 
 2009-07-16 15:22  cyrille.rosset
 
-	* [r67] /trunk/healpy/projaxes.py, /trunk/healpy/zoomtool.py:
-	  update zoomtool
+	* [r67] healpy/projaxes.py, healpy/zoomtool.py: update zoomtool
 
 2009-07-16 15:05  cyrille.rosset
 
-	* [r66] /trunk/healpy/__init__.py, /trunk/healpy/projector.py,
-	  /trunk/healpy/rotator.py, /trunk/healpy/zoomtool.py: add zoomtool
-	  capabilities
+	* [r66] healpy/__init__.py, healpy/projector.py, healpy/rotator.py,
+	  healpy/zoomtool.py: add zoomtool capabilities
 
 2009-07-15 13:16  cyrille.rosset
 
-	* [r65] /trunk/healpy/version.py: addinformation for graticule, to
-	  easily rebuild it if needed (for mollzoom)
+	* [r65] healpy/version.py: addinformation for graticule, to easily
+	  rebuild it if needed (for mollzoom)
 
 2009-07-15 13:14  cyrille.rosset
 
-	* [r64] /trunk/healpy/projaxes.py: addinformation for graticule, to
-	  easily rebuild it if needed (for mollzoom)
+	* [r64] healpy/projaxes.py: addinformation for graticule, to easily
+	  rebuild it if needed (for mollzoom)
 
 2009-07-10 00:31  cyrille.rosset
 
-	* [r63] /tags/healpy-0.9.7/ChangeLog,
-	  /tags/healpy-0.9.7/healpy/version.py, /trunk/ChangeLog: set
-	  version number and modify ChangeLog
-
-2009-07-10 00:29  cyrille.rosset
-
-	* [r62] /tags/healpy-0.9.7: add new version
+	* [r63] ChangeLog: set version number and modify ChangeLog
 
 2009-07-10 00:23  cyrille.rosset
 
-	* [r61] /trunk/ChangeLog: svn cleaning
+	* [r61] ChangeLog: svn cleaning
 
 2009-07-10 00:11  cyrille.rosset
 
-	* [r60] /trunk/healpy/__init__.py, /trunk/healpy/projector.py,
-	  /trunk/setup.py: correct error in gnomview (was indicating wrong
-	  latitude/map value in the status bar). Cartview is available as
-	  healpy.cartview
+	* [r60] healpy/__init__.py, healpy/projector.py, setup.py: correct
+	  error in gnomview (was indicating wrong latitude/map value in the
+	  status bar). Cartview is available as healpy.cartview
 
 2009-06-17 07:21  cyrille.rosset
 
-	* [r59] /tags/healpy-0.9.6.2/ChangeLog, /trunk/ChangeLog: Update
-	  Changelog
+	* [r59] ChangeLog: Update Changelog
 
 2009-06-17 07:18  cyrille.rosset
 
-	* [r58] /tags/healpy-0.9.6.2, /tags/healpy-0.9.6.2/MANIFEST.in,
-	  /tags/healpy-0.9.6.2/healpy/version.py, /trunk/MANIFEST.in: Add
-	  version 0.9.6.2, correcting MANIFEST.in file to add COPYING in
-	  tarball
+	* [r58] MANIFEST.in: Add version 0.9.6.2, correcting MANIFEST.in
+	  file to add COPYING in tarball
 
 2009-06-16 21:46  cyrille.rosset
 
-	* [r57] /trunk/test/test_fit_dipole.py: add license information at
-	  top of test_fit_dipole.py
-
-2009-06-09 13:57  cyrille.rosset
-
-	* [r56] /tags/healpy-0.9.6.1/healpy/version.py: Update version
-	  number in version.py
+	* [r57] test/test_fit_dipole.py: add license information at top of
+	  test_fit_dipole.py
 
 2009-06-09 13:55  cyrille.rosset
 
-	* [r55] /tags/healpy-0.9.6.1/ChangeLog, /trunk/ChangeLog: Update
-	  ChangeLog
-
-2009-06-09 13:49  cyrille.rosset
-
-	* [r54] /tags/healpy-0.9.6.1, /tags/healpy-0.9.6.1/COPYING,
-	  /tags/healpy-0.9.6.1/healpy/__init__.py,
-	  /tags/healpy-0.9.6.1/healpy/fitsfunc.py,
-	  /tags/healpy-0.9.6.1/healpy/pixelfunc.py,
-	  /tags/healpy-0.9.6.1/healpy/projaxes.py,
-	  /tags/healpy-0.9.6.1/healpy/projector.py,
-	  /tags/healpy-0.9.6.1/healpy/query_disc_func.py,
-	  /tags/healpy-0.9.6.1/healpy/rotator.py,
-	  /tags/healpy-0.9.6.1/healpy/sphtfunc.py,
-	  /tags/healpy-0.9.6.1/healpy/src/_healpy_fitsio_lib.cc,
-	  /tags/healpy-0.9.6.1/healpy/src/_healpy_pixel_lib.cc,
-	  /tags/healpy-0.9.6.1/healpy/src/_healpy_sph_transform_lib.cc,
-	  /tags/healpy-0.9.6.1/healpy/version.py,
-	  /tags/healpy-0.9.6.1/healpy/visufunc.py: new tag 0.9.6.1 to
-	  include license information
+	* [r55] ChangeLog: Update ChangeLog
 
 2009-06-09 13:47  cyrille.rosset
 
-	* [r53] /trunk/COPYING: Add COPYING file at top. Also add missing
+	* [r53] COPYING: Add COPYING file at top. Also add missing
 	  Py_INCREF(Py_None).
 
 2009-06-09 13:43  cyrille.rosset
 
-	* [r52] /trunk/healpy/__init__.py, /trunk/healpy/fitsfunc.py,
-	  /trunk/healpy/pixelfunc.py, /trunk/healpy/projaxes.py,
-	  /trunk/healpy/projector.py, /trunk/healpy/query_disc_func.py,
-	  /trunk/healpy/rotator.py, /trunk/healpy/sphtfunc.py,
-	  /trunk/healpy/src/_healpy_fitsio_lib.cc,
-	  /trunk/healpy/src/_healpy_pixel_lib.cc,
-	  /trunk/healpy/src/_healpy_sph_transform_lib.cc,
-	  /trunk/healpy/version.py, /trunk/healpy/visufunc.py: Add license
-	  information in files and in COPYING file at the top of directory
-	  tree
+	* [r52] healpy/__init__.py, healpy/fitsfunc.py,
+	  healpy/pixelfunc.py, healpy/projaxes.py, healpy/projector.py,
+	  healpy/query_disc_func.py, healpy/rotator.py, healpy/sphtfunc.py,
+	  healpy/src/_healpy_fitsio_lib.cc,
+	  healpy/src/_healpy_pixel_lib.cc,
+	  healpy/src/_healpy_sph_transform_lib.cc, healpy/version.py,
+	  healpy/visufunc.py: Add license information in files and in
+	  COPYING file at the top of directory tree
 
 2009-04-17 02:45  cyrille.rosset
 
-	* [r51] /tags/healpy-0.9.6/ChangeLog, /trunk/ChangeLog: Update
-	  ChangeLog
-
-2009-04-17 02:43  cyrille.rosset
-
-	* [r50] /tags/healpy-0.9.6/healpy/version.py: set version number
-	  for tagged version
+	* [r51] ChangeLog: Update ChangeLog
 
 2009-04-17 02:40  cyrille.rosset
 
-	* [r49] /tags/healpy-0.9.6, /tags/healpy-0.9.6/ChangeLog,
-	  /trunk/ChangeLog: Update ChangeLog; tag version 0.9.6
+	* [r49] ChangeLog: Update ChangeLog; tag version 0.9.6
 
 2009-03-29 17:46  cyrille.rosset
 
-	* [r48] /trunk/healpy/__init__.py, /trunk/healpy/pixelfunc.py,
-	  /trunk/healpy/src/_healpy_pixel_lib.cc: Add get_all_neighbours
-	  function (contribution from Sergey E. Koposov). Solve issue 17.
+	* [r48] healpy/__init__.py, healpy/pixelfunc.py,
+	  healpy/src/_healpy_pixel_lib.cc: Add get_all_neighbours function
+	  (contribution from Sergey E. Koposov). Solve issue 17.
 
 2009-03-29 16:24  cyrille.rosset
 
-	* [r47] /trunk/healpy/query_disc_func.py: add ring2nest import in
+	* [r47] healpy/query_disc_func.py: add ring2nest import in
 	  query_disc_func, so it works with nest=True; solve issue 18.
 
 2009-03-25 16:10  cyrille.rosset
 
-	* [r46] /trunk/healpy/__init__.py: change warnings.ImportWarning to
+	* [r46] healpy/__init__.py: change warnings.ImportWarning to
 	  ImportWarning, and define ImportWarning if it does not exist
 	  (solve issue 16)
 
 2009-03-12 16:51  cyrille.rosset
 
-	* [r45] /tags/healpy-0.9.5/ChangeLog, /trunk/ChangeLog: Update
-	  ChangeLog
-
-2009-03-12 15:16  cyrille.rosset
-
-	* [r44] /tags/healpy-0.9.5, /tags/healpy-0.9.5/ChangeLog,
-	  /tags/healpy-0.9.5/INSTALL, /tags/healpy-0.9.5/MANIFEST.in,
-	  /tags/healpy-0.9.5/TODO, /tags/healpy-0.9.5/do_inst,
-	  /tags/healpy-0.9.5/doc, /tags/healpy-0.9.5/healpy,
-	  /tags/healpy-0.9.5/healpy/pixelfunc.py,
-	  /tags/healpy-0.9.5/healpy/projaxes.py,
-	  /tags/healpy-0.9.5/healpy/projector.py,
-	  /tags/healpy-0.9.5/healpy/rotator.py,
-	  /tags/healpy-0.9.5/healpy/src/_healpy_pixel_lib.cc,
-	  /tags/healpy-0.9.5/healpy/version.py,
-	  /tags/healpy-0.9.5/healpy/visufunc.py,
-	  /tags/healpy-0.9.5/hpbeta/COPYING,
-	  /tags/healpy-0.9.5/hpbeta/Healpix_cxx,
-	  /tags/healpy-0.9.5/hpbeta/Makefile,
-	  /tags/healpy-0.9.5/hpbeta/README.compilation,
-	  /tags/healpy-0.9.5/hpbeta/alice,
-	  /tags/healpy-0.9.5/hpbeta/config,
-	  /tags/healpy-0.9.5/hpbeta/cxxsupport,
-	  /tags/healpy-0.9.5/hpbeta/cxxsupport/fitshandle.cc,
-	  /tags/healpy-0.9.5/hpbeta/doc, /tags/healpy-0.9.5/hpbeta/docsrc,
-	  /tags/healpy-0.9.5/hpbeta/libcfitsio,
-	  /tags/healpy-0.9.5/hpbeta/libfftpack,
-	  /tags/healpy-0.9.5/hpbeta/test, /tags/healpy-0.9.5/setup.py,
-	  /tags/healpy-0.9.5/test: new version 0.9.5
+	* [r45] ChangeLog: Update ChangeLog
 
 2009-03-12 14:55  cyrille.rosset
 
-	* [r43] /trunk/hpbeta/cxxsupport/fitshandle.cc: Add #include
-	  <cstring> for compatibility with some new compilers
+	* [r43] hpbeta/cxxsupport/fitshandle.cc: Add #include <cstring> for
+	  compatibility with some new compilers
 
 2009-02-22 22:41  cyrille.rosset
 
-	* [r42] /trunk/healpy/pixelfunc.py: Correct missing npy. in
-	  _ud_grade_core
+	* [r42] healpy/pixelfunc.py: Correct missing npy. in _ud_grade_core
 
 2009-01-24 16:19  cyrille.rosset
 
-	* [r41] /trunk/healpy/version.py: Update version.py
+	* [r41] healpy/version.py: Update version.py
 
 2009-01-24 16:19  cyrille.rosset
 
-	* [r40] /trunk/healpy/projaxes.py, /trunk/healpy/projector.py,
-	  /trunk/healpy/visufunc.py: Add cartwiew, CartesianAxes,
-	  CartesianProj; tweak _segment_threshold, add _segment_step_rad,
-	  some new keywords to graticule...
+	* [r40] healpy/projaxes.py, healpy/projector.py,
+	  healpy/visufunc.py: Add cartwiew, CartesianAxes, CartesianProj;
+	  tweak _segment_threshold, add _segment_step_rad, some new
+	  keywords to graticule...
 
 2009-01-18 20:51  cyrille.rosset
 
-	* [r39] /trunk/MANIFEST.in, /trunk/healpy/pixelfunc.py,
-	  /trunk/healpy/src/_healpy_pixel_lib.cc: update documentation for
+	* [r39] MANIFEST.in, healpy/pixelfunc.py,
+	  healpy/src/_healpy_pixel_lib.cc: update documentation for
 	  ang2pix, etc to precise dimension of theta,phi [rad]
-
-2009-01-12 18:12  cyrille.rosset
-
-	* [r38] /tags/healpy-0.9.4/healpy/version.py: Correct version
-	  number
 
 2009-01-12 18:09  cyrille.rosset
 
-	* [r37] /tags/healpy-0.9.4, /tags/healpy-0.9.4/ChangeLog,
-	  /tags/healpy-0.9.4/INSTALL, /tags/healpy-0.9.4/MANIFEST.in,
-	  /tags/healpy-0.9.4/TODO, /tags/healpy-0.9.4/do_inst,
-	  /tags/healpy-0.9.4/doc, /tags/healpy-0.9.4/healpy,
-	  /tags/healpy-0.9.4/healpy/rotator.py,
-	  /tags/healpy-0.9.4/healpy/version.py,
-	  /tags/healpy-0.9.4/hpbeta/COPYING,
-	  /tags/healpy-0.9.4/hpbeta/Healpix_cxx,
-	  /tags/healpy-0.9.4/hpbeta/Makefile,
-	  /tags/healpy-0.9.4/hpbeta/README.compilation,
-	  /tags/healpy-0.9.4/hpbeta/alice,
-	  /tags/healpy-0.9.4/hpbeta/config,
-	  /tags/healpy-0.9.4/hpbeta/cxxsupport,
-	  /tags/healpy-0.9.4/hpbeta/doc, /tags/healpy-0.9.4/hpbeta/docsrc,
-	  /tags/healpy-0.9.4/hpbeta/libcfitsio,
-	  /tags/healpy-0.9.4/hpbeta/libfftpack,
-	  /tags/healpy-0.9.4/hpbeta/test, /tags/healpy-0.9.4/setup.py,
-	  /tags/healpy-0.9.4/test, /trunk/ChangeLog: Add tag version 0.9.4
+	* [r37] ChangeLog: Add tag version 0.9.4
 
 2009-01-11 03:04  cyrille.rosset
 
-	* [r36] /trunk/healpy/rotator.py: correct bug in Rotator.angle_ref
+	* [r36] healpy/rotator.py: correct bug in Rotator.angle_ref
 
 2009-01-08 19:24  cyrille.rosset
 
-	* [r35] /trunk/INSTALL, /trunk/TODO, /trunk/do_inst: update the
-	  INSTALL, TODO files; remove obsolete do_inst script
+	* [r35] INSTALL, TODO, do_inst: update the INSTALL, TODO files;
+	  remove obsolete do_inst script
 
 2009-01-08 18:47  cyrille.rosset
 
-	* [r34] /trunk, /trunk/ChangeLog, /trunk/healpy/version.py,
-	  /trunk/hpbeta: Add svn:ignore properties ; update version
+	* [r34] ., ChangeLog, healpy/version.py, hpbeta: Add svn:ignore
+	  properties ; update version
 
 2009-01-08 18:14  cyrille.rosset
 
-	* [r33] /trunk/healpy/__init__.py, /trunk/healpy/rotator.py: Add
-	  documentation to the Rotator class; makes it available as
-	  healpy.Rotator
+	* [r33] healpy/__init__.py, healpy/rotator.py: Add documentation to
+	  the Rotator class; makes it available as healpy.Rotator
 
 2009-01-06 13:35  cyrille.rosset
 
-	* [r32] /trunk/healpy/version.py: update version number
+	* [r32] healpy/version.py: update version number
 
 2009-01-06 13:19  cyrille.rosset
 
-	* [r31] /trunk/ChangeLog: update ChangeLog
+	* [r31] ChangeLog: update ChangeLog
 
 2009-01-06 13:04  cyrille.rosset
 
-	* [r30] /trunk/healpy/__init__.py, /trunk/healpy/projaxes.py,
-	  /trunk/healpy/visufunc.py: Add flip keyword to mollview/gnomview
-	  (solve issue 13); correct graticule paramters (solve issue 12);
-	  extend xlim/ylim for mollview (solve issue 14)
+	* [r30] healpy/__init__.py, healpy/projaxes.py, healpy/visufunc.py:
+	  Add flip keyword to mollview/gnomview (solve issue 13); correct
+	  graticule paramters (solve issue 12); extend xlim/ylim for
+	  mollview (solve issue 14)
 
 2008-12-29 14:02  cyrille.rosset
 
-	* [r29] /trunk/ChangeLog: Update ChangeLog
+	* [r29] ChangeLog: Update ChangeLog
 
 2008-12-29 13:48  cyrille.rosset
 
-	* [r28] /trunk/ChangeLog: Add margins keyword to mollview; invert
-	  cols and rows for sub= in mollview and gnomview
+	* [r28] ChangeLog: Add margins keyword to mollview; invert cols and
+	  rows for sub= in mollview and gnomview
 
 2008-12-29 13:38  cyrille.rosset
 
-	* [r27] /trunk/healpy/visufunc.py: Add margins keyword to mollview;
-	  invert cols and rows for sub= in mollview and gnomview
+	* [r27] healpy/visufunc.py: Add margins keyword to mollview; invert
+	  cols and rows for sub= in mollview and gnomview
 
 2008-12-17 17:01  cyrille.rosset
 
-	* [r26] /trunk/ChangeLog: Add ChangeLog file
+	* [r26] ChangeLog: Add ChangeLog file
 
 2008-12-12 14:00  cyrille.rosset
 
-	* [r25] /trunk/healpy/version.py: add property on version.py
-
-2008-12-12 13:52  cyrille.rosset
-
-	* [r24] /tags/healpy-0.9.3.1/healpy/version.py: correct version
-	  number
+	* [r25] healpy/version.py: add property on version.py
 
 2008-12-12 13:48  cyrille.rosset
 
-	* [r23] /tags/healpy-0.9.3.1,
-	  /tags/healpy-0.9.3.1/healpy/__init__.py,
-	  /tags/healpy-0.9.3.1/healpy/pixelfunc.py,
-	  /tags/healpy-0.9.3.1/setup.py, /trunk/setup.py: minor bug
-	  corrected (ud_grade: order_out=order_in if not given ; reorder
-	  imported in __init__.py); no compilation of healpy for setup.py
-	  sdist
-
-2008-12-12 13:28  cyrille.rosset
-
-	* [r22] /tags/healpy-0.9.3/healpy/__init__.py,
-	  /tags/healpy-0.9.3/healpy/pixelfunc.py: [from trunk]
-	  order_out=order_in if not given in ud_grade ; import reorder in
-	  __init__.py
+	* [r23] setup.py: minor bug corrected (ud_grade: order_out=order_in
+	  if not given ; reorder imported in __init__.py); no compilation
+	  of healpy for setup.py sdist
 
 2008-12-12 13:27  cyrille.rosset
 
-	* [r21] /trunk/healpy/__init__.py, /trunk/healpy/pixelfunc.py:
-	  order_out=order_in if not given in ud_grade ; import reorder in
-	  __init__.py
-
-2008-12-12 08:04  cyrille.rosset
-
-	* [r20] /tags/healpy-0.9.3/healpy/projaxes.py: [from trunk] Adapt
-	  HistEqNorm to numpy 1.2 (change in histogram bins format)
+	* [r21] healpy/__init__.py, healpy/pixelfunc.py: order_out=order_in
+	  if not given in ud_grade ; import reorder in __init__.py
 
 2008-12-12 08:03  cyrille.rosset
 
-	* [r19] /trunk/healpy/projaxes.py: Adapt HistEqNorm to numpy 1.2
-	  (change in histogram bins format)
-
-2008-12-11 22:46  cyrille.rosset
-
-	* [r18] /tags/healpy-0.9.3/healpy/projaxes.py: [from trunk] Correct
-	  bug in LinNorm2 giving incorrect color scale with some version of
-	  numpy (masked array problem?)
+	* [r19] healpy/projaxes.py: Adapt HistEqNorm to numpy 1.2 (change
+	  in histogram bins format)
 
 2008-12-11 22:45  cyrille.rosset
 
-	* [r17] /trunk/healpy/projaxes.py: Correct bug in LinNorm2 giving
+	* [r17] healpy/projaxes.py: Correct bug in LinNorm2 giving
 	  incorrect color scale with some version of numpy (masked array
 	  problem?)
 
-2008-12-08 18:58  cyrille.rosset
-
-	* [r16] /tags/healpy-0.9.3, /tags/healpy-0.9.3/doc,
-	  /tags/healpy-0.9.3/healpy/__init__.py,
-	  /tags/healpy-0.9.3/healpy/fitsfunc.py,
-	  /tags/healpy-0.9.3/healpy/pixelfunc.py,
-	  /tags/healpy-0.9.3/healpy/projector.py,
-	  /tags/healpy-0.9.3/healpy/query_disc_func.py,
-	  /tags/healpy-0.9.3/healpy/rotator.py,
-	  /tags/healpy-0.9.3/healpy/sphtfunc.py,
-	  /tags/healpy-0.9.3/healpy/src/_healpy_sph_transform_lib.cc,
-	  /tags/healpy-0.9.3/healpy/version.py,
-	  /tags/healpy-0.9.3/healpy/visufunc.py,
-	  /tags/healpy-0.9.3/hpbeta/Healpix_cxx/alm_map_tools.cc,
-	  /tags/healpy-0.9.3/hpbeta/Healpix_cxx/healpix_base.h,
-	  /tags/healpy-0.9.3/hpbeta/Healpix_cxx/hpxtest.cc,
-	  /tags/healpy-0.9.3/hpbeta/Healpix_cxx/ylmgen.h,
-	  /tags/healpy-0.9.3/hpbeta/Makefile,
-	  /tags/healpy-0.9.3/hpbeta/README.compilation,
-	  /tags/healpy-0.9.3/hpbeta/alice,
-	  /tags/healpy-0.9.3/hpbeta/config/config.generic_gcc,
-	  /tags/healpy-0.9.3/hpbeta/config/rules.common,
-	  /tags/healpy-0.9.3/hpbeta/cxxsupport/constants.h,
-	  /tags/healpy-0.9.3/hpbeta/cxxsupport/cxxutils.cc,
-	  /tags/healpy-0.9.3/hpbeta/cxxsupport/cxxutils.h,
-	  /tags/healpy-0.9.3/hpbeta/cxxsupport/fitshandle.cc,
-	  /tags/healpy-0.9.3/hpbeta/cxxsupport/lsconstants.h,
-	  /tags/healpy-0.9.3/hpbeta/cxxsupport/paramfile.h,
-	  /tags/healpy-0.9.3/hpbeta/cxxsupport/planck.make,
-	  /tags/healpy-0.9.3/hpbeta/cxxsupport/rotmatrix.cc,
-	  /tags/healpy-0.9.3/hpbeta/cxxsupport/trafos.cc,
-	  /tags/healpy-0.9.3/hpbeta/libcfitsio/cfitsio3040.tar.gz,
-	  /tags/healpy-0.9.3/hpbeta/libcfitsio/cfitsio3100.tar.gz,
-	  /tags/healpy-0.9.3/hpbeta/libcfitsio/planck.make,
-	  /tags/healpy-0.9.3/hpbeta/libfftpack/README,
-	  /tags/healpy-0.9.3/test: New version 0.9.3
-
 2008-12-08 18:54  cyrille.rosset
 
-	* [r15] /trunk/doc, /trunk/doc/Makefile, /trunk/doc/conf.py,
-	  /trunk/doc/healpy_fits.rst, /trunk/doc/healpy_pix.rst,
-	  /trunk/doc/healpy_projaxes.rst, /trunk/doc/healpy_projector.rst,
-	  /trunk/doc/healpy_rotator.rst, /trunk/doc/healpy_spht.rst,
-	  /trunk/doc/healpy_visu.rst, /trunk/doc/index.rst, /trunk/test,
-	  /trunk/test/test_fit_dipole.py: Add test directory and doc
-	  directory
+	* [r15] doc, doc/Makefile, doc/conf.py, doc/healpy_fits.rst,
+	  doc/healpy_pix.rst, doc/healpy_projaxes.rst,
+	  doc/healpy_projector.rst, doc/healpy_rotator.rst,
+	  doc/healpy_spht.rst, doc/healpy_visu.rst, doc/index.rst, test,
+	  test/test_fit_dipole.py: Add test directory and doc directory
 
 2008-12-08 18:33  cyrille.rosset
 
-	* [r14] /trunk/healpy/fitsfunc.py, /trunk/healpy/rotator.py: Add
-	  reference direction rotation in rotator (for polarisation). Not
-	  yet tested.
+	* [r14] healpy/fitsfunc.py, healpy/rotator.py: Add reference
+	  direction rotation in rotator (for polarisation). Not yet tested.
 
 2008-12-02 18:25  cyrille.rosset
 
-	* [r13] /trunk/healpy/visufunc.py: modify gnomview and mollview to
-	  make blank maps (for overplotting), to replace current axes
-	  (option hold), or to make subplots on the current figure (option
-	  sub)
+	* [r13] healpy/visufunc.py: modify gnomview and mollview to make
+	  blank maps (for overplotting), to replace current axes (option
+	  hold), or to make subplots on the current figure (option sub)
 
 2008-11-26 12:04  cyrille.rosset
 
-	* [r12] /trunk/hpbeta/config/config.generic_gcc: Add -fPIC into
-	  compiler option
+	* [r12] hpbeta/config/config.generic_gcc: Add -fPIC into compiler
+	  option
 
 2008-11-17 13:40  cyrille.rosset
 
-	* [r11] /trunk/healpy/sphtfunc.py: default for number of iteration
-	  set to 1 instead of 3
+	* [r11] healpy/sphtfunc.py: default for number of iteration set to
+	  1 instead of 3
 
 2008-11-07 09:24  cyrille.rosset
 
-	* [r10] /trunk/healpy/rotator.py: correct issue 4: lonlat keyword
-	  not taken into account for output
+	* [r10] healpy/rotator.py: correct issue 4: lonlat keyword not
+	  taken into account for output
 
 2008-11-05 11:58  cyrille.rosset
 
-	* [r9] /trunk/healpy/__init__.py, /trunk/healpy/query_disc_func.py:
-	  add query_disc function and related functions
+	* [r9] healpy/__init__.py, healpy/query_disc_func.py: add
+	  query_disc function and related functions
 
 2008-11-03 13:45  cyrille.rosset
 
-	* [r8] /trunk/healpy/src/_healpy_sph_transform_lib.cc: - correct
-	  bug in healpy.alm2map_der1 : was setting almI(0,0) to zero (same
-	  bug as in alm2map)
+	* [r8] healpy/src/_healpy_sph_transform_lib.cc: - correct bug in
+	  healpy.alm2map_der1 : was setting almI(0,0) to zero (same bug as
+	  in alm2map)
 
 2008-11-03 13:43  cyrille.rosset
 
-	* [r7] /trunk/healpy/__init__.py, /trunk/healpy/pixelfunc.py,
-	  /trunk/healpy/src/_healpy_sph_transform_lib.cc,
-	  /trunk/hpbeta/Healpix_cxx/alm_map_tools.cc: - correct bug in
+	* [r7] healpy/__init__.py, healpy/pixelfunc.py,
+	  healpy/src/_healpy_sph_transform_lib.cc,
+	  hpbeta/Healpix_cxx/alm_map_tools.cc: - correct bug in
 	  alm_map_tools.cc for alm2map_der1\n- correct bug in
 	  healpy.alm2map : was setting almI(0,0) to zero
 
 2008-10-28 09:21  cyrille.rosset
 
-	* [r6] /trunk/healpy/__init__.py, /trunk/healpy/pixelfunc.py,
-	  /trunk/healpy/sphtfunc.py,
-	  /trunk/healpy/src/_healpy_sph_transform_lib.cc: add alm2map_der1
+	* [r6] healpy/__init__.py, healpy/pixelfunc.py, healpy/sphtfunc.py,
+	  healpy/src/_healpy_sph_transform_lib.cc: add alm2map_der1
 
 2008-10-28 09:20  cyrille.rosset
 
-	* [r5] /trunk/hpbeta/Healpix_cxx/alm_map_tools.cc,
-	  /trunk/hpbeta/Healpix_cxx/healpix_base.h,
-	  /trunk/hpbeta/Healpix_cxx/hpxtest.cc,
-	  /trunk/hpbeta/Healpix_cxx/ylmgen.h, /trunk/hpbeta/Makefile,
-	  /trunk/hpbeta/README.compilation, /trunk/hpbeta/alice,
-	  /trunk/hpbeta/alice/MollweideSkyMap.cc,
-	  /trunk/hpbeta/alice/MollweideSkyMap.h,
-	  /trunk/hpbeta/alice/OrthogonalSkyMap.h,
-	  /trunk/hpbeta/alice/PolarizationHolder.cc,
-	  /trunk/hpbeta/alice/PolarizationHolder.h,
-	  /trunk/hpbeta/alice/RectSkyMap.h, /trunk/hpbeta/alice/SkyMap.h,
-	  /trunk/hpbeta/alice/SoSSkyMap.cc,
-	  /trunk/hpbeta/alice/SoSSkyMap.h,
-	  /trunk/hpbeta/alice/TextureHolder.cc,
-	  /trunk/hpbeta/alice/TextureHolder.h,
-	  /trunk/hpbeta/alice/alice2.cc, /trunk/hpbeta/alice/alice_usage.h,
-	  /trunk/hpbeta/alice/alice_usage.txt,
-	  /trunk/hpbeta/alice/alice_utils.h, /trunk/hpbeta/alice/color.cc,
-	  /trunk/hpbeta/alice/color.h,
-	  /trunk/hpbeta/alice/generateTexture.cc,
-	  /trunk/hpbeta/alice/makeusage.sh,
-	  /trunk/hpbeta/alice/planck.make, /trunk/hpbeta/alice/test.cc,
-	  /trunk/hpbeta/alice/testMollweideSkyMap.cc,
-	  /trunk/hpbeta/alice/testOrthogonalSkyMap.cc,
-	  /trunk/hpbeta/alice/testSoSSkyMap.cc,
-	  /trunk/hpbeta/alice/wmap_ilc_3yr_v2_r6_sim.fits,
-	  /trunk/hpbeta/config/config.generic_gcc,
-	  /trunk/hpbeta/config/rules.common,
-	  /trunk/hpbeta/cxxsupport/constants.h,
-	  /trunk/hpbeta/cxxsupport/cxxutils.cc,
-	  /trunk/hpbeta/cxxsupport/cxxutils.h,
-	  /trunk/hpbeta/cxxsupport/fitshandle.cc,
-	  /trunk/hpbeta/cxxsupport/lsconstants.h,
-	  /trunk/hpbeta/cxxsupport/paramfile.h,
-	  /trunk/hpbeta/cxxsupport/planck.make,
-	  /trunk/hpbeta/cxxsupport/rotmatrix.cc,
-	  /trunk/hpbeta/cxxsupport/trafos.cc,
-	  /trunk/hpbeta/libcfitsio/cfitsio3040.tar.gz,
-	  /trunk/hpbeta/libcfitsio/cfitsio3100.tar.gz,
-	  /trunk/hpbeta/libcfitsio/planck.make,
-	  /trunk/hpbeta/libfftpack/README: Update to Healpix_2.10 version
+	* [r5] hpbeta/Healpix_cxx/alm_map_tools.cc,
+	  hpbeta/Healpix_cxx/healpix_base.h, hpbeta/Healpix_cxx/hpxtest.cc,
+	  hpbeta/Healpix_cxx/ylmgen.h, hpbeta/Makefile,
+	  hpbeta/README.compilation, hpbeta/alice,
+	  hpbeta/alice/MollweideSkyMap.cc, hpbeta/alice/MollweideSkyMap.h,
+	  hpbeta/alice/OrthogonalSkyMap.h,
+	  hpbeta/alice/PolarizationHolder.cc,
+	  hpbeta/alice/PolarizationHolder.h, hpbeta/alice/RectSkyMap.h,
+	  hpbeta/alice/SkyMap.h, hpbeta/alice/SoSSkyMap.cc,
+	  hpbeta/alice/SoSSkyMap.h, hpbeta/alice/TextureHolder.cc,
+	  hpbeta/alice/TextureHolder.h, hpbeta/alice/alice2.cc,
+	  hpbeta/alice/alice_usage.h, hpbeta/alice/alice_usage.txt,
+	  hpbeta/alice/alice_utils.h, hpbeta/alice/color.cc,
+	  hpbeta/alice/color.h, hpbeta/alice/generateTexture.cc,
+	  hpbeta/alice/makeusage.sh, hpbeta/alice/planck.make,
+	  hpbeta/alice/test.cc, hpbeta/alice/testMollweideSkyMap.cc,
+	  hpbeta/alice/testOrthogonalSkyMap.cc,
+	  hpbeta/alice/testSoSSkyMap.cc,
+	  hpbeta/alice/wmap_ilc_3yr_v2_r6_sim.fits,
+	  hpbeta/config/config.generic_gcc, hpbeta/config/rules.common,
+	  hpbeta/cxxsupport/constants.h, hpbeta/cxxsupport/cxxutils.cc,
+	  hpbeta/cxxsupport/cxxutils.h, hpbeta/cxxsupport/fitshandle.cc,
+	  hpbeta/cxxsupport/lsconstants.h, hpbeta/cxxsupport/paramfile.h,
+	  hpbeta/cxxsupport/planck.make, hpbeta/cxxsupport/rotmatrix.cc,
+	  hpbeta/cxxsupport/trafos.cc,
+	  hpbeta/libcfitsio/cfitsio3040.tar.gz,
+	  hpbeta/libcfitsio/cfitsio3100.tar.gz,
+	  hpbeta/libcfitsio/planck.make, hpbeta/libfftpack/README: Update
+	  to Healpix_2.10 version
 
 2008-10-03 12:24  cyrille.rosset
 
-	* [r4] /trunk/healpy/__init__.py, /trunk/healpy/pixelfunc.py,
-	  /trunk/healpy/projector.py, /trunk/healpy/visufunc.py: Add
+	* [r4] healpy/__init__.py, healpy/pixelfunc.py,
+	  healpy/projector.py, healpy/visufunc.py: Add
 	  fit/remove_dipole/monopole
-
-2008-08-31 17:17  cyrille.rosset@gmail.com
-
-	* [r3] /tags/healpy-0.9.2, /tags/healpy-0.9.2/INSTALL,
-	  /tags/healpy-0.9.2/MANIFEST.in, /tags/healpy-0.9.2/TODO,
-	  /tags/healpy-0.9.2/do_inst, /tags/healpy-0.9.2/healpy,
-	  /tags/healpy-0.9.2/healpy/__init__.py,
-	  /tags/healpy-0.9.2/healpy/data,
-	  /tags/healpy-0.9.2/healpy/data/pixel_window_n0002.fits,
-	  /tags/healpy-0.9.2/healpy/data/pixel_window_n0004.fits,
-	  /tags/healpy-0.9.2/healpy/data/pixel_window_n0008.fits,
-	  /tags/healpy-0.9.2/healpy/data/pixel_window_n0016.fits,
-	  /tags/healpy-0.9.2/healpy/data/pixel_window_n0032.fits,
-	  /tags/healpy-0.9.2/healpy/data/pixel_window_n0064.fits,
-	  /tags/healpy-0.9.2/healpy/data/pixel_window_n0128.fits,
-	  /tags/healpy-0.9.2/healpy/data/pixel_window_n0256.fits,
-	  /tags/healpy-0.9.2/healpy/data/pixel_window_n0512.fits,
-	  /tags/healpy-0.9.2/healpy/data/pixel_window_n1024.fits,
-	  /tags/healpy-0.9.2/healpy/data/pixel_window_n2048.fits,
-	  /tags/healpy-0.9.2/healpy/data/pixel_window_n4096.fits,
-	  /tags/healpy-0.9.2/healpy/data/pixel_window_n8192.fits,
-	  /tags/healpy-0.9.2/healpy/data/weight_ring_n00002.fits,
-	  /tags/healpy-0.9.2/healpy/data/weight_ring_n00004.fits,
-	  /tags/healpy-0.9.2/healpy/data/weight_ring_n00008.fits,
-	  /tags/healpy-0.9.2/healpy/data/weight_ring_n00016.fits,
-	  /tags/healpy-0.9.2/healpy/data/weight_ring_n00032.fits,
-	  /tags/healpy-0.9.2/healpy/data/weight_ring_n00064.fits,
-	  /tags/healpy-0.9.2/healpy/data/weight_ring_n00128.fits,
-	  /tags/healpy-0.9.2/healpy/data/weight_ring_n00256.fits,
-	  /tags/healpy-0.9.2/healpy/data/weight_ring_n00512.fits,
-	  /tags/healpy-0.9.2/healpy/data/weight_ring_n01024.fits,
-	  /tags/healpy-0.9.2/healpy/data/weight_ring_n02048.fits,
-	  /tags/healpy-0.9.2/healpy/data/weight_ring_n04096.fits,
-	  /tags/healpy-0.9.2/healpy/data/weight_ring_n08192.fits,
-	  /tags/healpy-0.9.2/healpy/fitsfunc.py,
-	  /tags/healpy-0.9.2/healpy/pixelfunc.py,
-	  /tags/healpy-0.9.2/healpy/projaxes.py,
-	  /tags/healpy-0.9.2/healpy/projector.py,
-	  /tags/healpy-0.9.2/healpy/rotator.py,
-	  /tags/healpy-0.9.2/healpy/sphtfunc.py,
-	  /tags/healpy-0.9.2/healpy/src,
-	  /tags/healpy-0.9.2/healpy/src/_healpy_fitsio_lib.cc,
-	  /tags/healpy-0.9.2/healpy/src/_healpy_pixel_lib.cc,
-	  /tags/healpy-0.9.2/healpy/src/_healpy_sph_transform_lib.cc,
-	  /tags/healpy-0.9.2/healpy/version.py,
-	  /tags/healpy-0.9.2/healpy/visufunc.py, /tags/healpy-0.9.2/hpbeta,
-	  /tags/healpy-0.9.2/hpbeta/COPYING,
-	  /tags/healpy-0.9.2/hpbeta/Healpix_cxx,
-	  /tags/healpy-0.9.2/hpbeta/Healpix_cxx/Healpix_cxx.dox,
-	  /tags/healpy-0.9.2/hpbeta/Healpix_cxx/alm.h,
-	  /tags/healpy-0.9.2/hpbeta/Healpix_cxx/alm2map_cxx.cc,
-	  /tags/healpy-0.9.2/hpbeta/Healpix_cxx/alm2map_cxx.par.txt,
-	  /tags/healpy-0.9.2/hpbeta/Healpix_cxx/alm_fitsio.cc,
-	  /tags/healpy-0.9.2/hpbeta/Healpix_cxx/alm_fitsio.h,
-	  /tags/healpy-0.9.2/hpbeta/Healpix_cxx/alm_healpix_tools.cc,
-	  /tags/healpy-0.9.2/hpbeta/Healpix_cxx/alm_healpix_tools.h,
-	  /tags/healpy-0.9.2/hpbeta/Healpix_cxx/alm_map_tools.cc,
-	  /tags/healpy-0.9.2/hpbeta/Healpix_cxx/alm_map_tools.h,
-	  /tags/healpy-0.9.2/hpbeta/Healpix_cxx/alm_powspec_tools.cc,
-	  /tags/healpy-0.9.2/hpbeta/Healpix_cxx/alm_powspec_tools.h,
-	  /tags/healpy-0.9.2/hpbeta/Healpix_cxx/anafast_cxx.cc,
-	  /tags/healpy-0.9.2/hpbeta/Healpix_cxx/anafast_cxx.par.txt,
-	  /tags/healpy-0.9.2/hpbeta/Healpix_cxx/calc_powspec.cc,
-	  /tags/healpy-0.9.2/hpbeta/Healpix_cxx/healpix_base.cc,
-	  /tags/healpy-0.9.2/hpbeta/Healpix_cxx/healpix_base.h,
-	  /tags/healpy-0.9.2/hpbeta/Healpix_cxx/healpix_base2.cc,
-	  /tags/healpy-0.9.2/hpbeta/Healpix_cxx/healpix_base2.h,
-	  /tags/healpy-0.9.2/hpbeta/Healpix_cxx/healpix_data_io.cc,
-	  /tags/healpy-0.9.2/hpbeta/Healpix_cxx/healpix_data_io.h,
-	  /tags/healpy-0.9.2/hpbeta/Healpix_cxx/healpix_map.cc,
-	  /tags/healpy-0.9.2/hpbeta/Healpix_cxx/healpix_map.h,
-	  /tags/healpy-0.9.2/hpbeta/Healpix_cxx/healpix_map_fitsio.cc,
-	  /tags/healpy-0.9.2/hpbeta/Healpix_cxx/healpix_map_fitsio.h,
-	  /tags/healpy-0.9.2/hpbeta/Healpix_cxx/hotspots_cxx.cc,
-	  /tags/healpy-0.9.2/hpbeta/Healpix_cxx/hpxtest.cc,
-	  /tags/healpy-0.9.2/hpbeta/Healpix_cxx/map2tga.cc,
-	  /tags/healpy-0.9.2/hpbeta/Healpix_cxx/map2tga.par.txt,
-	  /tags/healpy-0.9.2/hpbeta/Healpix_cxx/median_filter.cc,
-	  /tags/healpy-0.9.2/hpbeta/Healpix_cxx/mult_alm.cc,
-	  /tags/healpy-0.9.2/hpbeta/Healpix_cxx/mult_alm.par.txt,
-	  /tags/healpy-0.9.2/hpbeta/Healpix_cxx/planck.make,
-	  /tags/healpy-0.9.2/hpbeta/Healpix_cxx/powspec.cc,
-	  /tags/healpy-0.9.2/hpbeta/Healpix_cxx/powspec.h,
-	  /tags/healpy-0.9.2/hpbeta/Healpix_cxx/powspec_fitsio.cc,
-	  /tags/healpy-0.9.2/hpbeta/Healpix_cxx/powspec_fitsio.h,
-	  /tags/healpy-0.9.2/hpbeta/Healpix_cxx/rotalm_cxx.cc,
-	  /tags/healpy-0.9.2/hpbeta/Healpix_cxx/smoothing_cxx.cc,
-	  /tags/healpy-0.9.2/hpbeta/Healpix_cxx/smoothing_cxx.par.txt,
-	  /tags/healpy-0.9.2/hpbeta/Healpix_cxx/syn_alm_cxx.cc,
-	  /tags/healpy-0.9.2/hpbeta/Healpix_cxx/syn_alm_cxx.par.txt,
-	  /tags/healpy-0.9.2/hpbeta/Healpix_cxx/udgrade_cxx.cc,
-	  /tags/healpy-0.9.2/hpbeta/Healpix_cxx/ylmgen.h,
-	  /tags/healpy-0.9.2/hpbeta/Makefile,
-	  /tags/healpy-0.9.2/hpbeta/README.compilation,
-	  /tags/healpy-0.9.2/hpbeta/config,
-	  /tags/healpy-0.9.2/hpbeta/config/config.aix64,
-	  /tags/healpy-0.9.2/hpbeta/config/config.generic_gcc,
-	  /tags/healpy-0.9.2/hpbeta/config/config.irix64,
-	  /tags/healpy-0.9.2/hpbeta/config/config.linux_icc,
-	  /tags/healpy-0.9.2/hpbeta/config/config.osx,
-	  /tags/healpy-0.9.2/hpbeta/config/rules.common,
-	  /tags/healpy-0.9.2/hpbeta/cxxsupport,
-	  /tags/healpy-0.9.2/hpbeta/cxxsupport/arr.h,
-	  /tags/healpy-0.9.2/hpbeta/cxxsupport/compat_headers,
-	  /tags/healpy-0.9.2/hpbeta/cxxsupport/compat_headers/cmath,
-	  /tags/healpy-0.9.2/hpbeta/cxxsupport/compat_headers/cstdio,
-	  /tags/healpy-0.9.2/hpbeta/cxxsupport/constants.h,
-	  /tags/healpy-0.9.2/hpbeta/cxxsupport/cxxsupport.dox,
-	  /tags/healpy-0.9.2/hpbeta/cxxsupport/cxxutils.cc,
-	  /tags/healpy-0.9.2/hpbeta/cxxsupport/cxxutils.h,
-	  /tags/healpy-0.9.2/hpbeta/cxxsupport/datatypes.h,
-	  /tags/healpy-0.9.2/hpbeta/cxxsupport/fftpack_support.h,
-	  /tags/healpy-0.9.2/hpbeta/cxxsupport/fitshandle.cc,
-	  /tags/healpy-0.9.2/hpbeta/cxxsupport/fitshandle.h,
-	  /tags/healpy-0.9.2/hpbeta/cxxsupport/font_data.inc,
-	  /tags/healpy-0.9.2/hpbeta/cxxsupport/geom_utils.h,
-	  /tags/healpy-0.9.2/hpbeta/cxxsupport/message_error.h,
-	  /tags/healpy-0.9.2/hpbeta/cxxsupport/openmp_support.h,
-	  /tags/healpy-0.9.2/hpbeta/cxxsupport/paramfile.h,
-	  /tags/healpy-0.9.2/hpbeta/cxxsupport/planck.make,
-	  /tags/healpy-0.9.2/hpbeta/cxxsupport/planck_rng.h,
-	  /tags/healpy-0.9.2/hpbeta/cxxsupport/pointing.h,
-	  /tags/healpy-0.9.2/hpbeta/cxxsupport/rotmatrix.cc,
-	  /tags/healpy-0.9.2/hpbeta/cxxsupport/rotmatrix.h,
-	  /tags/healpy-0.9.2/hpbeta/cxxsupport/simparams.cc,
-	  /tags/healpy-0.9.2/hpbeta/cxxsupport/simparams.h,
-	  /tags/healpy-0.9.2/hpbeta/cxxsupport/tga_image.cc,
-	  /tags/healpy-0.9.2/hpbeta/cxxsupport/tga_image.h,
-	  /tags/healpy-0.9.2/hpbeta/cxxsupport/trafos.cc,
-	  /tags/healpy-0.9.2/hpbeta/cxxsupport/trafos.h,
-	  /tags/healpy-0.9.2/hpbeta/cxxsupport/vec3.h,
-	  /tags/healpy-0.9.2/hpbeta/cxxsupport/xcomplex.h,
-	  /tags/healpy-0.9.2/hpbeta/doc, /tags/healpy-0.9.2/hpbeta/docsrc,
-	  /tags/healpy-0.9.2/hpbeta/docsrc/Healpix_cxx.dox,
-	  /tags/healpy-0.9.2/hpbeta/docsrc/cxxsupport.dox,
-	  /tags/healpy-0.9.2/hpbeta/docsrc/footer.html,
-	  /tags/healpy-0.9.2/hpbeta/docsrc/header.html,
-	  /tags/healpy-0.9.2/hpbeta/docsrc/index_cxx.html,
-	  /tags/healpy-0.9.2/hpbeta/docsrc/libfftpack.dox,
-	  /tags/healpy-0.9.2/hpbeta/docsrc/planck.make,
-	  /tags/healpy-0.9.2/hpbeta/docsrc/sheet.css,
-	  /tags/healpy-0.9.2/hpbeta/libcfitsio,
-	  /tags/healpy-0.9.2/hpbeta/libcfitsio/cfitsio3040.tar.gz,
-	  /tags/healpy-0.9.2/hpbeta/libcfitsio/planck.make,
-	  /tags/healpy-0.9.2/hpbeta/libfftpack,
-	  /tags/healpy-0.9.2/hpbeta/libfftpack/bluestein.c,
-	  /tags/healpy-0.9.2/hpbeta/libfftpack/bluestein.h,
-	  /tags/healpy-0.9.2/hpbeta/libfftpack/fftpack.c,
-	  /tags/healpy-0.9.2/hpbeta/libfftpack/fftpack.h,
-	  /tags/healpy-0.9.2/hpbeta/libfftpack/libfftpack.dox,
-	  /tags/healpy-0.9.2/hpbeta/libfftpack/ls_fft.c,
-	  /tags/healpy-0.9.2/hpbeta/libfftpack/ls_fft.h,
-	  /tags/healpy-0.9.2/hpbeta/libfftpack/planck.make,
-	  /tags/healpy-0.9.2/hpbeta/test,
-	  /tags/healpy-0.9.2/hpbeta/test/alm2map.par,
-	  /tags/healpy-0.9.2/hpbeta/test/alm2map2.par,
-	  /tags/healpy-0.9.2/hpbeta/test/alm2map3.par,
-	  /tags/healpy-0.9.2/hpbeta/test/anafast.par,
-	  /tags/healpy-0.9.2/hpbeta/test/anafast_fortran.par,
-	  /tags/healpy-0.9.2/hpbeta/test/cl.fits,
-	  /tags/healpy-0.9.2/hpbeta/test/runtest.sh,
-	  /tags/healpy-0.9.2/hpbeta/test/syn_alm.par,
-	  /tags/healpy-0.9.2/hpbeta/test/udgrade.par,
-	  /tags/healpy-0.9.2/setup.py, /tags/healpy-0.9.2/svn-commit.tmp:
-	  Initialimport of last tagged version
 
 2008-08-31 16:56  cyrille.rosset@gmail.com
 
-	* [r2] /trunk/INSTALL, /trunk/MANIFEST.in, /trunk/TODO,
-	  /trunk/do_inst, /trunk/healpy, /trunk/healpy/__init__.py,
-	  /trunk/healpy/data, /trunk/healpy/data/pixel_window_n0002.fits,
-	  /trunk/healpy/data/pixel_window_n0004.fits,
-	  /trunk/healpy/data/pixel_window_n0008.fits,
-	  /trunk/healpy/data/pixel_window_n0016.fits,
-	  /trunk/healpy/data/pixel_window_n0032.fits,
-	  /trunk/healpy/data/pixel_window_n0064.fits,
-	  /trunk/healpy/data/pixel_window_n0128.fits,
-	  /trunk/healpy/data/pixel_window_n0256.fits,
-	  /trunk/healpy/data/pixel_window_n0512.fits,
-	  /trunk/healpy/data/pixel_window_n1024.fits,
-	  /trunk/healpy/data/pixel_window_n2048.fits,
-	  /trunk/healpy/data/pixel_window_n4096.fits,
-	  /trunk/healpy/data/pixel_window_n8192.fits,
-	  /trunk/healpy/data/weight_ring_n00002.fits,
-	  /trunk/healpy/data/weight_ring_n00004.fits,
-	  /trunk/healpy/data/weight_ring_n00008.fits,
-	  /trunk/healpy/data/weight_ring_n00016.fits,
-	  /trunk/healpy/data/weight_ring_n00032.fits,
-	  /trunk/healpy/data/weight_ring_n00064.fits,
-	  /trunk/healpy/data/weight_ring_n00128.fits,
-	  /trunk/healpy/data/weight_ring_n00256.fits,
-	  /trunk/healpy/data/weight_ring_n00512.fits,
-	  /trunk/healpy/data/weight_ring_n01024.fits,
-	  /trunk/healpy/data/weight_ring_n02048.fits,
-	  /trunk/healpy/data/weight_ring_n04096.fits,
-	  /trunk/healpy/data/weight_ring_n08192.fits,
-	  /trunk/healpy/fitsfunc.py, /trunk/healpy/pixelfunc.py,
-	  /trunk/healpy/projaxes.py, /trunk/healpy/projector.py,
-	  /trunk/healpy/rotator.py, /trunk/healpy/sphtfunc.py,
-	  /trunk/healpy/src, /trunk/healpy/src/_healpy_fitsio_lib.cc,
-	  /trunk/healpy/src/_healpy_pixel_lib.cc,
-	  /trunk/healpy/src/_healpy_sph_transform_lib.cc,
-	  /trunk/healpy/version.py, /trunk/healpy/visufunc.py,
-	  /trunk/hpbeta, /trunk/hpbeta/COPYING, /trunk/hpbeta/Healpix_cxx,
-	  /trunk/hpbeta/Healpix_cxx/Healpix_cxx.dox,
-	  /trunk/hpbeta/Healpix_cxx/alm.h,
-	  /trunk/hpbeta/Healpix_cxx/alm2map_cxx.cc,
-	  /trunk/hpbeta/Healpix_cxx/alm2map_cxx.par.txt,
-	  /trunk/hpbeta/Healpix_cxx/alm_fitsio.cc,
-	  /trunk/hpbeta/Healpix_cxx/alm_fitsio.h,
-	  /trunk/hpbeta/Healpix_cxx/alm_healpix_tools.cc,
-	  /trunk/hpbeta/Healpix_cxx/alm_healpix_tools.h,
-	  /trunk/hpbeta/Healpix_cxx/alm_map_tools.cc,
-	  /trunk/hpbeta/Healpix_cxx/alm_map_tools.h,
-	  /trunk/hpbeta/Healpix_cxx/alm_powspec_tools.cc,
-	  /trunk/hpbeta/Healpix_cxx/alm_powspec_tools.h,
-	  /trunk/hpbeta/Healpix_cxx/anafast_cxx.cc,
-	  /trunk/hpbeta/Healpix_cxx/anafast_cxx.par.txt,
-	  /trunk/hpbeta/Healpix_cxx/calc_powspec.cc,
-	  /trunk/hpbeta/Healpix_cxx/healpix_base.cc,
-	  /trunk/hpbeta/Healpix_cxx/healpix_base.h,
-	  /trunk/hpbeta/Healpix_cxx/healpix_base2.cc,
-	  /trunk/hpbeta/Healpix_cxx/healpix_base2.h,
-	  /trunk/hpbeta/Healpix_cxx/healpix_data_io.cc,
-	  /trunk/hpbeta/Healpix_cxx/healpix_data_io.h,
-	  /trunk/hpbeta/Healpix_cxx/healpix_map.cc,
-	  /trunk/hpbeta/Healpix_cxx/healpix_map.h,
-	  /trunk/hpbeta/Healpix_cxx/healpix_map_fitsio.cc,
-	  /trunk/hpbeta/Healpix_cxx/healpix_map_fitsio.h,
-	  /trunk/hpbeta/Healpix_cxx/hotspots_cxx.cc,
-	  /trunk/hpbeta/Healpix_cxx/hpxtest.cc,
-	  /trunk/hpbeta/Healpix_cxx/map2tga.cc,
-	  /trunk/hpbeta/Healpix_cxx/map2tga.par.txt,
-	  /trunk/hpbeta/Healpix_cxx/median_filter.cc,
-	  /trunk/hpbeta/Healpix_cxx/mult_alm.cc,
-	  /trunk/hpbeta/Healpix_cxx/mult_alm.par.txt,
-	  /trunk/hpbeta/Healpix_cxx/planck.make,
-	  /trunk/hpbeta/Healpix_cxx/powspec.cc,
-	  /trunk/hpbeta/Healpix_cxx/powspec.h,
-	  /trunk/hpbeta/Healpix_cxx/powspec_fitsio.cc,
-	  /trunk/hpbeta/Healpix_cxx/powspec_fitsio.h,
-	  /trunk/hpbeta/Healpix_cxx/rotalm_cxx.cc,
-	  /trunk/hpbeta/Healpix_cxx/smoothing_cxx.cc,
-	  /trunk/hpbeta/Healpix_cxx/smoothing_cxx.par.txt,
-	  /trunk/hpbeta/Healpix_cxx/syn_alm_cxx.cc,
-	  /trunk/hpbeta/Healpix_cxx/syn_alm_cxx.par.txt,
-	  /trunk/hpbeta/Healpix_cxx/udgrade_cxx.cc,
-	  /trunk/hpbeta/Healpix_cxx/ylmgen.h, /trunk/hpbeta/Makefile,
-	  /trunk/hpbeta/README.compilation, /trunk/hpbeta/config,
-	  /trunk/hpbeta/config/config.aix64,
-	  /trunk/hpbeta/config/config.generic_gcc,
-	  /trunk/hpbeta/config/config.irix64,
-	  /trunk/hpbeta/config/config.linux_icc,
-	  /trunk/hpbeta/config/config.osx,
-	  /trunk/hpbeta/config/rules.common, /trunk/hpbeta/cxxsupport,
-	  /trunk/hpbeta/cxxsupport/arr.h,
-	  /trunk/hpbeta/cxxsupport/compat_headers,
-	  /trunk/hpbeta/cxxsupport/compat_headers/cmath,
-	  /trunk/hpbeta/cxxsupport/compat_headers/cstdio,
-	  /trunk/hpbeta/cxxsupport/constants.h,
-	  /trunk/hpbeta/cxxsupport/cxxsupport.dox,
-	  /trunk/hpbeta/cxxsupport/cxxutils.cc,
-	  /trunk/hpbeta/cxxsupport/cxxutils.h,
-	  /trunk/hpbeta/cxxsupport/datatypes.h,
-	  /trunk/hpbeta/cxxsupport/fftpack_support.h,
-	  /trunk/hpbeta/cxxsupport/fitshandle.cc,
-	  /trunk/hpbeta/cxxsupport/fitshandle.h,
-	  /trunk/hpbeta/cxxsupport/font_data.inc,
-	  /trunk/hpbeta/cxxsupport/geom_utils.h,
-	  /trunk/hpbeta/cxxsupport/message_error.h,
-	  /trunk/hpbeta/cxxsupport/openmp_support.h,
-	  /trunk/hpbeta/cxxsupport/paramfile.h,
-	  /trunk/hpbeta/cxxsupport/planck.make,
-	  /trunk/hpbeta/cxxsupport/planck_rng.h,
-	  /trunk/hpbeta/cxxsupport/pointing.h,
-	  /trunk/hpbeta/cxxsupport/rotmatrix.cc,
-	  /trunk/hpbeta/cxxsupport/rotmatrix.h,
-	  /trunk/hpbeta/cxxsupport/simparams.cc,
-	  /trunk/hpbeta/cxxsupport/simparams.h,
-	  /trunk/hpbeta/cxxsupport/tga_image.cc,
-	  /trunk/hpbeta/cxxsupport/tga_image.h,
-	  /trunk/hpbeta/cxxsupport/trafos.cc,
-	  /trunk/hpbeta/cxxsupport/trafos.h,
-	  /trunk/hpbeta/cxxsupport/vec3.h,
-	  /trunk/hpbeta/cxxsupport/xcomplex.h, /trunk/hpbeta/doc,
-	  /trunk/hpbeta/docsrc, /trunk/hpbeta/docsrc/Healpix_cxx.dox,
-	  /trunk/hpbeta/docsrc/cxxsupport.dox,
-	  /trunk/hpbeta/docsrc/footer.html,
-	  /trunk/hpbeta/docsrc/header.html,
-	  /trunk/hpbeta/docsrc/index_cxx.html,
-	  /trunk/hpbeta/docsrc/libfftpack.dox,
-	  /trunk/hpbeta/docsrc/planck.make, /trunk/hpbeta/docsrc/sheet.css,
-	  /trunk/hpbeta/libcfitsio,
-	  /trunk/hpbeta/libcfitsio/cfitsio3040.tar.gz,
-	  /trunk/hpbeta/libcfitsio/planck.make, /trunk/hpbeta/libfftpack,
-	  /trunk/hpbeta/libfftpack/bluestein.c,
-	  /trunk/hpbeta/libfftpack/bluestein.h,
-	  /trunk/hpbeta/libfftpack/fftpack.c,
-	  /trunk/hpbeta/libfftpack/fftpack.h,
-	  /trunk/hpbeta/libfftpack/libfftpack.dox,
-	  /trunk/hpbeta/libfftpack/ls_fft.c,
-	  /trunk/hpbeta/libfftpack/ls_fft.h,
-	  /trunk/hpbeta/libfftpack/planck.make, /trunk/hpbeta/test,
-	  /trunk/hpbeta/test/alm2map.par, /trunk/hpbeta/test/alm2map2.par,
-	  /trunk/hpbeta/test/alm2map3.par, /trunk/hpbeta/test/anafast.par,
-	  /trunk/hpbeta/test/anafast_fortran.par,
-	  /trunk/hpbeta/test/cl.fits, /trunk/hpbeta/test/runtest.sh,
-	  /trunk/hpbeta/test/syn_alm.par, /trunk/hpbeta/test/udgrade.par,
-	  /trunk/setup.py: First import of current trunk.
+	* [r2] INSTALL, MANIFEST.in, TODO, do_inst, healpy,
+	  healpy/__init__.py, healpy/data,
+	  healpy/data/pixel_window_n0002.fits,
+	  healpy/data/pixel_window_n0004.fits,
+	  healpy/data/pixel_window_n0008.fits,
+	  healpy/data/pixel_window_n0016.fits,
+	  healpy/data/pixel_window_n0032.fits,
+	  healpy/data/pixel_window_n0064.fits,
+	  healpy/data/pixel_window_n0128.fits,
+	  healpy/data/pixel_window_n0256.fits,
+	  healpy/data/pixel_window_n0512.fits,
+	  healpy/data/pixel_window_n1024.fits,
+	  healpy/data/pixel_window_n2048.fits,
+	  healpy/data/pixel_window_n4096.fits,
+	  healpy/data/pixel_window_n8192.fits,
+	  healpy/data/weight_ring_n00002.fits,
+	  healpy/data/weight_ring_n00004.fits,
+	  healpy/data/weight_ring_n00008.fits,
+	  healpy/data/weight_ring_n00016.fits,
+	  healpy/data/weight_ring_n00032.fits,
+	  healpy/data/weight_ring_n00064.fits,
+	  healpy/data/weight_ring_n00128.fits,
+	  healpy/data/weight_ring_n00256.fits,
+	  healpy/data/weight_ring_n00512.fits,
+	  healpy/data/weight_ring_n01024.fits,
+	  healpy/data/weight_ring_n02048.fits,
+	  healpy/data/weight_ring_n04096.fits,
+	  healpy/data/weight_ring_n08192.fits, healpy/fitsfunc.py,
+	  healpy/pixelfunc.py, healpy/projaxes.py, healpy/projector.py,
+	  healpy/rotator.py, healpy/sphtfunc.py, healpy/src,
+	  healpy/src/_healpy_fitsio_lib.cc,
+	  healpy/src/_healpy_pixel_lib.cc,
+	  healpy/src/_healpy_sph_transform_lib.cc, healpy/version.py,
+	  healpy/visufunc.py, hpbeta, hpbeta/COPYING, hpbeta/Healpix_cxx,
+	  hpbeta/Healpix_cxx/Healpix_cxx.dox, hpbeta/Healpix_cxx/alm.h,
+	  hpbeta/Healpix_cxx/alm2map_cxx.cc,
+	  hpbeta/Healpix_cxx/alm2map_cxx.par.txt,
+	  hpbeta/Healpix_cxx/alm_fitsio.cc,
+	  hpbeta/Healpix_cxx/alm_fitsio.h,
+	  hpbeta/Healpix_cxx/alm_healpix_tools.cc,
+	  hpbeta/Healpix_cxx/alm_healpix_tools.h,
+	  hpbeta/Healpix_cxx/alm_map_tools.cc,
+	  hpbeta/Healpix_cxx/alm_map_tools.h,
+	  hpbeta/Healpix_cxx/alm_powspec_tools.cc,
+	  hpbeta/Healpix_cxx/alm_powspec_tools.h,
+	  hpbeta/Healpix_cxx/anafast_cxx.cc,
+	  hpbeta/Healpix_cxx/anafast_cxx.par.txt,
+	  hpbeta/Healpix_cxx/calc_powspec.cc,
+	  hpbeta/Healpix_cxx/healpix_base.cc,
+	  hpbeta/Healpix_cxx/healpix_base.h,
+	  hpbeta/Healpix_cxx/healpix_base2.cc,
+	  hpbeta/Healpix_cxx/healpix_base2.h,
+	  hpbeta/Healpix_cxx/healpix_data_io.cc,
+	  hpbeta/Healpix_cxx/healpix_data_io.h,
+	  hpbeta/Healpix_cxx/healpix_map.cc,
+	  hpbeta/Healpix_cxx/healpix_map.h,
+	  hpbeta/Healpix_cxx/healpix_map_fitsio.cc,
+	  hpbeta/Healpix_cxx/healpix_map_fitsio.h,
+	  hpbeta/Healpix_cxx/hotspots_cxx.cc,
+	  hpbeta/Healpix_cxx/hpxtest.cc, hpbeta/Healpix_cxx/map2tga.cc,
+	  hpbeta/Healpix_cxx/map2tga.par.txt,
+	  hpbeta/Healpix_cxx/median_filter.cc,
+	  hpbeta/Healpix_cxx/mult_alm.cc,
+	  hpbeta/Healpix_cxx/mult_alm.par.txt,
+	  hpbeta/Healpix_cxx/planck.make, hpbeta/Healpix_cxx/powspec.cc,
+	  hpbeta/Healpix_cxx/powspec.h,
+	  hpbeta/Healpix_cxx/powspec_fitsio.cc,
+	  hpbeta/Healpix_cxx/powspec_fitsio.h,
+	  hpbeta/Healpix_cxx/rotalm_cxx.cc,
+	  hpbeta/Healpix_cxx/smoothing_cxx.cc,
+	  hpbeta/Healpix_cxx/smoothing_cxx.par.txt,
+	  hpbeta/Healpix_cxx/syn_alm_cxx.cc,
+	  hpbeta/Healpix_cxx/syn_alm_cxx.par.txt,
+	  hpbeta/Healpix_cxx/udgrade_cxx.cc, hpbeta/Healpix_cxx/ylmgen.h,
+	  hpbeta/Makefile, hpbeta/README.compilation, hpbeta/config,
+	  hpbeta/config/config.aix64, hpbeta/config/config.generic_gcc,
+	  hpbeta/config/config.irix64, hpbeta/config/config.linux_icc,
+	  hpbeta/config/config.osx, hpbeta/config/rules.common,
+	  hpbeta/cxxsupport, hpbeta/cxxsupport/arr.h,
+	  hpbeta/cxxsupport/compat_headers,
+	  hpbeta/cxxsupport/compat_headers/cmath,
+	  hpbeta/cxxsupport/compat_headers/cstdio,
+	  hpbeta/cxxsupport/constants.h, hpbeta/cxxsupport/cxxsupport.dox,
+	  hpbeta/cxxsupport/cxxutils.cc, hpbeta/cxxsupport/cxxutils.h,
+	  hpbeta/cxxsupport/datatypes.h,
+	  hpbeta/cxxsupport/fftpack_support.h,
+	  hpbeta/cxxsupport/fitshandle.cc, hpbeta/cxxsupport/fitshandle.h,
+	  hpbeta/cxxsupport/font_data.inc, hpbeta/cxxsupport/geom_utils.h,
+	  hpbeta/cxxsupport/message_error.h,
+	  hpbeta/cxxsupport/openmp_support.h,
+	  hpbeta/cxxsupport/paramfile.h, hpbeta/cxxsupport/planck.make,
+	  hpbeta/cxxsupport/planck_rng.h, hpbeta/cxxsupport/pointing.h,
+	  hpbeta/cxxsupport/rotmatrix.cc, hpbeta/cxxsupport/rotmatrix.h,
+	  hpbeta/cxxsupport/simparams.cc, hpbeta/cxxsupport/simparams.h,
+	  hpbeta/cxxsupport/tga_image.cc, hpbeta/cxxsupport/tga_image.h,
+	  hpbeta/cxxsupport/trafos.cc, hpbeta/cxxsupport/trafos.h,
+	  hpbeta/cxxsupport/vec3.h, hpbeta/cxxsupport/xcomplex.h,
+	  hpbeta/doc, hpbeta/docsrc, hpbeta/docsrc/Healpix_cxx.dox,
+	  hpbeta/docsrc/cxxsupport.dox, hpbeta/docsrc/footer.html,
+	  hpbeta/docsrc/header.html, hpbeta/docsrc/index_cxx.html,
+	  hpbeta/docsrc/libfftpack.dox, hpbeta/docsrc/planck.make,
+	  hpbeta/docsrc/sheet.css, hpbeta/libcfitsio,
+	  hpbeta/libcfitsio/cfitsio3040.tar.gz,
+	  hpbeta/libcfitsio/planck.make, hpbeta/libfftpack,
+	  hpbeta/libfftpack/bluestein.c, hpbeta/libfftpack/bluestein.h,
+	  hpbeta/libfftpack/fftpack.c, hpbeta/libfftpack/fftpack.h,
+	  hpbeta/libfftpack/libfftpack.dox, hpbeta/libfftpack/ls_fft.c,
+	  hpbeta/libfftpack/ls_fft.h, hpbeta/libfftpack/planck.make,
+	  hpbeta/test, hpbeta/test/alm2map.par, hpbeta/test/alm2map2.par,
+	  hpbeta/test/alm2map3.par, hpbeta/test/anafast.par,
+	  hpbeta/test/anafast_fortran.par, hpbeta/test/cl.fits,
+	  hpbeta/test/runtest.sh, hpbeta/test/syn_alm.par,
+	  hpbeta/test/udgrade.par, setup.py: First import of current trunk.
 
 2008-08-29 09:32  
 
-	* [r1] /branches, /tags, /trunk: Initial directory structure.
+	* [r1] .: Initial directory structure.
 
