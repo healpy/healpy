@@ -164,7 +164,7 @@ def gnomview(map=None,fig=None,rot=None,coord=None,unit='',
              title='Gnomonic view',nest=False,remove_dip=False,
              remove_mono=False,gal_cut=0,
              min=None,max=None,flip='astro',
-             format='%g',cbar=True,
+             format='%.3g',cbar=True,
              cmap=None, norm=None,
              hold=False,sub=None,margins=None,notext=False):
     """Plot an healpix map (given as an array) in Gnomonic projection.
@@ -264,11 +264,11 @@ def gnomview(map=None,fig=None,rot=None,coord=None,unit='',
                 cb=f.colorbar(ax.get_images()[0],ax=ax,
                               orientation='horizontal',
                               shrink=0.5,aspect=25,ticks=PA.BoundaryLocator(),
-                              pad=0.08,fraction=0.1)
+                              pad=0.08,fraction=0.1,format=format)
             else:
                 cb=f.colorbar(ax.get_images()[0],orientation='horizontal',
                               shrink=0.5,aspect=25,ticks=PA.BoundaryLocator(),
-                              pad=0.08,fraction=0.1)
+                              pad=0.08,fraction=0.1,format=format)
         ax.set_title(title)
         if not notext:
             ax.text(-0.07,0.02,
@@ -299,7 +299,7 @@ def cartview(map=None,fig=None,rot=None,zat=None,coord=None,unit='',
              title='Cartesian view',nest=False,remove_dip=False,
              remove_mono=False,gal_cut=0,
              min=None,max=None,flip='astro',
-             format='%g',cbar=True,
+             format='%.3g',cbar=True,
              cmap=None, norm=None,aspect=None,
              hold=False,sub=None,margins=None,notext=False):
     """Plot an healpix map (given as an array) in Cartesian projection.
@@ -404,11 +404,11 @@ def cartview(map=None,fig=None,rot=None,zat=None,coord=None,unit='',
                 cb=f.colorbar(ax.get_images()[0],ax=ax,
                               orientation='horizontal',
                               shrink=0.5,aspect=25,ticks=PA.BoundaryLocator(),
-                              pad=0.08,fraction=0.1)
+                              pad=0.08,fraction=0.1,format=format)
             else:
                 cb=f.colorbar(ax.get_images()[0],orientation='horizontal',
                               shrink=0.5,aspect=25,ticks=PA.BoundaryLocator(),
-                              pad=0.08,fraction=0.1)
+                              pad=0.08,fraction=0.1,format=format)
         ax.set_title(title)
         if not notext:
             ax.text(-0.07,0.6,ax.proj.coordsysstr,fontsize=14,
