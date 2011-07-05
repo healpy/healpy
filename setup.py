@@ -10,34 +10,28 @@ TARGET_DICT = {
     'darwin': 'healpy_osx'
 }
 
-# Option to use OpenMP in healpix routines
-opt_without_openmp = '--without-openmp'
-without_openmp = opt_without_openmp in sys.argv
-if without_openmp:
-    sys.argv.remove(opt_without_openmp)
-with_openmp = not without_openmp
+FLAGS_DICT = {
+    'openmp' : '-fopenmp',
+    'native' : '-march=native'
+}
 
-# Option to use compiler flag "-march=native"
-opt_without_native = '--without-native'
-without_native = opt_without_native in sys.argv
-if without_native:
-    sys.argv.remove(opt_without_native)
-with_native = not without_native
+DEFAULT_OPT_DICT = {
+    'linux': {'openmp' : True, 'native' : True},
+    'darwin' : {'openmp' : True, 'native' : False}
+}
 
 SYSTEM_STRING = platform.system().lower ()
+
+# For each option, check is it is set or unset
+# check first in defaults, then in environment and finally on command line
 try:
-    HEALPIX_TARGET=TARGET_DICT[SYSTEM_STRING]
-    HEALPIX_EXTRAFLAGS=""
-    if with_openmp:
-        HEALPIX_EXTRAFLAGS += "-fopenmp "
-    if with_native:
-        HEALPIX_EXTRAFLAGS += "-march=native "
-    print 'Using Healpix configuration "%s" for system "%s"' % \
-            (HEALPIX_TARGET, SYSTEM_STRING)
-    print 'Extra flags used: "%s"' % (HEALPIX_EXTRAFLAGS)
+    default_options = DEFAULT_OPT_DICT[SYSTEM_STRING]
+    HEALPIX_TARGET = TARGET_DICT[SYSTEM_STRING]
 except KeyError:
     raise AssertionError ('Unsupported platform: %s' % SYSTEM_STRING)
 
+# Command distclean to remove the build directory (both healpy and in hpbeta)
+# 
 if 'distclean' in sys.argv:
     # Remove build directory of healpy and hpbeta
     build_hpx = os.path.join('hpbeta', 'build.' + HEALPIX_TARGET)
@@ -50,6 +44,44 @@ if 'distclean' in sys.argv:
     print 'Removing ', hpy, ' directory...'
     shutil.rmtree(hpy, True)
     sys.exit(0)
+
+
+options = []
+for option in FLAGS_DICT:
+    # Get default value
+    opt_val = default_options.get(option, False)
+    # Check environment variable
+    env_with = 'HEALPY_WITH_' + option.upper()
+    env_without = 'HEALPY_WITHOUT_' + option.upper()
+    if env_with in os.environ and env_without in os.environ:
+        raise ValueError('Both %s and %s environment variable are set !' %
+                         (env_with, env_without))
+    if env_with in os.environ:
+        opt_val = True
+    elif env_without in os.environ:
+        opt_val = False
+    # Check command line arguments
+    opt_with = '--with-' + option.lower()
+    opt_without = '--without-' + option.lower()
+    if opt_with in sys.argv and opt_without in sys.argv:
+        raise ValueError('Both %s and %s options are given on command line !' %
+                         (opt_with, opt_without))
+    if opt_with in sys.argv:
+        opt_val = True
+        while opt_with in sys.argv:
+            sys.argv.remove(opt_with)
+    elif opt_without in sys.argv:
+        opt_val = False
+        while opt_without in sys.argv:
+            sys.argv.remove(opt_without)
+    if opt_val:
+        options.append(option)
+
+HEALPIX_EXTRAFLAGS = ' '.join([FLAGS_DICT[opt] for opt in options])
+
+print 'Using Healpix configuration %s for system "%s"' % (HEALPIX_TARGET,
+                                                          SYSTEM_STRING)
+print 'Extra flags used: "%s"' % (HEALPIX_EXTRAFLAGS)
 
 from distutils.core import setup, Extension
 from os.path import join,isdir
@@ -72,8 +104,11 @@ numpy_inc = get_include()
 def compile_healpix_cxx(target):
     import os
     print "Compiling healpix_cxx (this may take a while)"
-    compil_result = os.system('cd hpbeta && '
-                              'HEALPIX_TARGET=%s HEALPIX_EXTRAFLAGS="%s" make '%(target,HEALPIX_EXTRAFLAGS) )
+    # Export necessary environment variables
+    os.environ['HEALPIX_TARGET'] = target
+    os.environ['HEALPIX_EXTRAFLAGS'] = HEALPIX_EXTRAFLAGS
+    # launch compilation
+    compil_result = os.system('cd hpbeta && make ')
     if compil_result != 0:
         raise Exception('Error while compiling healpix_cxx')
 
@@ -126,14 +161,14 @@ if 'CFITSIO_EXT_LIB' in os.environ:
     extra_link.append(os.path.join(cfitsio_lib_dir, 'libcfitsio.a'))
 
 healpix_libs =['healpix_cxx','cxxsupport','psht','fftpack','c_utils']
-if with_openmp:
+if 'openmp' in options:
     healpix_libs.append('gomp')
 
 if not extra_link:
     healpix_libs.append('cfitsio')
 
 healpix_args =['-fpermissive']
-if with_openmp:
+if 'openmp' in options:
     healpix_args.append('-fopenmp')
 
 #start with base extension
@@ -180,10 +215,10 @@ setup(name='healpy',
                   'healpy.projaxes','healpy.version'],
       cmdclass = {'build_ext': build_ext},
       ext_modules=[pixel_lib,spht_lib,hfits_lib,
-                 #  Extension("healpy.pshyt", ["pshyt/pshyt."+ext],
-                 #            include_dirs = [numpy_inc,healpix_cxx_inc],
-                 #            libraries = ['psht','gomp','fftpack','c_utils'],
-                 #            library_dirs = library_dirs)
+                   Extension("healpy.pshyt", ["pshyt/pshyt."+ext],
+                             include_dirs = [numpy_inc,healpix_cxx_inc],
+                             libraries = ['psht','gomp','fftpack','c_utils'],
+                             library_dirs = library_dirs)
                    ],
       package_data={'healpy': ['data/*.fits']},
       license='GPLv2'

@@ -475,10 +475,10 @@ def remove_dipole(m,nest=False,bad=pixlib.UNSEEN,gal_cut=0,fitval=False,
 def fit_monopole(m,nest=False,bad=pixlib.UNSEEN,gal_cut=0):
     """Fit a monopole to the map, excluding unseen pixels.
     Input:
-      - m: the map from which a monopole is fitted and subtracted
-      - nest: if True, input map is NESTED (default False)
-      - bad: bad pixel value (default UNSEEN)
-      - gal_cut: latitude cut in degrees (default 0.0)
+      - m: the map from which a dipole is fitted and subtracted
+      - nest: False if m is in RING scheme, True if it is NESTED
+      - bad: bad values of pixel, default to UNSEEN.
+      - gal_cut: latitude below which pixel are not taken into account
     Return:
       - the monopole value
     """
@@ -489,12 +489,12 @@ def fit_monopole(m,nest=False,bad=pixlib.UNSEEN,gal_cut=0):
         bunchsize=npix/24
     else:
         bunchsize=npix
-    aa = v = 0.0
     for ibunch in range(npix/bunchsize):
         ipix = npy.arange(ibunch*bunchsize,
                           (ibunch+1)*bunchsize)
         ipix = ipix[(m.flat[ipix]!=bad) & (npy.isfinite(m.flat[ipix]))]
         x,y,z = pix2vec(nside, ipix, nest)
+        aa = v = 0.0
         if gal_cut>0:
             w = (npy.abs(z)>=npy.sin(gal_cut*npy.pi/180))
             ipix=ipix[w]
@@ -512,12 +512,10 @@ def remove_monopole(m,nest=False,bad=pixlib.UNSEEN,gal_cut=0,fitval=False,
     """Fit and subtract the monopole from the given map m.
     Input:
       - m: the map from which a dipole is fitted and subtracted
-      - nest: if True, input map is NESTED (default False)
-      - bad: bad pixel value (default UNSEEN)
-      - gal_cut: latitude cut in degrees (default 0.0)
-      - fitval: return fitted monopole with map (default False)
-      - copy: if False, input map is changed directly (default True)
-      - verbose: print the fitted monopole (default False)
+      - nest: False if m is in RING scheme, True if it is NESTED
+      - bad: bad values of pixel, default to UNSEEN.
+      - gal_cut: latitude below which pixel are not taken into account
+      - fitval: whether to return or not the fitted values of monopole
     Return:
       if fitval is False:
       - the map with monopole subtracted
