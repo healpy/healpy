@@ -603,7 +603,7 @@ def _ud_grade_core(m,nside_out,pess=False,power=None, dtype=None):
         map_out = npy.outer(m,fact).reshape(npix_out)
     elif nside_out < nside_in:
         rat2 = npix_in/npix_out
-        bads = (npy.where(m==UNSEEN)) | (~npy.isfinite(m))
+        bads = (mask_bad(m) | (~npy.isfinite(m)))
         hit = npy.ones(npix_in,dtype=npy.int16)
         hit[bads] = 0
         m[bads] = 0
