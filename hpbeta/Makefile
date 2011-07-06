@@ -7,7 +7,7 @@ SRCROOT:=$(shell pwd)
 include $(SRCROOT)/config/config.$(HEALPIX_TARGET)
 include $(SRCROOT)/config/rules.common
 
-.SILENT:
+#.SILENT:
 
 .PHONY: test
 

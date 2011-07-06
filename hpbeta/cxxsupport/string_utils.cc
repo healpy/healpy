@@ -36,6 +36,7 @@
 #include <iomanip>
 #include <string>
 #include <cstring>
+#include <cctype>
 #include "string_utils.h"
 
 using namespace std;
@@ -201,6 +202,83 @@ void parse_file (const string &filename, map<string,string> &dict)
       }
     }
   }
+
+namespace {
+
+bool isParam (const string &s)
+  {
+  if (s.size()<2) return false;
+  if (s[0]!='-') return false;
+  return !(isdigit(s[1]) || (s[1]=='.'));
+  }
+
+} // unnamed namespace
+
+void parse_cmdline_classic (int argc, const char **argv,
+  const vector<string> &leading_args, map<string,string> &dict)
+  {
+  dict.clear();
+  planck_assert(tsize(argc)>leading_args.size(),"not enough arguments");
+  for (tsize i=0; i<leading_args.size(); ++i)
+    dict[leading_args[i]] = argv[i+1];
+  int curarg=leading_args.size()+1;
+  while (curarg<argc)
+    {
+    string param=argv[curarg];
+    planck_assert(isParam(param),"unrecognized command line format");
+    if ((curarg==argc-1) || isParam(argv[curarg+1]))
+      {
+      dict[param.substr(1)]="true";
+      ++curarg;
+      }
+    else
+      {
+      dict[param.substr(1)]=argv[curarg+1];
+      curarg+=2;
+      }
+    }
+  }
+
+void parse_cmdline_classic (int argc, const char **argv,
+  map<string,string> &dict)
+  { parse_cmdline_classic (argc, argv, vector<string>(), dict); }
+
+void parse_cmdline_equalsign (int argc, const char **argv,
+  const vector<string> &leading_args, map<string,string> &dict)
+  {
+  dict.clear();
+  planck_assert(tsize(argc)>leading_args.size(),"not enough arguments");
+  for (tsize i=0; i<leading_args.size(); ++i)
+    dict[leading_args[i]] = argv[i+1];
+  for (int i=leading_args.size()+1; i<argc; ++i)
+    {
+    string arg=trim(argv[i]);
+    if (arg.size()>0)
+      {
+      string::size_type eqpos=arg.find("=");
+      if (eqpos!=string::npos)
+        {
+        string key=trim(arg.substr(0,eqpos)),
+               value=trim(arg.substr(eqpos+1,string::npos));
+        if (key=="")
+          cerr << "Warning: empty key in argument'" << arg << "'" << endl;
+        else
+          {
+          if (dict.find(key)!=dict.end())
+            cerr << "Warning: key '" << key << "' multiply defined" << endl;
+          dict[key]=value;
+          }
+        }
+      else
+        cerr << "Warning: unrecognized format in argument '" << arg << "'"
+             << endl;
+      }
+    }
+  }
+
+void parse_cmdline_equalsign (int argc, const char **argv,
+  map<string,string> &dict)
+  { parse_cmdline_equalsign (argc, argv, vector<string>(), dict); }
 
 namespace {
 

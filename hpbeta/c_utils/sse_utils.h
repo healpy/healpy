@@ -25,7 +25,7 @@
 /*! \file sse_utils.h
  *  SSE/SSE2/SSE3-related functionality
  *
- *  Copyright (C) 2010 Max-Planck-Society
+ *  Copyright (C) 2010,2011 Max-Planck-Society
  *  \author Martin Reinecke
  */
 
@@ -93,8 +93,7 @@ typedef struct {
   V2DF a,b;
 } V2DF2;
 
-#define V2DF_SIGNMASK \
-  _mm_castsi128_pd(_mm_set_epi32(-0x80000000,0,-0x80000000,0))
+#define V2DF_SIGNMASK _mm_set1_pd(-0.0)
 
 static inline v2df build_v2df (double a, double b)
   { return _mm_set_pd(b,a); }

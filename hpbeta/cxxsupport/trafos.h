@@ -71,9 +71,15 @@ class Trafo
     void rotatefull (const pointing &ptg, pointing &newptg,
       double &delta_psi) const;
 
+    /*! Transforms the pointing \a ptg and adjusts \a psi accordingly. */
+    void rotatefull (pointing &ptg, double &psi) const;
+
     /*! Transforms the vector \a vec and returns it in \a newvec.
         On exit, \a delta_psi holds the change in orientation. */
     void rotatefull (const vec3 &vec, vec3 &newvec, double &delta_psi) const;
+
+    /*! Transforms the vector \a vec and adjusts \a psi accordingly. */
+    void rotatefull (vec3 &vec, double &psi) const;
 
     /*! Returns the internally used rotation matrix. */
     const rotmatrix &Matrix() const

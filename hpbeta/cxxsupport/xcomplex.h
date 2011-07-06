@@ -26,7 +26,7 @@
  *  Class for representing complex numbers, strongly inspired by C++'s
  *  std::complex
  *
- *  Copyright (C) 2003-2010 Max-Planck-Society
+ *  Copyright (C) 2003-2011 Max-Planck-Society
  *  \author Martin Reinecke
  */
 
@@ -117,7 +117,7 @@ template<typename T> class xcomplex
     xcomplex &operator/= (const xcomplex &b)
       {
       std::complex<T> tmp=*this;
-      tmp /= b;
+      tmp /= std::complex<T>(b);
       *this=tmp;
       return *this;
       }

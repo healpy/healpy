@@ -56,13 +56,14 @@ class chunkMaker
 
   public:
     /*! Creates an object that produces chunk information for \a s_full_
-        work items and a desired chunk size of \a s_chunk_. */
+        work items and a desired chunk size of \a s_chunk_.
+        \note Both \a s_chunk_ and \a s_full_ must be larger than 0. */
     chunkMaker (uint64 s_full_, uint64 s_chunk_)
       : s_full(s_full_), s_chunk(s_chunk_), offset(0) {}
 
     /*! Returns the total number of chunks. */
     uint64 nchunks() const
-      { return (s_full+s_chunk-1)/s_chunk; }
+      { return 1 + (s_full-1)/s_chunk; }
 
     /*! Returns the start index of the next chunk in \a start, and its size
         in \a size. If all chunks have been processed already, the return

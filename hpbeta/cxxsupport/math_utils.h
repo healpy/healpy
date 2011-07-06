@@ -63,11 +63,6 @@ template<typename I, typename F> inline I ifloor (F arg)
 template<typename I, typename F> inline I nearest (F arg)
   { return ifloor<I>(arg+0.5); }
 
-/*! Returns \a v1+v2 if \a v1<0, \a v1-v2 if \a v1>=v2, else \a v1.
-    \a v1 can be positive or negative; \a v2 must be positive. */
-template<typename T> inline T weak_modulo (T v1, T v2)
-  { return (v1>=0) ? ((v1<v2) ? v1 : (v1-v2)) : (v1+v2); }
-
 /*! Returns the remainder of the division \a v1/v2.
     The result is non-negative.
     \a v1 can be positive or negative; \a v2 must be positive. */
@@ -91,9 +86,9 @@ template<typename T> inline T sign (const T& signvalue)
 template<typename T, typename I> inline T xpow (I m, T val)
   { return (m&1) ? -val : val; }
 
-template <typename I, bool g4> struct isqrt_helper__
+template<typename I, bool g4> struct isqrt_helper__
   {};
-template <typename I> struct isqrt_helper__ <I, false>
+template<typename I> struct isqrt_helper__ <I, false>
   {
   static uint32 isqrt (I arg)
     {
@@ -101,7 +96,7 @@ template <typename I> struct isqrt_helper__ <I, false>
     return uint32 (sqrt(arg+0.5));
     }
   };
-template <typename I> struct isqrt_helper__ <I, true>
+template<typename I> struct isqrt_helper__ <I, true>
   {
   static uint32 isqrt (I arg)
     {

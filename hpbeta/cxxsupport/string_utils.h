@@ -68,6 +68,20 @@ template<typename T> inline T stringToData (const std::string &x)
 void parse_file (const std::string &filename,
   std::map<std::string,std::string> &dict);
 
+void parse_cmdline_classic (int argc, const char **argv,
+  const std::vector<std::string> &leading_args,
+  std::map<std::string,std::string> &dict);
+
+void parse_cmdline_classic (int argc, const char **argv,
+  std::map<std::string,std::string> &dict);
+
+void parse_cmdline_equalsign (int argc, const char **argv,
+  const std::vector<std::string> &leading_args,
+  std::map<std::string,std::string> &dict);
+
+void parse_cmdline_equalsign (int argc, const char **argv,
+  std::map<std::string,std::string> &dict);
+
 /*! Case-insensitive string comparison
     Returns \a true, if \a a and \a b differ only in capitalisation,
     else \a false. */

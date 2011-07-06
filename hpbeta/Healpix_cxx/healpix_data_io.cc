@@ -33,6 +33,7 @@
 #include "arr.h"
 #include "fitshandle.h"
 #include "paramfile.h"
+#include "string_utils.h"
 
 using namespace std;
 

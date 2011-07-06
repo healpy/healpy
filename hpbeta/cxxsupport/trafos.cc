@@ -175,10 +175,29 @@ void Trafo::rotatefull (const pointing &ptg, pointing &newptg,
   newptg = newvec;
   }
 
+void Trafo::rotatefull (pointing &ptg, double &psi) const
+  {
+  vec3 vec (ptg);
+  vec3 east (-vec.y,vec.x,0.);
+  vec3 newvec = operator()(vec);
+  vec3 neweast = operator()(east);
+  psi += orientation(newvec,neweast)+halfpi;
+  ptg = newvec;
+  }
+
 void Trafo::rotatefull (const vec3 &vec, vec3 &newvec, double &delta_psi) const
   {
   vec3 east (-vec.y,vec.x,0.);
   newvec = operator()(vec);
   vec3 neweast = operator()(east);
   delta_psi = orientation(newvec,neweast)+halfpi;
+  }
+
+void Trafo::rotatefull (vec3 &vec, double &psi) const
+  {
+  vec3 east (-vec.y,vec.x,0.);
+  vec3 newvec = operator()(vec);
+  vec3 neweast = operator()(east);
+  psi += orientation(newvec,neweast)+halfpi;
+  vec = newvec;
   }

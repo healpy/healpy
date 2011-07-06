@@ -30,6 +30,7 @@
  */
 
 #include "alm_powspec_tools.h"
+#include "string_utils.h"
 #include "alm.h"
 #include "planck_rng.h"
 #include "powspec.h"

@@ -32,17 +32,28 @@
 #ifndef PLANCK_RANGESET_H
 #define PLANCK_RANGESET_H
 
+#include <algorithm>
 #include <vector>
 #include <utility>
 #include <iostream>
+#include "datatypes.h"
+#include "error_handling.h"
 
 template<typename T> class interval
   {
-  public:
-    T a,b;
+  private:
+    T A, B;
+    void check() const
+      { planck_assert(a<=b, "inconsistent interval"); }
 
-    explicit interval (const T &v) : a(v), b(v) { ++b; }
-    interval (const T &a_, const T &b_) : a(a_), b(b_) {}
+  public:
+    const T &a, &b;
+
+    explicit interval (const T &v) : A(v), B(v), a(A), b(B) { ++B; }
+    interval (const T &a_, const T &b_) : A(a_), B(b_), a(A), b(B) { check(); }
+    interval (const interval &other) : A(other.a), B(other.b), a(A), b(B) {}
+    const interval &operator= (const interval &other)
+      { A=other.a; B=other.b; return *this; }
 
     tsize size() const { return b-a; }
     bool empty() const { return a==b; }
@@ -60,7 +71,12 @@ template<typename T> class interval
       { return std::max(a,i.a) <= std::min(b, i.b); }
 
     void merge (const interval &i)
-      { a=std::min(a,i.a); b=std::max(b,i.b); }
+      { A=std::min(a,i.a); B=std::max(b,i.b); }
+
+    void setA (const T &v)
+      { A=v; check(); }
+    void setB (const T &v)
+      { B=v; check(); }
 
     operator bool() const { return a!=b; }
   };
@@ -90,7 +106,7 @@ template<typename T> class rangeset
       if ((!r.empty()) && (iv.a<=r.back().b))
         {
         planck_assert (iv.a==r.back().b,"bad append operation");
-        r.back().b = iv.b;
+        r.back().setB(iv.b);
         }
       else
         r.push_back(iv);
@@ -135,14 +151,14 @@ template<typename T> class rangeset
         {
         if (i->a < iv.a)
           {
-          i->b = iv.a;
+          i->setB(iv.a);
           ++i;
           }
         iterator j=i;
         while (j!=r.end() && iv.contains(*j))
           ++j;
         if (j!=r.end() && iv.b > j->a)
-          j->a = iv.b;
+          j->setA(iv.b);
         r.erase(i,j);
         }
       }

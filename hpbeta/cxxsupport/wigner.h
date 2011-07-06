@@ -25,7 +25,7 @@
 /*! \file wigner.h
  *  Several C++ classes for calculating Wigner matrices
  *
- *  Copyright (C) 2009,2010 Max-Planck-Society
+ *  Copyright (C) 2009-2011 Max-Planck-Society
  *  \author Martin Reinecke and others (see individual classes)
  */
 
@@ -35,7 +35,7 @@
 #include <cmath>
 #include "arr.h"
 
-#include "sse_utils.h"
+#include "sse_utils_cxx.h"
 
 /*! Class for calculation of the Wigner matrix at pi/2, using Risbo recursion
     in a way that cannot easily be parallelised, but is fairly efficient on
@@ -134,7 +134,7 @@ class wignergen
     // members depending on theta
     arr<double> result;
 #ifdef PLANCK_HAVE_SSE2
-    arr_align<v2df,16> result2;
+    arr_align<V2df,16> result2;
 #endif
 
     enum { large_exponent2=90, minscale=-4, maxscale=14 };
@@ -162,8 +162,21 @@ class wignergen
     const arr<double> &calc (int nth, int &firstl);
 
 #ifdef PLANCK_HAVE_SSE2
-    const arr_align<v2df,16> &calc (int nth1, int nth2, int &firstl);
+    const arr_align<V2df,16> &calc (int nth1, int nth2, int &firstl);
 #endif
+  };
+
+class wigner_estimator
+  {
+  private:
+    int lmax, m1, m2, mbig;
+    double xlmax, epsPow, cosm1m2;
+
+  public:
+    wigner_estimator (int lmax_, double epsPow_);
+
+    void prepare_m (int m1_, int m2_);
+    bool canSkip (double theta) const;
   };
 
 #endif
