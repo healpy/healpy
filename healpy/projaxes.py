@@ -207,7 +207,7 @@ class SphericalProjAxes(axes.Axes,object):
             rot[1] = rot[1]-90.
         coord=self.proj.mkcoord(kwds.pop('coord',None))[::-1]
         lonlat=kwds.pop('lonlat',False)
-        vec = R.dir2vec(theta,phi,lonlat=lonlat)
+        vec = R.ang2vec(theta,phi,lonlat=lonlat)
         vec = (R.Rotator(rot=rot,coord=coord,eulertype='Y')).I(vec)
         x,y = self.proj.vec2xy(vec,direct=kwds.pop('direct',False))
         x,y = self._make_segment(x,y,threshold=kwds.pop('threshold',
@@ -258,7 +258,7 @@ class SphericalProjAxes(axes.Axes,object):
             rot[1] = rot[1]-90.
         coord=self.proj.mkcoord(kwds.pop('coord',None))[::-1]
         lonlat=kwds.pop('lonlat',False)
-        vec = R.dir2vec(theta,phi,lonlat=lonlat)
+        vec = R.ang2vec(theta,phi,lonlat=lonlat)
         vec = (R.Rotator(rot=rot,coord=coord,eulertype='Y')).I(vec)
         x,y = self.proj.vec2xy(vec,direct=kwds.pop('direct',False))
         s = self.scatter(x, y, *args, **kwds)
@@ -298,7 +298,7 @@ class SphericalProjAxes(axes.Axes,object):
             rot[1] = rot[1]-90.
         coord=self.proj.mkcoord(kwds.pop('coord',None))[::-1]
         lonlat=kwds.pop('lonlat',False)
-        vec = R.dir2vec(theta,phi,lonlat=lonlat)
+        vec = R.ang2vec(theta,phi,lonlat=lonlat)
         vec = (R.Rotator(rot=rot,coord=coord,eulertype='Y')).I(vec)
         x,y = self.proj.vec2xy(vec,direct=kwds.pop('direct',False))
         return self.text(x,y,s,*args,**kwds)
@@ -393,7 +393,7 @@ class SphericalProjAxes(axes.Axes,object):
         dpar = abs(dpar)*dtor
         dmer = abs(dmer)*dtor
         if not local:
-            vec = R.dir2vec(self.proj.get_center())
+            vec = R.ang2vec(self.proj.get_center())
             vec0 = R.Rotator(coord=self.proj.mkcoord(coord=coord)).I(vec)
         else:
             vec = (1,0,0)

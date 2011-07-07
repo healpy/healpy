@@ -305,12 +305,12 @@ class GnomonicProj(SphericalProj):
     xy2vec.__doc__ = SphericalProj.xy2vec.__doc__ % (name,name)
 
     def ang2xy(self, theta, phi=None, lonlat=False, direct=False):
-        vec=R.dir2vec(theta,phi,lonlat=lonlat)
+        vec=R.ang2vec(theta,phi,lonlat=lonlat)
         return self.vec2xy(vec,direct=direct)
     ang2xy.__doc__ = SphericalProj.ang2xy.__doc__ % (name,name)
     
     def xy2ang(self, x, y=None, lonlat=False, direct=False):
-        return R.vec2dir(self.xy2vec(x,y,direct=direct),lonlat=lonlat)
+        return R.vec2ang(self.xy2vec(x,y,direct=direct),lonlat=lonlat)
     xy2ang.__doc__ = SphericalProj.xy2ang.__doc__ % (name,name)
 
 
@@ -381,9 +381,9 @@ class MollweideProj(SphericalProj):
 
     def vec2xy(self, vx, vy=None, vz=None, direct=False):
         if not direct:
-            theta,phi=R.vec2dir(self.rotator(vx,vy,vz))
+            theta,phi=R.vec2ang(self.rotator(vx,vy,vz))
         else:
-            theta,phi=R.vec2dir(vx,vy,vz)
+            theta,phi=R.vec2ang(vx,vy,vz)
         flip = self._flip
         X,Y = MollweideProj.__molldata
         # set phi in [-pi,pi]
@@ -433,12 +433,12 @@ class MollweideProj(SphericalProj):
     xy2vec.__doc__ = SphericalProj.xy2vec.__doc__ % (name,name)
 
     def ang2xy(self, theta, phi=None, lonlat=False, direct=False):
-        return self.vec2xy(R.dir2vec(theta,phi,lonlat=lonlat),direct=direct)
+        return self.vec2xy(R.ang2vec(theta,phi,lonlat=lonlat),direct=direct)
     ang2xy.__doc__ = SphericalProj.ang2xy.__doc__ % (name,name)
     
     def xy2ang(self, x, y=None, lonlat=False, direct=False):
         vec = self.xy2vec(x,y,direct=direct)
-        return R.vec2dir(vec,lonlat=lonlat)
+        return R.vec2ang(vec,lonlat=lonlat)
     xy2ang.__doc__ = SphericalProj.xy2ang.__doc__ % (name,name)
 
 
@@ -577,9 +577,9 @@ class CartesianProj(SphericalProj):
 
     def vec2xy(self, vx, vy=None, vz=None, direct=False):
         if not direct:
-            theta,phi=R.vec2dir(self.rotator(vx,vy,vz))
+            theta,phi=R.vec2ang(self.rotator(vx,vy,vz))
         else:
-            theta,phi=R.vec2dir(vx,vy,vz)
+            theta,phi=R.vec2ang(vx,vy,vz)
         flip = self._flip
         # set phi in [-pi,pi]
         x = flip*((phi+pi)%(2*pi)-pi)
@@ -598,18 +598,18 @@ class CartesianProj(SphericalProj):
         theta = pi/2.-y*dtor # convert in radian
         phi = flip*x*dtor # convert in radian
         if not direct:
-            return self.rotator.I(R.dir2vec(theta,phi))
+            return self.rotator.I(R.ang2vec(theta,phi))
         else:
-            return R.dir2vec(theta,phi)
+            return R.ang2vec(theta,phi)
     xy2vec.__doc__ = SphericalProj.xy2vec.__doc__ % (name,name)
 
     def ang2xy(self, theta, phi=None, lonlat=False, direct=False):
-        return self.vec2xy(R.dir2vec(theta,phi,lonlat=lonlat),direct=direct)
+        return self.vec2xy(R.ang2vec(theta,phi,lonlat=lonlat),direct=direct)
     ang2xy.__doc__ = SphericalProj.ang2xy.__doc__ % (name,name)
     
     def xy2ang(self, x, y=None, lonlat=False, direct=False):
         vec = self.xy2vec(x,y,direct=direct)
-        return R.vec2dir(vec,lonlat=lonlat)
+        return R.vec2ang(vec,lonlat=lonlat)
     xy2ang.__doc__ = SphericalProj.xy2ang.__doc__ % (name,name)
 
 

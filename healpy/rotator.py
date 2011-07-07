@@ -262,11 +262,11 @@ class Rotator:
                 raise TypeError('Argument must be a sequence of 2 or 3 '
                                 'elements')
             if len(arg) == 2:
-                v = dir2vec(arg[0],arg[1],lonlat=lonlat)
+                v = ang2vec(arg[0],arg[1],lonlat=lonlat)
             else:
                 v = arg
         elif len(args) == 2:
-            v = dir2vec(args[0],args[1],lonlat=lonlat)
+            v = ang2vec(args[0],args[1],lonlat=lonlat)
         elif len(args) == 3:
             v = args
         else:
@@ -326,10 +326,10 @@ def rotateDirection(rotmat,theta,phi=None,do_rot=True,lonlat=False):
    
    Return: theta_rot,phi_rot
    """
-   vx,vy,vz=rotateVector(rotmat,dir2vec(theta,phi,lonlat=lonlat),do_rot=do_rot)
-   return vec2dir(vx,vy,vz,lonlat=lonlat)
+   vx,vy,vz=rotateVector(rotmat,ang2vec(theta,phi,lonlat=lonlat),do_rot=do_rot)
+   return vec2ang(vx,vy,vz,lonlat=lonlat)
 
-def vec2dir(vec,vy=None,vz=None,lonlat=False):
+def vec2ang(vec,vy=None,vz=None,lonlat=False):
    """Transform a vector to a direction given by theta,phi.
    """
    if vy is None and vz is None:
@@ -342,18 +342,18 @@ def vec2dir(vec,vy=None,vz=None,lonlat=False):
    theta = npy.arccos(vz/r)
    phi = npy.arctan2(vy,vx)
    if lonlat:
-       return npy.asarray([phi*180/npy.pi,90-theta*180/npy.pi])
+       return npy.asarray([npy.degrees(phi),90-npy.degrees(theta)])
    else:
        return npy.asarray([theta,phi])
 
-def dir2vec(theta,phi=None,lonlat=False):
+def ang2vec(theta,phi=None,lonlat=False):
    """Transform a direction theta,phi to a unit vector.
    """
    if phi is None:
       theta,phi=theta
    if lonlat:
        lon,lat=theta,phi
-       theta,phi = npy.pi/2.-lat*npy.pi/180,lon*npy.pi/180
+       theta,phi = npy.pi/2.-npy.radians(lat), npy.radians(lon)
    ct,st,cp,sp = npy.cos(theta),npy.sin(theta),npy.cos(phi),npy.sin(phi)
    return npy.asarray([st*cp,st*sp,ct])
 
@@ -365,13 +365,13 @@ def angdist(dir1,dir2,lonlat=False):
     else:
         lonlat1=lonlat2=lonlat
     if len(dir1) == 2: # theta,phi or lonlat, convert to vec
-        vec1 = npy.asarray(dir2vec(dir1,lonlat=lonlat1))
+        vec1 = npy.asarray(ang2vec(dir1,lonlat=lonlat1))
     else:
         vec1 = npy.asarray(dir1)
     if vec1.ndim == 1:
         vec1 = npy.expand_dims(vec1,-1)
     if len(dir2) == 2:
-        vec2 = npy.asarray(dir2vec(dir2,lonlat=lonlat1)).T
+        vec2 = npy.asarray(ang2vec(dir2,lonlat=lonlat1)).T
     else:
         vec2 = npy.asarray(dir2)
     if vec2.ndim == 1:

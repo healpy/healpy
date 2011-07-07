@@ -16,43 +16,205 @@
 #  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 # 
 #  For more information about Healpy, see http://code.google.com/p/healpy
-# 
+#
+"""
+=====================================================
+pixelfunc.py : Healpix pixelization related functions
+=====================================================
+
+This module provides functions related to Healpix pixelization scheme.
+
+conversion from/to sky coordinates
+----------------------------------
+
+- :func:`pix2ang` converts pixel number to angular coordinates
+- :func:`pix2vec` converts pixel number to unit 3-vector direction
+- :func:`ang2pix` converts angular coordinates to pixel number
+- :func:`vec2pix` converts 3-vector to pixel number 
+- :func:`vec2ang` converts 3-vector to angular coordinates
+- :func:`ang2vec` converts angular coordinates to unit 3-vector
+- :func:`get_neighbours` returns the 4 nearest pixels for given
+  angular coordinates
+- :func:`get_all_neighbours` return the 8 nearest pixels for given
+  angular coordinates
+
+conversion between NESTED and RING schemes
+------------------------------------------
+
+- :func:`nest2ring` converts NESTED scheme pixel numbers to RING
+  scheme pixel number
+- :func:`ring2nest` converts RING scheme pixel number to NESTED
+  scheme pixel number
+- :func:`reorder` reorders a healpix map pixels from one scheme to another
+
+nside/npix/resolution
+---------------------
+
+- :func:`nside2npix` converts healpix nside parameter to number of pixel
+- :func:`npix2nside` converts number of pixel to healpix nside parameter
+- :func:`nside2resol` converts nside to mean angular resolution
+- :func:`nside2pixarea` converts nside to pixel area
+- :func:`isnsideok` checks the validity of nside
+- :func:`isnpixok` checks the validity of npix
+- :func:`get_map_size` gives the number of pixel of a map
+- :func:`get_min_valid_nside` gives the minimum nside possible for a given
+  number of pixel
+- :func:`get_nside` returns the nside of a map
+- :func:`maptype` checks the type of a map (one map or sequence of maps)
+- :func:`ud_grade` upgrades or degrades the resolution (nside) of a map
+
+Masking pixels
+--------------
+
+- :const:`UNSEEN` is a constant value interpreted as a masked pixel
+- :func:`mask_bad` returns a map with ``True`` where map is :const:`UNSEEN`
+- :func:`mask_good` returns a map with ``False`` where map is :const:`UNSEEN`
+
+Map data manipulation
+---------------------
+
+- :func:`fit_dipole` fits a monopole+dipole on the map
+- :func:`fit_monopole` fits a monopole on the map
+- :func:`remove_dipole` fits and removes a monopole+dipole from the map
+- :func:`remove_monopole` fits and remove a monopole from the map
+- :func:`get_interp_val` computes a bilinear interpolation of the map
+  at given angular coordinates, using 4 nearest neighbours
+"""
+
 import numpy as npy
 import _healpy_pixel_lib as pixlib
 from _healpy_pixel_lib import UNSEEN
 import exceptions
 
 def mask_bad(m, badval = UNSEEN, rtol = 1.e-5, atol = 1.e-8):
-    """Return a boolean array with True where m is close to badval
-    and False elsewhere
-    [absolute(m - badval) <= atol + rtol * absolute(badval)]"""
+    """Returns a bool array with ``True`` where m is close to badval.
+
+    Parameters
+    ----------
+    m : a map (may be a sequence of maps)
+    badval: float, optional
+        The value of the pixel considered as bad (:const:`UNSEEN` by default)
+    rtol: float, optional
+        The relative tolerance
+    atol: float, optional
+        The absolute tolerance
+
+    Returns
+    -------
+    a bool array with the same shape as the input map, ``True`` where input map is
+    close to badval, and ``False`` elsewhere.
+
+    See Also
+    --------
+    :func:`mask_good`, :func:`ma`
+
+    Examples
+    --------
+    >>> m = np.arange(12.)
+    >>> m[3] = hpy.UNSEEN
+    >>> hpy.mask_bad(m)
+    array([False, False, False,  True, False, False, False, False, False,
+           False, False, False], dtype=bool)
+    """
     atol = npy.absolute(atol)
     rtol = npy.absolute(rtol)
     return npy.absolute(m - badval) <= atol + rtol * npy.absolute(badval)
 
 def mask_good(m, badval = UNSEEN, rtol = 1.e-5, atol = 1.e-8):
-    """Return a mask with False where m is close to badval
-    and True elsewhere
-    [absolute(m - badval) > atol + rtol * absolute(badval)]"""
+    """Returns a bool array with ``False`` where m is close to badval.
+
+    Parameters
+    ----------
+    m : a map (may be a sequence of maps)
+    badval: float, optional
+        The value of the pixel considered as bad (:const:`UNSEEN` by default)
+    rtol: float, optional
+        The relative tolerance
+    atol: float, optional
+        The absolute tolerance
+
+    Returns
+    -------
+    a bool array with the same shape as the input map, ``False`` where input map is
+    close to badval, and ``True`` elsewhere.
+
+    See Also
+    --------
+    :func:`mask_bad`, :func:`ma`
+
+    Examples
+    --------
+    >>> m = np.arange(12.)
+    >>> m[3] = hpy.UNSEEN
+    >>> hpy.mask_good(m)
+    array([ True,  True,  True, False,  True,  True,  True,  True,  True,
+            True,  True,  True], dtype=bool)
+    """
     atol = npy.absolute(atol)
     rtol = npy.absolute(rtol)
     return npy.absolute(m - badval) > atol + rtol * npy.absolute(badval)
 
-def ma(map):
-    """Return map as a masked array"""
-    return npy.ma.masked_values(map, UNSEEN)
+def ma(m, badval = UNSEEN, rtol = 1e-5, atol = 1e-8, copy = True):
+    """Return map as a masked array, with ``badval`` pixels masked.
 
-def vec2ang(vectors):
-    """vec2ang: vectors [x, y, z] -> theta[rad], phi[rad]"""
-    vectors = vectors.reshape(-1,3)
-    dnorm = npy.sqrt(npy.sum(npy.square(vectors),axis=1))
-    theta = npy.arccos(vectors[:,2]/dnorm)
-    phi = npy.arctan2(vectors[:,1],vectors[:,0])
-    phi[phi < 0] += 2*npy.pi
-    return theta, phi
+    Parameters
+    ----------
+    m : a map (may be a sequence of maps)
+    badval: float, optional
+        The value of the pixel considered as bad (:const:`UNSEEN` by default)
+    rtol: float, optional
+        The relative tolerance
+    atol: float, optional
+        The absolute tolerance
+    copy: bool, optional
+        If ``True``, a copy of the input map is made.
+
+    Returns
+    -------
+    a masked array with the same shape as the input map, masked where input map is
+    close to badval.
+
+    See Also
+    --------
+    :func:`mask_good`, :func:`mask_bad`, :func:`numpy.ma.masked_values`
+
+    Examples
+    --------
+    >>> m = np.arange(12.)
+    >>> m[3] = hpy.UNSEEN
+    >>> hpy.ma(m)
+    masked_array(data = [0.0 1.0 2.0 -- 4.0 5.0 6.0 7.0 8.0 9.0 10.0 11.0],
+                 mask = [False False False  True False False False False False False False False],
+           fill_value = -1.6375e+30)
+    <BLANKLINE>
+    """
+    return npy.ma.masked_values(m, badval, rtol = rtol, atol = atol, copy = copy)
 
 def ang2pix(nside,theta,phi,nest=False):
     """ang2pix : nside,theta[rad],phi[rad],nest=False -> ipix (default:RING)
+
+    Parameters
+    ----------
+    nside: int
+      The healpix nside parameter, must be a power of 2
+    theta, phi: array-like
+      Angular coordinates of a point on the sphere
+    nest: bool, optional
+      if True, assume NESTED pixel ordering, otherwise, RING pixel ordering
+
+    Returns
+    -------
+    pix: int or array of int
+      The healpix pixel numbers. Scalar if all input are scalar, array otherwise.
+      Usual numpy broadcasting rules apply.
+
+    Examples
+    --------
+    >>> hpy.ang2pix(16, np.pi/2, 0)
+    1440
+    >>> hpy.ang2pix(16, [np.pi/2, np.pi/4, np.pi/2, 0, np.pi],
+                    [0., np.pi/4, np.pi/2, 0, 0])
+    array([1440,  427, 1520,    0, 3068])
     """
     if nest:
         return pixlib._ang2pix_nest(nside,theta,phi)
@@ -82,21 +244,6 @@ def pix2vec(nside,ipix,nest=False):
         return pixlib._pix2vec_nest(nside,ipix)
     else:
         return pixlib._pix2vec_ring(nside,ipix)
-
-def ang2vec(theta, phi):
-    """ang2vec : convert angles to 3D position vector
-    
-    theta: colatitude in radians measured southward from north pole (in [0,pi]). 
-    phi: longitude in radians measured eastward (in [0, 2*pi]). 
-
-    if theta and phi are vectors, the result is a 2D array with a vector per row
-    """
-    if npy.any(theta < 0) or npy.any(theta > npy.pi):
-        raise exceptions.ValueError('THETA is out of range [0,pi]')
-    sintheta = npy.sin(theta)
-    return npy.array([sintheta*npy.cos(phi),
-                      sintheta*npy.sin(phi),
-                      npy.cos(theta)]).T
 
 def ring2nest(nside, ipix):
     """Convert pixel number from ring scheme number to nest scheme number.
@@ -194,7 +341,7 @@ def npix2nside(npix):
     return nside
 
 def isnsideok(nside):
-    """Return True if nside is a valid nside parameter, False otherwise.
+    """Return ``True`` if nside is a valid nside parameter, False otherwise.
     Accept sequence as input, in this case return a bool array.
     """
     if hasattr(nside, '__len__'):
@@ -205,7 +352,7 @@ def isnsideok(nside):
         return nside == 2**int(round(npy.log2(nside)))
 
 def isnpixok(npix):
-    """Return True if npix is a valid value for healpix map size, False otherwise.
+    """Return ``True`` if npix is a valid value for healpix map size, False otherwise.
     Accept sequence as input, in this case return a bool array.
     """
     if hasattr(npix,'__len__'):
@@ -246,7 +393,7 @@ def get_interp_val(m,theta,phi,nest=False):
       - m: a map (an ndarray)
       - theta, phi : the direction [rad] (either scalar or arrays of same size)
     Parameters:
-      - nest: if True, the map is in NEST scheme. Default: False (ie RING)
+      - nest: if ``True``, the map is in NEST scheme. Default: False (ie RING)
     Return:
       - the interpolated value(s)
     """
@@ -270,7 +417,7 @@ def get_neighbours(nside,theta,phi=None,nest=False):
       - theta, phi: if phi is not given, theta is actually a pixel number
                     if phi is given, theta[rad],phi[rad] is a direction
     Parameters:
-      - nest: if True, NEST scheme. Default: False (RING)
+      - nest: if ``True``, NEST scheme. Default: False (RING)
     Return:
       - tuple of pixels and weights
     """
@@ -294,7 +441,7 @@ def get_all_neighbours(nside, theta, phi=None, nest=False):
                     if phi is given, theta[rad],phi[rad] is a direction
 
     Parameters:
-      - nest: if True, NEST scheme. Default: False (RING)
+      - nest: if ``True``, NEST scheme. Default: False (RING)
     Return:
       - tuple of pixels
     """
@@ -375,7 +522,7 @@ def fit_dipole(m,nest=False,bad=pixlib.UNSEEN,gal_cut=0):
     """Fit a dipole and a monopole to the map, excluding unseen pixels.
     Input:
       - m: the map from which a dipole is fitted and subtracted
-      - nest: False if m is in RING scheme, True if it is NESTED
+      - nest: False if m is in RING scheme, ``True`` if it is NESTED
       - bad: bad values of pixel, default to UNSEEN.
       - gal_cut: latitude below which pixel are not taken into account
     Return:
@@ -432,14 +579,14 @@ def remove_dipole(m,nest=False,bad=pixlib.UNSEEN,gal_cut=0,fitval=False,
     """Fit and subtract the dipole and the monopole from the given map m.
     Input:
       - m: the map from which a dipole is fitted and subtracted
-      - nest: False if m is in RING scheme, True if it is NESTED
+      - nest: False if m is in RING scheme, ``True`` if it is NESTED
       - bad: bad values of pixel, default to UNSEEN.
       - gal_cut: latitude below which pixel are not taken into account
       - fitval: whether to return or not the fitted values of monopole and dipole
     Return:
       if fitval is False:
       - the map with monopole and dipole subtracted
-      if fitval is True:
+      if fitval is ``True``:
       - the map, the monopole value  and the dipole vector
     """
     m=npy.array(m,copy=copy)
@@ -461,7 +608,7 @@ def remove_dipole(m,nest=False,bad=pixlib.UNSEEN,gal_cut=0,fitval=False,
         m.flat[ipix] -= mono
     if verbose:
         import rotator as R
-        lon,lat = R.vec2dir(dipole,lonlat=True)
+        lon,lat = R.vec2ang(dipole,lonlat=True)
         amp = npy.sqrt((dipole**2).sum())
         print 'monopole: %g  dipole: lon: %g, lat: %g, amp: %g'%(mono,
                                                                  lon,
@@ -476,7 +623,7 @@ def fit_monopole(m,nest=False,bad=pixlib.UNSEEN,gal_cut=0):
     """Fit a monopole to the map, excluding unseen pixels.
     Input:
       - m: the map from which a monopole is fitted and subtracted
-      - nest: if True, input map is NESTED (default False)
+      - nest: if ``True``, input map is NESTED (default False)
       - bad: bad pixel value (default UNSEEN)
       - gal_cut: latitude cut in degrees (default 0.0)
     Return:
@@ -512,16 +659,16 @@ def remove_monopole(m,nest=False,bad=pixlib.UNSEEN,gal_cut=0,fitval=False,
     """Fit and subtract the monopole from the given map m.
     Input:
       - m: the map from which a dipole is fitted and subtracted
-      - nest: if True, input map is NESTED (default False)
+      - nest: if ``True``, input map is NESTED (default False)
       - bad: bad pixel value (default UNSEEN)
       - gal_cut: latitude cut in degrees (default 0.0)
       - fitval: return fitted monopole with map (default False)
-      - copy: if False, input map is changed directly (default True)
+      - copy: if False, input map is changed directly (default ``True``)
       - verbose: print the fitted monopole (default False)
     Return:
       if fitval is False:
       - the map with monopole subtracted
-      if fitval is True:
+      if fitval is ``True``:
       - the map with monopole subtracted and the monopole value
     """
     m=npy.array(m,copy=copy)
@@ -636,7 +783,7 @@ def ud_grade(map_in,nside_out,pess=False,order_in='RING',order_out=None,
      - map_in: the input map(s)
      - nside_out: the desired nside of the output
     Parameters:
-     - pess: if True, pessismistic, in degrading, reject pixels which contains
+     - pess: if ``True``, pessismistic, in degrading, reject pixels which contains
              a bad sub_pixel. Otherwise, estimate average with other pixels
     Output:
      - the upgraded or degraded map(s)
