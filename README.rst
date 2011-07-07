@@ -1,3 +1,7 @@
+====================================
+Healpy, a python wrapper for healpix
+====================================
+
 Description
 -----------
 
@@ -23,20 +27,18 @@ Characteristics
 Requirements
 ------------
 
-* `Python <http://www.python.org>`_. Tested with 2.4, 2.5, 2.6 and
-    2.7; however see `bug
-    <http://code.google.com/p/healpy/issues/detail?id=19>`_ for Python
-    2.4.
+* `Python <http://www.python.org>`_, tested with 2.4, 2.5, 2.6 and
+  2.7; however see `bug <http://code.google.com/p/healpy/issues/detail?id=19>`_ 
+  for Python 2.4.
 
 * `Numpy <http://numpy.scipy.org/>`_ (tested with version >=1.0.1)
 
 * `Matplotlib <http://matplotlib.sourceforge.net/>`_ (tested with
   version >= 0.91.2 up to 1.0.1, please use latest version)
 
-  - **Note:** matplotlib 0.98.3 has a bug preventing mollview to
-      work. Either correct the bug as indicated `there
-      <http://sourceforge.net/mailarchive/message.php?msg_id=E1Kjmcj-0001UI-Ey%40dn4whf1.ch3.sourceforge.com>`_
-      or update to more recent version (>= 0.98.4).
+  - **Note:** Matplotlib 0.98.3 has a bug preventing mollview to work.
+    Either correct the bug as indicated `there <http://sourceforge.net/mailarchive/message.php?msg_id=E1Kjmcj-0001UI-Ey%40dn4whf1.ch3.sourceforge.com>`_
+    or update to more recent version (>= 0.98.4).
 
 * Python development package is required for some distribution (e.g.,
   python-dev package for Ubuntu)
@@ -98,11 +100,11 @@ place, for example::
 
    $ python setup.py install --install-lib=~/Softs/Python
 
-will install it in ~/Softs/Python, which you need to put into your
+will install it in ``~/Softs/Python``, which you need to put into your
 ``PYTHONPATH``.
 
 **Note:**
-  With python >=2.6, you can install package in a user specific
+  With Python >= 2.6, you can install package in a user specific
   directory with::
 
     $ python setup.py install --user
@@ -115,12 +117,11 @@ Test the installation with::
    >>> import healpy
    >>> healpy.mollview(arange(12))
 
-
 Documentation
 -------------
 
-Use the online documentation, accessible with help() (or using the
- ``?`` in ipython).
+Use the online documentation, accessible with help() or using the
+``?`` in ipython.
 
 Acknowledgements
 ----------------
@@ -135,12 +136,12 @@ include both of the following:
    package". The complete reference is:
 
       Górski, K.M., E. Hivon, A.J. Banday, B.D. Wandelt, F.K. Hansen,
-      \M. Reinecke, and M. Bartelmann, HEALPix: A Framework for
+      M. Reinecke, and M. Bartelmann, HEALPix: A Framework for
       High-resolution Discretization and Fast Analysis of Data
       Distributed on the Sphere, Ap.J., 622, 759-771, 2005.
 
 2. at the first use of the HEALPix acronym, a footnote placed in the
-   main body of the paper referring to the HEALPix web site -
+   main body of the paper referring to the HEALPix web site,
    currently http://healpix.jpl.nasa.gov
 
 As healpy is based on HEALPix Software (the C++ library), the same
