@@ -23,22 +23,20 @@ Characteristics
 Requirements
 ------------
 
-* `Python <http://www.python.org>`_ (tested with 2.4, 2.5 and 2.6,
-    however see `bug
+* `Python <http://www.python.org>`_. Tested with 2.4, 2.5, 2.6 and
+    2.7; however see `bug
     <http://code.google.com/p/healpy/issues/detail?id=19>`_ for Python
-    2.4)
+    2.4.
 
 * `Numpy <http://numpy.scipy.org/>`_ (tested with version >=1.0.1)
 
 * `Matplotlib <http://matplotlib.sourceforge.net/>`_ (tested with
   version >= 0.91.2 up to 1.0.1, please use latest version)
 
-  - **Note:** matplotlib 0.98.3 has a bug preventing mollview to work
-      (infinite recursion in cbook.flatten). Either correct the bug as
-      indicated `there
+  - **Note:** matplotlib 0.98.3 has a bug preventing mollview to
+      work. Either correct the bug as indicated `there
       <http://sourceforge.net/mailarchive/message.php?msg_id=E1Kjmcj-0001UI-Ey%40dn4whf1.ch3.sourceforge.com>`_
       or update to more recent version (>= 0.98.4).
-
 
 * Python development package is required for some distribution (e.g.,
   python-dev package for Ubuntu)
@@ -103,7 +101,7 @@ place, for example::
 will install it in ~/Softs/Python, which you need to put into your
 ``PYTHONPATH``.
 
-**Note:** 
+**Note:**
   With python >=2.6, you can install package in a user specific
   directory with::
 
