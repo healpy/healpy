@@ -12,9 +12,12 @@ Characteristics
 ---------------
 
   * pixellisation manipulation (ang2pix, pix2ang, ...)
+
   * spherical harmonic transforms (map2alm, alm2map, synfast, anafast, etc.
      both for temperature and polarisation)
+
   * plotting capabilities (mollweide and gnomonic projection)
+
   * reading and writing of healpix fits maps and alm
 
 Requirements
@@ -24,16 +27,21 @@ Requirements
     however see `bug
     <http://code.google.com/p/healpy/issues/detail?id=19>`_ for Python
     2.4 )
+
   * `Numpy <http://numpy.scipy.org/>`_ (tested with version >=1.0.1)
+
   * `Matplotlib <http://matplotlib.sourceforge.net/>`_ (tested with
     version >= 0.91.2 up to 0.98.4, Please use latest version
+
   * Python development package is required for some distribution
     (e.g., python-dev package for Ubuntu)
+
   * **Note**: matplotlib 0.98.3 has a bug preventing mollview to work
      (infinite recursion in cbook.flatten). Either correct the bug as
      indicated `there
      <http://sourceforge.net/mailarchive/message.php?msg_id=E1Kjmcj-0001UI-Ey%40dn4whf1.ch3.sourceforge.com>`_
-     or update to more recent version (>= 0.98.4)
+     or update to more recent version (>= 0.98.4).
+
   * `PyFITS <http://www.stsci.edu/resources/software_hardware/pyfits>`_
 
     - **Note**: For healpix map Nside=8192, there is a bug in Numpy
@@ -71,10 +79,12 @@ For version >= 0.10, you must provide the cfitsio library. You can either:
        hpbeta/libcfitsio before installing. The cfitsio version XXXX must
        match the version in hpbeta/planck.make (or you need to modify it there).
 
-**Note** : compilation on Windows has not been tested with version >=
-  0.10. You may need to tweak the setup.py file to adjust compilation
+**Note:**
+
+  compilation on Windows has not been tested with version >= 0.10. You
+  may need to tweak the setup.py file to adjust compilation
   options. If you are a Windows user, please submit a bug to describe
-  a setup.py working on Windows*
+  a setup.py working on Windows.
 
 Then you can follow the following instructions.
 
@@ -93,8 +103,10 @@ place, for example::
 will install it in ~/Softs/Python, which you need to put into your
 ``PYTHONPATH``.
 
-**Note:** with python >=2.6, you can install package in a user
- specific directory with::
+**Note:** 
+
+With python >=2.6, you can install package in a user specific
+directory with::
 
    $ python setup.py install --user
 
@@ -109,8 +121,8 @@ Test the installation with::
 Documentation
 -------------
 
- Use the online documentation, accessible with help() (or using the
- `?` in ipython).
+Use the online documentation, accessible with help() (or using the `?`
+ in ipython).
 
 Acknowledgements
 ----------------
@@ -120,7 +132,7 @@ Note that, as stated `here
 publications based on work using the HEALPix software package should
 include both of the following:
 
-   1. an acknowledgment statement: "Some of the results in this paper
+1. an acknowledgment statement: "Some of the results in this paper
    have been derived using the HEALPix (Górski et al., 2005)
    package". The complete reference is:
 
@@ -129,8 +141,8 @@ include both of the following:
       High-resolution Discretization and Fast Analysis of Data
       Distributed on the Sphere, Ap.J., 622, 759-771, 2005.
 
-   2. at the first use of the HEALPix acronym, a footnote placed in
-   the main body of the paper referring to the HEALPix web site -
+2. at the first use of the HEALPix acronym, a footnote placed in the
+   main body of the paper referring to the HEALPix web site -
    currently http://healpix.jpl.nasa.gov
 
 As healpy is based on HEALPix Software (the C++ library), the same
