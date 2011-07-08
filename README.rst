@@ -15,14 +15,14 @@ page at http://healpix.jpl.nasa.gov/.
 Characteristics
 ---------------
 
-* pixellisation manipulation (ang2pix, pix2ang, *etc.*)
+* pixelisation manipulation (ang2pix, pix2ang, *etc.*)
 
 * spherical harmonic transforms (map2alm, alm2map, synfast, anafast,
   *etc.* both for temperature and polarisation)
 
 * plotting capabilities (mollweide and gnomonic projection)
 
-* reading and writing of healpix fits maps and alm
+* reading and writing of Healpix FITS maps and alm
 
 Requirements
 ------------
@@ -49,7 +49,7 @@ Requirements
     preventing pyfits to work. You should upgrade to latest pyfits
     version (>= 2.1) which provide a workaround.
 
-Healpix C++ library (from HEALPix 2.11 or HEALPix 2.20 for healpy >=
+The Healpix C++ library (from HEALPix 2.11 or HEALPix 2.20 for healpy >=
 0.10) is included in the healpy package, so you don't need to get it
 separately.
 
