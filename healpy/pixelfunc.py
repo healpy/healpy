@@ -112,8 +112,9 @@ def mask_bad(m, badval = UNSEEN, rtol = 1.e-5, atol = 1.e-8):
 
     Returns
     -------
-    a bool array with the same shape as the input map, ``True`` where input map is
-    close to badval, and ``False`` elsewhere.
+    mask
+      a bool array with the same shape as the input map, ``True`` where input map is
+      close to badval, and ``False`` elsewhere.
 
     See Also
     --------
