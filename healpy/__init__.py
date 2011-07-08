@@ -35,8 +35,6 @@ import numpy as npy
 np = npy
 nm = npy
 
-
-
 from pixelfunc import (ma, mask_good, mask_bad,
                        ang2pix, pix2ang,
                        pix2vec, vec2pix,
@@ -46,7 +44,8 @@ from pixelfunc import (ma, mask_good, mask_bad,
                        get_neighbours, get_all_neighbours, get_interp_val,
                        fit_dipole, fit_monopole,
                        remove_dipole, remove_monopole,
-                       get_nside, maptype, ud_grade, nside2resol, nside2pixarea)
+                       get_nside, maptype, ud_grade, nside2resol, nside2pixarea,
+                       get_map_size)
 
 from sphtfunc import (anafast, map2alm,
                       alm2map, Alm, synalm, synfast,

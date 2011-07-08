@@ -69,6 +69,7 @@ Masking pixels
 - :const:`UNSEEN` is a constant value interpreted as a masked pixel
 - :func:`mask_bad` returns a map with ``True`` where map is :const:`UNSEEN`
 - :func:`mask_good` returns a map with ``False`` where map is :const:`UNSEEN`
+- :func:`ma` returns a masked array as map, with mask given by :func:`mask_bad`
 
 Map data manipulation
 ---------------------
@@ -85,6 +86,16 @@ import numpy as npy
 import _healpy_pixel_lib as pixlib
 from _healpy_pixel_lib import UNSEEN
 import exceptions
+
+__all__ = ['pix2ang', 'pix2vec', 'ang2pix', 'vec2pix',
+           'get_neighbours', 'get_interp_val', 'get_all_neighbours',
+           'nest2ring', 'ring2nest', 'reorder', 'ud_grade',
+           'UNSEEN', 'mask_good', 'mask_bad', 'ma',
+           'fit_dipole', 'remove_dipole', 'fit_monopole', 'remove_monopole',
+           'nside2npix', 'npix2nside', 'nside2resol',
+           'nside2pixarea', 'isnsideok', 'isnpixok',
+           'get_map_size', 'get_min_valid_nside',
+           'get_nside', 'maptype']
 
 def mask_bad(m, badval = UNSEEN, rtol = 1.e-5, atol = 1.e-8):
     """Returns a bool array with ``True`` where m is close to badval.
@@ -195,9 +206,9 @@ def ang2pix(nside,theta,phi,nest=False):
 
     Parameters
     ----------
-    nside: int
+    nside: int, scalar or array-like
       The healpix nside parameter, must be a power of 2
-    theta, phi: array-like
+    theta, phi: float, scalars or array-like
       Angular coordinates of a point on the sphere
     nest: bool, optional
       if True, assume NESTED pixel ordering, otherwise, RING pixel ordering
@@ -208,13 +219,23 @@ def ang2pix(nside,theta,phi,nest=False):
       The healpix pixel numbers. Scalar if all input are scalar, array otherwise.
       Usual numpy broadcasting rules apply.
 
+    See Also
+    --------
+    :func:`pix2ang`, :func:`pix2vec`, :func:`vec2pix`
+
     Examples
     --------
     >>> hpy.ang2pix(16, np.pi/2, 0)
     1440
-    >>> hpy.ang2pix(16, [np.pi/2, np.pi/4, np.pi/2, 0, np.pi],
-                    [0., np.pi/4, np.pi/2, 0, 0])
+
+    >>> hpy.ang2pix(16, [np.pi/2, np.pi/4, np.pi/2, 0, np.pi], [0., np.pi/4, np.pi/2, 0, 0])
     array([1440,  427, 1520,    0, 3068])
+
+    >>> hpy.ang2pix(16, np.pi/2, [0, np.pi/2])
+    array([1440, 1520])
+
+    >>> hpy.ang2pix([1, 2, 4, 8, 16], np.pi/2, 0)
+    array([   4,   12,   72,  336, 1440])
     """
     if nest:
         return pixlib._ang2pix_nest(nside,theta,phi)
@@ -223,6 +244,38 @@ def ang2pix(nside,theta,phi,nest=False):
 
 def pix2ang(nside,ipix,nest=False):
     """pix2ang : nside,ipix,nest=False -> theta[rad],phi[rad] (default RING)
+
+    Parameters
+    ----------
+    nside: int or array-like
+      The healpix nside parameter, must be a power of 2
+    ipix: int or array-like
+      Angular coordinates of a point on the sphere
+    nest: bool, optional
+      if True, assume NESTED pixel ordering, otherwise, RING pixel ordering
+
+    Returns
+    -------
+    theta, phi: float, scalar or array-like
+      The angular coordinates corresponding to ipix. Scalar if all input
+      are scalar, array otherwise. Usual numpy broadcasting rules apply.
+
+    See Also
+    --------
+    :func:`ang2pix`, :func:`vec2pix`, :func:`pix2vec`
+
+    Examples
+    --------
+    >>> hpy.pix2ang(16, 1440)
+    (1.5291175943723188, 0.0)
+
+    >>> hpy.pix2ang(16, [1440,  427, 1520,    0, 3068])
+    (array([ 1.52911759,  0.78550497,  1.57079633,  0.05103658,  3.09055608]),
+     array([ 0.        ,  0.78539816,  1.61988371,  0.78539816,  0.78539816]))
+
+    >>> hpy.pix2ang([1, 2, 4, 8], 11)
+    (array([ 2.30052398,  0.84106867,  0.41113786,  0.2044802 ]),
+     array([ 5.49778714,  5.89048623,  5.89048623,  5.89048623]))
     """
     if nest:
         return pixlib._pix2ang_nest(nside, ipix)
@@ -231,6 +284,36 @@ def pix2ang(nside,ipix,nest=False):
 
 def vec2pix(nside,x,y,z,nest=False):
     """vec2pix : nside,x,y,z,nest=False -> ipix (default:RING)
+
+    Parameters
+    ----------
+    nside: int or array-like
+      The healpix nside parameter, must be a power of 2
+    x,y,z: floats or array-like
+      vector coordinates defining point on the sphere
+    nest: bool, optional
+      if True, assume NESTED pixel ordering, otherwise, RING pixel ordering
+
+    Returns
+    -------
+    ipix: int, scalar or array-like
+      The healpix pixel number corresponding to input vector. Scalar if all input
+      are scalar, array otherwise. Usual numpy broadcasting rules apply.
+
+    See Also
+    --------
+    :func:`ang2pix`, :func:`pix2ang`, :func:`pix2vec`
+
+    Examples
+    --------
+    >>> hpy.vec2pix(16, 1, 0, 0)
+    1504
+
+    >>> hpy.vec2pix(16, [1, 0], [0, 1], [0, 0])
+    array([1504, 1520])
+
+    >>> hpy.vec2pix([1, 2, 4, 8], 1, 0, 0)
+    array([  4,  20,  88, 368])
     """
     if nest:
         return pixlib._vec2pix_nest(nside,x,y,z)
@@ -239,6 +322,40 @@ def vec2pix(nside,x,y,z,nest=False):
 
 def pix2vec(nside,ipix,nest=False):
     """pix2vec : nside,ipix,nest=False -> x,y,z (default RING)
+
+    Parameters
+    ----------
+    nside: int, scalar or array-like
+      The healpix nside parameter, must be a power of 2
+    ipix: int, scalar or array-like
+      Healpix pixel number
+    nest: bool, optional
+      if True, assume NESTED pixel ordering, otherwise, RING pixel ordering
+
+    Returns
+    -------
+    x, y, z: floats, scalar or array-like
+      The coordinates of vector corresponding to input pixels. Scalar if all input
+      are scalar, array otherwise. Usual numpy broadcasting rules apply.
+
+    See Also
+    --------
+    :func:`ang2pix`, :func:`pix2ang`, :func:`vec2pix`
+
+    Examples
+    --------
+    >>> hpy.pix2vec(16, 1504)
+    (0.99879545620517241, 0.049067674327418015, 0.0)
+
+    >>> hpy.pix2vec(16, [1440,  427])
+    (array([ 0.99913157,  0.5000534 ]),
+     array([ 0.       ,  0.5000534]),
+     array([ 0.04166667,  0.70703125]))
+
+    >>> hpy.pix2vec([1, 2], 11)
+    (array([ 0.52704628,  0.68861915]),
+     array([-0.52704628, -0.28523539]),
+     array([-0.66666667,  0.66666667]))
     """
     if nest:
         return pixlib._pix2vec_nest(nside,ipix)
@@ -246,226 +363,104 @@ def pix2vec(nside,ipix,nest=False):
         return pixlib._pix2vec_ring(nside,ipix)
 
 def ring2nest(nside, ipix):
-    """Convert pixel number from ring scheme number to nest scheme number.
+    """Convert pixel number from RING ordering to NESTED ordering.
 
-    Input:
-      - nside: the nside to work with
-      - ipix: the pixel number (can be an array) in ring scheme
-    Return:
-      - a pixel number or an array of pixel numbers in nest scheme
+    Parameters
+    ----------
+    nside: int, scalar or array-like
+      the healpix nside parameter
+    ipix: int, scalar or array-like
+      the pixel number in RING scheme
+
+    Returns
+    -------
+    ipix: int, scalar or array-like
+      the pixel number in NESTED scheme
+
+    See Also
+    --------
+    :func:`nest2ring`, :func:`reorder`
+    
+    Examples
+    --------
+    >>> hpy.ring2nest(16, 1504)
+    1130
+
+    >>> hpy.ring2nest(2, range(10))
+    array([ 3,  7, 11, 15,  2,  1,  6,  5, 10,  9])
+    
+    >>> hpy.ring2nest([1, 2, 4, 8], 11)
+    array([ 11,  13,  61, 253])
     """
     return pixlib._ring2nest(nside, ipix)
 
 def nest2ring(nside, ipix):
-    """Convert pixel number from nest scheme number to ring scheme number.
+    """Convert pixel number from NESTED ordering to RING ordering.
 
-    Input:
-      - nside: the nside to work with
-      - ipix: the pixel number (can be an array) in nest scheme
-    Return:
-      - a pixel number or an array of pixel numbers in ring scheme
+    Parameters
+    ----------
+    nside: int, scalar or array-like
+      the healpix nside parameter
+    ipix: int, scalar or array-like
+      the pixel number in NESTED scheme
+
+    Returns
+    -------
+    ipix: int, scalar or array-like
+      the pixel number in RING scheme
+
+    See Also
+    --------
+    :func:`ring2nest`, :func:`reorder`
+    
+    Examples
+    --------
+    >>> hpy.nest2ring(16, 1130)
+    1504
+
+    >>> hpy.nest2ring(2, range(10))
+    array([13,  5,  4,  0, 15,  7,  6,  1, 17,  9])
+    
+    >>> hpy.nest2ring([1, 2, 4, 8], 11)
+    array([ 11,   2,  12, 211])
     """
     return pixlib._nest2ring(nside, ipix)
-
-def nside2npix(nside):
-    """Give the number of pixel for the given nside.
-
-    Input:
-      - nside: nside paramater
-    Return:
-      - npix: corresponding number of pixels
-    Raise a ValueError exception if nside is not valid.
-    """
-    if not isnsideok(nside):
-        raise ValueError("Given number is not a valid nside parameter "
-                         "(must be a power of 2)")
-    return 12*nside**2
-
-def nside2resol(nside, arcmin=False):
-    """Give approximate resolution for nside, resolution is just the square root of the pixel area, which is a gross approximation given the different pixel shapes
-
-    Input:
-      - nside: nside paramater
-    Return:
-      - resol: approximate pixel size in radians (or arcmin)
-    Raise a ValueError exception if nside is not valid.
-    """
-    if not isnsideok(nside):
-        raise ValueError("Given number is not a valid nside parameter "
-                         "(must be a power of 2)")
-    
-    resol = npy.sqrt(nside2pixarea(nside))
-
-    if arcmin:
-        resol = npy.rad2deg(resol) * 60
-        
-    return resol
-
-
-def nside2pixarea(nside, degrees=False):
-    """Give pixel area given nside
-
-    Input:
-      - nside: nside paramater
-    Return:
-      - pixarea: pixel area in radians
-    Raise a ValueError exception if nside is not valid.
-    """
-    if not isnsideok(nside):
-        raise ValueError("Given number is not a valid nside parameter "
-                         "(must be a power of 2)")
-    
-    pixarea = 4*npy.pi/nside2npix(nside)
-
-    if degrees:
-        pixarea = npy.rad2deg(npy.rad2deg(pixarea))
-        
-    return pixarea
-
-def npix2nside(npix):
-    """Give the nside parameter for the given number of pixels.
-
-    Input:
-      - npix: number of pixel
-    Return:
-      - nside: the nside parameter.
-    Raise a ValueError exception if number of pixel does not correspond to
-    the number of pixel of an healpix map.
-    """
-    nside = npy.sqrt(npix/12.)
-    if nside != npy.floor(nside):
-        raise ValueError("Wrong pixel number (it is not 12*nside**2)")
-    nside=int(npy.floor(nside))
-    if not isnsideok(nside):
-        raise ValueError("Wrong nside value (it is not 2**N)")
-    return nside
-
-def isnsideok(nside):
-    """Return ``True`` if nside is a valid nside parameter, False otherwise.
-    Accept sequence as input, in this case return a bool array.
-    """
-    if hasattr(nside, '__len__'):
-        return nside == 2**npy.int32(npy.around(npy.ma.log2(nside).filled(0)))
-    elif nside <= 0:
-        return False
-    else:
-        return nside == 2**int(round(npy.log2(nside)))
-
-def isnpixok(npix):
-    """Return ``True`` if npix is a valid value for healpix map size, False otherwise.
-    Accept sequence as input, in this case return a bool array.
-    """
-    if hasattr(npix,'__len__'):
-        nside = npy.sqrt(npy.asarray(npix)/12.)
-        return isnsideok(nside)
-    else:
-        nside = npy.sqrt(npix/12.)
-        return isnsideok(nside)
-
-def get_map_size(map):
-    """Try to figure out the size of the given map :
-     - if map is a dict type (explicit pixel) : use nside key if present, or
-       use nside attribute if present, otherwise use the smallest valid
-       npix given the maximum key value
-     - otherwise, return len(map)
-    """
-    if isinstance(map, dict):
-        if 'nside' in map:
-            return nside2npix(map['nside'])
-        elif hasattr(map, 'nside'):
-            return nside2npix(map.nside)
-        else:
-            nside = get_min_valid_nside(max(map.keys())+1)
-            return nside2npix(nside)
-    else:
-        return len(map)
-
-def get_min_valid_nside(npix):
-    """Return the minimum acceptable nside so that npix <= nside2npix(nside)
-    """
-    order = 0.5 * npy.log2(npix / 12.)
-    return 2**int(npy.ceil(order))
-
-def get_interp_val(m,theta,phi,nest=False):
-    """Return the bi-linear interpolation value of a map at given direction.
-
-    Input:
-      - m: a map (an ndarray)
-      - theta, phi : the direction [rad] (either scalar or arrays of same size)
-    Parameters:
-      - nest: if ``True``, the map is in NEST scheme. Default: False (ie RING)
-    Return:
-      - the interpolated value(s)
-    """
-    m2=m.ravel()
-    nside=npix2nside(m2.size)
-    if nest:
-        r=pixlib._get_interpol_nest(nside,theta,phi)
-    else:
-        r=pixlib._get_interpol_ring(nside,theta,phi)
-    p=npy.array(r[0:4])
-    w=npy.array(r[4:8])
-    del r
-    return npy.sum(m2[p]*w,0)
-
-def get_neighbours(nside,theta,phi=None,nest=False):
-    """Return the 4 nearest pixels and the corresponding weights for
-    bi-linear interpolation for the given direction.
-
-    Input:
-      - nside: the nside to work with
-      - theta, phi: if phi is not given, theta is actually a pixel number
-                    if phi is given, theta[rad],phi[rad] is a direction
-    Parameters:
-      - nest: if ``True``, NEST scheme. Default: False (RING)
-    Return:
-      - tuple of pixels and weights
-    """
-    if not isnsideok(nside):
-        raise ValueError('Wrong nside value. Must be a power of 2.')
-    if phi == None:
-        theta,phi = pix2ang(nside,theta,nest=nest)
-    if nest:
-        r=pixlib._get_interpol_nest(nside,theta,phi)
-    else:
-        r=pixlib._get_interpol_ring(nside,theta,phi)
-    p=npy.array(r[0:4])
-    w=npy.array(r[4:8])
-    return (p,w)
-
-def get_all_neighbours(nside, theta, phi=None, nest=False):
-    """Return the 8 nearest pixels
-    Input:
-      - nside: the nside to work with
-      - theta, phi: if phi is not given, theta is actually a pixel number
-                    if phi is given, theta[rad],phi[rad] is a direction
-
-    Parameters:
-      - nest: if ``True``, NEST scheme. Default: False (RING)
-    Return:
-      - tuple of pixels
-    """
-    if not isnsideok(nside):
-        raise ValueError('Wrong nside value. Must be a power of 2.')
-    if not (phi is None):
-        theta = ang2pix(nside,theta, phi,nest=nest)
-    if nest:
-        r=pixlib._get_neighbors_nest(nside,theta)
-    else:
-        r=pixlib._get_neighbors_ring(nside,theta)
-    res=npy.array(r[0:8])
-    return res
 
 def reorder(map_in, inp=None, out=None, r2n=None, n2r=None):
     """Reorder an healpix map from RING/NESTED ordering to NESTED/RING
 
-    Input:
-      - map_in: the input map (can be a sequence of maps)
-    Parameters:
-      - inp: the ordering of the input map 'RING' or 'NESTED'
-      - out: the ordering of the output map 'RING' or 'NRSTED'
-    Output:
-      - map_out: the reordered map
+    Parameters
+    ----------
+    map_in: array-like
+      the input map to reorder
+    inp, out: ``'RING'`` or ``'NESTED'``
+      define the input and output ordering
+    r2n: bool
+      if True, reorder from RING to NESTED
+    n2r: bool
+      if True, reorder from NESTED to RING
+
+    Returns
+    -------
+    map_out: array-like
+      the reordered map
+
+    Notes
+    -----
+    if ``r2n`` or ``n2r`` is defined, override ``inp`` and ``out``.
+
+    See Also
+    --------
+    :func:`nest2ring`, :func:`ring2nest`
+
+    Examples
+    --------
+    >>> hpy.reorder(np.arange(48), r2n = True)
+    array([13,  5,  4,  0, 15,  7,  6,  1, 17,  9,  8,  2, 19, 11, 10,  3, 28,
+           20, 27, 12, 30, 22, 21, 14, 32, 24, 23, 16, 34, 26, 25, 18, 44, 37,
+           36, 29, 45, 39, 38, 31, 46, 41, 40, 33, 47, 43, 42, 35])
+    >>> hpy.reorder(range(12), n2r = True)
+    array([ 0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11])
     """
     typ = maptype(map_in)
     if typ < 0:
@@ -503,7 +498,7 @@ def reorder(map_in, inp=None, out=None, r2n=None, n2r=None):
                 ipix_n = npy.arange(ibunch*bunchsize,
                                     (ibunch+1)*bunchsize)
                 ipix_r = nest2ring(nside, ipix_n)
-                m_out[ipix_n] = m_in[ipix_r]
+                m_out[ipix_n] = npy.asarray(m_in)[ipix_r]
             mapout.append(m_out)
         elif inp == 'NEST':
             m_out = npy.zeros(npix,dtype=type(m_in[0]))
@@ -511,22 +506,399 @@ def reorder(map_in, inp=None, out=None, r2n=None, n2r=None):
                 ipix_r = npy.arange(ibunch*bunchsize,
                                     (ibunch+1)*bunchsize)
                 ipix_n = ring2nest(nside, ipix_r)
-                m_out[ipix_r] = m_in[ipix_n]
+                m_out[ipix_r] = npy.asarray(m_in)[ipix_n]
             mapout.append(m_out)
     if typ == 0:
         return mapout[0]
     else:
         return mapout
 
-def fit_dipole(m,nest=False,bad=pixlib.UNSEEN,gal_cut=0):
-    """Fit a dipole and a monopole to the map, excluding unseen pixels.
-    Input:
-      - m: the map from which a dipole is fitted and subtracted
-      - nest: False if m is in RING scheme, ``True`` if it is NESTED
-      - bad: bad values of pixel, default to UNSEEN.
-      - gal_cut: latitude below which pixel are not taken into account
-    Return:
-      - the monopole value  and the dipole vector
+def nside2npix(nside):
+    """Give the number of pixel for the given nside.
+
+    Parameters
+    ----------
+    nside: int
+      healpix nside parameter; an exception is raised if nside is not valid
+      (nside must be a power of 2)
+
+    Returns
+    -------
+    npix: int
+      corresponding number of pixels
+    
+    Notes
+    -----
+    Raise a ValueError exception if nside is not valid.
+
+    Examples
+    --------
+    >>> hpy.nside2npix(8)
+    768
+
+    >>> np.all([hpy.nside2npix(nside) == 12 * nside**2 for nside in [2**n for n in range(12)]])
+    True
+
+    >>> hpy.nside2npix(7)
+    Traceback (most recent call last):
+       ...
+    ValueError: Given number is not a valid nside parameter (must be a power of 2)
+    """
+    if not isnsideok(nside):
+        raise ValueError("Given number is not a valid nside parameter "
+                         "(must be a power of 2)")
+    return 12*nside**2
+
+def nside2resol(nside, arcmin=False):
+    """Give approximate resolution for nside.
+
+    Resolution is just the square root of the pixel area, which is a gross
+    approximation given the different pixel shapes
+
+    Parameters
+    ----------
+    nside: int
+      healpix nside parameter, must be a power of 2
+    arcmin: bool
+      if True, return resolution in arcmin, otherwise in radian
+
+    Returns
+    -------
+    resol: float
+      approximate pixel size in radians or arcmin
+
+    Notes
+    -----
+    Raise a ValueError exception if nside is not valid.
+
+    Examples
+    --------
+    >>> hpy.nside2resol(128, arcmin = True)
+    27.483891294539248
+
+    >>> hpy.nside2resol(256)
+    0.0039973699529159707
+
+    >>> hpy.nside2resol(7)
+    Traceback (most recent call last):
+       ...
+    ValueError: Given number is not a valid nside parameter (must be a power of 2)
+    """
+    if not isnsideok(nside):
+        raise ValueError("Given number is not a valid nside parameter "
+                         "(must be a power of 2)")
+    
+    resol = npy.sqrt(nside2pixarea(nside))
+
+    if arcmin:
+        resol = npy.rad2deg(resol) * 60
+        
+    return resol
+
+
+def nside2pixarea(nside, degrees=False):
+    """Give pixel area given nside.
+
+    Parameters
+    ----------
+    nside: int
+      healpix nside parameter, must be a power of 2
+    degrees: bool
+      if True, returns pixel area in square degrees, in square radians otherwise
+
+    Returns
+    -------
+    pixarea: float
+      pixel area in suqare radian or square degree
+
+    Notes
+    -----
+    Raise a ValueError exception if nside is not valid.
+
+    Examples
+    --------
+    >>> hpy.nside2pixarea(128, degrees = True)
+    0.2098234113027917
+
+    >>> hpy.nside2pixarea(256)
+    1.5978966540475428e-05
+
+    >>> hpy.nside2pixarea(7)
+    Traceback (most recent call last):
+       ...
+    ValueError: Given number is not a valid nside parameter (must be a power of 2)
+    """
+    if not isnsideok(nside):
+        raise ValueError("Given number is not a valid nside parameter "
+                         "(must be a power of 2)")
+    
+    pixarea = 4*npy.pi/nside2npix(nside)
+
+    if degrees:
+        pixarea = npy.rad2deg(npy.rad2deg(pixarea))
+        
+    return pixarea
+
+def npix2nside(npix):
+    """Give the nside parameter for the given number of pixels.
+
+    Parameters
+    ----------
+    npix: int
+      the number of pixels
+    
+    Returns
+    -------
+    nside: int
+      the nside parameter corresponding to npix
+
+    Notes
+    -----
+    Raise a ValueError exception if number of pixel does not correspond to
+    the number of pixel of an healpix map.
+
+    Examples
+    --------
+    >>> hpy.npix2nside(768)
+    8
+
+    >>> np.all([hpy.npix2nside(12 * nside**2) == nside for nside in [2**n for n in range(12)]])
+    True
+
+    >>> hpy.npix2nside(1000)
+    Traceback (most recent call last):
+        ...
+    ValueError: Wrong pixel number (it is not 12*nside**2)
+    """
+    nside = npy.sqrt(npix/12.)
+    if nside != npy.floor(nside):
+        raise ValueError("Wrong pixel number (it is not 12*nside**2)")
+    nside=int(npy.floor(nside))
+    if not isnsideok(nside):
+        raise ValueError("Wrong nside value (it is not 2**N)")
+    return nside
+
+def isnsideok(nside):
+    """Returns :const:`True` if nside is a valid nside parameter, :const:`False` otherwise.
+
+    Parameters
+    ----------
+    nside: int, scalar or array-like
+      integer value to be tested
+
+    Returns
+    -------
+    ok: bool, scalar or array-like
+      :const:`True` if given value is a valid nside, :const:`False` otherwise.
+
+    Examples
+    --------
+    >>> hpy.isnsideok(13)
+    False
+    
+    >>> hpy.isnsideok(32)
+    True
+
+    >>> hpy.isnsideok([1, 2, 3, 4, 8, 16])
+    array([ True,  True, False,  True,  True,  True], dtype=bool)
+    """
+    if hasattr(nside, '__len__'):
+        return nside == 2**npy.int32(npy.around(npy.ma.log2(nside).filled(0)))
+    elif nside <= 0:
+        return False
+    else:
+        return nside == 2**int(round(npy.log2(nside)))
+
+def isnpixok(npix):
+    """Return :const:`True` if npix is a valid value for healpix map size, :const:`False` otherwise.
+
+    Parameters
+    ----------
+    npix: int, scalar or array-like
+      integer value to be tested
+
+    Returns
+    -------
+    ok: bool, scalar or array-like
+      :const:`True` if given value is a valid number of pixel, :const:`False` otherwise
+
+    Examples
+    --------
+    >>> hpy.isnpixok(12)
+    True
+    
+    >>> hpy.isnpixok(768)
+    True
+
+    >>> hpy.isnpixok([12, 768, 1002])
+    array([ True,  True, False], dtype=bool)
+    """
+    if hasattr(npix,'__len__'):
+        nside = npy.sqrt(npy.asarray(npix)/12.)
+        return isnsideok(nside)
+    else:
+        nside = npy.sqrt(npix/12.)
+        return isnsideok(nside)
+
+def get_interp_val(m,theta,phi,nest=False):
+    """Return the bi-linear interpolation value of a map using 4 nearest neighbours.
+
+    Parameters
+    ----------
+    m: array-like
+      an healpix map
+    theta, phi: float, scalar or array-like
+      angular coordinates of point at which to interpolate the map
+    nest: bool
+      if True, the is assumed to be in NESTED ordering.
+
+    Returns
+    -------
+      val: float, scalar or arry-like
+        the interpolated value(s), usual numpy broadcasting rules apply.
+
+    See Also
+    --------
+    :func:`get_neighbours`, :func:`get_all_neighbours`
+
+    Examples
+    --------
+    >>> hpy.get_interp_val(np.arange(12.), np.pi/2, 0)
+    4.0
+    >>> hpy.get_interp_val(np.arange(12.), np.linspace(0, np.pi, 10), 0)
+    array([ 1.5       ,  1.5       ,  1.5       ,  2.20618428,  3.40206143,
+            5.31546486,  7.94639458,  9.5       ,  9.5       ,  9.5       ])
+    """
+    m2=m.ravel()
+    nside=npix2nside(m2.size)
+    if nest:
+        r=pixlib._get_interpol_nest(nside,theta,phi)
+    else:
+        r=pixlib._get_interpol_ring(nside,theta,phi)
+    p=npy.array(r[0:4])
+    w=npy.array(r[4:8])
+    del r
+    return npy.sum(m2[p]*w,0)
+
+def get_neighbours(nside,theta,phi=None,nest=False):
+    """Return the 4 nearest pixels and corresponding weights.
+
+    Parameters
+    ----------
+    nside: int
+      the healpix nside
+    theta, phi: float, scalar or array-like
+      if phi is not given, theta is interpreted as pixel number,
+      otherwise theta[rad],phi[rad] are angular coordinates
+    nest: bool
+      if ``True``, NESTED ordering, otherwise RING ordering.
+
+    Returns
+    -------
+    res: tuple of length 2
+      contains pixel numbers in res[0] and weights in res[1].
+      Usual numpy broadcasting rules apply.
+
+    See Also
+    --------
+    :func:`get_interp_val`, :func:`get_all_neighbours`
+
+    Examples
+    --------
+    >>> hpy.get_neighbours(1, 0)
+    (array([0, 1, 4, 5]), array([ 1.,  0.,  0.,  0.]))
+
+    >>> hpy.get_neighbours(1, 0, 0)
+    (array([1, 2, 3, 0]), array([ 0.25,  0.25,  0.25,  0.25]))
+
+    >>> hpy.get_neighbours(1, [0, np.pi/2], 0)
+    (array([[ 1,  4],
+            [ 2,  5],
+            [ 3, 11],
+            [ 0,  8]]),
+     array([[ 0.25,  1.  ],
+            [ 0.25,  0.  ],
+            [ 0.25,  0.  ],
+            [ 0.25,  0.  ]]))
+    """
+    if not isnsideok(nside):
+        raise ValueError('Wrong nside value. Must be a power of 2.')
+    if phi == None:
+        theta,phi = pix2ang(nside,theta,nest=nest)
+    if nest:
+        r=pixlib._get_interpol_nest(nside,theta,phi)
+    else:
+        r=pixlib._get_interpol_ring(nside,theta,phi)
+    p=npy.array(r[0:4])
+    w=npy.array(r[4:8])
+    return (p,w)
+
+def get_all_neighbours(nside, theta, phi=None, nest=False):
+    """Return the 8 nearest pixels.
+
+    Parameters
+    ----------
+    nside: int
+      the nside to work with
+    theta, phi: scalar or array-like
+      if phi is not given or None, theta is interpreted as pixel number,
+      otherwise, theta[rad],phi[rad] are angular coordinates
+    nest: bool
+      if ``True``, pixel number will be NESTED ordering, otherwise RING ordering.
+
+    Returns
+    -------
+    ipix: int, array
+      pixel number of the SW, W, NW, N, NE, E, SE and S neighbours,
+      shape is (8,) if input is scalar, otherwise shape is (8, N) if input is
+      of length N. If a neighbor does not exist (it can be the case for W, N, E and S)
+      the corresponding pixel number will be -1.
+
+    See Also
+    --------
+    :func:`get_neighbours`, :func:`get_interp_val`
+
+    Examples
+    --------
+    >>> hpy.get_all_neighbours(1, 4)
+    array([11,  7,  3, -1,  0,  5,  8, -1])
+
+    >>> hpy.get_all_neighbours(1, np.pi/2, np.pi/2)
+    array([ 8,  4,  0, -1,  1,  6,  9, -1])
+    """
+    if not isnsideok(nside):
+        raise ValueError('Wrong nside value. Must be a power of 2.')
+    if phi is not None:
+        theta = ang2pix(nside,theta, phi,nest=nest)
+    if nest:
+        r=pixlib._get_neighbors_nest(nside,theta)
+    else:
+        r=pixlib._get_neighbors_ring(nside,theta)
+    res=npy.array(r[0:8])
+    return res
+
+def fit_dipole(m, nest=False, bad=UNSEEN, gal_cut=0):
+    """Fit a dipole and a monopole to the map, excluding bad pixels.
+
+    Parameters
+    ----------
+    m: float, array-like
+      the map to which a dipole is fitted and subtracted
+    nest: bool
+      if ``False`` m is assumed in RING scheme, otherwise map is NESTED
+    bad: float
+      bad values of pixel, default to :const:`UNSEEN`.
+    gal_cut: float
+      pixels at latitude in [-gal_cut;+gal_cut] are not taken into account
+
+    Returns
+    -------
+    res: tuple of length 2
+      the monopole value in res[0] and the dipole vector (as array) in res[1]
+
+    See Also
+    --------
+    :func:`remove_dipole`, :func:`fit_monopole`, :func:`remove_monopole`
     """
     m=npy.asarray(m)
     npix = m.size
@@ -574,20 +946,37 @@ def fit_dipole(m,nest=False,bad=pixlib.UNSEEN,gal_cut=0):
     dipole = res[1:4]
     return mono,dipole
 
-def remove_dipole(m,nest=False,bad=pixlib.UNSEEN,gal_cut=0,fitval=False,
+def remove_dipole(m,nest=False,bad=UNSEEN,gal_cut=0,fitval=False,
                   copy=True,verbose=False):
     """Fit and subtract the dipole and the monopole from the given map m.
-    Input:
-      - m: the map from which a dipole is fitted and subtracted
-      - nest: False if m is in RING scheme, ``True`` if it is NESTED
-      - bad: bad values of pixel, default to UNSEEN.
-      - gal_cut: latitude below which pixel are not taken into account
-      - fitval: whether to return or not the fitted values of monopole and dipole
-    Return:
-      if fitval is False:
-      - the map with monopole and dipole subtracted
-      if fitval is ``True``:
-      - the map, the monopole value  and the dipole vector
+
+    Parameters
+    ----------
+    m: float, array-like
+      the map to which a dipole is fitted and subtracted
+    nest: bool
+      if ``False`` m is assumed in RING scheme, otherwise map is NESTED
+    bad: float
+      bad values of pixel, default to :const:`UNSEEN`.
+    gal_cut: float
+      pixels at latitude in [-gal_cut;+gal_cut] are not taken into account
+    fitval: bool
+      whether to return or not the fitted values of monopole and dipole
+    copy: bool
+      whether to modify input map or not (by default, make a copy)
+    verbose: bool
+      print values of monopole and dipole
+
+    Returns
+    -------
+    res: array or tuple of length 3
+      if fitval is False, returns map with monopole and dipole subtracted,
+      otherwise, returns map (array, in res[0]), monopole (float, in res[1]), 
+      dipole_vector (array, in res[2])
+
+    See Also
+    --------
+    :func:`fit_dipole`, :func:`fit_monopole`, :func:`remove_monopole`
     """
     m=npy.array(m,copy=copy)
     npix = m.size
@@ -621,13 +1010,26 @@ def remove_dipole(m,nest=False,bad=pixlib.UNSEEN,gal_cut=0,fitval=False,
 
 def fit_monopole(m,nest=False,bad=pixlib.UNSEEN,gal_cut=0):
     """Fit a monopole to the map, excluding unseen pixels.
-    Input:
-      - m: the map from which a monopole is fitted and subtracted
-      - nest: if ``True``, input map is NESTED (default False)
-      - bad: bad pixel value (default UNSEEN)
-      - gal_cut: latitude cut in degrees (default 0.0)
-    Return:
-      - the monopole value
+
+    Parameters
+    ----------
+    m: float, array-like
+      the map to which a dipole is fitted and subtracted
+    nest: bool
+      if ``False`` m is assumed in RING scheme, otherwise map is NESTED
+    bad: float
+      bad values of pixel, default to :const:`UNSEEN`.
+    gal_cut: float
+      pixels at latitude in [-gal_cut;+gal_cut] are not taken into account
+
+    Returns
+    -------
+    res: float
+      fitted monopole value
+
+    See Also
+    --------
+    :func:`fit_dipole`, :func:`remove_monopole`, :func:`remove_monopole`
     """
     m=npy.asarray(m)
     npix=m.size
@@ -657,19 +1059,33 @@ def fit_monopole(m,nest=False,bad=pixlib.UNSEEN,gal_cut=0):
 def remove_monopole(m,nest=False,bad=pixlib.UNSEEN,gal_cut=0,fitval=False,
                     copy=True,verbose=False):
     """Fit and subtract the monopole from the given map m.
-    Input:
-      - m: the map from which a dipole is fitted and subtracted
-      - nest: if ``True``, input map is NESTED (default False)
-      - bad: bad pixel value (default UNSEEN)
-      - gal_cut: latitude cut in degrees (default 0.0)
-      - fitval: return fitted monopole with map (default False)
-      - copy: if False, input map is changed directly (default ``True``)
-      - verbose: print the fitted monopole (default False)
-    Return:
-      if fitval is False:
-      - the map with monopole subtracted
-      if fitval is ``True``:
-      - the map with monopole subtracted and the monopole value
+
+    Parameters
+    ----------
+    m: float, array-like
+      the map to which a monopole is fitted and subtracted
+    nest: bool
+      if ``False`` m is assumed in RING scheme, otherwise map is NESTED
+    bad: float
+      bad values of pixel, default to :const:`UNSEEN`.
+    gal_cut: float
+      pixels at latitude in [-gal_cut;+gal_cut] are not taken into account
+    fitval: bool
+      whether to return or not the fitted value of monopole
+    copy: bool
+      whether to modify input map or not (by default, make a copy)
+    verbose: bool
+      whether to print values of monopole
+
+    Returns
+    -------
+    res: array or tuple of length 3
+      if fitval is False, returns map with monopole subtracted,
+      otherwise, returns map (array, in res[0]) and monopole (float, in res[1])
+
+    See Also
+    --------
+    :func:`fit_dipole`, :func:`fit_monopole`, :func:`remove_dipole`
     """
     m=npy.array(m,copy=copy)
     npix = m.size
@@ -692,10 +1108,103 @@ def remove_monopole(m,nest=False,bad=pixlib.UNSEEN,gal_cut=0,fitval=False,
     else:
         return m
 
+def get_map_size(m):
+    """Returns the npix of a given map (implicit or explicit pixelization).
+
+     If map is a dict type, assumes explicit pixelization: use nside key if present, or use 
+     nside attribute if present, otherwise use the smallest valid npix given the maximum key value.
+     otherwise assumes implicit pixelization and returns len(m).
+
+     Parameters
+     ----------
+     m: array-like or dict-like
+       a map with implicit (array-like) or explicit (dict-like) pixellization
+
+     Returns
+     -------
+     npix: int
+       a valid number of pixel
+
+     Notes
+     -----
+     In implicit pixellization, raise a ValueError exception if the size of the input
+     is not a valid pixel number.
+
+     Examples
+     --------
+     >>> m = {0: 1, 1: 1, 2: 1, 'nside': 1}
+     >>> print hpy.get_map_size(m)
+     12
+
+     >>> m = {0: 1, 767: 1}
+     >>> print hpy.get_map_size(m)
+     768
+
+     >>> print hpy.get_map_size(np.zeros(12 * 8 ** 2))
+     768
+    """
+    if isinstance(m, dict):
+        if 'nside' in m:
+            return nside2npix(m['nside'])
+        elif hasattr(ma, 'nside'):
+            return nside2npix(m.nside)
+        else:
+            nside = get_min_valid_nside(max(m.keys())+1)
+            return nside2npix(nside)
+    else:
+        if isnpixok(len(m)):
+            return len(m)
+        else:
+            raise ValueError("Wrong pixel number (it is not 12*nside**2)")
+
+def get_min_valid_nside(npix):
+    """Returns the minimum acceptable nside so that npix <= nside2npix(nside).
+
+    Parameters
+    ----------
+    npix: int
+      a minimal number of pixel
+
+    Returns
+    -------
+    nside: int
+      a valid healpix nside so that 12 * nside ** 2 >= npix
+
+    Examples
+    --------
+    >>> hpy.pixelfunc.get_min_valid_nside(355)
+    8
+    >>> hpy.pixelfunc.get_min_valid_nside(768)
+    8
+    """
+    order = 0.5 * npy.log2(npix / 12.)
+    return 2**int(npy.ceil(order))
+
 def maptype(m):
-    """Return -1 if the given object is not a map.
-    Return 0 if it is a map.
-    Return k>0 if it is a list of map (k: number of maps in the sequence)
+    """Describe the type of the map (valid, single, sequence of maps).
+
+    Parameters
+    ----------
+    m: sequence
+      the map to get info from
+
+    Returns
+    -------
+    info: int
+      Returns -1 if the given object is not a valid map.
+      Returns 0 if it is a map.
+      Returns info>0 if it is a sequence of maps (info: number of maps in the sequence)
+
+    Examples
+    --------
+    >>> hpy.pixelfunc.maptype(np.arange(12))
+    0
+    >>> hpy.pixelfunc.maptype(2)
+    -1
+    >>> hpy.pixelfunc.maptype([np.arange(12), np.arange(12)])
+    2
+    >>> hpy.pixelfunc.maptype([np.arange(12), np.arange(768)])
+    -1
     """
     if not hasattr(m, '__len__'):
         return -1
@@ -708,6 +1217,8 @@ def maptype(m):
                 return -1
         if isnpixok(len(m[0])):
             return len(m)
+        else:
+            return -1
     else:
         if isnpixok(len(m)):
             return 0
@@ -716,7 +1227,22 @@ def maptype(m):
 
 def get_nside(m):
     """Return the nside of the given map.
-    Can be a single map or a list of maps.
+
+    Parameters
+    ----------
+    m: sequence
+      the map to get the nside from.
+
+    Returns
+    -------
+    nside: int
+      the healpix nside parameter of the map (or sequence of maps)
+
+    Notes
+    -----
+    If the input is a sequence of maps, all of them must have same size.
+    If the input is not a valid map (not a sequence, unvalid number of pixels),
+    a TypeError exception is raised.
     """
     typ = maptype(m)
     if typ < 0:
@@ -725,6 +1251,61 @@ def get_nside(m):
         return npix2nside(len(m))
     else:
         return npix2nside(len(m[0]))
+
+def ud_grade(map_in,nside_out,pess=False,order_in='RING',order_out=None,
+             power=None, dtype=None):
+    """Upgrade or degrade resolution of a map (or list of maps).
+
+    Parameters
+    ----------
+    map_in: array-like or sequence of array-like
+      the input map(s) (if a sequence of maps, all must have same size)
+    nside_out: int
+      the desired nside of the output map(s)
+    pess: bool
+      if ``True``, in degrading, reject pixels which contains
+      a bad sub_pixel. Otherwise, estimate average with good pixels
+    order_in, order_out: str
+      pixel ordering of input and output ('RING' or 'NESTED')
+    power: float
+      if non-zero, multiply the result by (nside_in/nside_out)**power
+      For example, power=-2 keep the sum of the map invariant
+    dtype: type
+      the type of the output map
+
+    Returns
+    -------
+    map_out: array-like or sequence of array-like
+      the upgraded or degraded map(s)
+
+    Examples
+    --------
+    >>> hpy.ud_grade(np.arange(48.), 1)
+    array([  5.5 ,   7.25,   9.  ,  10.75,  21.75,  21.75,  23.75,  25.75,
+            36.5 ,  38.25,  40.  ,  41.75])
+    """
+    if not isnsideok(nside_out):
+        raise ValueError('Invalid nside for output')
+    typ = maptype(map_in)
+    if typ<0:
+        raise TypeError('Invalid map')
+    if typ == 0:
+        m_in = [map_in]
+    else:
+        m_in = map_in
+    mapout = []
+    if order_out is None: order_out = order_in
+    for m in m_in:
+        if str(order_in).upper()[0:4] == 'RING':
+            m = reorder(m,r2n=True)
+        mout = _ud_grade_core(m,nside_out,pess=pess, power=power, dtype=dtype)
+        if str(order_out).upper()[0:4] == 'RING':
+            mout = reorder(mout,n2r=True)
+        mapout.append(mout)
+    if typ == 0:
+        return mapout[0]
+    else:
+        return mapout
 
 def _ud_grade_core(m,nside_out,pess=False,power=None, dtype=None):
     """Internal routine used by ud_grade. It assumes that the map is NESTED
@@ -764,7 +1345,8 @@ def _ud_grade_core(m,nside_out,pess=False,power=None, dtype=None):
             badout = npy.where(nhit != rat2)
         else:
             badout = npy.where(nhit == 0)
-        if power: nhit /= ratio
+        if power:
+            nhit /= ratio
         map_out /= nhit
         try:
             map_out[badout] = UNSEEN
@@ -774,39 +1356,3 @@ def _ud_grade_core(m,nside_out,pess=False,power=None, dtype=None):
     else:
         map_out = m
     return map_out.astype(type_out)
-
-def ud_grade(map_in,nside_out,pess=False,order_in='RING',order_out=None,
-             power=None, dtype=None):
-    """Upgrade or degrade resolution of a map (or list of maps).
-
-    Input:
-     - map_in: the input map(s)
-     - nside_out: the desired nside of the output
-    Parameters:
-     - pess: if ``True``, pessismistic, in degrading, reject pixels which contains
-             a bad sub_pixel. Otherwise, estimate average with other pixels
-    Output:
-     - the upgraded or degraded map(s)
-    """
-    if not isnsideok(nside_out):
-        raise ValueError('Invalid nside for output')
-    typ = maptype(map_in)
-    if typ<0:
-        raise TypeError('Invalid map')
-    if typ == 0:
-        m_in = [map_in]
-    else:
-        m_in = map_in
-    mapout = []
-    if order_out is None: order_out = order_in
-    for m in m_in:
-        if str(order_in).upper()[0:4] == 'RING':
-            m = reorder(m,r2n=True)
-        mout = _ud_grade_core(m,nside_out,pess=pess, dtype=dtype)
-        if str(order_out).upper()[0:4] == 'RING':
-            mout = reorder(mout,n2r=True)
-        mapout.append(mout)
-    if typ == 0:
-        return mapout[0]
-    else:
-        return mapout
