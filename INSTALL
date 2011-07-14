@@ -16,6 +16,9 @@ Requirements:
    hpbeta/libcfitsio before installing. The cfitsio version XXXX must
    match the version in hpbeta/planck.make (or you need to modify it there).
 
+* in order to build the github version you need cython to be installed on your machine,
+this is not necessary for tarball releases.
+
 The installation procedure is very simple:
 
 $ cd healpy-0.9.3.1
