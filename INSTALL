@@ -49,5 +49,11 @@ $ python setup.py install --install-lib=~/Softs/Python # will install healpy in 
 or
 $ python setup.py install --user # will install it in your User python directory (python >= 2.6)
 
-That's it !
+Development install
+-------------------
 
+the best way to install healpy if you plan to develop is to build the C++ extensions in place with:
+
+python setup.py build_ext --inplace
+
+the add the healpy/healpy folder to your PYTHONPATH
