@@ -109,8 +109,8 @@ template<typename T> class xcomplex
     /*! Multiplies \a *this by \a b. */
     xcomplex &operator*= (const xcomplex &b)
       {
-      T tmp=re;
-      re=tmp*b.re-im*b.im; im=tmp*b.im+im*b.re;
+      T tr=re*b.re-im*b.im, ti=re*b.im+im*b.re;
+      re=tr; im=ti;
       return *this;
       }
     /*! Divides \a *this by \a b. */
@@ -185,6 +185,13 @@ template <typename T> inline T abs (const xcomplex<T> &num)
   {
   using namespace std;
   return abs(complex<T>(num));
+  }
+/*! Returns the exponential of \a num.
+    \relates xcomplex */
+template <typename T> inline xcomplex<T> exp (const xcomplex<T> &num)
+  {
+  using namespace std;
+  return xcomplex<T>(exp(complex<T>(num)));
   }
 /*! Returns \a f1*f2.
     \relates xcomplex */

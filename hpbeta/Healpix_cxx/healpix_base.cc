@@ -35,6 +35,8 @@
 
 using namespace std;
 
+const int OPLUS=2, FACT=1<<OPLUS;
+
 template<> const int T_Healpix_Base<int  >::order_max=13;
 template<> const int T_Healpix_Base<int64>::order_max=29;
 
@@ -57,38 +59,6 @@ template<typename I> I T_Healpix_Base<I>::ring_above (double z) const
     return I(nside_*(2-1.5*z));
   I iring = I(nside_*sqrt(3*(1-az)));
   return (z>0) ? iring : 4*nside_-iring-1;
-  }
-
-template<typename I> void T_Healpix_Base<I>::in_ring(I iz, double phi0,
-  double dphi, rangeset<I> &pixset) const
-  {
-  I nr, ipix1;
-  bool shifted;
-
-  get_ring_info_small(iz,ipix1,nr,shifted);
-  double shift = shifted ? 0.5 : 0.;
-
-  I ipix2 = ipix1 + nr - 1; // highest pixel number in the ring
-
-  if (dphi > (pi-1e-12))
-    pixset.append(ipix1,ipix2+1);
-  else
-    {
-    I ip_lo = ifloor<I>(nr*inv_twopi*(phi0-dphi) - shift)+1;
-    I ip_hi = ifloor<I>(nr*inv_twopi*(phi0+dphi) - shift);
-    if (ip_lo<=ip_hi)
-      {
-      if (ip_hi>=nr)
-        { ip_lo-=nr; ip_hi-=nr; }
-      if (ip_lo<0)
-        {
-        pixset.append(ipix1,ipix1+ip_hi+1);
-        pixset.append(ipix1+ip_lo+nr,ipix2+1);
-        }
-      else
-        pixset.append(ipix1+ip_lo,ipix1+ip_hi+1);
-      }
-    }
   }
 
 namespace {
@@ -153,6 +123,36 @@ template<typename I> inline void check_pixel (int o, int order_, int omax,
     }
   }
 
+template<typename I> bool check_pixel_ring (const T_Healpix_Base<I> &b1,
+  const T_Healpix_Base<I> &b2, I pix, I nr, I ipix1, int fct,
+  double cz, double cphi, double cosrp2, I cpix)
+  {
+  if (pix>=nr) pix-=nr;
+  if (pix<0) pix+=nr;
+  pix+=ipix1;
+  if (pix==cpix) return false; // disk center in pixel => overlap
+  int px,py,pf;
+  b1.pix2xyf(pix,px,py,pf);
+  for (int i=0; i<fct-1; ++i) // go along the 4 edges
+    {
+    I ox=fct*px, oy=fct*py;
+    double pz,pphi;
+    b2.pix2zphi(b2.xyf2pix(ox+i,oy,pf),pz,pphi);
+    if (cosdist_zphi(pz,pphi,cz,cphi)>cosrp2) // overlap
+      return false;
+    b2.pix2zphi(b2.xyf2pix(ox+fct-1,oy+i,pf),pz,pphi);
+    if (cosdist_zphi(pz,pphi,cz,cphi)>cosrp2) // overlap
+      return false;
+    b2.pix2zphi(b2.xyf2pix(ox+fct-1-i,oy+fct-1,pf),pz,pphi);
+    if (cosdist_zphi(pz,pphi,cz,cphi)>cosrp2) // overlap
+      return false;
+    b2.pix2zphi(b2.xyf2pix(ox,oy+fct-1-i,pf),pz,pphi);
+    if (cosdist_zphi(pz,pphi,cz,cphi)>cosrp2) // overlap
+      return false;
+    }
+  return true;
+  }
+
 } // unnamed namespace
 
 template<typename I> void T_Healpix_Base<I>::query_disc (pointing ptg,
@@ -163,16 +163,32 @@ template<typename I> void T_Healpix_Base<I>::query_disc (pointing ptg,
 
   if (scheme_==RING)
     {
-    if (inclusive) radius+=max_pixrad();
-    if (radius>=pi)
+    I fct = inclusive ? min(I(FACT),(I(1)<<order_max)/nside_) : 1;
+    T_Healpix_Base b2;
+    double rsmall, rbig;
+    if (fct>1)
+      {
+      b2.SetNside(fct*nside_,RING);
+      rsmall = radius+b2.max_pixrad();
+      rbig = radius+max_pixrad();
+      }
+    else
+      rsmall = rbig = inclusive ? radius+max_pixrad() : radius;
+
+    if (rsmall>=pi)
       { pixset.append(0,npix_); return; }
 
-    double cosang = cos(radius);
+    rbig = min(pi,rbig);
+
+    double cosrsmall = cos(rsmall);
+    double cosrbig = cos(rbig);
 
     double z0 = cos(ptg.theta);
     double xa = 1./sqrt((1-z0)*(1+z0));
 
-    double rlat1 = ptg.theta - radius;
+    I cpix=zphi2pix(z0,ptg.phi);
+
+    double rlat1 = ptg.theta - rsmall;
     double zmax = cos(rlat1);
     I irmin = ring_above (zmax)+1;
 
@@ -183,21 +199,53 @@ template<typename I> void T_Healpix_Base<I>::query_disc (pointing ptg,
       pixset.append(0,sp+rp);
       }
 
-    double rlat2 = ptg.theta + radius;
+    if ((fct>1) && (rlat1>0)) irmin=max(I(1),irmin-1);
+
+    double rlat2 = ptg.theta + rsmall;
     double zmin = cos(rlat2);
     I irmax = ring_above (zmin);
 
-    for (I iz=irmin; iz<=irmax; ++iz) // rings partially in the disk
+    if ((fct>1) && (rlat2<pi)) irmax=min(4*nside_-1,irmax+1);
+
+    for (I iz=irmin; iz<=irmax; ++iz)
       {
       double z=ring2z(iz);
-
-      double x = (cosang-z*z0)*xa;
+      double x = (cosrbig-z*z0)*xa;
       double ysq = 1-z*z-x*x;
-      planck_assert(ysq>=0, "error in query_disc()");
-      double dphi=atan2(sqrt(ysq),x);
-      in_ring (iz, ptg.phi, dphi, pixset);
-      }
+      double dphi = (ysq<=0) ? pi-1e-15 : atan2(sqrt(ysq),x);
+      I nr, ipix1;
+      bool shifted;
+      get_ring_info_small(iz,ipix1,nr,shifted);
+      double shift = shifted ? 0.5 : 0.;
 
+      I ipix2 = ipix1 + nr - 1; // highest pixel number in the ring
+
+      I ip_lo = ifloor<I>(nr*inv_twopi*(ptg.phi-dphi) - shift)+1;
+      I ip_hi = ifloor<I>(nr*inv_twopi*(ptg.phi+dphi) - shift);
+
+      if (fct>1)
+        {
+        while ((ip_lo<=ip_hi) && check_pixel_ring
+               (*this,b2,ip_lo,nr,ipix1,fct,z0,ptg.phi,cosrsmall,cpix))
+          ++ip_lo;
+        while ((ip_hi>ip_lo) && check_pixel_ring
+               (*this,b2,ip_hi,nr,ipix1,fct,z0,ptg.phi,cosrsmall,cpix))
+          --ip_hi;
+        }
+
+      if (ip_lo<=ip_hi)
+        {
+        if (ip_hi>=nr)
+          { ip_lo-=nr; ip_hi-=nr; }
+        if (ip_lo<0)
+          {
+          pixset.append(ipix1,ipix1+ip_hi+1);
+          pixset.append(ipix1+ip_lo+nr,ipix2+1);
+          }
+        else
+          pixset.append(ipix1+ip_lo,ipix1+ip_hi+1);
+        }
+      }
     if ((rlat2>=pi) && (irmax+1<4*nside_)) // south pole in the disk
       {
       I sp,rp; bool dummy;
@@ -210,7 +258,7 @@ template<typename I> void T_Healpix_Base<I>::query_disc (pointing ptg,
     if (radius>=pi) // disk covers the whole sphere
       { pixset.append(0,npix_); return; }
 
-    int oplus=inclusive ? 2 : 0;
+    int oplus=inclusive ? OPLUS : 0;
     int omax=min(int(order_max),order_+oplus); // the order up to which we test
 
     vec3 vptg(ptg);
@@ -264,29 +312,51 @@ template<typename I> void T_Healpix_Base<I>::query_multidisc
 
   if (scheme_==RING)
     {
-    double rplus = inclusive ? max_pixrad() : 0;
+    I fct = inclusive ? min(I(FACT),(I(1)<<order_max)/nside_) : 1;
+    T_Healpix_Base b2;
+    double rpsmall, rpbig;
+    if (fct>1)
+      {
+      b2.SetNside(fct*nside_,RING);
+      rpsmall = b2.max_pixrad();
+      rpbig = max_pixrad();
+      }
+    else
+      rpsmall = rpbig = inclusive ? max_pixrad() : 0;
+
     I irmin=1, irmax=4*nside_-1;
-    double thmin=0, thmax=pi;
-    vector<double> z0,xa,cosrad;
+    vector<double> z0,xa,cosrsmall,cosrbig;
     vector<pointing> ptg;
-    z0.reserve(nv); xa.reserve(nv); cosrad.reserve(nv); ptg.reserve(nv);
+    vector<I> cpix;
     for (tsize i=0; i<nv; ++i)
       {
-      double r=rad[i]+rplus;
-      if (r<pi)
+      double rsmall=rad[i]+rpsmall;
+      if (rsmall<pi)
         {
+        double rbig=min(pi,rad[i]+rpbig);
         pointing pnt=pointing(norm[i]);
-        cosrad.push_back(cos(r));
+        cosrsmall.push_back(cos(rsmall));
+        cosrbig.push_back(cos(rbig));
         double cth=cos(pnt.theta);
         z0.push_back(cth);
+        if (fct>1) cpix.push_back(zphi2pix(cth,pnt.phi));
         xa.push_back(1./sqrt((1-cth)*(1+cth)));
         ptg.push_back(pnt);
-        double tmp = min(pnt.theta+r,pi);
-        if (tmp < thmax)
-          { thmax=tmp; irmax=ring_above(cos(thmax)); }
-        tmp = max(0.,pnt.theta-r);
-        if (tmp > thmin)
-          { thmin=tmp; irmin=ring_above(cos(thmin))+1; }
+
+        double rlat1 = pnt.theta - rsmall;
+        double zmax = cos(rlat1);
+        I irmin_t = (rlat1<=0) ? 1 : ring_above (zmax)+1;
+
+        if ((fct>1) && (rlat1>0)) irmin_t=max(I(1),irmin_t-1);
+
+        double rlat2 = pnt.theta + rsmall;
+        double zmin = cos(rlat2);
+        I irmax_t = (rlat2>=pi) ? 4*nside_-1 : ring_above (zmin);
+
+        if ((fct>1) && (rlat2<pi)) irmax_t=min(4*nside_-1,irmax_t+1);
+
+        if (irmax_t < irmax) irmax=irmax_t;
+        if (irmin_t > irmin) irmin=irmin_t;
         }
       }
 
@@ -302,26 +372,28 @@ template<typename I> void T_Healpix_Base<I>::query_multidisc
       tr.append(ipix1,ipix1+nr);
       for (tsize j=0; j<z0.size(); ++j)
         {
-        double x = (cosrad[j]-z*z0[j])*xa[j];
+        double x = (cosrbig[j]-z*z0[j])*xa[j];
         double ysq = 1.-z*z-x*x;
-        if (ysq>=0.)
+        double dphi = (ysq<=0) ? pi-1e-15 : atan2(sqrt(ysq),x);
+        I ip_lo = ifloor<I>(nr*inv_twopi*(ptg[j].phi-dphi) - shift)+1;
+        I ip_hi = ifloor<I>(nr*inv_twopi*(ptg[j].phi+dphi) - shift);
+        if (fct>1)
           {
-          double dphi=atan2(sqrt(ysq),x);
-
-          if (dphi < (pi-1e-12))
-            {
-            I ip_lo = ifloor<I>(nr*inv_twopi*(ptg[j].phi-dphi) - shift)+1;
-            I ip_hi = ifloor<I>(nr*inv_twopi*(ptg[j].phi+dphi) - shift);
-            if (ip_hi>=nr)
-              { ip_lo-=nr; ip_hi-=nr;}
-            if (ip_lo<0)
-              tr.remove(ipix1+ip_hi+1,ipix1+ip_lo+nr);
-            else
-              {
-              tr.remove(ipix1,ipix1+ip_lo);
-              tr.remove(ipix1+ip_hi+1,ipix2+1);
-              }
-            }
+          while ((ip_lo<=ip_hi) && check_pixel_ring
+            (*this,b2,ip_lo,nr,ipix1,fct,z0[j],ptg[j].phi,cosrsmall[j],cpix[j]))
+            ++ip_lo;
+          while ((ip_hi>ip_lo) && check_pixel_ring
+            (*this,b2,ip_hi,nr,ipix1,fct,z0[j],ptg[j].phi,cosrsmall[j],cpix[j]))
+            --ip_hi;
+          }
+        if (ip_hi>=nr)
+          { ip_lo-=nr; ip_hi-=nr;}
+        if (ip_lo<0)
+          tr.remove(ipix1+ip_hi+1,ipix1+ip_lo+nr);
+        else
+          {
+          tr.remove(ipix1,ipix1+ip_lo);
+          tr.remove(ipix1+ip_hi+1,ipix2+1);
           }
         }
       for (tsize j=0; j<tr.size(); ++j)
@@ -330,7 +402,7 @@ template<typename I> void T_Healpix_Base<I>::query_multidisc
     }
   else // scheme_ == NEST
     {
-    int oplus=inclusive ? 2 : 0;
+    int oplus=inclusive ? OPLUS : 0;
     int omax=min(order_max,order_+oplus); // the order up to which we test
 
     // TODO: ignore all disks with radius>=pi
@@ -377,6 +449,93 @@ template<typename I> void T_Healpix_Base<I>::query_multidisc
       check_pixel (o, order_, omax, zone, pixset, pix, stk, inclusive,
         stacktop);
       bailout:;
+      }
+    }
+  }
+
+template<typename I> void T_Healpix_Base<I>::query_multidisc_general
+  (const arr<vec3> &norm, const arr<double> &rad, bool inclusive,
+  const vector<int> &cmds, rangeset<I> &pixset) const
+  {
+  tsize nv=norm.size();
+  planck_assert(nv==rad.size(),"inconsistent input arrays");
+  pixset.clear();
+
+  if (scheme_==RING)
+    {
+    planck_fail ("not yet implemented");
+    }
+  else // scheme_ == NEST
+    {
+    int oplus=inclusive ? 2 : 0;
+    int omax=min(order_max,order_+oplus); // the order up to which we test
+
+    // TODO: ignore all disks with radius>=pi
+
+    arr<T_Healpix_Base<I> > base(omax+1);
+    arr3<double> crlimit(omax+1,nv,3);
+    for (int o=0; o<=omax; ++o) // prepare data at the required orders
+      {
+      base[o].Set(o,NEST);
+      double dr=base[o].max_pixrad(); // safety distance
+      for (tsize i=0; i<nv; ++i)
+        {
+        crlimit(o,i,0) = (rad[i]+dr>pi) ? -1. : cos(rad[i]+dr);
+        crlimit(o,i,1) = (o==0) ? cos(rad[i]) : crlimit(0,i,1);
+        crlimit(o,i,2) = (rad[i]-dr<0.) ?  1. : cos(rad[i]-dr);
+        }
+      }
+
+    vector<pair<I,int> > stk; // stack for pixel numbers and their orders
+    stk.reserve(12+3*omax); // reserve maximum size to avoid reallocation
+    for (int i=0; i<12; ++i) // insert the 12 base pixels in reverse order
+      stk.push_back(make_pair(I(11-i),0));
+
+    int stacktop=0; // a place to save a stack position
+    arr<tsize> zone(nv);
+
+    vector<tsize> zstk; zstk.reserve(cmds.size());
+
+    while (!stk.empty()) // as long as there are pixels on the stack
+      {
+      // pop current pixel number and order from the stack
+      I pix=stk.back().first;
+      int o=stk.back().second;
+      stk.pop_back();
+
+      vec3 pv(base[o].pix2vec(pix));
+
+      for (tsize i=0; i<nv; ++i)
+        {
+        zone[i]=3;
+        double crad=dotprod(pv,norm[i]);
+        for (tsize iz=0; iz<zone[i]; ++iz)
+          if (crad<crlimit(o,i,iz))
+            zone[i]=iz;
+        }
+
+      for (tsize i=0; i<cmds.size(); ++i)
+        {
+        tsize tmp;
+        switch (cmds[i])
+          {
+          case -1: // union
+            tmp=zstk.back(); zstk.pop_back();
+            zstk.back() = max(zstk.back(),tmp);
+            break;
+          case -2: // intersection
+            tmp=zstk.back(); zstk.pop_back();
+            zstk.back() = min(zstk.back(),tmp);
+            break;
+          default: // add value
+            zstk.push_back(zone[cmds[i]]);
+          }
+        }
+      planck_assert(zstk.size()==1,"inconsistent commands");
+      tsize zn=zstk[0]; zstk.pop_back();
+
+      check_pixel (o, order_, omax, zn, pixset, pix, stk, inclusive,
+        stacktop);
       }
     }
   }
@@ -586,7 +745,8 @@ template<typename I> I T_Healpix_Base<I>::nest2peano (I pix) const
 template<typename I> I T_Healpix_Base<I>::peano2nest (I pix) const
   { return nest_peano_helper(pix,1); }
 
-template<typename I> I T_Healpix_Base<I>::zphi2pix (double z, double phi) const
+template<typename I> I T_Healpix_Base<I>::loc2pix (double z, double phi,
+  double sth, bool have_sth) const
   {
   double za = abs(z);
   double tt = fmodulo(phi*inv_halfpi,4.0); // in [0,4)
@@ -614,7 +774,9 @@ template<typename I> I T_Healpix_Base<I>::zphi2pix (double z, double phi) const
     else  // North & South polar caps
       {
       double tp = tt-I(tt);
-      double tmp = nside_*sqrt(3*(1-za));
+      double tmp = ((za<0.99)||(!have_sth)) ?
+                   nside_*sqrt(3*(1-za)) :
+                   nside_*sth/sqrt((1.+za)/3.);
 
       I jp = I(tp*tmp); // increasing edge line index
       I jm = I((1.0-tp)*tmp); // decreasing edge line index
@@ -647,7 +809,9 @@ template<typename I> I T_Healpix_Base<I>::zphi2pix (double z, double phi) const
       {
       int ntt = min(3,int(tt));
       double tp = tt-ntt;
-      double tmp = nside_*sqrt(3*(1-za));
+      double tmp = ((za<0.99)||(!have_sth)) ?
+                   nside_*sqrt(3*(1-za)) :
+                   nside_*sth/sqrt((1.+za)/3.);
 
       I jp = I(tp*tmp); // increasing edge line index
       I jm = I((1.0-tp)*tmp); // decreasing edge line index
@@ -659,9 +823,10 @@ template<typename I> I T_Healpix_Base<I>::zphi2pix (double z, double phi) const
     }
   }
 
-template<typename I> void T_Healpix_Base<I>::pix2zphi (I pix, double &z,
-  double &phi) const
+template<typename I> void T_Healpix_Base<I>::pix2loc (I pix, double &z,
+  double &phi, double &sth, bool &have_sth) const
   {
+  have_sth=false;
   if (scheme_==RING)
     {
     if (pix<ncap_) // North Polar cap
@@ -669,7 +834,9 @@ template<typename I> void T_Healpix_Base<I>::pix2zphi (I pix, double &z,
       I iring = (1+I(isqrt(1+2*pix)))>>1; // counted from North pole
       I iphi  = (pix+1) - 2*iring*(iring-1);
 
-      z = 1.0 - (iring*iring)*fact2_;
+      double tmp=(iring*iring)*fact2_;
+      z = 1.0 - tmp;
+      if (z>0.99) { sth=sqrt(tmp*(2.-tmp)); have_sth=true; }
       phi = (iphi-0.5) * halfpi/iring;
       }
     else if (pix<(npix_-ncap_)) // Equatorial region
@@ -691,7 +858,9 @@ template<typename I> void T_Healpix_Base<I>::pix2zphi (I pix, double &z,
       I iring = (1+I(isqrt(2*ip-1)))>>1; // counted from South pole
       I iphi  = 4*iring + 1 - (ip - 2*iring*(iring-1));
 
-      z = -1.0 + (iring*iring)*fact2_;
+      double tmp=(iring*iring)*fact2_;
+      z = tmp - 1.0;
+      if (z<-0.99) { sth=sqrt(tmp*(2.-tmp)); have_sth=true; }
       phi = (iphi-0.5) * halfpi/iring;
       }
     }
@@ -706,12 +875,16 @@ template<typename I> void T_Healpix_Base<I>::pix2zphi (I pix, double &z,
     if (jr<nside_)
       {
       nr = jr;
-      z = 1 - nr*nr*fact2_;
+      double tmp=(nr*nr)*fact2_;
+      z = 1 - tmp;
+      if (z>0.99) { sth=sqrt(tmp*(2.-tmp)); have_sth=true; }
       }
     else if (jr > 3*nside_)
       {
       nr = nside_*4-jr;
-      z = nr*nr*fact2_ - 1;
+      double tmp=(nr*nr)*fact2_;
+      z = tmp - 1;
+      if (z<-0.99) { sth=sqrt(tmp*(2.-tmp)); have_sth=true; }
       }
     else
       {
@@ -757,6 +930,48 @@ template<typename I> void T_Healpix_Base<I>::query_polygon
     rad[nv]=acos(cosrad);
     }
   query_multidisc(normal,rad,inclusive,pixset);
+  }
+
+template<typename I> void T_Healpix_Base<I>::query_strip_internal
+  (double theta1, double theta2, bool inclusive, rangeset<I> &pixset) const
+  {
+  if (scheme_==RING)
+    {
+    I ring1 = max(I(1),1+ring_above(cos(theta1))),
+      ring2 = min(4*nside_-1,ring_above(cos(theta2)));
+    if (inclusive)
+      {
+      ring1 = max(I(1),ring1-1);
+      ring2 = min(4*nside_-1,ring2+1);
+      }
+
+    I sp1,rp1,sp2,rp2;
+    bool dummy;
+    get_ring_info_small(ring1,sp1,rp1,dummy);
+    get_ring_info_small(ring2,sp2,rp2,dummy);
+    I pix1 = sp1,
+      pix2 = sp2+rp2;
+    if (pix1<=pix2) pixset.append(pix1,pix2);
+    }
+  else
+    planck_fail("query_strip not yet implemented for NESTED");
+  }
+
+template<typename I> void T_Healpix_Base<I>::query_strip (double theta1,
+  double theta2, bool inclusive, rangeset<I> &pixset) const
+  {
+  pixset.clear();
+
+  if (theta1<theta2)
+    query_strip_internal(theta1,theta2,inclusive,pixset);
+  else
+    {
+    query_strip_internal(0.,theta2,inclusive,pixset);
+    rangeset<I> ps2;
+    query_strip_internal(theta1,pi,inclusive,ps2);
+    for (tsize i=0; i<ps2.size(); ++i)
+      pixset.appendRelaxed(ps2[i]);
+    }
   }
 
 template<typename I> inline void T_Healpix_Base<I>::get_ring_info_small

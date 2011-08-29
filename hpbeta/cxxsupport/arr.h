@@ -142,6 +142,16 @@ template <typename T> class arr_ref
         if (d[m]==val) return m;
       planck_fail ("entry not found in array");
       }
+
+    /*! Returns \a true if the array has the same size as \a other and all
+        elements of both arrays are equal, else \a false. */
+    bool contentsEqual(const arr_ref &other) const
+      {
+      if (s!=other.s) return false;
+      for (tsize i=0; i<s; ++i)
+        if (d[i]!=other.d[i]) return false;
+      return true;
+      }
   };
 
 /*! An array whose size is known at compile time. Very useful for storing

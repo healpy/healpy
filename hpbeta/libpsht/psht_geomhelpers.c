@@ -33,6 +33,81 @@
 #include "psht_geomhelpers.h"
 #include "c_utils.h"
 
+#if 0
+
+#include "svd_c.h"
+
+static void make_healpix_weights (int nside, double *weight)
+  {
+  int lmax = (int)(3.5*nside);
+  double dth1 = 1./(3*nside*nside);
+  double dth2 = 2./(3*nside);
+  int nring = 2*nside;
+  int npix = 12*nside*nside;
+  double **mat, *z=RALLOC(double,nring);
+  int *nir=RALLOC(int,nring);
+  double *b=RALLOC(double,nring);
+  svd_obj svd;
+  int ith, l;
+
+  ALLOC2D(mat,double,lmax/2+1,nring);
+  for (ith=0; ith<nring; ++ith)
+    {
+    if (ith<nside-1)
+      {
+      nir[ith] = 8*(ith+1);
+      z[ith] = 1 - dth1*(ith+1)*(ith+1);
+      }
+    else
+      {
+      nir[ith]=8*nside;
+      z[ith] = (2*nside-ith-1)*dth2;
+      }
+    }
+  nir[nring-1]/=2;
+
+  for (l=0; l<=lmax/2; ++l)
+    for (ith=0; ith<nring; ++ith)
+      mat[l][ith]=0;
+
+  for (ith=0; ith<nring; ++ith)
+    {
+    double p0 = 1;
+    double p1 = z[ith];
+    mat[0][ith] = p0;
+    for (l=2; l<=lmax; ++l)
+      {
+      double p2 = z[ith]*p1*(2*l-1) - p0*(l-1);
+      p2/=l;
+      if ((l%2)==0) mat[l/2][ith] = p2;
+      p0 = p1;
+      p1 = p2;
+      }
+    }
+
+  for (l=0; l<=lmax/2; ++l)
+    {
+    double bb=0;
+    for (ith=0; ith<nring; ++ith)
+      bb+=mat[l][ith]*nir[ith];
+    b[l] = -bb;
+    }
+  b[0] += npix;
+
+  svd_init(mat,1e-14,lmax/2+1,nring,&svd);
+  svd_solve(&svd,b);
+  svd_destroy(&svd);
+  for (l=0;l<nring;++l)
+    weight[l]=weight[2*nring-l-2] = 1.+b[l]/nir[l];
+
+  DEALLOC2D(mat);
+  DEALLOC(b);
+  DEALLOC(z);
+  DEALLOC(nir);
+  }
+
+#endif
+
 void psht_make_healpix_geom_info (int nside, int stride,
   psht_geom_info **geom_info)
   {
@@ -88,6 +163,16 @@ void psht_make_weighted_healpix_geom_info (int nside, int stride,
       }
     weight_[m]=4.*pi/npix*weight[northring-1];
     }
+
+#if 0
+  {
+  double *w2=RALLOC(double,nrings);
+  make_healpix_weights(nside,w2);
+  for (m=0; m<nrings; ++m)
+    weight_[m]*=w2[m];
+  DEALLOC(w2);
+  }
+#endif
 
   psht_make_geom_info (nrings, nph, ofs, stride_, phi0, theta, weight_,
     geom_info);

@@ -59,6 +59,12 @@ template<typename I> class T_Healpix_Base: public Healpix_Tables
     void query_multidisc (const arr<vec3> &norm, const arr<double> &rad,
       bool inclusive, rangeset<I> &pixset) const;
 
+    void query_multidisc_general (const arr<vec3> &norm, const arr<double> &rad,
+      bool inclusive, const std::vector<int> &cmds, rangeset<I> &pixset) const;
+
+    void query_strip_internal (double theta1, double theta2, bool inclusive,
+      rangeset<I> &pixset) const;
+
     inline I spread_bits (int v) const;
     inline int compress_bits (I v) const;
 
@@ -67,12 +73,13 @@ template<typename I> class T_Healpix_Base: public Healpix_Tables
     I xyf2ring(int ix, int iy, int face_num) const;
     void ring2xyf(I pix, int &ix, int &iy, int &face_num) const;
 
+    I loc2pix (double z, double phi, double sth, bool have_sth) const;
+    void pix2loc (I pix, double &z, double &phi, double &sth, bool &have_sth)
+      const;
+
     I nest_peano_helper (I pix, int dir) const;
 
     typedef I (T_Healpix_Base::*swapfunc)(I pix) const;
-    typedef void (T_Healpix_Base::*pix2xyf)
-                 (I pix, int &x, int &y, int &f) const;
-    typedef I (T_Healpix_Base::*xyf2pix) (int x, int y, int f) const;
 
   public:
     static const int order_max;
@@ -107,6 +114,17 @@ template<typename I> class T_Healpix_Base: public Healpix_Tables
     /*! Returns the number of the ring in which \a pix lies. */
     I pix2ring (I pix) const;
 
+    I xyf2pix(int ix, int iy, int face_num) const
+      {
+      return (scheme_==RING) ?
+        xyf2ring(ix,iy,face_num) : xyf2nest(ix,iy,face_num);
+      }
+    void pix2xyf(I pix, int &ix, int &iy, int &face_num) const
+      {
+      (scheme_==RING) ?
+        ring2xyf(pix,ix,iy,face_num) : nest2xyf(pix,ix,iy,face_num);
+      }
+
     /*! Translates a pixel number from NEST to RING. */
     I nest2ring (I pix) const;
     /*! Translates a pixel number from RING to NEST. */
@@ -117,38 +135,65 @@ template<typename I> class T_Healpix_Base: public Healpix_Tables
     I peano2nest (I pix) const;
 
     /*! Returns the number of the pixel which contains the angular coordinates
-        (\a z:=cos(theta), \a phi). */
-    I zphi2pix (double z, double phi) const;
+        (\a z:=cos(theta), \a phi).
+        \note This method is inaccurate near the poles at high resolutions. */
+    I zphi2pix (double z, double phi) const
+      { return loc2pix(z,phi,0.,false); }
 
     /*! Returns the number of the pixel which contains the angular coordinates
         \a ang. */
     I ang2pix (const pointing &ang) const
-      { return zphi2pix (cos(ang.theta), ang.phi); }
+      {
+      return ((ang.theta<0.01) || (ang.theta > 3.14159-0.01)) ?
+        loc2pix(cos(ang.theta),ang.phi,sin(ang.theta),true) :
+        loc2pix(cos(ang.theta),ang.phi,0.,false);
+      }
     /*! Returns the number of the pixel which contains the vector \a vec
         (\a vec is normalized if necessary). */
     I vec2pix (const vec3 &vec) const
-      { return zphi2pix (vec.z/vec.Length(), safe_atan2(vec.y,vec.x)); }
+      {
+      double xl = 1./vec.Length();
+      double phi = safe_atan2(vec.y,vec.x);
+      double nz = vec.z*xl;
+      if (std::abs(nz)>0.99)
+        return loc2pix (nz,phi,sqrt(vec.x*vec.x+vec.y*vec.y)*xl,true);
+      else
+        return loc2pix (nz,phi,0,false);
+      }
 
     /*! Returns the angular coordinates (\a z:=cos(theta), \a phi) of the center
-        of the pixel with number \a pix. */
-    void pix2zphi (I pix, double &z, double &phi) const;
+        of the pixel with number \a pix.
+        \note This method is inaccurate near the poles at high resolutions. */
+    void pix2zphi (I pix, double &z, double &phi) const
+      {
+      bool dum_b;
+      double dum_d;
+      pix2loc(pix,z,phi,dum_d,dum_b);
+      }
 
     /*! Returns the angular coordinates of the center of the pixel with
         number \a pix. */
     pointing pix2ang (I pix) const
       {
-      double z, phi;
-      pix2zphi (pix,z,phi);
-      return pointing(acos(z),phi);
+      double z, phi, sth;
+      bool have_sth;
+      pix2loc (pix,z,phi,sth,have_sth);
+      return have_sth ? pointing(atan2(sth,z),phi) : pointing(acos(z),phi);
       }
     /*! Returns the vector to the center of the pixel with number \a pix. */
     vec3 pix2vec (I pix) const
       {
-      double z, phi;
-      pix2zphi (pix,z,phi);
-      vec3 res;
-      res.set_z_phi (z, phi);
-      return res;
+      double z, phi, sth;
+      bool have_sth;
+      pix2loc (pix,z,phi,sth,have_sth);
+      if (have_sth)
+        return vec3(sth*cos(phi),sth*sin(phi),z);
+      else
+        {
+        vec3 res;
+        res.set_z_phi (z, phi);
+        return res;
+        }
       }
 
     /*! Returns a range set of pixels whose centers lie within the disk
@@ -195,6 +240,19 @@ template<typename I> class T_Healpix_Base: public Healpix_Tables
            algorithm used for \a inclusive==true returns fewer false positives
            in the NEST scheme. */
     void query_polygon (const std::vector<pointing> &vertex, bool inclusive,
+      rangeset<I> &pixset) const;
+
+    /*! Returns a range set of pixels whose centers lie within the colatitude
+        range defined by \a theta1 and \a theta2 (if \a inclusive==false), or
+        which overlap with this region (if \a inclusive==true). If
+        \a theta1<theta2, the region between both angles is considered,
+        otherwise the regions \a 0<theta<theta2 and \a theta1<theta<pi.
+        \param theta1 first colatitude
+        \param theta2 second colatitude
+        \param inclusive if \a false, return the exact set of pixels whose
+           pixels centers lie within the region; if \a true, return all pixels
+           that overlap with the region. */
+    void query_strip (double theta1, double theta2, bool inclusive,
       rangeset<I> &pixset) const;
 
     /*! Returns useful information about a given ring of the map.

@@ -121,10 +121,6 @@ template<typename T> class Healpix_Map: public Healpix_Base
       int fact = nside_/orig.nside_;
       planck_assert (nside_==orig.nside_*fact,
         "the larger Nside must be a multiple of the smaller one");
-      pix2xyf to_xyf = (orig.scheme_==RING) ?
-        &Healpix_Map::ring2xyf : &Healpix_Map::nest2xyf;
-      xyf2pix from_xyf = (scheme_==RING) ?
-        &Healpix_Map::xyf2ring : &Healpix_Map::xyf2nest;
 
 #pragma omp parallel
 {
@@ -133,11 +129,11 @@ template<typename T> class Healpix_Map: public Healpix_Base
       for (m=0; m<orig.npix_; ++m)
         {
         int x,y,f;
-        (orig.*to_xyf)(m,x,y,f);
+        orig.pix2xyf(m,x,y,f);
         for (int j=fact*y; j<fact*(y+1); ++j)
           for (int i=fact*x; i<fact*(x+1); ++i)
             {
-            int mypix = (this->*from_xyf)(i,j,f);
+            int mypix = xyf2pix(i,j,f);
             map[mypix] = orig.map[m];
             }
         }
