@@ -88,6 +88,7 @@ from _healpy_pixel_lib import UNSEEN
 import exceptions
 
 __all__ = ['pix2ang', 'pix2vec', 'ang2pix', 'vec2pix',
+           'ang2vec', 'vec2ang',
            'get_neighbours', 'get_interp_val', 'get_all_neighbours',
            'nest2ring', 'ring2nest', 'reorder', 'ud_grade',
            'UNSEEN', 'mask_good', 'mask_bad', 'ma',
@@ -103,11 +104,11 @@ def mask_bad(m, badval = UNSEEN, rtol = 1.e-5, atol = 1.e-8):
     Parameters
     ----------
     m : a map (may be a sequence of maps)
-    badval: float, optional
+    badval : float, optional
         The value of the pixel considered as bad (:const:`UNSEEN` by default)
-    rtol: float, optional
+    rtol : float, optional
         The relative tolerance
-    atol: float, optional
+    atol : float, optional
         The absolute tolerance
 
     Returns
@@ -118,7 +119,7 @@ def mask_bad(m, badval = UNSEEN, rtol = 1.e-5, atol = 1.e-8):
 
     See Also
     --------
-    :func:`mask_good`, :func:`ma`
+    mask_good, ma
 
     Examples
     --------
@@ -138,11 +139,11 @@ def mask_good(m, badval = UNSEEN, rtol = 1.e-5, atol = 1.e-8):
     Parameters
     ----------
     m : a map (may be a sequence of maps)
-    badval: float, optional
+    badval : float, optional
         The value of the pixel considered as bad (:const:`UNSEEN` by default)
-    rtol: float, optional
+    rtol : float, optional
         The relative tolerance
-    atol: float, optional
+    atol : float, optional
         The absolute tolerance
 
     Returns
@@ -152,7 +153,7 @@ def mask_good(m, badval = UNSEEN, rtol = 1.e-5, atol = 1.e-8):
 
     See Also
     --------
-    :func:`mask_bad`, :func:`ma`
+    mask_bad, ma
 
     Examples
     --------
@@ -172,13 +173,13 @@ def ma(m, badval = UNSEEN, rtol = 1e-5, atol = 1e-8, copy = True):
     Parameters
     ----------
     m : a map (may be a sequence of maps)
-    badval: float, optional
+    badval : float, optional
         The value of the pixel considered as bad (:const:`UNSEEN` by default)
-    rtol: float, optional
+    rtol : float, optional
         The relative tolerance
-    atol: float, optional
+    atol : float, optional
         The absolute tolerance
-    copy: bool, optional
+    copy : bool, optional
         If ``True``, a copy of the input map is made.
 
     Returns
@@ -188,7 +189,7 @@ def ma(m, badval = UNSEEN, rtol = 1e-5, atol = 1e-8, copy = True):
 
     See Also
     --------
-    :func:`mask_good`, :func:`mask_bad`, :func:`numpy.ma.masked_values`
+    mask_good, mask_bad, numpy.ma.masked_values
 
     Examples
     --------
@@ -207,22 +208,22 @@ def ang2pix(nside,theta,phi,nest=False):
 
     Parameters
     ----------
-    nside: int, scalar or array-like
+    nside : int, scalar or array-like
       The healpix nside parameter, must be a power of 2
-    theta, phi: float, scalars or array-like
+    theta, phi : float, scalars or array-like
       Angular coordinates of a point on the sphere
-    nest: bool, optional
+    nest : bool, optional
       if True, assume NESTED pixel ordering, otherwise, RING pixel ordering
 
     Returns
     -------
-    pix: int or array of int
+    pix : int or array of int
       The healpix pixel numbers. Scalar if all input are scalar, array otherwise.
       Usual numpy broadcasting rules apply.
 
     See Also
     --------
-    :func:`pix2ang`, :func:`pix2vec`, :func:`vec2pix`
+    pix2ang, pix2vec, vec2pix
 
     Examples
     --------
@@ -248,22 +249,22 @@ def pix2ang(nside,ipix,nest=False):
 
     Parameters
     ----------
-    nside: int or array-like
+    nside : int or array-like
       The healpix nside parameter, must be a power of 2
-    ipix: int or array-like
+    ipix : int or array-like
       Angular coordinates of a point on the sphere
-    nest: bool, optional
+    nest : bool, optional
       if True, assume NESTED pixel ordering, otherwise, RING pixel ordering
 
     Returns
     -------
-    theta, phi: float, scalar or array-like
+    theta, phi : float, scalar or array-like
       The angular coordinates corresponding to ipix. Scalar if all input
       are scalar, array otherwise. Usual numpy broadcasting rules apply.
 
     See Also
     --------
-    :func:`ang2pix`, :func:`vec2pix`, :func:`pix2vec`
+    ang2pix, vec2pix, pix2vec
 
     Examples
     --------
@@ -288,22 +289,22 @@ def vec2pix(nside,x,y,z,nest=False):
 
     Parameters
     ----------
-    nside: int or array-like
+    nside : int or array-like
       The healpix nside parameter, must be a power of 2
-    x,y,z: floats or array-like
+    x,y,z : floats or array-like
       vector coordinates defining point on the sphere
-    nest: bool, optional
+    nest : bool, optional
       if True, assume NESTED pixel ordering, otherwise, RING pixel ordering
 
     Returns
     -------
-    ipix: int, scalar or array-like
+    ipix : int, scalar or array-like
       The healpix pixel number corresponding to input vector. Scalar if all input
       are scalar, array otherwise. Usual numpy broadcasting rules apply.
 
     See Also
     --------
-    :func:`ang2pix`, :func:`pix2ang`, :func:`pix2vec`
+    ang2pix, pix2ang, pix2vec
 
     Examples
     --------
@@ -326,22 +327,22 @@ def pix2vec(nside,ipix,nest=False):
 
     Parameters
     ----------
-    nside: int, scalar or array-like
+    nside : int, scalar or array-like
       The healpix nside parameter, must be a power of 2
-    ipix: int, scalar or array-like
+    ipix : int, scalar or array-like
       Healpix pixel number
-    nest: bool, optional
+    nest : bool, optional
       if True, assume NESTED pixel ordering, otherwise, RING pixel ordering
 
     Returns
     -------
-    x, y, z: floats, scalar or array-like
+    x, y, z : floats, scalar or array-like
       The coordinates of vector corresponding to input pixels. Scalar if all input
       are scalar, array otherwise. Usual numpy broadcasting rules apply.
 
     See Also
     --------
-    :func:`ang2pix`, :func:`pix2ang`, :func:`vec2pix`
+    ang2pix, pix2ang, vec2pix
 
     Examples
     --------
@@ -363,24 +364,67 @@ def pix2vec(nside,ipix,nest=False):
     else:
         return pixlib._pix2vec_ring(nside,ipix)
 
+def ang2vec(theta, phi):
+    """ang2vec : convert angles to 3D position vector
+
+    Parameters
+    ----------
+    theta : float, scalar or arry-like
+      colatitude in radians measured southward from north pole (in [0,pi]). 
+    phi : float, scalar or array-like
+      longitude in radians measured eastward (in [0, 2*pi]). 
+
+    Returns
+    -------
+    vec : float, array
+      if theta and phi are vectors, the result is a 2D array with a vector per row
+      otherwise, it is a 1D array of shape (3,)
+    """
+    if npy.any(theta < 0) or npy.any(theta > npy.pi):
+        raise exceptions.ValueError('THETA is out of range [0,pi]')
+    sintheta = npy.sin(theta)
+    return npy.array([sintheta*npy.cos(phi),
+                      sintheta*npy.sin(phi),
+                      npy.cos(theta)]).T
+
+def vec2ang(vectors):
+    """vec2ang: vectors [x, y, z] -> theta[rad], phi[rad]
+
+    Parameters
+    ----------
+    vectors : float, array-like
+      the vector(s) to convert, shape is (3,) or (N, 3)
+
+    Returns
+    -------
+    theta, phi : float, tuple of two arrays
+      the colatitude and longitude in radians
+    """
+    vectors = vectors.reshape(-1,3)
+    dnorm = npy.sqrt(npy.sum(npy.square(vectors),axis=1))
+    theta = npy.arccos(vectors[:,2]/dnorm)
+    phi = npy.arctan2(vectors[:,1],vectors[:,0])
+    phi[phi < 0] += 2*npy.pi
+    return theta, phi
+
 def ring2nest(nside, ipix):
     """Convert pixel number from RING ordering to NESTED ordering.
 
     Parameters
     ----------
-    nside: int, scalar or array-like
+    nside : int, scalar or array-like
       the healpix nside parameter
-    ipix: int, scalar or array-like
+    ipix : int, scalar or array-like
       the pixel number in RING scheme
 
     Returns
     -------
-    ipix: int, scalar or array-like
+    ipix : int, scalar or array-like
       the pixel number in NESTED scheme
 
     See Also
     --------
-    :func:`nest2ring`, :func:`reorder`
+    nest2ring, reorder
     
     Examples
     --------
@@ -400,19 +444,19 @@ def nest2ring(nside, ipix):
 
     Parameters
     ----------
-    nside: int, scalar or array-like
+    nside : int, scalar or array-like
       the healpix nside parameter
-    ipix: int, scalar or array-like
+    ipix : int, scalar or array-like
       the pixel number in NESTED scheme
 
     Returns
     -------
-    ipix: int, scalar or array-like
+    ipix : int, scalar or array-like
       the pixel number in RING scheme
 
     See Also
     --------
-    :func:`ring2nest`, :func:`reorder`
+    ring2nest, reorder
     
     Examples
     --------
@@ -432,18 +476,18 @@ def reorder(map_in, inp=None, out=None, r2n=None, n2r=None):
 
     Parameters
     ----------
-    map_in: array-like
+    map_in : array-like
       the input map to reorder
-    inp, out: ``'RING'`` or ``'NESTED'``
+    inp, out : ``'RING'`` or ``'NESTED'``
       define the input and output ordering
-    r2n: bool
+    r2n : bool
       if True, reorder from RING to NESTED
-    n2r: bool
+    n2r : bool
       if True, reorder from NESTED to RING
 
     Returns
     -------
-    map_out: array-like
+    map_out : array-like
       the reordered map
 
     Notes
@@ -452,7 +496,7 @@ def reorder(map_in, inp=None, out=None, r2n=None, n2r=None):
 
     See Also
     --------
-    :func:`nest2ring`, :func:`ring2nest`
+    nest2ring, ring2nest
 
     Examples
     --------
@@ -519,13 +563,13 @@ def nside2npix(nside):
 
     Parameters
     ----------
-    nside: int
+    nside : int
       healpix nside parameter; an exception is raised if nside is not valid
       (nside must be a power of 2)
 
     Returns
     -------
-    npix: int
+    npix : int
       corresponding number of pixels
     
     Notes
@@ -558,14 +602,14 @@ def nside2resol(nside, arcmin=False):
 
     Parameters
     ----------
-    nside: int
+    nside : int
       healpix nside parameter, must be a power of 2
-    arcmin: bool
+    arcmin : bool
       if True, return resolution in arcmin, otherwise in radian
 
     Returns
     -------
-    resol: float
+    resol : float
       approximate pixel size in radians or arcmin
 
     Notes
@@ -602,14 +646,14 @@ def nside2pixarea(nside, degrees=False):
 
     Parameters
     ----------
-    nside: int
+    nside : int
       healpix nside parameter, must be a power of 2
-    degrees: bool
+    degrees : bool
       if True, returns pixel area in square degrees, in square radians otherwise
 
     Returns
     -------
-    pixarea: float
+    pixarea : float
       pixel area in suqare radian or square degree
 
     Notes
@@ -645,12 +689,12 @@ def npix2nside(npix):
 
     Parameters
     ----------
-    npix: int
+    npix : int
       the number of pixels
     
     Returns
     -------
-    nside: int
+    nside : int
       the nside parameter corresponding to npix
 
     Notes
@@ -684,12 +728,12 @@ def isnsideok(nside):
 
     Parameters
     ----------
-    nside: int, scalar or array-like
+    nside : int, scalar or array-like
       integer value to be tested
 
     Returns
     -------
-    ok: bool, scalar or array-like
+    ok : bool, scalar or array-like
       :const:`True` if given value is a valid nside, :const:`False` otherwise.
 
     Examples
@@ -715,12 +759,12 @@ def isnpixok(npix):
 
     Parameters
     ----------
-    npix: int, scalar or array-like
+    npix : int, scalar or array-like
       integer value to be tested
 
     Returns
     -------
-    ok: bool, scalar or array-like
+    ok : bool, scalar or array-like
       :const:`True` if given value is a valid number of pixel, :const:`False` otherwise
 
     Examples
@@ -746,21 +790,21 @@ def get_interp_val(m,theta,phi,nest=False):
 
     Parameters
     ----------
-    m: array-like
+    m : array-like
       an healpix map
-    theta, phi: float, scalar or array-like
+    theta, phi : float, scalar or array-like
       angular coordinates of point at which to interpolate the map
-    nest: bool
+    nest : bool
       if True, the is assumed to be in NESTED ordering.
 
     Returns
     -------
-      val: float, scalar or arry-like
+      val : float, scalar or arry-like
         the interpolated value(s), usual numpy broadcasting rules apply.
 
     See Also
     --------
-    :func:`get_neighbours`, :func:`get_all_neighbours`
+    get_neighbours, get_all_neighbours
 
     Examples
     --------
@@ -786,23 +830,23 @@ def get_neighbours(nside,theta,phi=None,nest=False):
 
     Parameters
     ----------
-    nside: int
+    nside : int
       the healpix nside
-    theta, phi: float, scalar or array-like
+    theta, phi : float, scalar or array-like
       if phi is not given, theta is interpreted as pixel number,
       otherwise theta[rad],phi[rad] are angular coordinates
-    nest: bool
+    nest : bool
       if ``True``, NESTED ordering, otherwise RING ordering.
 
     Returns
     -------
-    res: tuple of length 2
+    res : tuple of length 2
       contains pixel numbers in res[0] and weights in res[1].
       Usual numpy broadcasting rules apply.
 
     See Also
     --------
-    :func:`get_interp_val`, :func:`get_all_neighbours`
+    get_interp_val, get_all_neighbours
 
     Examples
     --------
@@ -839,17 +883,17 @@ def get_all_neighbours(nside, theta, phi=None, nest=False):
 
     Parameters
     ----------
-    nside: int
+    nside : int
       the nside to work with
-    theta, phi: scalar or array-like
+    theta, phi : scalar or array-like
       if phi is not given or None, theta is interpreted as pixel number,
       otherwise, theta[rad],phi[rad] are angular coordinates
-    nest: bool
+    nest : bool
       if ``True``, pixel number will be NESTED ordering, otherwise RING ordering.
 
     Returns
     -------
-    ipix: int, array
+    ipix : int, array
       pixel number of the SW, W, NW, N, NE, E, SE and S neighbours,
       shape is (8,) if input is scalar, otherwise shape is (8, N) if input is
       of length N. If a neighbor does not exist (it can be the case for W, N, E and S)
@@ -857,7 +901,7 @@ def get_all_neighbours(nside, theta, phi=None, nest=False):
 
     See Also
     --------
-    :func:`get_neighbours`, :func:`get_interp_val`
+    get_neighbours, get_interp_val
 
     Examples
     --------
@@ -883,23 +927,23 @@ def fit_dipole(m, nest=False, bad=UNSEEN, gal_cut=0):
 
     Parameters
     ----------
-    m: float, array-like
+    m : float, array-like
       the map to which a dipole is fitted and subtracted
-    nest: bool
+    nest : bool
       if ``False`` m is assumed in RING scheme, otherwise map is NESTED
-    bad: float
+    bad : float
       bad values of pixel, default to :const:`UNSEEN`.
-    gal_cut: float
+    gal_cut : float
       pixels at latitude in [-gal_cut;+gal_cut] are not taken into account
 
     Returns
     -------
-    res: tuple of length 2
+    res : tuple of length 2
       the monopole value in res[0] and the dipole vector (as array) in res[1]
 
     See Also
     --------
-    :func:`remove_dipole`, :func:`fit_monopole`, :func:`remove_monopole`
+    remove_dipole, fit_monopole, remove_monopole
     """
     m=npy.asarray(m)
     npix = m.size
@@ -953,31 +997,31 @@ def remove_dipole(m,nest=False,bad=UNSEEN,gal_cut=0,fitval=False,
 
     Parameters
     ----------
-    m: float, array-like
+    m : float, array-like
       the map to which a dipole is fitted and subtracted
-    nest: bool
+    nest : bool
       if ``False`` m is assumed in RING scheme, otherwise map is NESTED
-    bad: float
+    bad : float
       bad values of pixel, default to :const:`UNSEEN`.
-    gal_cut: float
+    gal_cut : float
       pixels at latitude in [-gal_cut;+gal_cut] are not taken into account
-    fitval: bool
+    fitval : bool
       whether to return or not the fitted values of monopole and dipole
-    copy: bool
+    copy : bool
       whether to modify input map or not (by default, make a copy)
-    verbose: bool
+    verbose : bool
       print values of monopole and dipole
 
     Returns
     -------
-    res: array or tuple of length 3
+    res : array or tuple of length 3
       if fitval is False, returns map with monopole and dipole subtracted,
       otherwise, returns map (array, in res[0]), monopole (float, in res[1]), 
       dipole_vector (array, in res[2])
 
     See Also
     --------
-    :func:`fit_dipole`, :func:`fit_monopole`, :func:`remove_monopole`
+    fit_dipole, fit_monopole, remove_monopole
     """
     m=npy.array(m,copy=copy)
     npix = m.size
@@ -998,7 +1042,7 @@ def remove_dipole(m,nest=False,bad=UNSEEN,gal_cut=0,fitval=False,
         m.flat[ipix] -= mono
     if verbose:
         import rotator as R
-        lon,lat = R.vec2ang(dipole,lonlat=True)
+        lon,lat = R.vec2dir(dipole,lonlat=True)
         amp = npy.sqrt((dipole**2).sum())
         print 'monopole: %g  dipole: lon: %g, lat: %g, amp: %g'%(mono,
                                                                  lon,
@@ -1014,13 +1058,13 @@ def fit_monopole(m,nest=False,bad=pixlib.UNSEEN,gal_cut=0):
 
     Parameters
     ----------
-    m: float, array-like
+    m : float, array-like
       the map to which a dipole is fitted and subtracted
-    nest: bool
+    nest : bool
       if ``False`` m is assumed in RING scheme, otherwise map is NESTED
-    bad: float
+    bad : float
       bad values of pixel, default to :const:`UNSEEN`.
-    gal_cut: float
+    gal_cut : float
       pixels at latitude in [-gal_cut;+gal_cut] are not taken into account
 
     Returns
@@ -1030,7 +1074,7 @@ def fit_monopole(m,nest=False,bad=pixlib.UNSEEN,gal_cut=0):
 
     See Also
     --------
-    :func:`fit_dipole`, :func:`remove_monopole`, :func:`remove_monopole`
+    fit_dipole, remove_monopole, remove_monopole
     """
     m=npy.asarray(m)
     npix=m.size
@@ -1063,30 +1107,30 @@ def remove_monopole(m,nest=False,bad=pixlib.UNSEEN,gal_cut=0,fitval=False,
 
     Parameters
     ----------
-    m: float, array-like
+    m : float, array-like
       the map to which a monopole is fitted and subtracted
-    nest: bool
+    nest : bool
       if ``False`` m is assumed in RING scheme, otherwise map is NESTED
-    bad: float
+    bad : float
       bad values of pixel, default to :const:`UNSEEN`.
-    gal_cut: float
+    gal_cut : float
       pixels at latitude in [-gal_cut;+gal_cut] are not taken into account
-    fitval: bool
+    fitval : bool
       whether to return or not the fitted value of monopole
-    copy: bool
+    copy : bool
       whether to modify input map or not (by default, make a copy)
     verbose: bool
       whether to print values of monopole
 
     Returns
     -------
-    res: array or tuple of length 3
+    res : array or tuple of length 3
       if fitval is False, returns map with monopole subtracted,
       otherwise, returns map (array, in res[0]) and monopole (float, in res[1])
 
     See Also
     --------
-    :func:`fit_dipole`, :func:`fit_monopole`, :func:`remove_dipole`
+    fit_dipole, fit_monopole, remove_dipole
     """
     m=npy.array(m,copy=copy)
     npix = m.size
@@ -1118,12 +1162,12 @@ def get_map_size(m):
 
      Parameters
      ----------
-     m: array-like or dict-like
+     m : array-like or dict-like
        a map with implicit (array-like) or explicit (dict-like) pixellization
 
      Returns
      -------
-     npix: int
+     npix : int
        a valid number of pixel
 
      Notes
@@ -1163,12 +1207,12 @@ def get_min_valid_nside(npix):
 
     Parameters
     ----------
-    npix: int
+    npix : int
       a minimal number of pixel
 
     Returns
     -------
-    nside: int
+    nside : int
       a valid healpix nside so that 12 * nside ** 2 >= npix
 
     Examples
@@ -1186,12 +1230,12 @@ def maptype(m):
 
     Parameters
     ----------
-    m: sequence
+    m : sequence
       the map to get info from
 
     Returns
     -------
-    info: int
+    info : int
       Returns -1 if the given object is not a valid map.
       Returns 0 if it is a map.
       Returns info>0 if it is a sequence of maps (info: number of maps in the sequence)
@@ -1231,12 +1275,12 @@ def get_nside(m):
 
     Parameters
     ----------
-    m: sequence
+    m : sequence
       the map to get the nside from.
 
     Returns
     -------
-    nside: int
+    nside : int
       the healpix nside parameter of the map (or sequence of maps)
 
     Notes
@@ -1259,24 +1303,24 @@ def ud_grade(map_in,nside_out,pess=False,order_in='RING',order_out=None,
 
     Parameters
     ----------
-    map_in: array-like or sequence of array-like
+    map_in : array-like or sequence of array-like
       the input map(s) (if a sequence of maps, all must have same size)
-    nside_out: int
+    nside_out : int
       the desired nside of the output map(s)
-    pess: bool
+    pess : bool
       if ``True``, in degrading, reject pixels which contains
       a bad sub_pixel. Otherwise, estimate average with good pixels
-    order_in, order_out: str
+    order_in, order_out : str
       pixel ordering of input and output ('RING' or 'NESTED')
-    power: float
+    power : float
       if non-zero, multiply the result by (nside_in/nside_out)**power
       For example, power=-2 keep the sum of the map invariant
-    dtype: type
+    dtype : type
       the type of the output map
 
     Returns
     -------
-    map_out: array-like or sequence of array-like
+    map_out : array-like or sequence of array-like
       the upgraded or degraded map(s)
 
     Examples

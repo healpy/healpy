@@ -119,18 +119,30 @@ class SphericalProjAxes(axes.Axes,object):
 
     def projmap(self,map,vec2pix_func,vmin=None,vmax=None,badval=UNSEEN,
                 cmap=None,norm=None,rot=None,coord=None,**kwds):
-        """Project a map.
+        """Project a map on the SphericalProjAxes.
 
-        Input:
-          - map: a map
-          - vec2pix_func: the function describing the pixelisation
-          - vmin, vmax: min and max value to use instead of min max of the map
-          - badval: the value of the bad pixels
-          - cmapname: the name of the color map to use (see cm.datad.keys())
-          - rot: =(a,b,c) map is centered on (a,b) and rotated by angle c, in deg.
-          - coord: the coordinate system of the map ('G','E' or 'C'), rotate
-                   the map if different from the axes coord syst.
-          other keywords given to Axes.imshow
+        Parameters
+        ----------
+        map : array-like
+          The map to project.
+        vec2pix_func : function
+          The function describing the pixelisation.
+        vmin, vmax : float, scalars
+          min and max value to use instead of min max of the map
+        badval : float
+          The value of the bad pixels
+        cmap : a color map
+          The colormap to use (see matplotlib.cm)
+        rot : sequence
+          In the form (lon, lat, psi) (unit: degree):the center of the map is
+          at (lon, lat) and rotated by angle psi around that direction.
+        coord : {'G', 'E', 'C', None}
+          The coordinate system of the map ('G','E' or 'C'), rotate
+          the map if different from the axes coord syst.
+        
+        Notes
+        -----
+        Other keywords are transmitted to :func:`matplotlib.Axes.imshow`
         """
         img = self.proj.projmap(map,vec2pix_func,rot=rot,coord=coord)
         w = ~( npy.isnan(img) | 
@@ -160,26 +172,45 @@ class SphericalProjAxes(axes.Axes,object):
         self.set_ylim(ymin,ymax)
 
     def projplot(self,*args,**kwds):
-        """projplot is a wrapper around Axes.plot to take into account the
+        """projplot is a wrapper around :func:`matplotlib.Axes.plot` to take into account the
         spherical projection.
 
-        Modification of projplot vs plot:
-        One, two or three args allowed:
-          - if one arg: theta,phi = args[0][0],args[0][1]
-          - if two : either theta,phi or [theta,phi],fmt
-          - if three: theta,phi,fmt
-          with fmt the format string.
-        Additional keywords :
-        - lonlat: if True, theta and phi are interpreted as longitude and latitude
-                  in degree, otherwise, as theta, phi in radian
-        - coord: the coordinate system of the points, only used if the coordinate
-                 coordinate system of the Axes has been defined and in this
-                 case, a rotation is performed
-        - rot: rotation to be applied =(a,b,c) : a,b will be position of the
-               new Z axis, and c is rotation around this axis, all in degree.
-               if None, no rotation is performed
-        - direct: if True, the rotation to center the projection is not
-                  taken into account
+        You can call this function as::
+        
+           projplot(theta, phi)        # plot a line going through points at coord (theta, phi)
+           projplot(theta, phi, 'bo')  # plot 'o' in blue at coord (theta, phi)
+           projplot(thetaphi)          # plot a line going through points at coord (thetaphi[0], thetaphi[1])
+           projplot(thetaphi, 'bx')    # idem but with blue 'x'
+        
+        Parameters
+        ----------
+        theta, phi : float, array-like
+          Coordinates of point to plot. Can be put into one 2-d array, first line is
+          then *theta* and second line is *phi*. See *lonlat* parameter for unit.
+        fmt : str
+          A format string (see :func:`matplotlib.Axes.plot` for details)
+        lonlat : bool, optional
+          If True, theta and phi are interpreted as longitude and latitude
+          in degree, otherwise, as colatitude and longitude in radian
+        coord : {'E', 'G', 'C', None}
+          The coordinate system of the points, only used if the coordinate
+          coordinate system of the Axes has been defined and in this
+          case, a rotation is performed
+        rot : None or sequence
+          rotation to be applied =(lon, lat, psi) : lon, lat will be position of the
+          new Z axis, and psi is rotation around this axis, all in degree.
+          if None, no rotation is performed
+        direct : bool
+          if True, the rotation to center the projection is not
+          taken into account
+
+        Notes
+        -----
+        Other keywords are passed to :func:`matplotlib.Axes.plot`.
+
+        See Also
+        --------
+        projscatter, projtext
         """
         fmt = None
         if len(args) < 1:
@@ -225,24 +256,41 @@ class SphericalProjAxes(axes.Axes,object):
         return thelines
 
     def projscatter(self,theta, phi=None,*args,**kwds):
-        """Projscatter is a wrapper around Axes.scatter to take into account the
+        """Projscatter is a wrapper around :func:`matplotlib.Axes.scatter` to take into account the
         spherical projection.
         
-        Modification of projscatter vs scatter:
-        One or two args allowed:
-          - if one arg: arg = [theta,phi]
-          - if two args: args[0]=theta,args[1]=phi 
-        Additional keywords :
-        - lonlat: if True, theta and phi are interpreted as longitude and latitude
-                  in degree, otherwise, as theta, phi in radian
-        - coord: the coordinate system of the points, only used if the coordinate
-                 coordinate system of the Axes has been defined and in this
-                 case, a rotation is performed
-        - rot: rotation to be applied =(a,b,c) : a,b will be position of the
-               new Z axis, and c is rotation around this axis, all in degree.
-               if None, no rotation is performed
-        - direct: if True, the rotation to center the projection is not
-                  taken into account
+        You can call this function as::
+        
+           projscatter(theta, phi)     # plot points at coord (theta, phi)
+           projplot(thetaphi)          # plot points at coord (thetaphi[0], thetaphi[1])
+
+        Parameters
+        ----------
+        theta, phi : float, array-like
+          Coordinates of point to plot. Can be put into one 2-d array, first line is
+          then *theta* and second line is *phi*. See *lonlat* parameter for unit.
+        lonlat : bool, optional
+          If True, theta and phi are interpreted as longitude and latitude
+          in degree, otherwise, as colatitude and longitude in radian
+        coord : {'E', 'G', 'C', None}, optional
+          The coordinate system of the points, only used if the coordinate
+          coordinate system of the axes has been defined and in this
+          case, a rotation is performed
+        rot : None or sequence, optional
+          rotation to be applied =(lon, lat, psi) : lon, lat will be position of the
+          new Z axis, and psi is rotation around this axis, all in degree.
+          if None, no rotation is performed
+        direct : bool, optional
+          if True, the rotation to center the projection is not
+          taken into account
+
+        Notes
+        -----
+        Other keywords are passed to :func:`matplotlib.Axes.plot`.
+
+        See Also
+        --------
+        projplot, projtext
         """
         save_input_data = hasattr(self.figure, 'zoomtool')
         if save_input_data:
@@ -268,24 +316,39 @@ class SphericalProjAxes(axes.Axes,object):
             self._scatter_data.append((s, input_data))
         return s
 
-    def projtext(self,theta,phi,s, *args,**kwds):
-        """Projtext is a wrapper around Axes.text to take into account the
+    def projtext(self, theta, phi, s, **kwds):
+        """Projtext is a wrapper around :func:`matplotlib.Axes.text` to take into account the
         spherical projection.
-        
-        Modification of projtext vs text:
-        Three args allowed:
-          - theta, phi, text 
-        Additional keywords :
-        - lonlat: if True, theta and phi are interpreted as longitude and latitude
-                  in degree, otherwise, as theta, phi in radian
-        - coord: the coordinate system of the points, only used if the coordinate
-                 coordinate system of the Axes has been defined and in this
-                 case, a rotation is performed
-        - rot: rotation to be applied =(a,b,c) : a,b will be position of the
-               new Z axis, and c is rotation around this axis, all in degree.
-               if None, no rotation is performed
-        - direct: if True, the rotation to center the projection is not
-                  taken into account
+
+        Parameters
+        ----------
+        theta, phi : float, array-like
+          Coordinates of point to plot. Can be put into one 2-d array, first line is
+          then *theta* and second line is *phi*. See *lonlat* parameter for unit.
+        text : str
+          The text to be displayed.
+        lonlat : bool, optional
+          If True, theta and phi are interpreted as longitude and latitude
+          in degree, otherwise, as colatitude and longitude in radian
+        coord : {'E', 'G', 'C', None}, optional
+          The coordinate system of the points, only used if the coordinate
+          coordinate system of the axes has been defined and in this
+          case, a rotation is performed
+        rot : None or sequence, optional
+          rotation to be applied =(lon, lat, psi) : lon, lat will be position of the
+          new Z axis, and psi is rotation around this axis, all in degree.
+          if None, no rotation is performed
+        direct : bool, optional
+          if True, the rotation to center the projection is not
+          taken into account
+
+        Notes
+        -----
+        Other keywords are passed to :func:`matplotlib.Axes.text`.
+
+        See Also
+        --------
+        projplot, projscatter
         """
         if phi is None:
             theta,phi = npy.asarray(theta)
@@ -301,7 +364,7 @@ class SphericalProjAxes(axes.Axes,object):
         vec = R.ang2vec(theta,phi,lonlat=lonlat)
         vec = (R.Rotator(rot=rot,coord=coord,eulertype='Y')).I(vec)
         x,y = self.proj.vec2xy(vec,direct=kwds.pop('direct',False))
-        return self.text(x,y,s,*args,**kwds)
+        return self.text(x,y,s,**kwds)
 
     def _make_segment(self,x,y,threshold=None):
         if threshold is None:
@@ -461,7 +524,7 @@ class SphericalProjAxes(axes.Axes,object):
             gratlines.append(self.projplot(phi*0+1.e-10, phi,'-k',
                                            lw=1,direct=True))
             gratlines.append(self.projplot(phi*0+pi-1.e-10, phi,'-k',
-                                           lw=1,direct=True))            
+                                           lw=1,direct=True))
         if hasattr(self,'_graticules'):
             self._graticules.append((gratargs,gratkwds,gratlines))
         else:

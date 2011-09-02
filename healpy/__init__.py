@@ -38,6 +38,7 @@ nm = npy
 from pixelfunc import (ma, mask_good, mask_bad,
                        ang2pix, pix2ang,
                        pix2vec, vec2pix,
+                       vec2ang, ang2vec,
                        nside2npix, npix2nside, 
                        isnsideok, isnpixok,
                        ring2nest, nest2ring, reorder,
@@ -56,7 +57,7 @@ from query_disc_func import *
 
 from zoomtool import mollzoom,set_g_clim
 
-from rotator import Rotator, vec2ang, ang2vec
+from rotator import Rotator, vec2dir, dir2vec
 
 from _healpy_pixel_lib import UNSEEN
 

@@ -262,11 +262,11 @@ class Rotator:
                 raise TypeError('Argument must be a sequence of 2 or 3 '
                                 'elements')
             if len(arg) == 2:
-                v = ang2vec(arg[0],arg[1],lonlat=lonlat)
+                v = dir2vec(arg[0],arg[1],lonlat=lonlat)
             else:
                 v = arg
         elif len(args) == 2:
-            v = ang2vec(args[0],args[1],lonlat=lonlat)
+            v = dir2vec(args[0],args[1],lonlat=lonlat)
         elif len(args) == 3:
             v = args
         else:
@@ -326,14 +326,37 @@ def rotateDirection(rotmat,theta,phi=None,do_rot=True,lonlat=False):
    
    Return: theta_rot,phi_rot
    """
-   vx,vy,vz=rotateVector(rotmat,ang2vec(theta,phi,lonlat=lonlat),do_rot=do_rot)
-   return vec2ang(vx,vy,vz,lonlat=lonlat)
+   vx,vy,vz=rotateVector(rotmat,dir2vec(theta,phi,lonlat=lonlat),do_rot=do_rot)
+   return vec2dir(vx,vy,vz,lonlat=lonlat)
 
-def vec2ang(vec,vy=None,vz=None,lonlat=False):
-   """Transform a vector to a direction given by theta,phi.
+def vec2dir(vec,vy=None,vz=None,lonlat=False):
+   """Transform a vector to angle given by theta,phi.
+
+   Parameters
+   ----------
+   vec: float, scalar or array-like
+     The vector to transform (shape (3,) or (3,N)),
+     or x component (scalar or shape (N,)) if vy and vz are given
+   vy: float, scalar or array-like, optional
+     The y component of the vector (scalar or shape (N,))
+   vz: float, scalar or array-like, optional
+     The z component of the vector (scalar or shape (N,))
+   lonlat: bool, optional
+     If True, return angles will be longitude and latitude in degree,
+     otherwise, angles will be longitude and co-latitude in radians (default)
+
+   Returns
+   -------
+   angles: float, array
+     The angles (unit depending on *lonlat*) in an array of shape (2,) (if scalar input)
+     or (2, N)
+
+   See Also
+   --------
+   :func:`dir2vec`, :func:`ang2vec`, :func:`vec2ang`
    """
    if vy is None and vz is None:
-      vx,vy,vz = vec
+      vx,vy,vz = npy.transpose(vec)
    elif vy is not None and vz is not None:
       vx=vec
    else:
@@ -342,12 +365,36 @@ def vec2ang(vec,vy=None,vz=None,lonlat=False):
    theta = npy.arccos(vz/r)
    phi = npy.arctan2(vy,vx)
    if lonlat:
-       return npy.asarray([npy.degrees(phi),90-npy.degrees(theta)])
+       ang = npy.empty((2, theta.size))
+       ang[0, :] = npy.degrees(phi)
+       ang[1, :] = npy.degrees(theta)
+       npy.negative(ang[1, :], ang[1, :])
+       ang[1, :] += 90.
+       return ang.squeeze()
    else:
-       return npy.asarray([theta,phi])
+       return npy.array([theta,phi])
 
-def ang2vec(theta,phi=None,lonlat=False):
+def dir2vec(theta,phi=None,lonlat=False):
    """Transform a direction theta,phi to a unit vector.
+
+   Parameters
+   ----------
+   theta : float, scalar or array-like
+     The angle theta (scalar or shape (N,)) or both angles (scalar or shape (2, N)) if phi is not given.
+   phi : float, scalar or array-like, optionnal
+     The angle phi (scalar or shape (N,)).
+   lonlat : bool
+     If True, input angles are assumed to be longitude and latitude in degree,
+     otherwise, they are co-latitude and longitude in radians.
+   
+   Returns
+   -------
+   vec : array
+     The vector(s) corresponding to given angles, shape is (3,) or (3, N).
+
+   See Also
+   --------
+   :func:`vec2dir`, :func:`ang2vec`, :func:`vec2ang`
    """
    if phi is None:
       theta,phi=theta
@@ -365,13 +412,13 @@ def angdist(dir1,dir2,lonlat=False):
     else:
         lonlat1=lonlat2=lonlat
     if len(dir1) == 2: # theta,phi or lonlat, convert to vec
-        vec1 = npy.asarray(ang2vec(dir1,lonlat=lonlat1))
+        vec1 = npy.asarray(dir2vec(dir1,lonlat=lonlat1))
     else:
         vec1 = npy.asarray(dir1)
     if vec1.ndim == 1:
         vec1 = npy.expand_dims(vec1,-1)
     if len(dir2) == 2:
-        vec2 = npy.asarray(ang2vec(dir2,lonlat=lonlat1)).T
+        vec2 = npy.asarray(dir2vec(dir2,lonlat=lonlat1)).T
     else:
         vec2 = npy.asarray(dir2)
     if vec2.ndim == 1:

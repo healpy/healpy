@@ -17,6 +17,39 @@
 # 
 #  For more information about Healpy, see http://code.google.com/p/healpy
 # 
+
+"""
+=====================================================
+visufunc.py : Healpix visualization functions
+=====================================================
+
+This module provides functions to display Healpix map.
+
+Map projections
+---------------
+
+- :func:`mollview` displays a map using Mollweide projection (full sky)
+- :func:`gnomview` displays a map using Gnomonic projection (local map)
+- :func:`cartview` displays a map using Cartesian projection
+
+Graticules
+----------
+
+- :func:`graticule` adds a graticule to the current map
+- :func:`delgraticules` deletes all graticules of a map
+
+Tracing lines or points
+-----------------------
+
+- :func:`projplot` plots data points on the current map
+- :func:`projscatter` displays scatter points
+- :func:`projtext` display a text on the current map
+"""
+
+__all__ = ['mollview', 'gnomview', 'cartview',
+           'graticule', 'delgraticules',
+           'projplot', 'projscatter', 'projtext']
+
 import projaxes as PA
 import pylab
 import numpy as npy
@@ -38,43 +71,71 @@ def mollview(map=None,fig=None,rot=None,coord=None,unit='',
              norm=None,hold=False,margins=None,sub=None):
     """Plot an healpix map (given as an array) in Mollweide projection.
     
-    Input:
-      - map : an ndarray containing the map
-              if None, use map with inf value (white map), useful for
-              overplotting
-    Parameters:
-      - fig: a figure number. Default: create a new figure
-      - rot: rotation, either 1,2 or 3 angles describing the rotation
-             Default: None
-      - coord: either one of 'G', 'E' or 'C' to describe the coordinate
-               system of the map, or a sequence of 2 of these to make
-               rotation from the first to the second coordinate system.
-               Default: None
-      - unit: a text describing the unit. Default: ''
-      - xsize: the size of the image. Default: 800
-      - title: the title of the plot. Default: 'Mollweide view'
-      - nest: if True, ordering scheme is NEST. Default: False (RING)
-      - min: the minimum range value
-      - max: the maximum range value
-      - flip: 'astro' (default, east towards left, west towards right) or 'geo'
-      - remove_dip: if True, remove the dipole+monopole
-      - remove_mono: if True, remove the monopole
-      - gal_cut: galactic cut for the dipole/monopole fit
-      - format: the format of the scale label. Default: '%g'
-      - format2: format of the pixel value under mouse. Default: '%g'
-      - cbar: display the colorbar. Default: True
-      - notext: if True, no text is printed around the map
-      - norm: color normalization, hist= histogram equalized color mapping, log=
-              logarithmic color mapping, default: None (linear color mapping)
-      - hold: if True, replace the current Axes by a MollweideAxes.
-              use this if you want to have multiple maps on the same
-              figure. Default: False
-      - sub: use a part of the current figure (same syntax as subplot).
-             Default: None
-      - margins: either None, or a sequence (left,bottom,right,top)
-                 giving the margins on left,bottom,right and top
-                 of the axes. Values are relative to figure (0-1).
-                 Default: None
+    Parameters
+    ----------
+    map : float, array-like or None
+      An array containing the map.
+      If None, will display a blank map, useful for overplotting.
+    fig : int or None, optional
+      The figure number to use. Default: create a new figure
+    rot : scalar or sequence, optional
+      Describe the rotation to apply.
+      In the form (lon, lat, psi) (unit: degrees) : the point at
+      longitude *lon* and latitude *lat* will be at the center. An additional rotation
+      of angle *psi* around this direction is applied.
+    coord : sequence of character, optional
+      Either one of 'G', 'E' or 'C' to describe the coordinate
+      system of the map, or a sequence of 2 of these to rotate
+      the map from the first to the second coordinate system.
+    unit : str, optional
+      A text describing the unit of the data. Default: ''
+    xsize : int, optional
+      The size of the image. Default: 800
+    title : str, optional
+      The title of the plot. Default: 'Mollweide view'
+    nest : bool, optional
+      If True, ordering scheme is NESTED. Default: False (RING)
+    min : float, optional
+      The minimum range value
+    max : float, optional
+      The maximum range value
+    flip : {'astro', 'geo'}, optional
+      Defines the convention of projection : 'astro' (default, east towards left, west towards right)
+      or 'geo' (east towards roght, west towards left)
+    remove_dip : bool, optional
+      If :const:`True`, remove the dipole+monopole
+    remove_mono : bool, optional
+      If :const:`True`, remove the monopole
+    gal_cut : float, scalar, optional
+      Symmetric galactic cut for the dipole/monopole fit.
+      Removes points in latitude range [-gal_cut, +gal_cut]
+    format : str, optional
+      The format of the scale label. Default: '%g'
+    format2 : str, optional
+      Format of the pixel value under mouse. Default: '%g'
+    cbar : bool, optional
+      Display the colorbar. Default: True
+    notext : bool, optional
+      If True, no text is printed around the map
+    norm : {'hist', 'log', None}
+      Color normalization, hist= histogram equalized color mapping,
+      log= logarithmic color mapping, default: None (linear color mapping)
+    hold : bool, optional
+      If True, replace the current Axes by a MollweideAxes.
+      use this if you want to have multiple maps on the same
+      figure. Default: False
+    sub : int, scalar or sequence, optional
+      Use only a zone of the current figure (same syntax as subplot).
+      Default: None
+    margins : None or sequence, optional
+      Either None, or a sequence (left,bottom,right,top)
+      giving the margins on left,bottom,right and top
+      of the axes. Values are relative to figure (0-1).
+      Default: None
+
+    See Also
+    --------
+    gnomview, cartview
     """
     # Create the figure
     if not (hold or sub):
@@ -169,45 +230,71 @@ def gnomview(map=None,fig=None,rot=None,coord=None,unit='',
              hold=False,sub=None,margins=None,notext=False):
     """Plot an healpix map (given as an array) in Gnomonic projection.
 
-    Input:
-      - map : an ndarray containing the map.
-              if None, use map with inf value (white map), useful for
-              overplotting
-    Parameters:
-      - fig: a figure number. Default: create a new figure
-      - rot: rotation, either 1,2 or 3 angles describing the rotation
-             Default: None
-      - coord: either one of 'G', 'E' or 'C' to describe the coordinate
-               system of the map, or a sequence of 2 of these to make
-               rotation from the first to the second coordinate system.
-               Default: None
-      - unit: a text describing the unit. Default: ''
-      - xsize: the size of the image. Default: 200
-      - ysize: the size of the image. Default: xsize
-      - reso: resolution in arcmin if degree is False. Default: 1.5 arcmin
-      - degree: if True, reso is in degree. Default: False
-      - title: the title of the plot. Default: 'Mollweide view'
-      - nest: if True, ordering scheme is NEST. Default: False (RING)
-      - min: the minimum range value
-      - max: the maximum range value
-      - flip: 'astro' (default, east towards left, west towards right) or 'geo'
-      - remove_dip: if True, remove the dipole+monopole
-      - remove_mono: if True, remove the monopole
-      - gal_cut: galactic cut for the dipole/monopole fit
-      - format: the format of the scale. Default: '%.3g'
-      - hold: if True, replace the current Axes by a MollweideAxes.
-              use this if you want to have multiple maps on the same
-              figure. Default: False
-      - sub: use a part of the current figure (same syntax as subplot).
-             Default: None
-      - margins: either None, or a sequence (left,bottom,right,top)
-                 giving the margins on left,bottom,right and top
-                 of the axes. Values are relative to figure (0-1).
-                 Default: None
-      - notext: True: do not add resolution info text
-                Default=False
-    """
+    Parameters
+    ----------
+    map : array-like
+      The map to project. If None, use a blank map, useful for
+      overplotting.
+    fig : None or int, optional
+      A figure number. Default: None= create a new figure
+    rot : scalar or sequence, optional
+      Describe the rotation to apply.
+      In the form (lon, lat, psi) (unit: degrees) : the point at
+      longitude *lon* and latitude *lat* will be at the center. An additional rotation
+      of angle *psi* around this direction is applied.
+    coord : sequence of character, optional
+      Either one of 'G', 'E' or 'C' to describe the coordinate
+      system of the map, or a sequence of 2 of these to rotate
+      the map from the first to the second coordinate system.
+    unit : str, optional
+      A text describing the unit of the data. Default: ''
+    xsize : int, optional
+      The size of the image. Default: 200
+    ysize : None or int, optional
+      The size of the image. Default: None= xsize
+    reso : float, optional
+      Resolution (in arcmin if degree is False). Default: 1.5 arcmin
+    degree : bool, optional
+      if True, reso is in degree. Default: False
+    title : str, optional
+      The title of the plot. Default: 'Gnomonic view'
+    nest : bool, optional
+      If True, ordering scheme is NESTED. Default: False (RING)
+    min : float, scalar, optional
+      The minimum range value
+    max : float, scalar, optional
+      The maximum range value
+    flip : {'astro', 'geo'}, optional
+      Defines the convention of projection : 'astro' (default, east towards left, west towards right)
+      or 'geo' (east towards roght, west towards left)
+    remove_dip : bool, optional
+      If :const:`True`, remove the dipole+monopole
+    remove_mono : bool, optional
+      If :const:`True`, remove the monopole
+    gal_cut : float, scalar, optional
+      Symmetric galactic cut for the dipole/monopole fit.
+      Removes points in latitude range [-gal_cut, +gal_cut]
+    format : str, optional
+      The format of the scale label. Default: '%g'
+    hold : bool, optional
+      If True, replace the current Axes by a MollweideAxes.
+      use this if you want to have multiple maps on the same
+      figure. Default: False
+    sub : int or sequence, optional
+      Use only a zone of the current figure (same syntax as subplot).
+      Default: None
+    margins : None or sequence, optional
+      Either None, or a sequence (left,bottom,right,top)
+      giving the margins on left,bottom,right and top
+      of the axes. Values are relative to figure (0-1).
+      Default: None
+    notext: bool, optional
+      If True: do not add resolution info text. Default=False
 
+    See Also
+    --------
+    mollview, cartview
+    """
     if not (hold or sub):
         f=pylab.figure(fig,figsize=(5.8,6.4))
         if not margins:
@@ -304,42 +391,73 @@ def cartview(map=None,fig=None,rot=None,zat=None,coord=None,unit='',
              hold=False,sub=None,margins=None,notext=False):
     """Plot an healpix map (given as an array) in Cartesian projection.
 
-    Input:
-      - map : an ndarray containing the map.
-              if None, use map with inf value (white map), useful for
-              overplotting
-    Parameters:
-      - fig: a figure number. Default: create a new figure
-      - rot: rotation, either 1,2 or 3 angles describing the rotation
-             Default: None
-      - coord: either one of 'G', 'E' or 'C' to describe the coordinate
-               system of the map, or a sequence of 2 of these to make
-               rotation from the first to the second coordinate system.
-               Default: None
-      - unit: a text describing the unit. Default: ''
-      - xsize: the size of the image. Default: 200
-      - lonra: range in longitude. Default: [-180,180]
-      - latra: range in latitude. Default: [-90,90]
-      - title: the title of the plot. Default: 'Mollweide view'
-      - nest: if True, ordering scheme is NEST. Default: False (RING)
-      - min: the minimum range value
-      - max: the maximum range value
-      - flip: 'astro' (default, east towards left, west towards right) or 'geo'
-      - remove_dip: if True, remove the dipole+monopole
-      - remove_mono: if True, remove the monopole
-      - gal_cut: galactic cut for the dipole/monopole fit
-      - format: the format of the scale. Default: '%.3g'
-      - hold: if True, replace the current Axes by a MollweideAxes.
-              use this if you want to have multiple maps on the same
-              figure. Default: False
-      - sub: use a part of the current figure (same syntax as subplot).
-             Default: None
-      - margins: either None, or a sequence (left,bottom,right,top)
-                 giving the margins on left,bottom,right and top
-                 of the axes. Values are relative to figure (0-1).
-                 Default: None
-      - notext: True: do not add resolution info text
-                Default=False
+    Parameters
+    ----------
+    map : float, array-like or None
+      An array containing the map.
+      If None, will display a blank map, useful for overplotting.
+    fig : int or None, optional
+      The figure number to use. Default: create a new figure
+    rot : scalar or sequence, optional
+      Describe the rotation to apply.
+      In the form (lon, lat, psi) (unit: degrees) : the point at
+      longitude *lon* and latitude *lat* will be at the center. An additional rotation
+      of angle *psi* around this direction is applied.
+    coord : sequence of character, optional
+      Either one of 'G', 'E' or 'C' to describe the coordinate
+      system of the map, or a sequence of 2 of these to rotate
+      the map from the first to the second coordinate system.
+    unit : str, optional
+      A text describing the unit of the data. Default: ''
+    xsize : int, optional
+      The size of the image. Default: 800
+    lonra : sequence, optional
+      Range in longitude. Default: [-180,180]
+    latra : sequence, optional
+      Range in latitude. Default: [-90,90]
+    title : str, optional
+      The title of the plot. Default: 'Mollweide view'
+    nest : bool, optional
+      If True, ordering scheme is NESTED. Default: False (RING)
+    min : float, optional
+      The minimum range value
+    max : float, optional
+      The maximum range value
+    flip : {'astro', 'geo'}, optional
+      Defines the convention of projection : 'astro' (default, east towards left, west towards right)
+      or 'geo' (east towards roght, west towards left)
+    remove_dip : bool, optional
+      If :const:`True`, remove the dipole+monopole
+    remove_mono : bool, optional
+      If :const:`True`, remove the monopole
+    gal_cut : float, scalar, optional
+      Symmetric galactic cut for the dipole/monopole fit.
+      Removes points in latitude range [-gal_cut, +gal_cut]
+    format : str, optional
+      The format of the scale label. Default: '%g'
+    cbar : bool, optional
+      Display the colorbar. Default: True
+    notext : bool, optional
+      If True, no text is printed around the map
+    norm : {'hist', 'log', None}, optional
+      Color normalization, hist= histogram equalized color mapping,
+      log= logarithmic color mapping, default: None (linear color mapping)
+    hold : bool, optional
+      If True, replace the current Axes by a CartesianAxes.
+      use this if you want to have multiple maps on the same
+      figure. Default: False
+    sub : int, scalar or sequence, optional
+      Use only a zone of the current figure (same syntax as subplot).
+      Default: None
+    margins : None or sequence, optional
+      Either None, or a sequence (left,bottom,right,top)
+      giving the margins on left,bottom,right and top
+      of the axes. Values are relative to figure (0-1).
+      Default: None
+
+    See Also
+    --------
+    mollview, gnomview
     """
     if not (hold or sub):
         f=pylab.figure(fig,figsize=(8.5,5.4))
@@ -424,15 +542,26 @@ def cartview(map=None,fig=None,rot=None,zat=None,coord=None,unit='',
             #pylab.show()
 
 def graticule(dpar=None,dmer=None,coord=None,local=None,**kwds):
-    """Create a graticule, either on an existing mollweide map or not.
+    """Draw a graticule on the current Axes.
 
-    Parameters:
-      - dpar, dmer: interval in degrees between meridians and between parallels
-      - coord: the coordinate system of the graticule (make rotation if needed,
-               using coordinate system of the map if it is defined)
-      - local: True if local graticule (no rotation is performed)
-    Return:
-      None
+    Parameters
+    ----------
+    dpar, dmer : float, scalars
+      Interval in degrees between meridians and between parallels
+    coord : {'E', 'G', 'C'}
+      The coordinate system of the graticule (make rotation if needed,
+      using coordinate system of the map if it is defined).
+    local : bool
+      If True, draw a local graticule (no rotation is performed, useful for
+      a gnomonic view, for example)
+
+    Notes
+    -----
+    Other keyword parameters will be transmitted to the projplot function.
+
+    See Also
+    --------
+    delgraticules
     """
     f = pylab.gcf()
     wasinteractive = pylab.isinteractive()
@@ -452,9 +581,14 @@ def graticule(dpar=None,dmer=None,coord=None,local=None,**kwds):
         if wasinteractive:
             pylab.ion()
             #pylab.show()
-graticule.__doc__ = PA.SphericalProjAxes.graticule.__doc__
     
 def delgraticules():
+    """Delete all graticules previously created on the Axes.
+
+    See Also
+    --------
+    graticule
+    """
     f = pylab.gcf()
     wasinteractive = pylab.isinteractive()
     pylab.ioff()
@@ -467,7 +601,6 @@ def delgraticules():
         if wasinteractive:
             pylab.ion()
             #pylab.show()
-delgraticules.__doc__ = PA.SphericalProjAxes.delgraticules.__doc__
 
 def projplot(*args,**kwds):
     f = pylab.gcf()
