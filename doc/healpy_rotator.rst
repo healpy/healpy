@@ -1,8 +1,27 @@
-.. rotator:
+.. healpy.rotator:
 
-:mod:`rotator` -- Rotation helper
-=================================
+.. currentmodule:: healpy.rotator
 
-.. automodule:: healpy.rotator
-   :members:
-   :undoc-members:
+
+:mod:`rotator` -- Rotation and geometry functions
+=================================================
+
+Rotation
+--------
+.. autosummary::
+   :toctree: generated/
+   
+   Rotator
+   rotateVector
+   rotateDirection
+   
+
+Geometrical helpers
+-------------------
+.. autosummary::
+   :toctree: generated/
+
+   vec2dir
+   dir2vec
+   angdist
+

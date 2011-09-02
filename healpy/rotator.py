@@ -30,16 +30,47 @@ class ConsistencyWarning(Warning):
 if __name__ != '__main__':
     warnings.filterwarnings("always", category=ConsistencyWarning, module=__name__)
 
-class Rotator:
-    """This class provides tools for spherical rotations. It is meant to be used 
+class Rotator(object):
+    """Rotation operator, including astronomical coordinate systems.
+
+    This class provides tools for spherical rotations. It is meant to be used 
     in the healpy library for plotting, and for this reason reflects the
     convention used in the Healpix IDL library.
 
-    Example:
-      >>> r = Rotator(coord=['G','E'])
-      >>> theta_ecl, phi_ecl = r(theta_gal, phi_gal)
-    or in a shorter way:
-      >>> theta_ecl, phi_ecl = Rotator(coord=['G','E'])(theta_gal, phi_gal)
+    Parameters
+    ----------
+    rot : None or sequence
+      Describe the rotation by its euler angle. See :func:`euler_matrix_new`.
+    coord : None or sequence of str
+      Describe the coordinate system transform. If *rot* is also given, the
+      coordinate transform is applied first, and then the rotation.
+    inv : bool
+      If True, the inverse rotation is defined. (Default: False)
+    deg : bool
+      If True, angles are assumed to be in degree. (Default: True)
+    eulertype : str
+      The Euler angle convention used. See :func:`euler_matrix_new`.
+
+    Attributes
+    ----------
+    mat
+    coordin
+    coordout
+    coordinstr
+    coordoutstr
+    rots
+    coords
+      
+    Examples
+    --------
+    >>> r = Rotator(coord=['G','E'])  # Transforms galactic to ecliptic coordinates
+    >>> theta_gal, phi_gal = npy.pi/2., 0.
+    >>> theta_ecl, phi_ecl = r(theta_gal, phi_gal)  # Apply the conversion
+    >>> print theta_ecl, phi_ecl
+    1.66742286715 -1.62596400306
+    >>> theta_ecl, phi_ecl = Rotator(coord='ge')(theta_gal, phi_gal) # In one line
+    >>> print theta_ecl, phi_ecl
+    1.66742286715 -1.62596400306
     """
     ErrMessWrongPar = ("rot and coord must be single elements or "
                        "sequence of same size.")
@@ -205,39 +236,55 @@ class Rotator:
         kwds['inv'] = True
         return self.__call__(*args,**kwds)
     
-    def get_matrix(self):
+    @property
+    def mat(self):
+        """Return a matrix representing the rotation
+        """
         return npy.matrix(self._matrix)
-    mat = property(get_matrix,doc='Return a matrix representing the rotation')
 
-    def get_coordin(self):
+    @property
+    def coordin(self):
+        """the input coordinate system
+        """
         if not self.consistent: return None
         c,i = zip(self._coords,self._invs)[-1]
         return c[i]
-    coordin = property(get_coordin, doc="the input coordinate system")
 
-    def get_coordout(self):
+    @property
+    def coordout(self):
+        """the output coordinate system
+        """
         if not self.consistent: return None
         c,i = zip(self._coords,self._invs)[0]
         return c[not i]
-    coordout = property(get_coordout, doc="the output coordinate system")
 
-    def get_coordin_str(self):
+    @property
+    def coordinstr(self):
+        """the input coordinate system in str
+        """
         return coordname.get(self.coordin,'')
-    coordinstr = property(get_coordin_str, doc="the input coordinate system in str")
 
-    def get_coordout_str(self):
+    @property
+    def coordoutstr(self):
+        """the output coordinate system in str
+        """
         return coordname.get(self.coordout,'')
-    coordoutstr = property(get_coordout_str, doc="the output coordinate system in str")
 
-    def get_rots(self):
+    @property
+    def rots(self):
+        """the sequence of rots defining
+        """
         return self._rots
-    rots = property(get_rots, doc="the sequence of rots defining")
     
-    def get_coords(self):
+    @property
+    def coords(self):
+        """the sequence of coords
+        """
         return self._coords
-    coords = property(get_coords, doc="the sequence of coords")
     
     def do_rot(self,i):
+        """Returns True if rotation is not (close to) identity.
+        """
         return not npy.allclose(self.rots[i],npy.zeros(3),rtol=0.,atol=1.e-15)
 
     def angle_ref(self,*args,**kwds):

@@ -379,6 +379,10 @@ def ang2vec(theta, phi):
     vec : float, array
       if theta and phi are vectors, the result is a 2D array with a vector per row
       otherwise, it is a 1D array of shape (3,)
+
+    See Also
+    --------
+    vec2ang, rotator.dir2vec, rotator.vec2dir
     """
     if npy.any(theta < 0) or npy.any(theta > npy.pi):
         raise exceptions.ValueError('THETA is out of range [0,pi]')
@@ -399,6 +403,10 @@ def vec2ang(vectors):
     -------
     theta, phi : float, tuple of two arrays
       the colatitude and longitude in radians
+
+    See Also
+    --------
+    ang2vec, rotator.vec2dir, rotator.dir2vec
     """
     vectors = vectors.reshape(-1,3)
     dnorm = npy.sqrt(npy.sum(npy.square(vectors),axis=1))
