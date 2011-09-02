@@ -15,14 +15,14 @@ page at http://healpix.jpl.nasa.gov/.
 Characteristics
 ---------------
 
-* pixellisation manipulation (ang2pix, pix2ang, *etc.*)
+* pixelisation manipulation (ang2pix, pix2ang, *etc.*)
 
 * spherical harmonic transforms (map2alm, alm2map, synfast, anafast,
   *etc.* both for temperature and polarisation)
 
 * plotting capabilities (mollweide and gnomonic projection)
 
-* reading and writing of healpix fits maps and alm
+* reading and writing of Healpix FITS maps and alm
 
 Requirements
 ------------
@@ -49,7 +49,7 @@ Requirements
     preventing pyfits to work. You should upgrade to latest pyfits
     version (>= 2.1) which provide a workaround.
 
-Healpix C++ library (from HEALPix 2.11 or HEALPix 2.20 for healpy >=
+The Healpix C++ library (from HEALPix 2.11 or HEALPix 2.20 for healpy >=
 0.10) is included in the healpy package, so you don't need to get it
 separately.
 
@@ -64,58 +64,7 @@ http://code.google.com/p/healpy/downloads/list.
 Installation
 ------------
 
-For version >= 0.10, you must provide the cfitsio library. You can either:
-
-* use an existing installation :
-
-    Define the environment variable CFITSIO_EXT_PREFIX where to find the
-    cfitsio library and include file (eg /usr/local, so that
-    /usr/local/include/fitsio.h and /usr/local/lib/libcfitsio.a exists),
-    or define CFITSIO_EXT_INC (with the cfitsio include
-    directory) and CFITSIO_EXT_LIB (with the cfitsio library file name)
-
-* compile a specific cfitsio lib:
-
-    Define EXTERNAL_CFITSIO=no, place the  cfitsioXXXX.tar.gz in
-    hpbeta/libcfitsio before installing. The cfitsio version XXXX must
-    match the version in hpbeta/planck.make (or you need to modify it there).
-
-**Note:**
-  compilation on Windows has not been tested with version >= 0.10. You
-  may need to tweak the setup.py file to adjust compilation
-  options. If you are a Windows user, please submit a bug to describe
-  a setup.py working on Windows.
-
-Then you can follow the following instructions.
-
-Download the last version from download tab, for example
-healpy-0.9.4.tar.gz. Then::
-
-   $ tar zxf healpy-0.9.4.tar.gz
-   $ cd healpy-0.9.4
-   $ python setup.py install
-
-Use the setuptools install option to install healpy in non-standard
-place, for example::
-
-   $ python setup.py install --install-lib=~/Softs/Python
-
-will install it in ``~/Softs/Python``, which you need to put into your
-``PYTHONPATH``.
-
-**Note:**
-  With Python >= 2.6, you can install package in a user specific
-  directory with::
-
-    $ python setup.py install --user
-
-  This will make the package directly usable from python without any
-  further configuration.
-
-Test the installation with::
-
-   >>> import healpy
-   >>> healpy.mollview(arange(12))
+see INSTALL
 
 Documentation
 -------------

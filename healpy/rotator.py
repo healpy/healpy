@@ -400,7 +400,7 @@ def dir2vec(theta,phi=None,lonlat=False):
       theta,phi=theta
    if lonlat:
        lon,lat=theta,phi
-       theta,phi = npy.pi/2.-npy.radians(lat), npy.radians(lon)
+       theta,phi = npy.pi/2.-lat*npy.pi/180,lon*npy.pi/180
    ct,st,cp,sp = npy.cos(theta),npy.sin(theta),npy.cos(phi),npy.sin(phi)
    return npy.asarray([st*cp,st*sp,ct])
 

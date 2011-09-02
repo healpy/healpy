@@ -65,7 +65,7 @@ def write_cl(filename,cl,dtype=npy.float32):
     tbhdu.header.update('CREATOR','healpy')
     tbhdu.writeto(filename,clobber=True)
 
-def write_map(filename,m,nest=False,dtype=npy.float32,fits_IDL=True):
+def write_map(filename,m,nest=False,dtype=npy.float32,fits_IDL=True,coord=None):
     """Writes an healpix map into an healpix file.
 
     Input:
@@ -75,6 +75,7 @@ def write_map(filename,m,nest=False,dtype=npy.float32,fits_IDL=True):
       - nest=False: ordering scheme
       - fits_IDL = true reshapes columns in rows of 1024, otherwise all the data will 
         go in one column
+      - coord: coordinate system, typically 'E' for Ecliptic, 'G' for Galactic or 'Q' for Equatorial  
     """
     if not hasattr(m, '__len__'):
         raise TypeError('The map must be a sequence')
@@ -123,6 +124,9 @@ def write_map(filename,m,nest=False,dtype=npy.float32,fits_IDL=True):
     else:    ordering = 'RING'
     tbhdu.header.update('ORDERING',ordering,
                         'Pixel ordering scheme, either RING or NESTED')
+    if coord:
+        tbhdu.header.update('COORD',coord,
+                            'Ecliptic, Galactic or eQuatorial')
     tbhdu.header.update('EXTNAME','xtension',
                         'name of this binary table extension')
     tbhdu.header.update('NSIDE',nside,'Resolution parameter of HEALPIX')

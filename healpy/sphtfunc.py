@@ -20,6 +20,7 @@
 import numpy as npy
 import _healpy_sph_transform_lib as sphtlib
 import _healpy_fitsio_lib as hfitslib
+from _healpy_pixel_lib import UNSEEN
 import os.path
 import pixelfunc
 
@@ -56,6 +57,8 @@ def anafast(m,lmax=None,mmax=None,iter=1,alm=False, use_weights=False, regressio
         weightfile = 'weight_ring_n%05d.fits' % (nside)
         if not os.path.isfile(datapath+'/'+weightfile):
             raise IOError('File not found : '+datapath+'/'+weightfile)
+    # Replace UNSEEN pixels with zeros
+    m[m == UNSEEN] = 0
     clout,almout = sphtlib._map2alm(m,lmax=lmax,mmax=mmax,iter=iter,cl=True,
                                     use_weights=use_weights,data_path=datapath,
                                     regression=regression)
@@ -84,6 +87,8 @@ def map2alm(m,lmax=None,mmax=None,iter=1,use_weights=False,regression=True):
         lmax = 3*nside-1
     if mmax is None or mmax < 0 or mmax > lmax:
         mmax = lmax
+    # Replace UNSEEN pixels with zeros
+    m[m == UNSEEN] = 0
     # Check the presence of weights file
     if use_weights:
         weightfile = 'weight_ring_n%05d.fits' % (nside)
@@ -437,6 +442,8 @@ def smoothing(m,fwhm=0.0,sigma=None,degree=False,
         nside=pixelfunc.npix2nside(m.size)
     else:
         raise TypeError("map must be en array or a list of 3 arrays")
+    # Replace UNSEEN pixels with zeros
+    m[m == UNSEEN] = 0
     alm = map2alm(m)
     return alm2map(alm,nside,fwhm=fwhm,sigma=sigma,
                    degree=degree,arcmin=arcmin)
