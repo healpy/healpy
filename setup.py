@@ -161,8 +161,11 @@ if 'CFITSIO_EXT_LIB' in os.environ:
     extra_link.append(os.path.join(cfitsio_lib_dir, 'libcfitsio.a'))
 
 healpix_libs =['healpix_cxx','cxxsupport','psht','fftpack','c_utils']
+healpix_pshyt_libs = ['psht','fftpack','c_utils']
+
 if 'openmp' in options:
     healpix_libs.append('gomp')
+    healpy_pshyt_libs.append('gomp')
 
 if not extra_link:
     healpix_libs.append('cfitsio')
@@ -217,7 +220,7 @@ setup(name='healpy',
       ext_modules=[pixel_lib,spht_lib,hfits_lib,
                    Extension("healpy.pshyt", ["pshyt/pshyt."+ext],
                              include_dirs = [numpy_inc,healpix_cxx_inc],
-                             libraries = ['psht','gomp','fftpack','c_utils'],
+                             libraries = healpix_pshyt_libs,
                              library_dirs = library_dirs)
                    ],
       package_data={'healpy': ['data/*.fits']},
