@@ -238,13 +238,13 @@ class Rotator(object):
     
     @property
     def mat(self):
-        """Return a matrix representing the rotation
+        """The matrix representing the rotation.
         """
         return npy.matrix(self._matrix)
 
     @property
     def coordin(self):
-        """the input coordinate system
+        """The input coordinate system.
         """
         if not self.consistent: return None
         c,i = zip(self._coords,self._invs)[-1]
@@ -252,7 +252,7 @@ class Rotator(object):
 
     @property
     def coordout(self):
-        """the output coordinate system
+        """The output coordinate system.
         """
         if not self.consistent: return None
         c,i = zip(self._coords,self._invs)[0]
@@ -260,25 +260,25 @@ class Rotator(object):
 
     @property
     def coordinstr(self):
-        """the input coordinate system in str
+        """The input coordinate system in str.
         """
         return coordname.get(self.coordin,'')
 
     @property
     def coordoutstr(self):
-        """the output coordinate system in str
+        """The output coordinate system in str.
         """
         return coordname.get(self.coordout,'')
 
     @property
     def rots(self):
-        """the sequence of rots defining
+        """The sequence of rots defining the rotation.
         """
         return self._rots
     
     @property
     def coords(self):
-        """the sequence of coords
+        """The sequence of coords defining the rotation.
         """
         return self._coords
     
@@ -338,17 +338,31 @@ class Rotator(object):
 #     used in the Rotator class.
 
 def rotateVector(rotmat,vec,vy=None,vz=None, do_rot=True):
-    """Rotate a vector (or a list of vectors) using the euler matrix
+    """Rotate a vector (or a list of vectors) using the rotation matrix
     given as first argument.
+    
+    Parameters
+    ----------
+    rotmat : float, array-like shape (3,3)
+      The rotation matrix
+    vec : float, scalar or array-like
+      The vector to transform (shape (3,) or (3,N)),
+      or x component (scalar or shape (N,)) if vy and vz are given
+    vy : float, scalar or array-like, optional
+      The y component of the vector (scalar or shape (N,))
+    vz : float, scalar or array-like, optional
+      The z component of the vector (scalar or shape (N,))
+    do_rot : bool, optional
+      if True, really perform the operation, if False do nothing.
 
-    Usage: vec_rot = rotateVector(rotmat,vec,vy=None,vz=None,do_rot=True)
+    Returns
+    -------
+    vec : float, array
+      The component of the rotated vector(s).
 
-    - rotmat : the 3x3 rotation matrix
-    - vec[0], vec[1], vec[2] : vx,vy,vz (can be vectors)
-      or: vec, vy, vz : vx,vy,vz if vy and vz are given.
-    - do_rot: really perform the rotation if True, do nothing if false
-
-    Return: vx,vy,vz
+    See Also
+    --------
+    Rotator
     """
     if vy is None and vz is None:
        if do_rot: return npy.tensordot(rotmat,vec,axes=(1,0))
@@ -361,119 +375,189 @@ def rotateVector(rotmat,vec,vy=None,vz=None, do_rot=True):
                        "and vz parameters")
 
 def rotateDirection(rotmat,theta,phi=None,do_rot=True,lonlat=False):
-   """Rotate the direction pointed by theta,phi using the rotation matrix
-   given as first argument.
+    """Rotate the vector described by angles theta,phi using the rotation matrix
+    given as first argument.
    
-   Usage: dir_rot = rotateDirection(rotmat,theta,phi=None,do_rot=True)
-   
-   - rotmat : the 3x3 rotation matrix
-   - theta[0],theta[1] : theta, phi (can be vectors)
-     or: theta, phi : theta, phi if phi is given.
-   - do_rot: really perform the rotation if True, do nothing if false
-   
-   Return: theta_rot,phi_rot
-   """
-   vx,vy,vz=rotateVector(rotmat,dir2vec(theta,phi,lonlat=lonlat),do_rot=do_rot)
-   return vec2dir(vx,vy,vz,lonlat=lonlat)
+    Parameters
+    ----------
+    rotmat : float, array-like shape (3,3)
+      The rotation matrix
+    theta : float, scalar or array-like
+      The angle theta (scalar or shape (N,)) 
+      or both angles (scalar or shape (2, N)) if phi is not given.
+    phi : float, scalar or array-like, optionnal
+      The angle phi (scalar or shape (N,)).
+    do_rot : bool, optional
+      if True, really perform the operation, if False do nothing.
+    lonlat : bool
+      If True, input angles are assumed to be longitude and latitude in degree,
+      otherwise, they are co-latitude and longitude in radians.
+  
+    Returns
+    -------
+    angles : float, array
+      The angles of describing the rotated vector(s).
+
+    See Also
+    --------
+    Rotator
+    """
+    vx,vy,vz=rotateVector(rotmat,dir2vec(theta,phi,lonlat=lonlat),do_rot=do_rot)
+    return vec2dir(vx,vy,vz,lonlat=lonlat)
 
 def vec2dir(vec,vy=None,vz=None,lonlat=False):
-   """Transform a vector to angle given by theta,phi.
+    """Transform a vector to angle given by theta,phi.
+    
+    Parameters
+    ----------
+    vec : float, scalar or array-like
+      The vector to transform (shape (3,) or (3,N)),
+      or x component (scalar or shape (N,)) if vy and vz are given
+    vy : float, scalar or array-like, optional
+      The y component of the vector (scalar or shape (N,))
+    vz : float, scalar or array-like, optional
+      The z component of the vector (scalar or shape (N,))
+    lonlat : bool, optional
+      If True, return angles will be longitude and latitude in degree,
+      otherwise, angles will be longitude and co-latitude in radians (default)
 
-   Parameters
-   ----------
-   vec: float, scalar or array-like
-     The vector to transform (shape (3,) or (3,N)),
-     or x component (scalar or shape (N,)) if vy and vz are given
-   vy: float, scalar or array-like, optional
-     The y component of the vector (scalar or shape (N,))
-   vz: float, scalar or array-like, optional
-     The z component of the vector (scalar or shape (N,))
-   lonlat: bool, optional
-     If True, return angles will be longitude and latitude in degree,
-     otherwise, angles will be longitude and co-latitude in radians (default)
+    Returns
+    -------
+    angles : float, array
+      The angles (unit depending on *lonlat*) in an array of 
+      shape (2,) (if scalar input) or (2, N)
 
-   Returns
-   -------
-   angles: float, array
-     The angles (unit depending on *lonlat*) in an array of shape (2,) (if scalar input)
-     or (2, N)
-
-   See Also
-   --------
-   :func:`dir2vec`, :func:`ang2vec`, :func:`vec2ang`
-   """
-   if vy is None and vz is None:
-      vx,vy,vz = npy.transpose(vec)
-   elif vy is not None and vz is not None:
-      vx=vec
-   else:
-      raise TypeError("You must either give both vy and vz or none of them")
-   r = npy.sqrt(vx**2+vy**2+vz**2)
-   theta = npy.arccos(vz/r)
-   phi = npy.arctan2(vy,vx)
-   if lonlat:
-       ang = npy.empty((2, theta.size))
-       ang[0, :] = npy.degrees(phi)
-       ang[1, :] = npy.degrees(theta)
-       npy.negative(ang[1, :], ang[1, :])
-       ang[1, :] += 90.
-       return ang.squeeze()
-   else:
-       return npy.array([theta,phi])
+    See Also
+    --------
+    :func:`dir2vec`, :func:`ang2vec`, :func:`vec2ang`
+    """
+    if vy is None and vz is None:
+        vx,vy,vz = vec
+    elif vy is not None and vz is not None:
+        vx=vec
+    else:
+        raise TypeError("You must either give both vy and vz or none of them")
+    r = npy.sqrt(vx**2+vy**2+vz**2)
+    ang = npy.empty((2, theta.size))
+    ang[0, :] = npy.arccos(vz / r)
+    ang[1, :] = npy.arctan2(vy, vx)
+    if lonlat:
+        ang[0, :] = npy.degrees(ang[1, :])
+        ang[1, :] = npy.degrees(ang[0, :])
+        npy.negative(ang[1, :], ang[1, :])
+        ang[1, :] += 90.
+        return ang.squeeze()
+    else:
+        return ang.squeeze()
 
 def dir2vec(theta,phi=None,lonlat=False):
-   """Transform a direction theta,phi to a unit vector.
-
-   Parameters
-   ----------
-   theta : float, scalar or array-like
-     The angle theta (scalar or shape (N,)) or both angles (scalar or shape (2, N)) if phi is not given.
-   phi : float, scalar or array-like, optionnal
-     The angle phi (scalar or shape (N,)).
-   lonlat : bool
-     If True, input angles are assumed to be longitude and latitude in degree,
-     otherwise, they are co-latitude and longitude in radians.
-   
-   Returns
-   -------
-   vec : array
-     The vector(s) corresponding to given angles, shape is (3,) or (3, N).
-
-   See Also
-   --------
-   :func:`vec2dir`, :func:`ang2vec`, :func:`vec2ang`
-   """
-   if phi is None:
-      theta,phi=theta
-   if lonlat:
-       lon,lat=theta,phi
-       theta,phi = npy.pi/2.-lat*npy.pi/180,lon*npy.pi/180
-   ct,st,cp,sp = npy.cos(theta),npy.sin(theta),npy.cos(phi),npy.sin(phi)
-   return npy.asarray([st*cp,st*sp,ct])
+    """Transform a direction theta,phi to a unit vector.
+    
+    Parameters
+    ----------
+    theta : float, scalar or array-like
+      The angle theta (scalar or shape (N,)) 
+      or both angles (scalar or shape (2, N)) if phi is not given.
+    phi : float, scalar or array-like, optionnal
+      The angle phi (scalar or shape (N,)).
+    lonlat : bool
+      If True, input angles are assumed to be longitude and latitude in degree,
+      otherwise, they are co-latitude and longitude in radians.
+    
+    Returns
+    -------
+    vec : array
+      The vector(s) corresponding to given angles, shape is (3,) or (3, N).
+ 
+    See Also
+    --------
+    :func:`vec2dir`, :func:`ang2vec`, :func:`vec2ang`
+    """
+    if phi is None:
+        theta,phi=theta
+    if lonlat:
+        lon,lat=theta,phi
+        theta,phi = npy.pi/2.-npy.radians(lat),npy.radians(lon)
+    ct,st,cp,sp = npy.cos(theta),npy.sin(theta),npy.cos(phi),npy.sin(phi)
+    vec = npy.empty((3, ct.size), npy.float64)
+    vec[0, :] = st * cp
+    vec[1, :] = st * sp
+    vec[2, :] = ct
+    return vec
 
 def angdist(dir1,dir2,lonlat=False):
-    """Return the angular distance between dir1 and dir2.
+    """Returns the angular distance between dir1 and dir2.
+
+    Parameters
+    ----------
+    dir1, dir2 : float, array-like
+      The directions between which computing the angular distance.
+      Angular if len(dir) == 2 or vector if len(dir) == 3.
+      See *lonlat* for unit
+    lonlat : bool, scalar or sequence
+      If True, angles are assumed to be longitude and latitude in degree,
+      otherwise they are interpreted as colatitude and longitude in radian.
+      If a sequence, lonlat[0] applies to dir1 and lonlat[1] applies to dir2.
+
+    Returns
+    -------
+    angles : float, scalar or array-like
+      The angle(s) between dir1 and dir2 in radian.
+
+    Examples
+    --------
     """
     if hasattr(lonlat,'__len__') and len(lonlat) == 2:
         lonlat1,lonlat2 = lonlat
     else:
         lonlat1=lonlat2=lonlat
-    if len(dir1) == 2: # theta,phi or lonlat, convert to vec
-        vec1 = npy.asarray(dir2vec(dir1,lonlat=lonlat1))
-    else:
-        vec1 = npy.asarray(dir1)
-    if vec1.ndim == 1:
-        vec1 = npy.expand_dims(vec1,-1)
-    if len(dir2) == 2:
-        vec2 = npy.asarray(dir2vec(dir2,lonlat=lonlat1)).T
-    else:
-        vec2 = npy.asarray(dir2)
-    if vec2.ndim == 1:
-        vec2 = npy.expand_dims(vec2,-1)
+    dir1 = npy.asarray(dir1)
+    dir2 = npy.asarray(dir2)
+    if dir1.ndim == 2:
+        if dir1.shape[0] == 2: # theta, phi -> vec
+            vec1 = dir2vec(dir1, lonlat = lonlat1)
+        else:
+            vec1 = npy.reshape(dir1, (3, -1))
+            vec1 = normalize_vec(vec1)
+    elif dir1.ndim == 1:
+        if dir1.shape[0] == 2: # theta, phi -> vec
+            vec1 = npy.reshape(dir2vec(dir1, lonlat = lonlat1), (3, 1))
+        else:
+            vec1 = npy.reshape(dir1, (3, 1))
+            vec1 = normalize_vec(vec1)
+    if dir2.ndim == 2:
+        if dir2.shape[0] == 2: # theta, phi -> vec
+            vec2 = dir2vec(dir2, lonlat = lonlat2)
+        else:
+            vec2 = npy.reshape(dir2, (3, -1))
+            vec2 = normalize_vec(vec2)
+    elif dir2.ndim == 1:
+        if dir2.shape[0] == 2: # theta, phi -> vec
+            vec2 = npy.reshape(dir2vec(dir2, lonlat = lonlat2), (3, 1))
+        else:
+            vec2 = npy.reshape(dir2, (3, 1))
+            vec2 = normalize_vec(vec2)
     # compute scalar product
     pscal = (vec1*vec2).sum(axis=0)
     return npy.arccos(pscal)
 
+def normalize_vec(vec):
+    """Normalize the vector(s) *vec* (in-place if it is a ndarray).
+
+    Parameters
+    ----------
+    vec : float, array-like of shape (D,) or (D, N)
+      The D-vector(s) to normalize.
+
+    Returns
+    -------
+    vec_normed : float, array
+      Normalized vec, shape (D,) or (D, N)
+    """
+    vec = npy.array(vec, npy.float64)
+    r = npy.sqrt(npy.sum(vec ** 2, axis = 0))
+    vec /= r
+    return vec
 
 #######################################################
 #

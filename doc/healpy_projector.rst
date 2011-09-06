@@ -1,7 +1,16 @@
-.. projector:
+.. healpy.projector:
+
+.. currentmodule:: healpy.projector
 
 :mod:`projector` -- Spherical projections
 =========================================
 
-.. automodule:: healpy.projector
-   :members:
+Basic classes
+-------------
+.. autosummary::
+   :toctree: generated/
+
+   SphericalProj
+   GnomonicProj
+   MollweideProj
+   CartesianProj

@@ -1,7 +1,20 @@
-.. projaxes:
+.. healpy.projaxes:
+
+.. currentmodule:: healpy.projaxes
 
 :mod:`projaxes` -- Axes for projection
 ======================================
 
-.. automodule:: healpy.projaxes
-   :members:
+Basic classes
+-------------
+.. autosummary::
+   :toctree: generated/
+
+   SphericalProjAxes
+   GnomonicAxes
+   HpxGnomonicAxes
+   MollweideAxes
+   HpxMollweideAxes
+   CartesianAxes
+   HpxCartesianAxes
+
