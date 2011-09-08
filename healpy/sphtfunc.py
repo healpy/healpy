@@ -31,20 +31,30 @@ DATAPATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data')
 def anafast(m,lmax=None,mmax=None,iter=1,alm=False, use_weights=False, regression=True):
     """Computes the power spectrum of an Healpix map.
 
-    Input:
-      - m : either an array representing a map, or a list of 3 arrays
-            representing I, Q, U maps
-    Parameters:
-      - lmax : maximum l of the power spectrum (default: 3*nside-1)
-      - mmax : maximum m of the alm (default: lmax)
-      - iter : number of iteration (default: 1)
-      - alm : (boolean) whether to return alm or not (if True, both are
-               returned in a tuple)
-      - regression : if True, map average is removed before computing alm. Default: True.
-    Return:
-      - if alm==False: return cl or a list of cl's (TT,EE,BB,TE)
-      - if alm==True: return a tuple with cl or a list of cl's and alm
-                      or a list of alm's
+    Parameters
+    ----------
+    m : float, array-like shape (Npix,) or (3, Npix)
+      Either an array representing a map, or a sequence of 3 arrays
+      representing I, Q, U maps
+    lmax : int, scalar, optional
+      Maximum l of the power spectrum (default: 3*nside-1)
+    mmax : int, scalar, optional
+      Maximum m of the alm (default: lmax)
+    iter : int, scalar, optional
+      Number of iteration (default: 1)
+    alm : bool, scalar, optional
+      If True, returns both cl and alm, otherwise only cl is returned
+    regression : bool, scalar, optional
+      If True, map average is removed before computing alm. Default: True.
+    
+    Returns
+    -------
+    res : array or sequence of arrays
+      If *alm* is False, returns cl or a list of cl (TT, EE, BB, TE for
+      polarized input map)
+      Otherwise, returns a tuple (cl, alm), where cl is as above and
+      alm is the spherical harmonic transform or a list of almT, almE, almB
+      for polarized input
     """
     datapath = DATAPATH #os.path.dirname(__file__)+'/data'
     nside = _get_nside(m)
@@ -70,16 +80,25 @@ def anafast(m,lmax=None,mmax=None,iter=1,alm=False, use_weights=False, regressio
 def map2alm(m,lmax=None,mmax=None,iter=1,use_weights=False,regression=True):
     """Computes the alm of an Healpix map.
 
-    Input:
-      - m: a ndarray (not polarized) or a list of 3 ndarray (polarized)
-    Parameters:
-      - lmax : maximum l of the power spectrum. Default: 3*nside-1
-      - mmax : maximum m of the alm. Default: lmax
-      - iter : number of iteration (default: 1)
-      - use_weights: whether to use ring weights or not. Default: False.
-      - regression: if True, subtract map average before computing alm. Default: True.
-    Return:
-      - alm as one ndarray or a tuple of 3 ndarrays
+    Parameters
+    ----------
+    m : array-like, shape (Npix,) or (3, Npix)
+      The input map or a list of 3 input maps (polariztion).
+    lmax : int, scalar, optional
+      Maximum l of the power spectrum. Default: 3*nside-1
+    mmax : int, scalar, optional
+      Maximum m of the alm. Default: lmax
+    iter : int, scalar, optional
+      Number of iteration (default: 1)
+    use_weights: bool, scalar, optional
+      If True, use the ring weighting. Default: False.
+    regression: bool, scalar, optional
+      If True, subtract map average before computing alm. Default: True.
+    
+    Returns
+    -------
+    alm : array or tuple of array
+      alm or a tuple of 3 alm (almT, almE, almB) if polarized input.
     """
     datapath = DATAPATH #os.path.dirname(__file__)+'/data'
     nside = _get_nside(m)
@@ -109,16 +128,30 @@ def alm2map(alm, nside, lmax=-1, mmax=-1,pixwin=False,
     and mmax, or they will be computed from array size (assuming
     lmax==mmax).
 
-    Parameters:
-    - alm: a complex array of alm. Size must be of the form
-           size=mmax(lmax-mmax+1)/2+lmax
-    - nside: the nside of the output map.
-    - lmax: explicitly define lmax (needed if mmax!=lmax)
-    - mmax: explicitly define mmax (needed if mmax!=lmax)
-    - fwhm, sigma, degree and arcmin (as in smoothalm): smooth by a Gaussian
-      symmetric beam
+    Parameters
+    ----------
+    alm : complex, array
+      A complex array of alm. Size must be of the form mmax*(lmax-mmax+1)/2+lmax
+    nside : int, scalar
+      The nside of the output map.
+    lmax : int, scalar, optional
+      Explicitly define lmax (needed if mmax!=lmax)
+    mmax : int, scalar, optional
+      Explicitly define mmax (needed if mmax!=lmax)
+    fwhm : float, scalar, optional
+      The fwhm of the Gaussian used to smooth the map (applied on alm)
+    sigma : float, scalar, optional
+      The sigma of the Gaussian used to smooth the map (applied on alm)
+    degree : bool, scalar, optional
+      If True, unit of sigma or fwhm is degree, otherwise it is radian
+    arcmin : bool, scalar, optional
+      If True, unit of sigma or fwhm is arcmin, otherwise it is radian
 
-    Return: an Healpix map in RING scheme at nside.
+    Returns
+    -------
+    map : array or list of arrays
+      An Healpix map in RING scheme at nside or a list of T,Q,U maps (if
+      polarized input)
     """
     smoothalm(alm,fwhm=fwhm,sigma=sigma,degree=degree,arcmin=arcmin)
     if pixwin:
@@ -140,18 +173,21 @@ def synalm(cls, lmax=-1, mmax=-1):
     If lmax is not given or negative, it is assumed lmax=cl.size-1
     If mmax is not given or negative, it is assumed mmax=lmax.
 
-    Call: alms = synalm(cls, lmax=-1, mmax=-1)
+    Parameters
+    ----------
+    cls : float, array or tuple of arrays
+      Either one cl (1D array) or a tuple of either 4 cl (TT,TE,EE,BB)
+      or of n*(n+1)/2 cl. Some of the cl may be None, implying no
+      cross-correlation. For example, (TT,TE,TB,EE,EB,BB).
+      NOTE: this order differs from the alm2cl function !
+    lmax : int, scalar, optional
+      The lmax (if <0, the largest size-1 of cls)
+    mmax : int, scalar, optional
+      The mmax (if <0, =lmax)
 
-    Input:
-      - cls: either one cl (1D array) or a tuple of either 4 cl (TT,TE,EE,BB)
-             or of n(n+1)/2 cl. Some of the cl may be None, implying no
-             cross-correlation. For example, (TT,TE,TB,EE,EB,BB).
-             NOTE: this order differs from the alm2cl function !
-    Parameters:
-      - lmax: the lmax (if <0, the largest size-1 of cls)
-      - mmax: the mmax (if <0, =lmax)
-
-    Return: a list of n alms (with n(n+1)/2 the number of input cl,
+    Returns
+    -------
+    : a list of n alms (with n(n+1)/2 the number of input cl,
             or n=3 if there are 4 input cl).
     """
     if not isinstance(cls[0], npy.ndarray):
@@ -201,18 +237,35 @@ def synfast(cls,nside,lmax=-1,mmax=-1,alm=False,
             arcmin=False):
     """Create a map(s) from cl(s).
 
-    Input:
-      - cls: an array of cl or a list of cls (either 4 or 6, see synalm)
-      - nside: the nside of the output map(s)
-    Parameters:
-      - lmax, mmax: maximum l and m for alm. Default: 3*nside-1
-      - alm : if True, return also alm(s). Default: False.
-      - pixwin: convolve the alm by the pixel window function. Default: False.
-      - fwhm,sigma,degree,arcmin: see smoothalm. Convolve the map(s)
-        by a symmetric Gaussian beam
-    Output:
-      - if alm==False: return a map or a tuple of maps
-      - if alm==True: return a tuple of map(s) and alm(s)
+    Parameters
+    ----------
+    cls : array or tuple of array
+      A cl or a list of cl (either 4 or 6, see :func:`synalm`)
+    nside : int, scalar
+      The nside of the output map(s)
+    lmax : int, scalar, optional
+      Maximum l for alm. Default: 3*nside-1
+    mmax : int, scalar, optional
+      Maximum m for alm. Default: 3*nside-1
+    alm : bool, scalar, optional
+      If True, return also alm(s). Default: False.
+    pixwin : bool, scalar, optional
+      If True, convolve the alm by the pixel window function. Default: False.
+    fwhm : float, scalar, optional
+      The fwhm of the Gaussian used to smooth the map (applied on alm)
+    sigma : float, scalar, optional
+      The sigma of the Gaussian used to smooth the map (applied on alm)
+    degree : bool, scalar, optional
+      If True, unit of sigma or fwhm is degree, otherwise it is radian
+    arcmin : bool, scalar, optional
+      If True, unit of sigma or fwhm is arcmin, otherwise it is radian
+
+    Returns
+    -------
+    map : array or tuple of arrays
+      The output map (possibly list of maps if polarized input).
+      or, if alm is True, a tuple of (map,alm)
+      (alm possibly a list of alm if polarized input)
     """
     if not pixelfunc.isnsideok(nside):
         raise ValueError("Wrong nside value (must be a power of two).")
@@ -227,12 +280,15 @@ def synfast(cls,nside,lmax=-1,mmax=-1,alm=False,
     
 class Alm(object):
     """This class provides some static methods for alm index computation.
-    * getlm(lmax,i=None)
-    * getidx(lmax,l,m)
-    * getsize(lmax,mmax=-1)
-    * getlmax(s,mmax=-1)
+
+    Methods
+    -------
+    getlm
+    getidx
+    getsize
+    getlmax
     """
-    def __init__(self,lmax):
+    def __init__(self):
         pass
 
     @staticmethod

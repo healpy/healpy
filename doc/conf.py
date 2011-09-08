@@ -26,7 +26,7 @@ sys.path.append(os.path.abspath('.'))
 extensions = ['sphinx.ext.autodoc', 'sphinx.ext.autosummary', 'numpydoc']
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['.templates']
+templates_path = ['_templates/autosummary']
 
 # The suffix of source filenames.
 source_suffix = '.rst'
@@ -104,7 +104,7 @@ html_style = 'default.css'
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['.static']
+html_static_path = ['_static']
 
 # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
 # using the given strftime format.
@@ -115,11 +115,15 @@ html_last_updated_fmt = '%b %d, %Y'
 #html_use_smartypants = True
 
 # Custom sidebar templates, maps document names to template names.
-#html_sidebars = {}
+html_sidebars = {
+#    'index': 'indexsidebar.html'
+}
 
 # Additional templates that should be rendered to pages, maps page names to
 # template names.
-#html_additional_pages = {}
+html_additional_pages = {
+#    'index': 'indexcontent.html',
+}
 
 # If false, no module index is generated.
 #html_use_modindex = True
@@ -177,3 +181,6 @@ latex_documents = [
 
 # If false, no module index is generated.
 #latex_use_modindex = True
+
+#import glob
+#autosummary_generate = True #glob.glob('*.rst')
