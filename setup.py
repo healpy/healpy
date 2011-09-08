@@ -165,7 +165,7 @@ healpix_pshyt_libs = ['psht','fftpack','c_utils']
 
 if 'openmp' in options:
     healpix_libs.append('gomp')
-    healpy_pshyt_libs.append('gomp')
+    healpix_pshyt_libs.append('gomp')
 
 if not extra_link:
     healpix_libs.append('cfitsio')
