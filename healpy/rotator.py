@@ -438,7 +438,7 @@ def vec2dir(vec,vy=None,vz=None,lonlat=False):
     else:
         raise TypeError("You must either give both vy and vz or none of them")
     r = npy.sqrt(vx**2+vy**2+vz**2)
-    ang = npy.empty((2, theta.size))
+    ang = npy.empty((2, vx.size))
     ang[0, :] = npy.arccos(vz / r)
     ang[1, :] = npy.arctan2(vy, vx)
     if lonlat:
