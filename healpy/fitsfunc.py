@@ -188,7 +188,7 @@ def read_map(filename,field=0,dtype=npy.float64,nest=False,hdu=1,h=False,
         if (not pixelfunc.isnpixok(m.size) or (sz>0 and sz != m.size)) and verbose:
             print 'nside=%d, sz=%d, m.size=%d'%(nside,sz,m.size)
             raise ValueError('Wrong nside parameter.')
-        if nest not is None: # no conversion with None
+        if not nest is None: # no conversion with None
             if nest and ordering == 'RING':
                 idx = pixelfunc.nest2ring(nside,npy.arange(m.size,dtype=npy.int32))
                 m = m[idx]
