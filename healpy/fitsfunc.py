@@ -185,10 +185,12 @@ def read_map(filename,field=0,dtype=npy.float64,nest=False,hdu=1,h=False,
     """
     hdulist=pyf.open(filename)
     #print hdulist[1].header
-    nside = int(hdulist[hdu].header.get('NSIDE'))
+    nside = hdulist[hdu].header.get('NSIDE')
     if nside is None:
         warnings.warn("No NSIDE in the header file : will use length of array",
                       HealpixFitsWarning)
+    else:
+        nside = int(nside)
     if verbose: print 'NSIDE = %d'%nside
 
     if not pixelfunc.isnsideok(nside):
@@ -210,7 +212,7 @@ def read_map(filename,field=0,dtype=npy.float64,nest=False,hdu=1,h=False,
         if (not pixelfunc.isnpixok(m.size) or (sz>0 and sz != m.size)) and verbose:
             print 'nside=%d, sz=%d, m.size=%d'%(nside,sz,m.size)
             raise ValueError('Wrong nside parameter.')
-        if nest != None: # no conversion with None
+        if not nest is None: # no conversion with None
             if nest and ordering == 'RING':
                 idx = pixelfunc.nest2ring(nside,npy.arange(m.size,dtype=npy.int32))
                 m = m[idx]
