@@ -431,6 +431,8 @@ def vec2dir(vec,vy=None,vz=None,lonlat=False):
     --------
     :func:`dir2vec`, :func:`ang2vec`, :func:`vec2ang`
     """
+    if npy.any(npy.isnan(vec)):
+        return npy.nan, npy.nan
     if vy is None and vz is None:
         vx,vy,vz = vec
     elif vy is not None and vz is not None:
@@ -442,11 +444,10 @@ def vec2dir(vec,vy=None,vz=None,lonlat=False):
     ang[0, :] = npy.arccos(vz / r)
     ang[1, :] = npy.arctan2(vy, vx)
     if lonlat:
-        ang[0, :] = npy.degrees(ang[1, :])
-        ang[1, :] = npy.degrees(ang[0, :])
-        npy.negative(ang[1, :], ang[1, :])
-        ang[1, :] += 90.
-        return ang.squeeze()
+        ang = npy.degrees(ang)
+        npy.negative(ang[0, :], ang[0, :])
+        ang[0, :] += 90.
+        return ang[::-1,:].squeeze()
     else:
         return ang.squeeze()
 
