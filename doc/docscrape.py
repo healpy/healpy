@@ -469,6 +469,8 @@ class ClassDoc(NumpyDocString):
             raise ValueError("Expected a class or None, but got %r" % cls)
         self._cls = cls
 
+        self._exclude_class_members = config.get('exclude_class_members', [])
+
         if modulename and not modulename.endswith('.'):
             modulename += '.'
         self._mod = modulename
@@ -490,16 +492,27 @@ class ClassDoc(NumpyDocString):
 
     @property
     def methods(self):
+        #print 'ClassDoc - methods :', self._cls,
         if self._cls is None:
             return []
-        return [name for name,func in inspect.getmembers(self._cls)
+        #print  self._cls.__dict__.keys()
+        return [name for name,func in inspect.getmembers(self._cls) # self._cls.__dict__.iteritems() 
                 if ((not name.startswith('_')
                      or name in self.extra_public_methods)
-                    and callable(func))]
+                    and callable(func)
+                    and name not in self._exclude_class_members)]
 
     @property
     def properties(self):
+        #print 'ClassDoc - properties :', self._cls
         if self._cls is None:
             return []
-        return [name for name,func in inspect.getmembers(self._cls)
-                if not name.startswith('_') and func is None]
+        #print  self._cls.__dict__.keys()
+        return [name for name,func in inspect.getmembers(self._cls) # self._cls.__dict__.iteritems() # 
+                if (not name.startswith('_') 
+                and func is None 
+                and name not in self._exclude_class_members)]
+
+
+
+    

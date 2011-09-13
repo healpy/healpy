@@ -17,16 +17,18 @@ import sys, os
 # is relative to the documentation root, use os.path.abspath to make it
 # absolute, like shown here.
 sys.path.append(os.path.abspath('.'))
+sys.path.append(os.path.abspath('./ext'))
 
 # General configuration
 # ---------------------
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.autodoc', 'sphinx.ext.autosummary', 'numpydoc']
+
+extensions = ['sphinx.ext.autodoc', 'myautosummary', 'numpydoc']
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates/autosummary']
+templates_path = ['_templates/']
 
 # The suffix of source filenames.
 source_suffix = '.rst'
@@ -42,9 +44,10 @@ copyright = u'2008, C. Rosset'
 # other places throughout the built documents.
 #
 # The short X.Y version.
-version = 'trunk'
+import healpy
+version = healpy.__version__
 # The full version, including alpha/beta/rc tags.
-release = 'trunk'
+release = version
 
 # There are two options for replacing |today|: either, you set today to some
 # non-false value, then it is used:
@@ -57,7 +60,7 @@ today_fmt = '%B %d, %Y'
 
 # List of directories, relative to source directories, that shouldn't be searched
 # for source files.
-exclude_trees = ['.build']
+exclude_patterns = ['.build/*', '_templates/*']
 
 # The reST default role (used for this markup: `text`) to use for all documents.
 #default_role = None
@@ -80,10 +83,13 @@ pygments_style = 'sphinx'
 # Options for HTML output
 # -----------------------
 
+
+html_theme = 'sphinxdoc'
+
 # The style sheet to use for HTML and HTML Help pages. A file of that name
 # must exist either in Sphinx' static/ path, or in one of the custom paths
 # given in html_static_path.
-html_style = 'default.css'
+html_style = 'sphinxdoc.css'
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
@@ -182,5 +188,26 @@ latex_documents = [
 # If false, no module index is generated.
 #latex_use_modindex = True
 
-#import glob
-#autosummary_generate = True #glob.glob('*.rst')
+import glob
+autosummary_generate = glob.glob('*.rst')
+
+from sphinx.ext.autosummary import get_documenter
+def get_members(obj, typ, include_public=[]):
+    import matplotlib
+    items = [
+        name for name in dir(obj)
+        if get_documenter(getattr(obj, name), obj).objtype == typ
+    ]
+    ## remove all members of matplotlib.axes.Axes
+    items = list(set(items) - set(dir(matplotlib.axes.Axes)))
+    public = [x for x in items
+              if x in include_public or not x.startswith('_')]
+    return public, items
+
+autosummary_get_members = get_members
+import matplotlib.axes
+numpydoc_exclude_class_members = dir(matplotlib.axes.Axes)
+
+#####
+###### Needs to modify docscrape (methods and properties) as well...
+#####

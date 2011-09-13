@@ -84,8 +84,10 @@ Map data manipulation
 
 import numpy as npy
 import _healpy_pixel_lib as pixlib
-from _healpy_pixel_lib import UNSEEN
 import exceptions
+
+#: Special value used for masked pixels
+UNSEEN = pixlib.UNSEEN
 
 __all__ = ['pix2ang', 'pix2vec', 'ang2pix', 'vec2pix',
            'ang2vec', 'vec2ang',

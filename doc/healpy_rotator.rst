@@ -10,13 +10,8 @@ Rotation
 --------
 .. autosummary::
    :toctree: generated/
-   :template: autosummary/class.rst
 
    Rotator
-
-.. autosummary::
-   :toctree: generated/
-
    rotateVector
    rotateDirection
    
