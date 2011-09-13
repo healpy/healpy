@@ -31,14 +31,20 @@ from exceptions import NotImplementedError
 class HealpixFitsWarning(Warning):
     pass
 
-def read_cl(filename,dtype=npy.float32,h=False):
+def read_cl(filename,dtype=npy.float64,h=False):
     """Reads Cl from an healpix file, as IDL fits2cl.
 
-    Input:
-      - filename: the fits file name
+    Parameters
+    ----------
+    filename : str
+      the fits file name
+    dtype : data type, optional
+      the data type of the returned array
 
-    Return: 
-      - cl: the cl array, currently TT only
+    Returns
+    -------
+    cl : array
+      the cl array, currently TT only
     """
     hdulist=pyf.open(filename)
     return hdulist[1].data.field(0)
@@ -46,9 +52,12 @@ def read_cl(filename,dtype=npy.float32,h=False):
 def write_cl(filename,cl,dtype=npy.float32):
     """Writes Cl into an healpix file, as IDL cl2fits.
 
-    Input:
-      - filename: the fits file name
-      - cl: the cl array to write to file, currently TT only
+    Parameters
+    ----------
+    filename : str
+      the fits file name
+    cl : array
+      the cl array to write to file, currently TT only
     """
     # check the dtype and convert it
     fitsformat = getformat(dtype)
@@ -68,14 +77,20 @@ def write_cl(filename,cl,dtype=npy.float32):
 def write_map(filename,m,nest=False,dtype=npy.float32,fits_IDL=True,coord=None):
     """Writes an healpix map into an healpix file.
 
-    Input:
-      - filename: the fits file name
-      - m: the map to write. Possibly a sequence of 3 maps of same size.
-           They will be considered as I, Q, U maps
-      - nest=False: ordering scheme
-      - fits_IDL = true reshapes columns in rows of 1024, otherwise all the data will 
-        go in one column
-      - coord: coordinate system, typically 'E' for Ecliptic, 'G' for Galactic or 'Q' for Equatorial  
+    Parameters
+    ----------
+    filename : str
+      the fits file name
+    m : array or sequence of 3 arrays
+      the map to write. Possibly a sequence of 3 maps of same size.
+      They will be considered as I, Q, U maps
+    nest : bool, optional
+      If False, ordering scheme is NESTED, otherwise, it is RING. Default: RING.
+    fits_IDL : bool, optional
+      If True, reshapes columns in rows of 1024, otherwise all the data will 
+      go in one column. Default: True
+    coord : str
+      The coordinate system, typically 'E' for Ecliptic, 'G' for Galactic or 'Q' for Equatorial  
     """
     if not hasattr(m, '__len__'):
         raise TypeError('The map must be a sequence')
@@ -142,22 +157,31 @@ def read_map(filename,field=0,dtype=npy.float64,nest=False,hdu=1,h=False,
              verbose=False):
     """Read an healpix map from a fits file.
 
-    Input:
-      - filename: the fits file name
-    Parameters:
-      - field: the column to read Default: 0
-               by convention 0 is temperature, 1 is Q, 2 is U
-               field can be a tuple to read multiple columns (0,1,2)
-      - dtype: force the conversion to some type. Default: npy.float64
-      - nest=False: if True return the map in NEST ordering, otherwise in RING ordering; 
-                    use fits keyword ORDERING to decide whether conversion is needed or not
-                    if None, no conversion is performed
-      - hdu=1: the header number to look at (start at 0)
-      - h=False: if True, return also the header
-      - verbose=False: if True, print a number of diagnostic messages
-    Return:
-      - an array, a tuple of array, possibly with the header at the end if h
-        is True
+    Parameters
+    ----------
+    filename : str
+      the fits file name
+    field : int or tuple of int, optional
+      The column to read. Default: 0.
+      By convention 0 is temperature, 1 is Q, 2 is U.
+      Field can be a tuple to read multiple columns (0,1,2)
+    dtype : data type, optional
+      Force the conversion to some type. Default: npy.float64
+    nest : bool, optional
+      If True return the map in NEST ordering, otherwise in RING ordering; 
+      use fits keyword ORDERING to decide whether conversion is needed or not
+      If None, no conversion is performed.
+    hdu : int, optional
+      the header number to look at (start at 0)
+    h : boo, optional
+      If True, return also the header. Default: False.
+    verbose : bool, optional
+      If True, print a number of diagnostic messages
+
+    Returns
+    -------
+    m | (m0, m1, ...) [, header] : array or a tuple of arrays, optionally with header appended
+      The map(s) read from the file, and the header if *h* is True.
     """
     hdulist=pyf.open(filename)
     #print hdulist[1].header
@@ -222,15 +246,20 @@ def write_alm(filename,alms,out_dtype=None,lmax=-1,mmax=-1,mmax_in=-1):
     If specified, the lmax and mmax parameters truncate the input data to
     include only alms for which l <= lmax and m <= mmax.
 
-    Input:
-      - filename: the filename of the output fits file
-      - alms: a complex array holding the alms.
-
-    Parameters:
-     - lmax: maximum l in the output file
-     - mmax: maximum m in the output file
-     - out_dtype: data type in the output file (must be a numpy dtype)
-     - mmax_in: maximum m in the input array
+    Parameters
+    ----------
+    filename : str
+      The filename of the output fits file
+    alms : array, complex
+      A complex ndarray holding the alms.
+    lmax : int, optional
+      The maximum l in the output file
+    mmax : int, optional
+      The maximum m in the output file
+    out_dtype : data type, optional
+      data type in the output file (must be a numpy dtype). Default: *alms*.real.dtype
+    mmax_in : int, optional
+      maximum m in the input array
     """
 
     l2max = Alm.getlmax(len(alms),mmax=mmax_in)
@@ -280,16 +309,19 @@ def read_alm(filename,hdu=1,return_mmax=False):
     uses index = m*(2*lmax+1-m)/2+l. The conversion is done in this 
     function.
 
-    Input:
-      - filename: the name of the fits file to read
+    Parameters
+    ----------
+    filename : str
+      The name of the fits file to read
+    hdu : int, optional
+      The header to read. Start at 0. Default: hdu=1
+    return_mmax : bool, optional
+      If true, both the alms and mmax is returned in a tuple. Default: return_mmax=False
 
-    Parameters:
-      - hdu: the header to read. Start at 0. Default: hdu=1
-      - return_mmax: If true, both the alms and mmax is returned in a tuple. Default: return_mmax=False
-
-    Return:
-      - alms: if return_mmax=False
-      - alms,mmax: if return_mmax=True
+    Returns
+    -------
+    alms[, mmax] : complex array or tuple of a complex array and an int
+      The alms read from the file and optionally mmax read from the file
     """
     idx, almr, almi = mrdfits(filename,hdu=hdu)
     l = npy.floor(npy.sqrt(idx-1)).astype(long)
@@ -312,12 +344,17 @@ def read_alm(filename,hdu=1,return_mmax=False):
 def mrdfits(filename,hdu=1):
     """Read a table in a fits file.
 
-    Input:
-      - filename: the name of the fits file to read
-    Parameters:
-      - hdu: the header to read. Start at 0. Default: hdu=1
-    Return:
-      - a list of column data in the given header
+    Parameters
+    ----------
+    filename : str
+      The name of the fits file to read
+    hdu : int, optional
+      The header to read. Start at 0. Default: hdu=1
+
+    Returns
+    -------
+    cols : a list of arrays
+      A list of column data in the given header
     """
     hdulist=pyf.open(filename)
     if hdu>=len(hdulist):
@@ -333,13 +370,18 @@ def mrdfits(filename,hdu=1):
 def mwrfits(filename,data,hdu=1,colnames=None,keys=None):
     """Write columns to a fits file in a table extension.
 
-    Input:
-      - filename: the fits file name
-      - data: a list of 1D arrays to write in the table
-    Parameters:
-      - hdu: header where to write the data. Default: 1
-      - colnames: the column names
-      - keys: a dictionary with keywords to write in the header
+    Parameters
+    ----------
+    filename : str
+      The fits file name
+    data : list of 1D arrays
+      A list of 1D arrays to write in the table
+    hdu : int, optional
+      The header where to write the data. Default: 1
+    colnames : list of str
+      The column names
+    keys : dict-like
+      A dictionary with keywords to write in the header
     """
     # Check the inputs
     if colnames is not None:
@@ -361,7 +403,17 @@ def mwrfits(filename,data,hdu=1,colnames=None,keys=None):
     tbhdu.writeto(filename,clobber=True)
 
 def getformat(t):
-    """Get the format string of type t.
+    """Get the FITS convention format string of data type t.
+
+    Parameters
+    ----------
+    t : data type
+      The data type for which the FITS type is requested
+
+    Returns
+    -------
+    fits_type : str or None
+      The FITS string code describing the data type, or None if unknown type.
     """
     conv = {
         npy.dtype(npy.bool): 'L',

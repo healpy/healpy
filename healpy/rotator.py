@@ -167,13 +167,25 @@ class Rotator(object):
         or a vector (x,y,z). You can use lonla keyword to use longitude, latitude
         (in degree) instead of theta, phi (in radian). In this case, returns 
         longitude, latitude in degree.
+
         Accepted forms:
+
         >>> r = Rotator()
         >>> r(x,y,z)  # x,y,z either scalars or arrays
         >>> r(theta,phi) # theta, phi scalars or arrays 
         >>> r(lon,lat,lonlat=True)  # lon, lat scalars or arrays
         >>> r(vec) # vec 1-D array with 3 elements, or 2-D array 3xN
         >>> r(direction) # direction 1-D array with 2 elements, or 2xN array
+
+        Parameters
+        ----------
+        vec_or_dir : array or multiple arrays
+          The direction to rotate. See above for accepted formats.
+        lonlat : bool, optional
+          If True, assumes the input direction is longitude/latitude in degrees.
+          Otherwise, assumes co-latitude/longitude in radians. Default: False
+        inv : bool, optional
+          If True, applies the inverse rotation. Default: False.
         """
         if kwds.pop('inv',False): m=self._matrix.T
         else:                     m=self._matrix
@@ -289,16 +301,24 @@ class Rotator(object):
 
     def angle_ref(self,*args,**kwds):
         """Compute the angle between transverse reference direction of initial and final frames
+
         For example, if angle of polarisation is psi in initial frame, it will be psi+angle_ref in final
         frame.
-        Input:
-          - direction or vector (see Rotator.__call__)
-        Keywords:
-          - lonlat: if True, assume input is longitude,latitude in degrees. Otherwise,
-                    theta,phi in radian. Default: False
-          - inv: if True, use the inverse transforms. Default: False
-        Return:
-          - angle in radian (a scalar or an array if input is a sequence of direction/vector)
+
+        Parameters
+        ----------
+        dir_or_vec : array
+          Direction or vector (see Rotator.__call__)
+        lonlat: bool, optional
+          If True, assume input is longitude,latitude in degrees. Otherwise,
+          theta,phi in radian. Default: False
+        inv : bool, optional
+          If True, use the inverse transforms. Default: False
+
+        Returns
+        -------
+        angle : float, scalar or array
+          Angle in radian (a scalar or an array if input is a sequence of direction/vector)
         """
         R = self
         lonlat = kwds.get('lonlat',False)
@@ -429,7 +449,7 @@ def vec2dir(vec,vy=None,vz=None,lonlat=False):
 
     See Also
     --------
-    :func:`dir2vec`, :func:`ang2vec`, :func:`vec2ang`
+    :func:`dir2vec`, :func:`pixelfunc.ang2vec`, :func:`pixelfunc.vec2ang`
     """
     if vy is None and vz is None:
         vx,vy,vz = vec
@@ -438,7 +458,7 @@ def vec2dir(vec,vy=None,vz=None,lonlat=False):
     else:
         raise TypeError("You must either give both vy and vz or none of them")
     r = npy.sqrt(vx**2+vy**2+vz**2)
-    ang = npy.empty((2, theta.size))
+    ang = npy.empty((2, r.size))
     ang[0, :] = npy.arccos(vz / r)
     ang[1, :] = npy.arctan2(vy, vx)
     if lonlat:
@@ -471,7 +491,7 @@ def dir2vec(theta,phi=None,lonlat=False):
  
     See Also
     --------
-    :func:`vec2dir`, :func:`ang2vec`, :func:`vec2ang`
+    :func:`vec2dir`, :func:`pixelfunc.ang2vec`, :func:`pixelfunc.vec2ang`
     """
     if phi is None:
         theta,phi=theta

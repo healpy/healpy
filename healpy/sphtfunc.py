@@ -295,10 +295,13 @@ class Alm(object):
     def getlm(lmax,i=None):
         """Get the l and m from index and lmax.
         
-        Parameters:
-        - lmax
-        - i: the index. If not given, the function return l and m
-             for i=0..Alm.getsize(lmax)
+        Parameters
+        ----------
+        lmax : int
+          The maximum l defining the alm layout
+        i : int or None
+          The index for which to compute the l and m.
+          If None, the function return l and m for i=0..Alm.getsize(lmax)
         """
         if i is None:
             i=npy.arange(Alm.getsize(lmax))
@@ -308,23 +311,60 @@ class Alm(object):
 
     @staticmethod
     def getidx(lmax,l,m):
-        """Get index from lmax, l and m.
+        """Returns index corresponding to (l,m) in an array describing alm up to lmax.
         
-        Parameters:
-        - lmax
-        - l
-        - m
+        Parameters
+        ----------
+        lmax : int
+          The maximum l, defines the alm layout
+        l : int
+          The l for which to get the index
+        m : int
+          The m for which to get the index
+
+        Returns
+        -------
+        idx : int
+          The index corresponding to (l,m)
         """
         return m*(2*lmax+1-m)/2+l
 
     @staticmethod
     def getsize(lmax,mmax=-1):
+        """Returns the size of the array needed to store alm up to *lmax* and *mmax*
+
+        Parameters
+        ----------
+        lmax : int
+          The maximum l, defines the alm layout
+        mmax : int, optional
+          The maximum m, defines the alm layout. Default: lmax.
+
+        Returns
+        -------
+        size : int
+          The size of the array needed to store alm up to lmax, mmax.
+        """
         if mmax<0 or mmax > lmax:
             mmax=lmax
         return mmax*(2*lmax+1-mmax)/2+lmax+1
 
     @staticmethod
     def getlmax(s,mmax=-1):
+        """Returns the lmax corresponding to a given array size.
+
+        Parameters
+        ----------
+        s : int
+          Size of the array
+        mmax : int, optional
+          The maximum m, defines the alm layout. Default: lmax.
+
+        Returns
+        -------
+        lmax : int
+          The maximum l of the array, or -1 if it is not a valid size.
+        """
         if mmax >= 0:
             x=(2*s+mmax**2-mmax-2)/(2*mmax+2)
         else:
@@ -340,12 +380,20 @@ def alm2cl(alm,mmax=-1,nspec=4):
     """Compute the auto- and cross- spectra of the given alm's
     (either 1 alm or 3 alm).
 
-    Input:
-      - alm: one array or a sequence of 3 arrays of identical size
-    Parameters:
-      - mmax: maximum m for alm(s)
-      - nspec: number of spectra to return if 3 alms were given:
-        nspec==[0-6], in order TT,EE,BB,TE,TB,EB. 
+    Parameters
+    ----------
+    alm : array or sequence of arrays
+      one array or a sequence of 3 arrays of identical size
+    mmax : int, optional
+      The maximum m for alm(s)
+    nspec : int, optional
+      The number of spectra to return if 3 alms were given:
+      nspec==[0-6], in order TT,EE,BB,TE,TB,EB. 
+
+    Returns
+    -------
+    cl : array or sequence of arrays
+      the power spectrum estimated from alm.
     """
     # this is the expected lmax, given mmax
     if isinstance(alm,npy.ndarray) and alm.ndim == 1:
@@ -393,8 +441,22 @@ def alm2cl(alm,mmax=-1,nspec=4):
 def almxfl(alm,fl,mmax=-1,inplace=False):
     """Multiply alm by a function of l. The function is assumed
     to be zero where not defined.
-    If inplace is True, the operation is done in place. Always return
-    the alm array (either a new array or the modified input array).
+
+    Parameters
+    ----------
+    alm : array
+      The alm to multiply
+    fl : array
+      The function (at l=0..fl.size-1) by which alm must be multiplied.
+    mmax : int, optional
+      The maximum m defining the alm layout. Default: lmax.
+    inplace : bool, optional
+      If True, modify the given alm, otherwise make a copy before multiplying.
+
+    Returns
+    -------
+    alm : array
+      The modified alm, either a new array or a reference to input alm, if inplace is True.
     """
     # this is the expected lmax, given mmax
     lmax = Alm.getlmax(alm.size,mmax)
@@ -407,7 +469,7 @@ def almxfl(alm,fl,mmax=-1,inplace=False):
         almout = alm
     else:
         almout = alm.copy()
-    for l in range(lmax+1):
+    for l in xrange(lmax+1):
         if l < fl.size:
             a=fl[l]
         else:
@@ -420,19 +482,27 @@ def smoothalm(alm,fwhm=0.0,sigma=None,degree=False,
               arcmin=False,mmax=-1,verbose=False):
     """Smooth alm with a Gaussian symmetric beam function in place.
 
-    Input:
-      - alm: either an array representing one alm, or a sequence of
-             3 arrays representing 3 alm
-    Parameters:
-      - fwhm: the full width half max parameter of the Gaussian. Default:0.0
-      - sigma: the sigma of the Gaussian. Override fwhm.
-      - degree: if True, parameter given in degree. Override arcmin.
-                Default: False
-      - arcmin: if True, parameter given in arcmin. Default: False
-      - mmax: the maximum m for alm. Default: mmax=lmax
-      - verbose: if True prints diagnostic information. Default: False
-    Return:
-      None
+    Parameters
+    ----------
+    alm : array or sequence of 3 arrays
+      Either an array representing one alm, or a sequence of
+      3 arrays representing 3 alm
+    fwhm : float, optional
+      The full width half max parameter of the Gaussian. Default:0.0
+    sigma : float, optional
+      The sigma of the Gaussian. Override fwhm.
+    degree : bool, optional
+      If True, parameter given in degree. Override arcmin. Default: False
+    arcmin : bool, optional
+      If True, parameter given in arcmin. Default: False
+    mmax : int, optional
+      The maximum m for alm. Default: mmax=lmax
+    verbose : bool, optional
+      If True prints diagnostic information. Default: False
+
+    Returns
+    -------
+    None
     """
     if sigma is None:
         sigma = fwhm / (2.*npy.sqrt(2.*npy.log(2.)))
@@ -474,18 +544,26 @@ def smoothing(m,fwhm=0.0,sigma=None,degree=False,
               arcmin=False):
     """Smooth a map with a Gaussian symmetric beam.
 
-    Input:
-      - map: either an array representing one map, or a sequence of
-             3 arrays representing 3 maps
-    Parameters:
-      - fwhm: the full width half max parameter of the Gaussian. Default:0.0
-      - sigma: the sigma of the Gaussian. Override fwhm.
-      - degree: if True, parameter given in degree. Override arcmin.
-                Default: False
-      - arcmin: if True, parameter given in arcmin. Default: False
-      - mmax: the maximum m for alm. Default: mmax=lmax
-    Return:
-      - the smoothed map(s)
+    Parameters
+    ----------
+    map : array or sequence of 3 arrays
+      Either an array representing one map, or a sequence of
+      3 arrays representing 3 maps
+    fwhm : float, optional
+      The full width half max parameter of the Gaussian. Default:0.0
+    sigma : float, optional
+      The sigma of the Gaussian. Override fwhm.
+    degree : bool, optional
+      If True, parameter given in degree. Override arcmin. Default: False
+    arcmin : bool, optional
+      If True, parameter given in arcmin. Default: False
+    mmax : int, optional
+      The maximum m for alm. Default: mmax=lmax
+
+    Returns
+    -------
+    map_smo : array or tuple of 3 arrays
+      The smoothed map(s)
     """
     if type(m[0]) is npy.ndarray:
         if len(m) != 3:
@@ -507,13 +585,18 @@ def smoothing(m,fwhm=0.0,sigma=None,degree=False,
 def pixwin(nside,pol=False):
     """Return the pixel window function for the given nside.
 
-    Input:
-      - nside
-    Parameters:
-      - pol: if True, return also the polar pixel window. Default: False
-    Return:
-      - the temperature pixel window function, or a tuple with both
-        temperature and polarisation pixel window functions.
+    Parameters
+    ----------
+    nside : int
+      The nside for which to return the pixel window function
+    pol : bool, optional
+      If True, return also the polar pixel window. Default: False
+
+    Returns
+    -------
+    pw or pwT,pwP : array or tuple of 2 arrays
+      The temperature pixel window function, or a tuple with both
+      temperature and polarisation pixel window functions.
     """
     datapath = DATAPATH
     if not pixelfunc.isnsideok(nside):
@@ -544,14 +627,21 @@ def alm2map_der1(alm, nside, lmax=-1, mmax=-1):
    and mmax, or they will be computed from array size (assuming
    lmax==mmax).
 
-   Parameters:
-   - alm: a complex array of alm. Size must be of the form
-          size=mmax(lmax-mmax+1)/2+lmax
-   - nside: the nside of the output map.
-   - lmax: explicitly define lmax (needed if mmax!=lmax)
-   - mmax: explicitly define mmax (needed if mmax!=lmax)
+   Parameters
+   ----------
+   alm : array, complex
+     A complex array of alm. Size must be of the form mmax(lmax-mmax+1)/2+lmax
+   nside : int
+     The nside of the output map.
+   lmax : int, optional
+     Explicitly define lmax (needed if mmax!=lmax)
+   mmax : int, optional
+     Explicitly define mmax (needed if mmax!=lmax)
 
-   Return: an Healpix map in RING scheme at nside.
+   Returns
+   -------
+   m, d_theta, d_phi : tuple of arrays
+     The maps correponding to alm, and its derivatives with respect to theta and phi.
    """
    return sphtlib._alm2map_der1(alm,nside,lmax=lmax,mmax=mmax)
 
