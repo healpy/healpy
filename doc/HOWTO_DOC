@@ -1,0 +1,34 @@
+
+The documentation uses Sphinx, some rst files and the doc included in the source code.
+
+To create documentation :
+
+- compile healpy and install it so that it is accessible from python
+- go to the doc/ directory
+- 'make html'
+
+This will create the documentation in doc/.build/html.
+
+The documentation is also on github, using gh pages (I followed the tutorial there : 
+http://lucasbardella.com/report/hosting-your-sphinx-docs-in-github/).
+
+All the documentation is thus accessible in :
+http://healpy.github.com/healpy/
+
+It is contained in a special branch of the project called gh-pages.
+
+To modify this documentation, create a special directory :
+
+mkdir healpydoc
+cd healpydoc
+git clone git@github.com:healpy/healpy.git html
+cd html
+git checkout gh-pages
+
+Then, go to your healpy directory:
+
+cd .../healpy
+cd doc/
+BUILDDIR=/path/to/healpydoc/ make html
+
+It will override the files in healpydoc/html, which you can then check and commit.
