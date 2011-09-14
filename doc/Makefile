@@ -5,11 +5,13 @@
 SPHINXOPTS    =
 SPHINXBUILD   = sphinx-build-2.7
 PAPER         =
+BUILDDIR     ?= .build
 
 # Internal variables.
 PAPEROPT_a4     = -D latex_paper_size=a4
 PAPEROPT_letter = -D latex_paper_size=letter
-ALLSPHINXOPTS   = -d .build/doctrees $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) .
+ALLSPHINXOPTS   = -d ${BUILDDIR}/doctrees $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) .
+
 
 .PHONY: help clean html web pickle htmlhelp latex changes linkcheck
 
@@ -23,48 +25,48 @@ help:
 	@echo "  linkcheck to check all external links for integrity"
 
 clean:
-	-rm -rf .build/*
+	-rm -rf ${BUILDDIR}/*
 
 html:
-	mkdir -p .build/html .build/doctrees
-	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) .build/html
+	mkdir -p ${BUILDDIR}/html ${BUILDDIR}/doctrees
+	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) ${BUILDDIR}/html
 	@echo
-	@echo "Build finished. The HTML pages are in .build/html."
+	@echo "Build finished. The HTML pages are in ${BUILDDIR}/html."
 
 pickle:
-	mkdir -p .build/pickle .build/doctrees
-	$(SPHINXBUILD) -b pickle $(ALLSPHINXOPTS) .build/pickle
+	mkdir -p ${BUILDDIR}/pickle ${BUILDDIR}/doctrees
+	$(SPHINXBUILD) -b pickle $(ALLSPHINXOPTS) ${BUILDDIR}/pickle
 	@echo
 	@echo "Build finished; now you can process the pickle files or run"
-	@echo "  sphinx-web .build/pickle"
+	@echo "  sphinx-web ${BUILDDIR}/pickle"
 	@echo "to start the sphinx-web server."
 
 web: pickle
 
 htmlhelp:
-	mkdir -p .build/htmlhelp .build/doctrees
-	$(SPHINXBUILD) -b htmlhelp $(ALLSPHINXOPTS) .build/htmlhelp
+	mkdir -p ${BUILDDIR}/htmlhelp ${BUILDDIR}/doctrees
+	$(SPHINXBUILD) -b htmlhelp $(ALLSPHINXOPTS) ${BUILDDIR}/htmlhelp
 	@echo
 	@echo "Build finished; now you can run HTML Help Workshop with the" \
-	      ".hhp project file in .build/htmlhelp."
+	      ".hhp project file in ${BUILDDIR}/htmlhelp."
 
 latex:
-	mkdir -p .build/latex .build/doctrees
-	$(SPHINXBUILD) -b latex $(ALLSPHINXOPTS) .build/latex
+	mkdir -p ${BUILDDIR}/latex ${BUILDDIR}/doctrees
+	$(SPHINXBUILD) -b latex $(ALLSPHINXOPTS) ${BUILDDIR}/latex
 	@echo
-	@echo "Build finished; the LaTeX files are in .build/latex."
+	@echo "Build finished; the LaTeX files are in ${BUILDDIR}/latex."
 	@echo "Run \`make all-pdf' or \`make all-ps' in that directory to" \
 	      "run these through (pdf)latex."
 
 changes:
-	mkdir -p .build/changes .build/doctrees
-	$(SPHINXBUILD) -b changes $(ALLSPHINXOPTS) .build/changes
+	mkdir -p ${BUILDDIR}/changes ${BUILDDIR}/doctrees
+	$(SPHINXBUILD) -b changes $(ALLSPHINXOPTS) ${BUILDDIR}/changes
 	@echo
-	@echo "The overview file is in .build/changes."
+	@echo "The overview file is in ${BUILDDIR}/changes."
 
 linkcheck:
-	mkdir -p .build/linkcheck .build/doctrees
-	$(SPHINXBUILD) -b linkcheck $(ALLSPHINXOPTS) .build/linkcheck
+	mkdir -p ${BUILDDIR}/linkcheck ${BUILDDIR}/doctrees
+	$(SPHINXBUILD) -b linkcheck $(ALLSPHINXOPTS) ${BUILDDIR}/linkcheck
 	@echo
 	@echo "Link check complete; look for any errors in the above output " \
-	      "or in .build/linkcheck/output.txt."
+	      "or in ${BUILDDIR}/linkcheck/output.txt."
