@@ -12,6 +12,8 @@ Numpy and matplotlib.
 To find find more information about Healpix, please visit its home
 page at http://healpix.jpl.nasa.gov/.
 
+The documentation can be found at http://healpy.github.com/healpy/.
+
 Characteristics
 ---------------
 
