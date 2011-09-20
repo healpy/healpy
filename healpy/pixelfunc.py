@@ -944,7 +944,7 @@ def fit_dipole(m, nest=False, bad=UNSEEN, gal_cut=0):
     bad : float
       bad values of pixel, default to :const:`UNSEEN`.
     gal_cut : float
-      pixels at latitude in [-gal_cut;+gal_cut] are not taken into account
+      pixels at latitude in [-gal_cut;+gal_cut] degrees are not taken into account
 
     Returns
     -------
@@ -1075,7 +1075,7 @@ def fit_monopole(m,nest=False,bad=pixlib.UNSEEN,gal_cut=0):
     bad : float
       bad values of pixel, default to :const:`UNSEEN`.
     gal_cut : float
-      pixels at latitude in [-gal_cut;+gal_cut] are not taken into account
+      pixels at latitude in [-gal_cut;+gal_cut] degrees are not taken into account
 
     Returns
     -------
