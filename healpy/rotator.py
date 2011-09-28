@@ -504,7 +504,7 @@ def dir2vec(theta,phi=None,lonlat=False):
     vec[0, :] = st * cp
     vec[1, :] = st * sp
     vec[2, :] = ct
-    return vec
+    return vec.squeeze()
 
 def angdist(dir1,dir2,lonlat=False):
     """Returns the angular distance between dir1 and dir2.
