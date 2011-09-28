@@ -6,7 +6,16 @@ Welcome to healpy's documentation!
 ==================================
 
 
-Contents:
+Tutorial
+--------
+
+.. toctree::
+   :maxdepth: 1
+
+   tutorial
+
+Reference
+---------
 
 .. toctree::
    :maxdepth: 2
