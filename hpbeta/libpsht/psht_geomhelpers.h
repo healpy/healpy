@@ -54,16 +54,47 @@ void psht_make_weighted_healpix_geom_info (int nside, int stride,
 /*! Creates a geometry information describing a Gaussian map with \a nrings
     iso-latitude rings and \a nphi pixels per ring. The azimuth of the first
     pixel in each ring is 0.
-    \ingroup geominfogroup */
+    \ingroup geominfogroup
+    \deprecated */
 void psht_make_gauss_geom_info (int nrings, int nphi, int stride,
   psht_geom_info **geom_info);
+
+/*! Creates a geometry information describing a Gaussian map with \a nrings
+    iso-latitude rings and \a nphi pixels per ring. The azimuth of the first
+    pixel in each ring is 0. The index difference between two adjacent pixels
+    in an iso-latitude ring is \a stride_lon, the index difference between the
+    two start pixels in consecutive iso-latitude rings is \a stride_lat.
+    \ingroup geominfogroup */
+void psht_make_gauss_geom_info_2 (int nrings, int nphi, int stride_lon,
+  int stride_lat, psht_geom_info **geom_info);
 
 /*! Creates a geometry information describing an ECP map with \a nrings
     iso-latitude rings and \a nphi pixels per ring. The azimuth of the first
     pixel in each ring is \a phi0 (in radians).
-    \ingroup geominfogroup */
+    \note The spacing of pixel centers is equidistant in colatitude and
+      longitude.
+    \note \a nrings must be an even number.
+    \note The sphere is pixelized in a way that the colatitude of the first ring
+      is \a 0.5*(pi/nrings). There are no pixel centers at the poles.
+    \ingroup geominfogroup
+    \deprecated */
 void psht_make_ecp_geom_info (int nrings, int nphi, double phi0, int stride,
   psht_geom_info **geom_info);
+
+/*! Creates a geometry information describing an ECP map with \a nrings
+    iso-latitude rings and \a nphi pixels per ring. The azimuth of the first
+    pixel in each ring is \a phi0 (in radians). The index difference between
+    two adjacent pixels in an iso-latitude ring is \a stride_lon, the index
+    difference between the two start pixels in consecutive iso-latitude rings
+    is \a stride_lat.
+    \note The spacing of pixel centers is equidistant in colatitude and
+      longitude.
+    \note \a nrings must be an even number.
+    \note The sphere is pixelized in a way that the colatitude of the first ring
+      is \a 0.5*(pi/nrings). There are no pixel centers at the poles.
+    \ingroup geominfogroup */
+void psht_make_ecp_geom_info_2 (int nrings, int nphi, double phi0,
+  int stride_lon, int stride_lat, psht_geom_info **geom_info);
 
 #ifdef __cplusplus
 }

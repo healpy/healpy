@@ -113,7 +113,8 @@ enum PDT {
        PLANCK_INVALID = -1 };
 
 /*! Returns the \a PDT constant associated with \a T. */
-template<typename T> inline PDT planckType();
+template<typename T> inline PDT planckType()
+  { planck_fail(T::UNSUPPORTED_DATA_TYPE); }
 template<> inline PDT planckType<int8>       () { return PLANCK_INT8;   }
 template<> inline PDT planckType<uint8>      () { return PLANCK_UINT8;  }
 template<> inline PDT planckType<int16>      () { return PLANCK_INT16;  }
@@ -190,7 +191,8 @@ inline const char *type2string (PDT type)
   }
 
 /*! Returns a C string describing the data type \a T. */
-template<typename T> inline const char *type2typename ();
+template<typename T> inline const char *type2typename ()
+  { planck_fail(T::UNSUPPORTED_DATA_TYPE); }
 template<> inline const char *type2typename<signed char> ()
   { return "signed char"; }
 template<> inline const char *type2typename<unsigned char> ()
@@ -242,7 +244,8 @@ enum NDT {
        NAT_STRING };
 
 /*! Returns the \a NDT constant associated with \a T. */
-template<typename T> inline NDT nativeType();
+template<typename T> inline NDT nativeType()
+  { planck_fail(T::UNSUPPORTED_DATA_TYPE); }
 template<> inline NDT nativeType<char>              () { return NAT_CHAR;      }
 template<> inline NDT nativeType<signed char>       () { return NAT_SCHAR;     }
 template<> inline NDT nativeType<unsigned char>     () { return NAT_UCHAR;     }

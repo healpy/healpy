@@ -93,8 +93,11 @@ template string dataToString (const unsigned long long &x);
 string intToString(int64 x, tsize width)
   {
   ostringstream strstrm;
-  strstrm << setw(width) << setfill('0') << x;
-  return trim(strstrm.str());
+  (x>=0) ? strstrm << setw(width) << setfill('0') << x
+         : strstrm << "-" << setw(width-1) << setfill('0') << -x;
+  string res = strstrm.str();
+  planck_assert(res.size()==width,"number too large");
+  return trim(res);
   }
 
 namespace {
