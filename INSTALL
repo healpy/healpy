@@ -1,9 +1,11 @@
-Installation procedure for Healpy:
----------------------------------
+Installation procedure for Healpy
+=================================
 
 * Note: Healpix is included, so you don't need to get it separately
 
-Requirements:
+Requirements
+------------
+
 * Healpix needs cfitsio. You can either:
  - use an existing installation :
    Either define the environment variable CFITSIO_EXT_PREFIX where to find the
@@ -21,7 +23,8 @@ Requirements:
 pshyt cython wrapper. a pregenerated c code is included in the repository, but
 if you have cython installed it will be run in the build phase.
 
-The installation procedure is very simple:
+Installation
+------------
 
 $ cd healpy-0.9.3.1
 $ python setup.py build

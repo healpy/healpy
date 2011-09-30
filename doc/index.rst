@@ -14,6 +14,14 @@ Tutorial
 
    tutorial
 
+Installation
+------------
+
+.. toctree::
+   :maxdepth: 1
+   
+   install
+
 Reference
 ---------
 
