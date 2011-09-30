@@ -142,7 +142,7 @@ void psht_make_weighted_healpix_geom_info (int nside, int stride,
       theta[m] = 2*asin(northring/(sqrt(6.)*nside));
       nph[m] = 4*northring;
       phi0[m] = pi/nph[m];
-      ofs[m] = 2*northring*(northring-1);
+      ofs[m] = 2*northring*(northring-1)*stride;
       }
     else
       {
@@ -154,12 +154,12 @@ void psht_make_weighted_healpix_geom_info (int nside, int stride,
         phi0[m] = 0;
       else
         phi0[m] = pi/nph[m];
-      ofs[m] = ncap + (northring-nside)*nph[m];
+      ofs[m] = (ncap + (northring-nside)*nph[m])*stride;
       }
     if (northring != ring) /* southern hemisphere */
       {
       theta[m] = pi-theta[m];
-      ofs[m] = npix - nph[m] - ofs[m];
+      ofs[m] = (npix - nph[m])*stride - ofs[m];
       }
     weight_[m]=4.*pi/npix*weight[northring-1];
     }
@@ -234,13 +234,19 @@ static void makeweights (int bw, double *weights)
       tmpsum += 1./(2*k+1) * sin((2*j+1)*(2*k+1)*fudge);
     tmpsum *= sin((2*j+1)*fudge);
     tmpsum *= 2./bw;
-    weights[j] = tmpsum ;
+    weights[j] = tmpsum;
     /* weights[j + 2*bw] = tmpsum * sin((2*j+1)*fudge); */
     }
   }
 
 void psht_make_gauss_geom_info (int nrings, int nphi, int stride,
   psht_geom_info **geom_info)
+  {
+  psht_make_gauss_geom_info_2(nrings,nphi,stride,stride*nphi,geom_info);
+  }
+
+void psht_make_gauss_geom_info_2 (int nrings, int nphi, int stride_lon,
+  int stride_lat, psht_geom_info **geom_info)
   {
   const double pi=3.141592653589793238462643383279502884197;
 
@@ -259,8 +265,8 @@ void psht_make_gauss_geom_info (int nrings, int nphi, int stride,
     theta[m] = acos(theta[m]);
     nph[m]=nphi;
     phi0[m]=0;
-    ofs[m]=(ptrdiff_t)m*nphi;
-    stride_[m]=stride;
+    ofs[m]=(ptrdiff_t)m*stride_lat;
+    stride_[m]=stride_lon;
     weight[m]*=2*pi/nphi;
     }
 
@@ -277,6 +283,12 @@ void psht_make_gauss_geom_info (int nrings, int nphi, int stride,
 
 void psht_make_ecp_geom_info (int nrings, int nphi, double phi0, int stride,
   psht_geom_info **geom_info)
+  {
+  psht_make_ecp_geom_info_2(nrings, nphi, phi0, stride, stride*nphi, geom_info);
+  }
+
+void psht_make_ecp_geom_info_2 (int nrings, int nphi, double phi0,
+  int stride_lon, int stride_lat, psht_geom_info **geom_info)
   {
   const double pi=3.141592653589793238462643383279502884197;
 
@@ -297,8 +309,8 @@ void psht_make_ecp_geom_info (int nrings, int nphi, double phi0, int stride,
     theta[m] = (m+0.5)*pi/nrings;
     nph[m]=nphi;
     phi0_[m]=phi0;
-    ofs[m]=(ptrdiff_t)m*nphi;
-    stride_[m]=stride;
+    ofs[m]=(ptrdiff_t)m*stride_lat;
+    stride_[m]=stride_lon;
     weight[m]*=2*pi/nphi;
     }
 
