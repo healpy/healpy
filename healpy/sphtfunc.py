@@ -18,9 +18,17 @@
 #  For more information about Healpy, see http://code.google.com/p/healpy
 # 
 import numpy as npy
-import _healpy_sph_transform_lib as sphtlib
-import _healpy_fitsio_lib as hfitslib
-from _healpy_pixel_lib import UNSEEN
+import warnings
+import exceptions
+try:
+    import _healpy_sph_transform_lib as sphtlib
+except exceptions.ImportError:
+    warnings.warn("Warning: Cannot import spherical transforms library _healpy_sph_transform_lib")
+try:
+    import _healpy_fitsio_lib as hfitslib
+except exceptions.ImportError:
+    warnings.warn("Warning: Cannot import fitsio library _healpy_fitsio_lib")
+from pixelfunc import UNSEEN
 import os.path
 import pixelfunc
 
