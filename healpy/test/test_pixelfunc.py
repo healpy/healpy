@@ -4,9 +4,6 @@ import unittest
 
 class TestPixelFunc(unittest.TestCase):
     
-    def setUp(self):
-        self.nside = 512
-
     def test_nside2npix(self):
         self.assertEqual(nside2npix(512), 3145728) 
         self.assertEqual(nside2npix(1024), 12582912) 

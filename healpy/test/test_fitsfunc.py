@@ -56,17 +56,17 @@ class TestReadWriteAlm(unittest.TestCase):
         write_alm('testalm_256_128.fits',self.alms,lmax=256,mmax=128)
         a0,mmax = read_alm('testalm_256_128.fits',return_mmax=True)
         self.assertEqual(mmax, 128)
-	self.assertEqual(Alm.getlmax(len(a0),mmax=mmax),256)
+        self.assertEqual(Alm.getlmax(len(a0),mmax=mmax),256)
 
         # Check the written data
         a0 = read_alm('testalm_256_128.fits')
         
-	l0,m0 = Alm.getlm(256)
-	idx = Alm.getidx(256, l0, m0)
-        # Extract 0 <= l <= 256 and 0 <= m <= 128
-	idx_mmax = np.where(m0 <= mmax)
-	idx = idx[idx_mmax]
-	np.testing.assert_array_almost_equal(self.alms[idx], a0)
+        l0,m0 = Alm.getlm(256)
+        idx = Alm.getidx(256, l0, m0)
+            # Extract 0 <= l <= 256 and 0 <= m <= 128
+        idx_mmax = np.where(m0 <= mmax)
+        idx = idx[idx_mmax]
+        np.testing.assert_array_almost_equal(self.alms[idx], a0)
 
 if __name__ == '__main__':
     unittest.main()
