@@ -164,15 +164,15 @@ healpix_libs =['healpix_cxx','cxxsupport','psht','fftpack','c_utils']
 healpix_pshyt_libs = ['psht','fftpack','c_utils']
 
 if 'openmp' in options:
-    healpix_libs.append('gomp')
-    healpix_pshyt_libs.append('gomp')
+    healpix_libs += ['gomp']
+    healpix_pshyt_libs += ['gomp']
 
 if not extra_link:
-    healpix_libs.append('cfitsio')
+    healpix_libs += ['cfitsio']
 
 healpix_args =['-fpermissive']
 if 'openmp' in options:
-    healpix_args.append('-fopenmp')
+    healpix_args += ['-fopenmp']
 
 #start with base extension
 pixel_lib = Extension('healpy._healpy_pixel_lib',

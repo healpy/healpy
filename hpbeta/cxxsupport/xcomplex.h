@@ -166,6 +166,10 @@ template<typename T> class xcomplex
     xcomplex conj() const
       { return xcomplex (re,-im); }
 
+    /*! Returns \a *this*i. */
+    xcomplex times_i() const
+      { return xcomplex (-im,re); }
+
     /*! Returns the norm of \a *this. */
     T norm() const
       { return re*re + im*im; }
@@ -208,6 +212,9 @@ template <typename T> inline xcomplex<T> operator/
 template<typename T>
   inline std::ostream &operator<< (std::ostream &os, const xcomplex<T> &val)
   { os << "(" << val.re << "," << val.im << ")"; return os; }
+
+typedef xcomplex<double> dcomplex;
+typedef xcomplex<float>  fcomplex;
 
 /*! \} */
 

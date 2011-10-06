@@ -504,7 +504,7 @@ def dir2vec(theta,phi=None,lonlat=False):
     vec[0, :] = st * cp
     vec[1, :] = st * sp
     vec[2, :] = ct
-    return vec
+    return vec.squeeze()
 
 def angdist(dir1,dir2,lonlat=False):
     """Returns the angular distance between dir1 and dir2.
@@ -560,6 +560,8 @@ def angdist(dir1,dir2,lonlat=False):
             vec2 = normalize_vec(vec2)
     # compute scalar product
     pscal = (vec1*vec2).sum(axis=0)
+    # if scalar product is greater than 1 but close, set it to 1
+    pscal[(pscal - 1. > 0.) & (pscal - 1. < 1.e-14)] = 1. 
     return npy.arccos(pscal)
 
 def normalize_vec(vec):
