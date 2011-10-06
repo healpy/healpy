@@ -83,8 +83,13 @@ Map data manipulation
 """
 
 import numpy as npy
-import _healpy_pixel_lib as pixlib
 import exceptions
+import warnings
+try:
+    import _healpy_pixel_lib as pixlib
+except exceptions.ImportError:
+    warnings.warn("Warning: Cannot import pixel library _healpy_pixel_lib")
+    
 
 #: Special value used for masked pixels
 UNSEEN = pixlib.UNSEEN

@@ -25,7 +25,7 @@ import numpy as npy
 import pixelfunc
 from sphtfunc import Alm
 import warnings
-from _healpy_pixel_lib import UNSEEN
+from pixelfunc import UNSEEN
 from exceptions import NotImplementedError
 
 class HealpixFitsWarning(Warning):
