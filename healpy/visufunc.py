@@ -359,7 +359,8 @@ def gnomview(map=None,fig=None,rot=None,coord=None,unit='',
             else:
                 cb=f.colorbar(im,orientation='horizontal',
                               shrink=0.5,aspect=25,ticks=PA.BoundaryLocator(),
-                              pad=0.08,fraction=0.1,format=format)
+                              pad=0.08,fraction=0.1,boundaries=b,values=v,
+                              format=format)
         ax.set_title(title)
         if not notext:
             ax.text(-0.07,0.02,
@@ -522,15 +523,20 @@ def cartview(map=None,fig=None,rot=None,zat=None,coord=None,unit='',
                    xsize=xsize,ysize=ysize,lonra=lonra,latra=latra,
                    cmap=cmap,norm=norm,aspect=aspect)
         if cbar:
+            im = ax.get_images()[0]
+            b = im.norm.inverse(npy.linspace(0,1,im.cmap.N+1))
+            v = npy.linspace(im.norm.vmin,im.norm.vmax,im.cmap.N)
             if matplotlib.__version__ >= '0.91.0':
-                cb=f.colorbar(ax.get_images()[0],ax=ax,
+                cb=f.colorbar(im,ax=ax,
                               orientation='horizontal',
                               shrink=0.5,aspect=25,ticks=PA.BoundaryLocator(),
-                              pad=0.08,fraction=0.1,format=format)
+                              pad=0.08,fraction=0.1,boundaries=b,values=v,
+                              format=format)
             else:
-                cb=f.colorbar(ax.get_images()[0],orientation='horizontal',
+                cb=f.colorbar(im,orientation='horizontal',
                               shrink=0.5,aspect=25,ticks=PA.BoundaryLocator(),
-                              pad=0.08,fraction=0.1,format=format)
+                              pad=0.08,fraction=0.1,boundaries=b,values=v,
+                              format=format)
         ax.set_title(title)
         if not notext:
             ax.text(-0.07,0.6,ax.proj.coordsysstr,fontsize=14,
