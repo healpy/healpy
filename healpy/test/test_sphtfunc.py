@@ -25,6 +25,7 @@ class TestSphtFunc(unittest.TestCase):
     
     def test_anafast(self):
         cl = hp.anafast(self.map.filled(), lmax = 1024)
+        self.assertEqual(len(cl), 1025)
         np.testing.assert_array_almost_equal(cl, self.cla, decimal=8)
 
 if __name__ == '__main__':
