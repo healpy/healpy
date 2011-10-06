@@ -22,6 +22,9 @@ DEFAULT_OPT_DICT = {
 
 SYSTEM_STRING = platform.system().lower ()
 
+# For ReadTheDocs, do not build the extensions, only install .py files
+on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
+
 # For each option, check is it is set or unset
 # check first in defaults, then in environment and finally on command line
 try:
@@ -98,8 +101,11 @@ except Exception:
   ext = "c"
   print "No Cython >= 0.12 found, defaulting to pregenerated c version."
   
-from numpy import get_include
-numpy_inc = get_include()
+if on_rtd:
+    numpy_inc = ''
+else:
+    from numpy import get_include
+    numpy_inc = get_include()
 
 def compile_healpix_cxx(target):
     import os
@@ -134,7 +140,7 @@ healpix_cxx_dir='hpbeta/%s'%HEALPIX_TARGET
 healpix_cxx_inc = healpix_cxx_dir+'/include'
 healpix_cxx_lib = healpix_cxx_dir+'/lib'
 
-if sys.argv[1] != 'sdist':
+if sys.argv[1] != 'sdist' and not on_rtd:
     compile_healpix_cxx(HEALPIX_TARGET)
     if not ( isdir(healpix_cxx_dir+'/include') and
              isdir(healpix_cxx_dir+'/lib') ):
@@ -205,6 +211,17 @@ hfits_lib = Extension('healpy._healpy_fitsio_lib',
                       )
 
 # 
+
+if on_rtd:
+    extension_list = []
+else:
+    extension_list = [pixel_lib, spht_lib, hfits_lib,
+                      Extension("healpy.pshyt", ["pshyt/pshyt."+ext],
+                                include_dirs = [numpy_inc,healpix_cxx_inc],
+                                libraries = healpix_pshyt_libs,
+                                library_dirs = library_dirs)
+                      ]
+
 setup(name='healpy',
       version=get_version(),
       description='Healpix tools package for Python',
@@ -217,13 +234,8 @@ setup(name='healpy',
                   'healpy.projector','healpy.rotator',
                   'healpy.projaxes','healpy.version'],
       cmdclass = {'build_ext': build_ext},
-      ext_modules=[pixel_lib,spht_lib,hfits_lib,
-                   Extension("healpy.pshyt", ["pshyt/pshyt."+ext],
-                             include_dirs = [numpy_inc,healpix_cxx_inc],
-                             libraries = healpix_pshyt_libs,
-                             library_dirs = library_dirs)
-                   ],
-      package_data={'healpy': ['data/*.fits']},
+      ext_modules = extension_list,
+      package_data = {'healpy': ['data/*.fits']},
       license='GPLv2'
       )
 
