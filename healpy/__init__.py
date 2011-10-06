@@ -31,9 +31,9 @@ except NameError:
 
 from version import __version__
 
-import numpy as npy
-np = npy
-nm = npy
+#import numpy as npy
+#np = npy
+#nm = npy
 
 from pixelfunc import (ma, mask_good, mask_bad,
                        ang2pix, pix2ang,
@@ -59,7 +59,10 @@ from zoomtool import mollzoom,set_g_clim
 
 from rotator import Rotator, vec2dir, dir2vec
 
-from _healpy_pixel_lib import UNSEEN
+try:
+    from _healpy_pixel_lib import UNSEEN
+except ImportError:
+    warning.warn('Warning: cannot import pixel lib module')
 
 try:
     from pshyt import job
