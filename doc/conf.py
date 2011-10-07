@@ -93,7 +93,7 @@ today_fmt = '%B %d, %Y'
 
 # List of directories, relative to source directories, that shouldn't be searched
 # for source files.
-exclude_patterns = ['.build/*', 'templates/autosummary/*.rst', 'ext/*/templates/*/*.rst']
+exclude_patterns = ['.build/*', 'templates/*', 'ext/*.rst']
 
 # The reST default role (used for this markup: `text`) to use for all documents.
 #default_role = None
