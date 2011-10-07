@@ -13,6 +13,40 @@
 
 import sys, os
 
+# To avoid problem with ReadTheDocs and compiled extensions.
+class Mock(object):
+    """Special Healpix values for masked pixels.
+    """
+    pi = 3.141516
+    class Axes(object):
+        pass
+    class Locator(object):
+        pass
+    class Normalize(object):
+        pass
+    def __init__(self, *args):
+        """Mock init
+        """
+        pass
+
+    def __getattr__(self, name):
+        return Mock
+
+    def __div__(self, x):
+        return Mock()
+
+    def __getitem__(self, idx):
+        return str(Mock())
+
+MOCK_MODULES = ['matplotlib', 'pylab', 'matplotlib.colors',
+                'matplotlib.cbook', 'pyfits',
+                'numpy', '_healpy_pixel_lib',
+                '_healpy_sph_transform_lib', '_healpy_fitsio_lib']
+
+for mod_name in MOCK_MODULES:
+    sys.modules[mod_name] = Mock()
+    
+
 # If your extensions are in another directory, add it here. If the directory
 # is relative to the documentation root, use os.path.abspath to make it
 # absolute, like shown here.
@@ -24,8 +58,7 @@ sys.path.append(os.path.abspath('.'))
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 
-extensions = ['sphinx.ext.autosummary', 'sphinx.ext.autodoc', 'numpydoc',
-              'sphinxtogithub']
+extensions = ['sphinx.ext.autosummary', 'sphinx.ext.autodoc', 'numpydoc']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['templates/']
@@ -60,7 +93,7 @@ today_fmt = '%B %d, %Y'
 
 # List of directories, relative to source directories, that shouldn't be searched
 # for source files.
-exclude_patterns = ['.build/*', 'templates/autosummary/*.rst', 'ext/*/templates/*/*.rst']
+exclude_patterns = ['.build/*', 'templates/*', 'ext/*.rst']
 
 # The reST default role (used for this markup: `text`) to use for all documents.
 #default_role = None
@@ -77,19 +110,19 @@ exclude_patterns = ['.build/*', 'templates/autosummary/*.rst', 'ext/*/templates/
 #show_authors = False
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = 'sphinx'
+#pygments_style = 'sphinx'
 
 
 # Options for HTML output
 # -----------------------
 
 
-html_theme = 'default'
+#html_theme = 'default'
 
 # The style sheet to use for HTML and HTML Help pages. A file of that name
 # must exist either in Sphinx' static/ path, or in one of the custom paths
 # given in html_static_path.
-html_style = 'default.css'
+#html_style = 'default.css'
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
@@ -191,23 +224,3 @@ latex_documents = [
 import glob
 autosummary_generate = glob.glob('*.rst')
 
-from sphinx.ext.autosummary import get_documenter
-def get_members(obj, typ, include_public=[]):
-    import matplotlib
-    items = [
-        name for name in dir(obj)
-        if get_documenter(getattr(obj, name), obj).objtype == typ
-    ]
-    ## remove all members of matplotlib.axes.Axes
-    items = list(set(items) - set(dir(matplotlib.axes.Axes)))
-    public = [x for x in items
-              if x in include_public or not x.startswith('_')]
-    return public, items
-
-autosummary_get_members = get_members
-import matplotlib.axes
-numpydoc_exclude_class_members = dir(matplotlib.axes.Axes)
-
-#####
-###### Needs to modify docscrape (methods and properties) as well...
-#####

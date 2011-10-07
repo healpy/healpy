@@ -19,16 +19,16 @@
 # 
 import projector as P
 import rotator as R
+import pixelfunc
 import matplotlib
 from matplotlib import axes,ticker,colors,cm,lines,cbook,figure
 import numpy as npy
-import pixelfunc
 from _healpy_pixel_lib import UNSEEN
 
 pi = npy.pi
 dtor = pi/180.
 
-class SphericalProjAxes(axes.Axes,object):
+class SphericalProjAxes(axes.Axes):
     """Define a special Axes to take care of spherical projection.
 
     Input:
