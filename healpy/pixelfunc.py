@@ -83,6 +83,7 @@ Map data manipulation
 """
 
 import numpy as npy
+import numpy as np
 import exceptions
 import warnings
 try:
@@ -130,6 +131,7 @@ def mask_bad(m, badval = UNSEEN, rtol = 1.e-5, atol = 1.e-8):
 
     Examples
     --------
+    >>> import healpy as hpy
     >>> m = np.arange(12.)
     >>> m[3] = hpy.UNSEEN
     >>> hpy.mask_bad(m)
@@ -164,6 +166,7 @@ def mask_good(m, badval = UNSEEN, rtol = 1.e-5, atol = 1.e-8):
 
     Examples
     --------
+    >>> import healpy as hpy
     >>> m = np.arange(12.)
     >>> m[3] = hpy.UNSEEN
     >>> hpy.mask_good(m)
@@ -200,6 +203,7 @@ def ma(m, badval = UNSEEN, rtol = 1e-5, atol = 1e-8, copy = True):
 
     Examples
     --------
+    >>> import healpy as hpy
     >>> m = np.arange(12.)
     >>> m[3] = hpy.UNSEEN
     >>> hpy.ma(m)
@@ -234,6 +238,7 @@ def ang2pix(nside,theta,phi,nest=False):
 
     Examples
     --------
+    >>> import healpy as hpy
     >>> hpy.ang2pix(16, np.pi/2, 0)
     1440
 
@@ -275,16 +280,15 @@ def pix2ang(nside,ipix,nest=False):
 
     Examples
     --------
+    >>> import healpy as hpy
     >>> hpy.pix2ang(16, 1440)
     (1.5291175943723188, 0.0)
 
     >>> hpy.pix2ang(16, [1440,  427, 1520,    0, 3068])
-    (array([ 1.52911759,  0.78550497,  1.57079633,  0.05103658,  3.09055608]),
-     array([ 0.        ,  0.78539816,  1.61988371,  0.78539816,  0.78539816]))
+    (array([ 1.52911759,  0.78550497,  1.57079633,  0.05103658,  3.09055608]), array([ 0.        ,  0.78539816,  1.61988371,  0.78539816,  0.78539816]))
 
     >>> hpy.pix2ang([1, 2, 4, 8], 11)
-    (array([ 2.30052398,  0.84106867,  0.41113786,  0.2044802 ]),
-     array([ 5.49778714,  5.89048623,  5.89048623,  5.89048623]))
+    (array([ 2.30052398,  0.84106867,  0.41113786,  0.2044802 ]), array([ 5.49778714,  5.89048623,  5.89048623,  5.89048623]))
     """
     if nest:
         return pixlib._pix2ang_nest(nside, ipix)
@@ -315,6 +319,7 @@ def vec2pix(nside,x,y,z,nest=False):
 
     Examples
     --------
+    >>> import healpy as hpy
     >>> hpy.vec2pix(16, 1, 0, 0)
     1504
 
@@ -353,18 +358,15 @@ def pix2vec(nside,ipix,nest=False):
 
     Examples
     --------
+    >>> import healpy as hpy
     >>> hpy.pix2vec(16, 1504)
     (0.99879545620517241, 0.049067674327418015, 0.0)
 
     >>> hpy.pix2vec(16, [1440,  427])
-    (array([ 0.99913157,  0.5000534 ]),
-     array([ 0.       ,  0.5000534]),
-     array([ 0.04166667,  0.70703125]))
+    (array([ 0.99913157,  0.5000534 ]), array([ 0.       ,  0.5000534]), array([ 0.04166667,  0.70703125]))
 
     >>> hpy.pix2vec([1, 2], 11)
-    (array([ 0.52704628,  0.68861915]),
-     array([-0.52704628, -0.28523539]),
-     array([-0.66666667,  0.66666667]))
+    (array([ 0.52704628,  0.68861915]), array([-0.52704628, -0.28523539]), array([-0.66666667,  0.66666667]))
     """
     if nest:
         return pixlib._pix2vec_nest(nside,ipix)
@@ -443,6 +445,7 @@ def ring2nest(nside, ipix):
     
     Examples
     --------
+    >>> import healpy as hpy
     >>> hpy.ring2nest(16, 1504)
     1130
 
@@ -475,6 +478,7 @@ def nest2ring(nside, ipix):
     
     Examples
     --------
+    >>> import healpy as hpy
     >>> hpy.nest2ring(16, 1130)
     1504
 
@@ -515,6 +519,7 @@ def reorder(map_in, inp=None, out=None, r2n=None, n2r=None):
 
     Examples
     --------
+    >>> import healpy as hpy
     >>> hpy.reorder(np.arange(48), r2n = True)
     array([13,  5,  4,  0, 15,  7,  6,  1, 17,  9,  8,  2, 19, 11, 10,  3, 28,
            20, 27, 12, 30, 22, 21, 14, 32, 24, 23, 16, 34, 26, 25, 18, 44, 37,
@@ -593,6 +598,7 @@ def nside2npix(nside):
 
     Examples
     --------
+    >>> import healpy as hpy
     >>> hpy.nside2npix(8)
     768
 
@@ -633,6 +639,7 @@ def nside2resol(nside, arcmin=False):
 
     Examples
     --------
+    >>> import healpy as hpy
     >>> hpy.nside2resol(128, arcmin = True)
     27.483891294539248
 
@@ -677,6 +684,7 @@ def nside2pixarea(nside, degrees=False):
 
     Examples
     --------
+    >>> import healpy as hpy
     >>> hpy.nside2pixarea(128, degrees = True)
     0.2098234113027917
 
@@ -719,6 +727,7 @@ def npix2nside(npix):
 
     Examples
     --------
+    >>> import healpy as hpy
     >>> hpy.npix2nside(768)
     8
 
@@ -753,6 +762,7 @@ def isnsideok(nside):
 
     Examples
     --------
+    >>> import healpy as hpy
     >>> hpy.isnsideok(13)
     False
     
@@ -784,6 +794,7 @@ def isnpixok(npix):
 
     Examples
     --------
+    >>> import healpy as hpy
     >>> hpy.isnpixok(12)
     True
     
@@ -823,6 +834,7 @@ def get_interp_val(m,theta,phi,nest=False):
 
     Examples
     --------
+    >>> import healpy as hpy
     >>> hpy.get_interp_val(np.arange(12.), np.pi/2, 0)
     4.0
     >>> hpy.get_interp_val(np.arange(12.), np.linspace(0, np.pi, 10), 0)
@@ -865,6 +877,7 @@ def get_neighbours(nside,theta,phi=None,nest=False):
 
     Examples
     --------
+    >>> import healpy as hpy
     >>> hpy.get_neighbours(1, 0)
     (array([0, 1, 4, 5]), array([ 1.,  0.,  0.,  0.]))
 
@@ -873,13 +886,12 @@ def get_neighbours(nside,theta,phi=None,nest=False):
 
     >>> hpy.get_neighbours(1, [0, np.pi/2], 0)
     (array([[ 1,  4],
-            [ 2,  5],
-            [ 3, 11],
-            [ 0,  8]]),
-     array([[ 0.25,  1.  ],
-            [ 0.25,  0.  ],
-            [ 0.25,  0.  ],
-            [ 0.25,  0.  ]]))
+           [ 2,  5],
+           [ 3, 11],
+           [ 0,  8]]), array([[ 0.25,  1.  ],
+           [ 0.25,  0.  ],
+           [ 0.25,  0.  ],
+           [ 0.25,  0.  ]]))
     """
     if not isnsideok(nside):
         raise ValueError('Wrong nside value. Must be a power of 2.')
@@ -920,6 +932,7 @@ def get_all_neighbours(nside, theta, phi=None, nest=False):
 
     Examples
     --------
+    >>> import healpy as hpy
     >>> hpy.get_all_neighbours(1, 4)
     array([11,  7,  3, -1,  0,  5,  8, -1])
 
@@ -1192,6 +1205,7 @@ def get_map_size(m):
 
      Examples
      --------
+    >>> import healpy as hpy
      >>> m = {0: 1, 1: 1, 2: 1, 'nside': 1}
      >>> print hpy.get_map_size(m)
      12
@@ -1232,6 +1246,7 @@ def get_min_valid_nside(npix):
 
     Examples
     --------
+    >>> import healpy as hpy
     >>> hpy.pixelfunc.get_min_valid_nside(355)
     8
     >>> hpy.pixelfunc.get_min_valid_nside(768)
@@ -1257,6 +1272,7 @@ def maptype(m):
 
     Examples
     --------
+    >>> import healpy as hpy
     >>> hpy.pixelfunc.maptype(np.arange(12))
     0
     >>> hpy.pixelfunc.maptype(2)
@@ -1340,6 +1356,7 @@ def ud_grade(map_in,nside_out,pess=False,order_in='RING',order_out=None,
 
     Examples
     --------
+    >>> import healpy as hpy
     >>> hpy.ud_grade(np.arange(48.), 1)
     array([  5.5 ,   7.25,   9.  ,  10.75,  21.75,  21.75,  23.75,  25.75,
             36.5 ,  38.25,  40.  ,  41.75])
@@ -1416,3 +1433,4 @@ def _ud_grade_core(m,nside_out,pess=False,power=None, dtype=None):
     else:
         map_out = m
     return map_out.astype(type_out)
+
