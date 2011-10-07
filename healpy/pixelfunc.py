@@ -82,14 +82,10 @@ Map data manipulation
   at given angular coordinates, using 4 nearest neighbours
 """
 
-import numpy as npy
 import exceptions
 import warnings
-try:
-    import _healpy_pixel_lib as pixlib
-except exceptions.ImportError:
-    warnings.warn("Warning: Cannot import pixel library _healpy_pixel_lib")
-    
+import numpy as npy
+import _healpy_pixel_lib as pixlib
 
 #: Special value used for masked pixels
 UNSEEN = pixlib.UNSEEN
