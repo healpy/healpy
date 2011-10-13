@@ -219,7 +219,13 @@ else:
                       Extension("healpy.pshyt", ["pshyt/pshyt."+ext],
                                 include_dirs = [numpy_inc,healpix_cxx_inc],
                                 libraries = healpix_pshyt_libs,
-                                library_dirs = library_dirs)
+                                library_dirs = library_dirs),
+                      Extension("healpy._query_disc", 
+                                ['healpy/src/_query_disc.'+ext],
+                                include_dirs = [numpy_inc, healpix_cxx_inc],
+                                libraries = healpix_libs,
+                                library_dirs = library_dirs,
+                                language='c++')
                       ]
 
 setup(name='healpy',

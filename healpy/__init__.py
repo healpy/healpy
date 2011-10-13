@@ -54,6 +54,7 @@ from sphtfunc import (anafast, map2alm,
                       pixwin, alm2map_der1)
 
 from query_disc_func import *
+from _query_disc import query_disc as query_disc2
 
 from zoomtool import mollzoom,set_g_clim
 
