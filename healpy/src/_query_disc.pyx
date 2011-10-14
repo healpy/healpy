@@ -109,6 +109,11 @@ def query_polygon(nside, vertices, inclusive = False, nest = False):
       within the polygon; if True, return all pixels that overlap with the
       polygon, and maybe a few more.
     
+    Returns
+    -------
+    ipix : int, array
+      The pixels which lie within the given disk.
+
     Note
     ----
     This method is more efficient in the RING scheme, but the algorithm used
@@ -154,6 +159,11 @@ def query_strip(nside, theta1, theta2, inclusive = False, nest = False):
       If False, return the exact set of pixels whose pixels centers lie 
       within the region; if True, return all pixels that overlap with the
       region.
+
+    Returns
+    -------
+    ipix : int, array
+      The pixels which lie within the given disk.
     """
     # Check Nside value
     if nside < 0 or nside != 2**int(round(np.log2(nside))):
