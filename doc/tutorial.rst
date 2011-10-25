@@ -4,7 +4,8 @@ Healpy's tutorial
 Creating and manipulating maps
 ------------------------------
 
-* Maps are simply arrays
+Maps are simply numpy arrays, each array element refers to a location in the sky as defined by the Healpix pixelization schemes.
+
 * Explain Npix, Nside, basics of healpix...
 * Nested, Ring ordering
 
