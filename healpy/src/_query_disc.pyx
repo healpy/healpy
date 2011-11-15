@@ -191,8 +191,8 @@ def query_polygon(nside, vertices, inclusive = False, nest = False):
     return pixset_to_array(pixset)
 
 def query_strip(nside, theta1, theta2, inclusive = False, nest = False):
-    """Returns a range set of pixels whose centers lie within the colatitude
-    range defined by *theta1* and *theta2* (if inclusive is False), or which 
+    """Returns pixels whose centers lie within the colatitude range
+    defined by *theta1* and *theta2* (if inclusive is False), or which 
     overlap with this region (if *inclusive* is True). If theta1<theta2, the
     region between both angles is considered, otherwise the regions 
     0<theta<theta2 and theta1<theta<pi.
