@@ -140,7 +140,15 @@ healpix_cxx_dir='hpbeta/%s'%HEALPIX_TARGET
 healpix_cxx_inc = healpix_cxx_dir+'/include'
 healpix_cxx_lib = healpix_cxx_dir+'/lib'
 
-if sys.argv[1] != 'sdist' and not on_rtd:
+# Do we need to compile healpix_cxx ?
+do_compile = (sys.argv[1] in ['build', 'build_ext', 'build_clib',
+                              'bdist', 'bdist_dumb', 'bdist_rpm',
+                              'bdist_wininst',
+                              'install', 'install_lib', 'upload']
+              and 'help' not in [x.strip(' -') for x in sys.argv]
+              and not on_rtd)
+
+if do_compile:
     compile_healpix_cxx(HEALPIX_TARGET)
     if not ( isdir(healpix_cxx_dir+'/include') and
              isdir(healpix_cxx_dir+'/lib') ):
