@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
 
-from healpy import query_disc2
+from healpy import query_disc
 
 class TestQueryDisc(unittest.TestCase):
 
@@ -15,7 +15,7 @@ class TestQueryDisc(unittest.TestCase):
         #HIDL> print,listpix
         #           4
         np.testing.assert_array_equal(
-                query_disc2(self.NSIDE, self.vec, self.radius, inclusive=False),
+                query_disc(self.NSIDE, self.vec, self.radius, inclusive=False),
                 np.array([4])
             )
 
@@ -24,6 +24,6 @@ class TestQueryDisc(unittest.TestCase):
         #HIDL> print,listpix
         #           0           3           4           5          11          12          13          23
         np.testing.assert_array_equal(
-                query_disc2(self.NSIDE, self.vec, self.radius, inclusive=True),
+                query_disc(self.NSIDE, self.vec, self.radius, inclusive=True),
                 np.array([ 0, 3, 4, 5, 11, 12, 13, 23 ])
             )
