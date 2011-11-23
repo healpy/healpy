@@ -55,34 +55,17 @@ size_t prime_factor_sum (size_t n)
 /* returns the smallest composite of 2, 3 and 5 which is >= n */
 static size_t good_size(size_t n)
   {
-  size_t maxfactors=1, i, j, k, f2=1, f3, f5, bestfac, guessfac;
-  while ((n>>maxfactors)>0)
-    ++maxfactors;
-  bestfac=1<<maxfactors;
+  size_t f2, f23, f235, bestfac=2*n;
+  if (n<=6) return n;
 
-  for (i=0; i<maxfactors; ++i)
-    {
-    f3=1;
-    for (j=0; j<maxfactors-i; ++j)
-      {
-      if (f2*f3>bestfac) break;
-      f5=1;
-      for (k=0; k<maxfactors-i-j; ++k)
-        {
-        guessfac = f2*f3*f5;
-        if (guessfac>=bestfac) break;
-        if ((guessfac>=n) && (guessfac<bestfac))
-          bestfac=guessfac;
-        f5*=5;
-        }
-      f3*=3;
-      }
-    f2*=2;
-    }
+  for (f2=1; f2<bestfac; f2*=2)
+    for (f23=f2; f23<bestfac; f23*=3)
+      for (f235=f23; f235<bestfac; f235*=5)
+        if (f235>=n) bestfac=f235;
   return bestfac;
   }
 
-void bluestein_i (size_t n, double **tstorage)
+void bluestein_i (size_t n, double **tstorage, size_t *worksize)
   {
   static const double pi=3.14159265358979323846;
   size_t n2=good_size(n*2-1);
@@ -90,6 +73,7 @@ void bluestein_i (size_t n, double **tstorage)
   double angle, xn2;
   double *bk, *bkf, *work;
   double pibyn=pi/n;
+  *worksize=2+2*n+8*n2+16;
   *tstorage = RALLOC(double,2+2*n+8*n2+16);
   ((size_t *)(*tstorage))[0]=n2;
   bk  = *tstorage+2;

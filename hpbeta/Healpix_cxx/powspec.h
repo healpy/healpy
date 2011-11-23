@@ -102,6 +102,9 @@ class PowSpec
     /*! Returns GC(l) (read-only). */
     const double &gc (int l) const { return gc_[l]; }
 
+    /*! Re-allocates the object */
+    void Set(int nspec, int lmax);
+
     /*! Sets the whole TT array.
         \note On exit, \a tt_new is zero-sized! */
     void Set(arr<double> &tt_new);

@@ -38,7 +38,7 @@ extern "C" {
 
 size_t prime_factor_sum (size_t n);
 
-void bluestein_i (size_t n, double **tstorage);
+void bluestein_i (size_t n, double **tstorage, size_t *worksize);
 void bluestein (size_t n, double *data, double *tstorage, int isign);
 
 #ifdef __cplusplus

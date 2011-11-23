@@ -44,13 +44,26 @@ complex_plan make_complex_plan (size_t length)
   plan->length=length;
   plan->bluestein = (comp2<comp1);
   if (plan->bluestein)
-    bluestein_i (length,&(plan->work));
+    bluestein_i (length,&(plan->work),&(plan->worksize));
   else
     {
+    plan->worksize=4*length+15;
     plan->work=RALLOC(double,4*length+15);
     cffti(length, plan->work);
     }
   return plan;
+  }
+
+complex_plan copy_complex_plan (complex_plan plan)
+  {
+  if (!plan) return NULL;
+  {
+  complex_plan newplan = RALLOC(complex_plan_i,1);
+  *newplan = *plan;
+  newplan->work=RALLOC(double,newplan->worksize);
+  memcpy(newplan->work,plan->work,sizeof(double)*newplan->worksize);
+  return newplan;
+  }
   }
 
 void kill_complex_plan (complex_plan plan)
@@ -86,13 +99,26 @@ real_plan make_real_plan (size_t length)
   plan->length=length;
   plan->bluestein = (comp2<comp1);
   if (plan->bluestein)
-    bluestein_i (length,&(plan->work));
+    bluestein_i (length,&(plan->work),&(plan->worksize));
   else
     {
+    plan->worksize=2*length+15;
     plan->work=RALLOC(double,2*length+15);
     rffti(length, plan->work);
     }
   return plan;
+  }
+
+real_plan copy_real_plan (real_plan plan)
+  {
+  if (!plan) return NULL;
+  {
+  real_plan newplan = RALLOC(real_plan_i,1);
+  *newplan = *plan;
+  newplan->work=RALLOC(double,newplan->worksize);
+  memcpy(newplan->work,plan->work,sizeof(double)*newplan->worksize);
+  return newplan;
+  }
   }
 
 void kill_real_plan (real_plan plan)

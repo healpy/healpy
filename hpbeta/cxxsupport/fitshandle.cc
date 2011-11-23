@@ -338,6 +338,17 @@ void fitshandle::delete_file (const string &name)
   planck_fail("FITS error");
   }
 
+string fitshandle::fileName() const
+  {
+  planck_assert(connected(),"handle not connected to a file");
+  char *fname = new char[2048];
+  fits_file_name(FPTR, fname, &status);
+  check_errors();
+  string result(fname);
+  delete[] fname;
+  return result;
+  }
+
 void fitshandle::goto_hdu (int hdu)
   {
   int curhdu;

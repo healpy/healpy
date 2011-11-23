@@ -131,3 +131,23 @@ template long double paramfile::find (const string &key,
   const long double &deflt);
 template bool paramfile::find (const string &key, const bool &deflt);
 template string paramfile::find (const string &key, const string &deflt);
+
+void paramfile::setParamString (const string &key, const string &value)
+  {
+  if (param_present(key))
+    {
+    if (params[key]!=value)
+      {
+      if (verbose)
+        cout << "Parser: altering value of key'"<<key<<"' to '"<<value<<"'."
+             << endl;
+      params[key]=value;
+      }
+    }
+  else
+    {
+    if (verbose)
+      cout << "Parser: setting new key'"<<key<<"' to '"<<value<<"'."<<endl;
+    params[key]=value;
+    }
+  }
