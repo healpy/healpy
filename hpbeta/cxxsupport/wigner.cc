@@ -262,7 +262,8 @@ const arr2<double> &wigner_d_risbo_openmp::recurse ()
   }
 
 
-wignergen::wignergen (int lmax_, const arr<double> &thetas, double epsilon)
+wignergen_scalar::wignergen_scalar (int lmax_, const arr<double> &thetas,
+  double epsilon)
   : eps(epsilon), lmax(lmax_),
     logsum(2*lmax+1), lc05(thetas.size()), ls05(thetas.size()),
     flm1(2*lmax+1), flm2(2*lmax+1),
@@ -271,9 +272,6 @@ wignergen::wignergen (int lmax_, const arr<double> &thetas, double epsilon)
     m1(-1234567890), m2(-1234567890), am1(-1234567890), am2(-1234567890),
     mlo(-1234567890), mhi(-1234567890),
     fx(lmax+2), result(lmax+1)
-#ifdef PLANCK_HAVE_SSE2
-    , result2(lmax+1)
-#endif
   {
   planck_assert(lmax>0,"lmax too small");
   logsum[0] = 0.;
@@ -310,7 +308,7 @@ wignergen::wignergen (int lmax_, const arr<double> &thetas, double epsilon)
     fx[l][0]=fx[l][1]=fx[l][2]=0.;
   }
 
-void wignergen::prepare (int m1_, int m2_)
+void wignergen_scalar::prepare (int m1_, int m2_)
   {
   if ((m1_==m1) && (m2_==m2)) return;
 
@@ -360,7 +358,7 @@ void wignergen::prepare (int m1_, int m2_)
     }
   }
 
-const arr<double> &wignergen::calc (int nth, int &firstl)
+const arr<double> &wignergen_scalar::calc (int nth, int &firstl)
   {
   int l=mhi;
   const dbl3 *fy = &fx[0];

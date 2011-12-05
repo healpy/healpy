@@ -289,6 +289,25 @@ template<typename T> class Healpix_Map: public Healpix_Base
           { result = max(result,abs(map[m])); }
       return result;
       }
+    /*! Returns \a true, if no pixel has the value \a Healpix_undef,
+        else \a false. */
+    bool fullyDefined() const
+      {
+      for (int m=0; m<npix_; ++m)
+        if (approx<double>(map[m],Healpix_undef))
+          return false;
+      return true;
+      }
+    /*! Sets all pixels with the value \a Healpix_undef to 0, and returns
+        the number of modified pixels. */
+    tsize replaceUndefWith0()
+      {
+      tsize res=0;
+      for (int m=0; m<npix_; ++m)
+        if (approx<double>(map[m],Healpix_undef))
+          { map[m]=0.; ++res; }
+      return res;
+      }
   };
 
 #endif

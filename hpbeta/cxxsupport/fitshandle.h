@@ -122,6 +122,8 @@ class fitshandle
     void close () { clean_all(); }
     /*! Deletes the file with name \a name. */
     static void delete_file (const std::string &name);
+    /*! Returns the name of the connected file. */
+    std::string fileName() const;
     /*! Jumps to the HDU with the absolute number \a hdu. */
     void goto_hdu (int hdu);
     /*! Returns the number of HDUs in the file. */

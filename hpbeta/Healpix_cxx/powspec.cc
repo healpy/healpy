@@ -45,23 +45,7 @@ void PowSpec::dealloc()
   }
 
 PowSpec::PowSpec(int nspec, int lmax)
-  : num_specs(nspec)
-  {
-  planck_assert ((num_specs==1) || (num_specs==4) || (num_specs==6),
-    "wrong number of spectrums");
-  tt_.alloc(lmax+1);
-  if (num_specs>1)
-    {
-    gg_.alloc(lmax+1);
-    cc_.alloc(lmax+1);
-    tg_.alloc(lmax+1);
-    }
-  if (num_specs>4)
-    {
-    tc_.alloc(lmax+1);
-    gc_.alloc(lmax+1);
-    }
-  }
+  { Set(nspec,lmax); }
 
 PowSpec::~PowSpec()
   {}
@@ -103,6 +87,25 @@ bool PowSpec::consistentAutoPowspec() const
       if (abs(gc_[l])>sqrt(gg_[l]*cc_[l])) return false;
       }
   return true;
+  }
+
+void PowSpec::Set(int nspec, int lmax)
+  {
+  num_specs=nspec;
+  planck_assert ((num_specs==1) || (num_specs==4) || (num_specs==6),
+    "wrong number of spectrums");
+  tt_.alloc(lmax+1);
+  if (num_specs>1)
+    {
+    gg_.alloc(lmax+1);
+    cc_.alloc(lmax+1);
+    tg_.alloc(lmax+1);
+    }
+  if (num_specs>4)
+    {
+    tc_.alloc(lmax+1);
+    gc_.alloc(lmax+1);
+    }
   }
 
 void PowSpec::Set(arr<double> &tt_new)
