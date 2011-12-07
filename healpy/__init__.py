@@ -53,7 +53,10 @@ from sphtfunc import (anafast, map2alm,
                       smoothing, smoothalm, almxfl, alm2cl,
                       pixwin, alm2map_der1)
 
-from _query_disc import query_disc, query_strip, query_polygon
+try:
+    from _query_disc import query_disc, query_strip, query_polygon
+except ImportError:
+    warning.warn('Warning: cannot import query disc module')
 
 from zoomtool import mollzoom,set_g_clim
 
