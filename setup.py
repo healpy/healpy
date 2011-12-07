@@ -96,9 +96,11 @@ try:
   version = [int(v) for v in Cython.Compiler.Version.version.split(".")]
   assert version[1]>=12
   ext = "pyx"
-except Exception:
+  extcpp = "pyx"
+except AssertionError:
   from distutils.command.build_ext import build_ext
   ext = "c"
+  extcpp = "cpp"
   print "No Cython >= 0.12 found, defaulting to pregenerated c version."
   
 if on_rtd:
@@ -233,6 +235,14 @@ else:
                                 include_dirs = [numpy_inc, healpix_cxx_inc],
                                 libraries = healpix_libs,
                                 library_dirs = library_dirs,
+                                language='c++'),
+                      Extension("healpy._ianafast", 
+                                ['healpy/src/_ianafast.'+ext],
+                                include_dirs = [numpy_inc, healpix_cxx_inc],
+                                libraries = healpix_libs,
+                                library_dirs = library_dirs,
+                                extra_compile_args = healpix_args,
+                                extra_link_args = extra_link,
                                 language='c++')
                       ]
 
