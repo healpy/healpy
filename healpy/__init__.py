@@ -53,7 +53,10 @@ from sphtfunc import (anafast, map2alm,
                       smoothing, smoothalm, almxfl, alm2cl,
                       pixwin, alm2map_der1)
 
-from _query_disc import query_disc, query_strip, query_polygon
+try:
+    from _query_disc import query_disc, query_strip, query_polygon
+except ImportError:
+    warnings.warn('Warning: cannot import query disc module')
 
 from zoomtool import mollzoom,set_g_clim
 
@@ -62,7 +65,7 @@ from rotator import Rotator, vec2dir, dir2vec
 try:
     from _healpy_pixel_lib import UNSEEN
 except ImportError:
-    warning.warn('Warning: cannot import pixel lib module')
+    warnings.warn('Warning: cannot import pixel lib module')
 
 try:
     from pshyt import job

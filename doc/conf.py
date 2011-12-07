@@ -11,7 +11,7 @@
 # All configuration values have a default value; values that are commented out
 # serve to show the default value.
 
-import sys, os
+import sys, os, exceptions
 
 # To avoid problem with ReadTheDocs and compiled extensions.
 class Mock(object):
@@ -38,13 +38,16 @@ class Mock(object):
     def __getitem__(self, idx):
         return str(Mock())
 
-MOCK_MODULES = ['matplotlib', 'pylab', 'matplotlib.colors',
-                'matplotlib.cbook', 'pyfits',
-                'numpy', '_healpy_pixel_lib',
-                '_healpy_sph_transform_lib', '_healpy_fitsio_lib']
+try:
+    import matplotlib
+except exceptions.ImportError:
+    MOCK_MODULES = ['matplotlib', 'pylab', 'matplotlib.colors',
+                    'matplotlib.cbook', 'pyfits',
+                    'numpy', '_healpy_pixel_lib',
+                    '_healpy_sph_transform_lib', '_healpy_fitsio_lib']
 
-for mod_name in MOCK_MODULES:
-    sys.modules[mod_name] = Mock()
+    for mod_name in MOCK_MODULES:
+        sys.modules[mod_name] = Mock()
     
 
 # If your extensions are in another directory, add it here. If the directory

@@ -38,32 +38,48 @@ def mollzoom(map=None,fig=None,rot=None,coord=None,unit='',
              gal_cut=0,
              format='%g',cmap=None,
              norm=None,hold=False,margins=None,sub=None):
-    """Plot an healpix map (given as an array) in Mollweide projection,
-    with a gnomview zone showing a zoomed region.
+    """Interactive mollweide plot with zoomed gnomview.
     
-    Input:
-      - map : an ndarray containing the map
-              if None, use map with inf value (white map), useful for
-              overplotting
     Parameters:
-      - fig: a figure number. Default: create a new figure
-      - rot: rotation, either 1,2 or 3 angles describing the rotation
-             Default: None
-      - coord: either one of 'G', 'E' or 'C' to describe the coordinate
-               system of the map, or a sequence of 2 of these to make
-               rotation from the first to the second coordinate system.
-               Default: None
-      - unit: a text describing the unit. Default: ''
-      - xsize: the size of the image. Default: 800
-      - title: the title of the plot. Default: 'Mollweide view'
-      - nest: if True, ordering scheme is NEST. Default: False (RING)
-      - min: the minimum range value
-      - max: the maximum range value
-      - flip: 'astro' (default, east towards left, west towards right) or 'geo'
-      - remove_dip: if True, remove the dipole+monopole
-      - remove_mono: if True, remove the monopole
-      - gal_cut: galactic cut for the dipole/monopole fit
-      - format: the format of the scale. Default: '%g'
+    -----------
+    map : float, array-like shape (Npix,)
+      if None, use map with inf value (white map), useful for
+      overplotting
+    fig : a figure number. 
+      Default: create a new figure
+    rot : scalar or sequence, optional
+      Describe the rotation to apply.
+      In the form (lon, lat, psi) (unit: degrees) : the point at
+      longitude *lon* and latitude *lat* will be at the center. An additional rotation
+      of angle *psi* around this direction is applied.
+    coord : sequence of character, optional
+      Either one of 'G', 'E' or 'C' to describe the coordinate
+      system of the map, or a sequence of 2 of these to rotate
+      the map from the first to the second coordinate system.
+    unit : str, optional
+      A text describing the unit of the data. Default: ''
+    xsize : int, optional
+      The size of the image. Default: 800
+    title : str, optional
+      The title of the plot. Default: 'Mollweide view'
+    nest : bool, optional
+      If True, ordering scheme is NESTED. Default: False (RING)
+    min : float, optional
+      The minimum range value
+    max : float, optional
+      The maximum range value
+    flip : {'astro', 'geo'}, optional
+      Defines the convention of projection : 'astro' (default, east towards left, west towards right)
+      or 'geo' (east towards roght, west towards left)
+    remove_dip : bool, optional
+      If :const:`True`, remove the dipole+monopole
+    remove_mono : bool, optional
+      If :const:`True`, remove the monopole
+    gal_cut : float, scalar, optional
+      Symmetric galactic cut for the dipole/monopole fit.
+      Removes points in latitude range [-gal_cut, +gal_cut]
+    format : str, optional
+      The format of the scale label. Default: '%g'
     """
     # create the figure (if interactive, it will open the window now)
     f=pylab.figure(fig,figsize=(10.5,5.4))

@@ -36,6 +36,7 @@ Reference
    healpy_rotator
    healpy_projector
    healpy_projaxes
+   healpy_zoomtool
 
 
 Indices and tables
