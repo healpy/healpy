@@ -42,7 +42,28 @@ cdef extern from "alm_healpix_tools.h":
 
 
 cdef extern from "hack.h":
-    cdef xcomplex[double]* cast_to_ptr_complex128(char *)
+    cdef xcomplex[double]* cast_to_ptr_xcomplex_d(char *)
+
+
+cdef Healpix_Map[double] as_map(np.ndarray[double, ndim=1] m):
+    cdef arr[double] m_arr = arr[double](<double*>m.data, m.size)
+    cdef Healpix_Map[double] m_hpx
+    m_hpx.Set(m_arr, RING)
+    return m_hpx
+
+cdef Alm[xcomplex[double]] as_alm(np.ndarray[double, ndim=1] a, int lmax, int mmax):
+    cdef Alm[xcomplex[double]] alm_hpx
+    cdef tsize n_alm = Num_Alms(lmax, mmax)
+    if a.size != n_alm:
+        raise ValueError("inconsistent array size, lmax, mmax")
+    cdef arr[xcomplex[double]] alm_arr = arr[xcomplex[double]](cast_to_ptr_xcomplex_d(a.data), a.size)
+    alm_hpx.Set(alm_arr, lmax, mmax)
+    return alm_hpx
+
+cdef Num_Alms(int l, int m):
+    if not m <= l:
+        raise ValueError("mmax must be <= lmax")
+    return ((m+1)*(m+2))/2 + (m+1)*(l-m)
 
 
 def ianafast(m, lmax = -1, mmax = -1, niter = 3, regression = True):
@@ -60,10 +81,8 @@ def ianafast(m, lmax = -1, mmax = -1, niter = 3, regression = True):
     if mmax_ < 0 or mmax_ > lmax_:
         mmax_ = lmax_
 
-    # Create an Halpix_Map object pointing to data from ndarray map
-    cdef arr[double] *m_arr = new arr[double](<double*>m_.data, m_.size)
-    cdef Healpix_Map[double] m_hpx
-    m_hpx.Set(m_arr[0], RING)
+    # Create an Healpix_Map object pointing to data from ndarray map
+    m_hpx = as_map(m_)
     cdef double avg = 0.0
 
     if regression:
@@ -71,13 +90,10 @@ def ianafast(m, lmax = -1, mmax = -1, niter = 3, regression = True):
         m_hpx.Add(-avg)
 
     # Create an ndarray object that will contain the alm for output (to be returned)
-    # Create an Alm healpix object which points to data of ndarray alm
-    cdef Alm[xcomplex[double]] alm_hpx
-    cdef tsize n_alm = alm_hpx.Num_Alms(lmax_, mmax_)
-    cdef np.ndarray alm = np.empty(n_alm, dtype = np.complex128)
-    cdef arr[xcomplex[double]] *alm_arr = new arr[xcomplex[double]](cast_to_ptr_complex128(alm.data), alm.size)
-    alm_hpx.Set(alm_arr[0], lmax_, mmax_)
-    
+    cdef np.ndarray alm = np.empty(Num_Alms(lmax_, mmax_), dtype = np.complex128)
+    alm_hpx = as_alm(alm, lmax_, mmax_)
+
+    # ring weights
     cdef arr[double] w_arr
     w_arr.allocAndFill(2 * nside, 1.)
     
@@ -87,7 +103,6 @@ def ianafast(m, lmax = -1, mmax = -1, niter = 3, regression = True):
         m_hpx.Add(avg)
         alm[0] += avg * np.sqrt(4 * np.pi)
    
-    del m_arr, alm_arr
     return alm
 
 
