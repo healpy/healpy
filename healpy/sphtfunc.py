@@ -28,7 +28,7 @@ import _healpy_fitsio_lib as hfitslib
 import os.path
 import pixelfunc
 
-from pixelfunc import UNSEEN
+from pixelfunc import mask_bad, maptype, UNSEEN
 
 DATAPATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data')
 
@@ -73,7 +73,20 @@ def anafast(m,lmax=None,mmax=None,iter=1,alm=False, use_weights=False, regressio
         if not os.path.isfile(datapath+'/'+weightfile):
             raise IOError('File not found : '+datapath+'/'+weightfile)
     # Replace UNSEEN pixels with zeros
-    m[m == UNSEEN] = 0
+    info = maptype(m)
+    if info == 0:
+        m[m == UNSEEN] = 0
+    elif info == 3:
+        mi, mq, mu = m
+        mask = mask_bad(mi)
+        mask &= mask_bad(mq)
+        mask &= mask_bad(mu)
+        mi[mask] = 0
+        mq[mask] = 0
+        mu[mask] = 0
+    else:
+        raise TypeError("Input map must be an array or a sequence of 3 arrays (for polarization)")
+    #m[m == UNSEEN] = 0
     clout,almout = sphtlib._map2alm(m,lmax=lmax,mmax=mmax,iter=iter,cl=True,
                                     use_weights=use_weights,data_path=datapath,
                                     regression=regression)
