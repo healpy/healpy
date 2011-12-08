@@ -104,7 +104,7 @@ cdef class WrapAlm(object):
             #print "deallocating alm wrapper..."
             del self.a, self.h
 
-def ianafast(m, lmax = -1, mmax = -1, niter = 3, regression = True):
+def map2alm(m, lmax = -1, mmax = -1, niter = 3, regression = True):
 
     # Check if the input map is polarized or not
     info = maptype(m)
@@ -183,3 +183,7 @@ def ianafast(m, lmax = -1, mmax = -1, niter = 3, regression = True):
         return almI, almG, almC
     else:
         return almI
+
+
+def alm2cl(alm, lmax = None, mmax = None, nspec = None):
+    pass
