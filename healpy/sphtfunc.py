@@ -79,8 +79,8 @@ def anafast(m,lmax=None,mmax=None,iter=1,alm=False, use_weights=False, regressio
     elif info == 3:
         mi, mq, mu = m
         mask = mask_bad(mi)
-        mask |= mask_bad(mq)
-        mask |= mask_bad(mu)
+        mask &= mask_bad(mq)
+        mask &= mask_bad(mu)
         mi[mask] = 0
         mq[mask] = 0
         mu[mask] = 0
