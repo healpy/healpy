@@ -305,7 +305,7 @@ Add a alm2map_spin transform to the job list.
      if _howManyMaps(rmap)!=2:
        raise pshtError("not enough map")
      rmap1_proxy=c_numpy.PyArray_ContiguousFromAny(rmap[0],c_numpy.NPY_DOUBLE,1,1)
-     rmap2_proxy=c_numpy.PyArray_ContiguousFromAny(rmap[0],c_numpy.NPY_DOUBLE,1,1)
+     rmap2_proxy=c_numpy.PyArray_ContiguousFromAny(rmap[1],c_numpy.NPY_DOUBLE,1,1)
      addo = 1
    else:
      rmap1_proxy = self._newmap()
@@ -338,7 +338,7 @@ Add a map2alm_spin transform to the job list.
      raise pshtError("not enough map")
 
    rmap1_proxy=c_numpy.PyArray_ContiguousFromAny(rmap[0],c_numpy.NPY_DOUBLE,1,1)
-   rmap2_proxy=c_numpy.PyArray_ContiguousFromAny(rmap[0],c_numpy.NPY_DOUBLE,1,1)
+   rmap2_proxy=c_numpy.PyArray_ContiguousFromAny(rmap[1],c_numpy.NPY_DOUBLE,1,1)
 
    if alm !=None:
      if _howManyMaps(alm)!=2:
@@ -378,7 +378,7 @@ Add a alm2map_der1 transform to the job list.
      if _howManyMaps(rmap)!=2:
        raise pshtError("not enough map")
      rmap1_proxy=c_numpy.PyArray_ContiguousFromAny(rmap[0],c_numpy.NPY_DOUBLE,1,1)
-     rmap2_proxy=c_numpy.PyArray_ContiguousFromAny(rmap[0],c_numpy.NPY_DOUBLE,1,1)
+     rmap2_proxy=c_numpy.PyArray_ContiguousFromAny(rmap[1],c_numpy.NPY_DOUBLE,1,1)
      addo = 1
    else:
      rmap1_proxy = self._newmap()
@@ -514,7 +514,7 @@ Computes two healpix maps from two spinned alms using PSHT.
    lmax = __getlmax(len(alm[0]),mmax)
 
  jb = job(nside,lmax,mmax)
- jb.add_alm2map_spin(alm)
+ jb.add_alm2map_spin(alm, spin)
  res = jb.execute()
  return res[0]
 
@@ -534,7 +534,7 @@ Computes the spinned alm of two Healpix maps using PSHT.
  lmax,mmax = __tlm(lmax,mmax)
  nside=int(npy.sqrt(len(rmap[0])/12.))
  jb = job(nside,lmax,mmax)
- jb.add_map2alm_spin(rmap)
+ jb.add_map2alm_spin(rmap, spin)
  res = jb.execute()
  return res[0]
 
