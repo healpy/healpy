@@ -31,13 +31,20 @@ dtor = pi/180.
 class SphericalProjAxes(axes.Axes):
     """Define a special Axes to take care of spherical projection.
 
-    Input:
-      - projection : a SphericalProj class or a class derived from it.
-      - rot=, coord= : define rotation and coordinate system. See rotator.
-      - coordprec= : number of digit after floating point for coordinates display.
-      - format= : format string for value display.
+    Parameters
+    ----------
+    projection : a SphericalProj class or a class derived from it.
+        type of projection
+    rot : list or string
+        define rotation. See rotator.
+    coord : list or string
+        define coordinate system. See rotator.
+    coordprec : number of digit after floating point for coordinates display.
+    format : format string for value display.
       
-      Other keywords from Axes (see Axes).
+    Notes
+    -----
+    Other keywords from Axes (see Axes).
     """
     def __init__(self, ProjClass, *args, **kwds):
         if not issubclass(ProjClass, P.SphericalProj):
