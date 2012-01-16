@@ -17,7 +17,7 @@
 # 
 #  For more information about Healpy, see http://code.google.com/p/healpy
 # 
-import numpy as npy
+import numpy as np
 import warnings
 
 coordname = {'G': 'Galactic', 'E': 'Ecliptic', 'C': 'Equatorial'}
@@ -64,14 +64,14 @@ class Rotator(object):
     Examples
     --------
     >>> r = Rotator(coord=['G','E'])  # Transforms galactic to ecliptic coordinates
-    >>> theta_gal, phi_gal = npy.pi/2., 0.
+    >>> theta_gal, phi_gal = np.pi/2., 0.
     >>> theta_ecl, phi_ecl = r(theta_gal, phi_gal)  # Apply the conversion
     >>> print theta_ecl, phi_ecl
     1.66742286715 -1.62596400306
     >>> theta_ecl, phi_ecl = Rotator(coord='ge')(theta_gal, phi_gal) # In one line
     >>> print theta_ecl, phi_ecl
     1.66742286715 -1.62596400306
-    >>> vec_gal = npy.array([1, 0, 0]) #Using vectors
+    >>> vec_gal = np.array([1, 0, 0]) #Using vectors
     >>> vec_ecl = r(vec_gal)
     >>> print vec_ecl
     [-0.05488249 -0.99382103 -0.09647625]
@@ -137,15 +137,15 @@ class Rotator(object):
         self._update_matrix()
 
     def _update_matrix(self):
-        self._matrix = npy.identity(3)
+        self._matrix = np.identity(3)
         self._do_rotation = False
         for r,c,i in zip(self._rots, self._coords,self._invs):
             rotmat,do_rot,rotnorm = get_rotation_matrix(r,
                                                         eulertype=self._eultype)
             convmat,do_conv,coordnorm = get_coordconv_matrix(c)
-            r = npy.dot(rotmat,convmat)
+            r = np.dot(rotmat,convmat)
             if i: r = r.T
-            self._matrix = npy.dot(self._matrix, r)
+            self._matrix = np.dot(self._matrix, r)
             self._do_rotation = self._do_rotation or (do_rot or do_conv)
 
     def _is_coords_consistent(self):
@@ -161,8 +161,8 @@ class Rotator(object):
     def __eq__(self,a):
         if type(a) is not type(self): return False
         # compare the _rots
-        v = [npy.allclose(x,y,rtol=0,atol=1e-15) for x,y in zip(self._rots,a._rots)]
-        return ( npy.array(v).all() and
+        v = [np.allclose(x,y,rtol=0,atol=1e-15) for x,y in zip(self._rots,a._rots)]
+        return ( np.array(v).all() and
                  (self._coords == a._coords) and
                  (self._invs == a._invs) )
     
@@ -255,7 +255,7 @@ class Rotator(object):
     def mat(self):
         """The matrix representing the rotation.
         """
-        return npy.matrix(self._matrix)
+        return np.matrix(self._matrix)
 
     @property
     def coordin(self):
@@ -300,7 +300,7 @@ class Rotator(object):
     def do_rot(self,i):
         """Returns True if rotation is not (close to) identity.
         """
-        return not npy.allclose(self.rots[i],npy.zeros(3),rtol=0.,atol=1.e-15)
+        return not np.allclose(self.rots[i],np.zeros(3),rtol=0.,atol=1.e-15)
 
     def angle_ref(self,*args,**kwds):
         """Compute the angle between transverse reference direction of initial and final frames
@@ -344,8 +344,8 @@ class Rotator(object):
         vp = R(v,inv=inv)
         north_pole = R([0.,0.,1.],inv=inv)
         sinalpha = north_pole[0]*vp[1]-north_pole[1]*vp[0]
-        cosalpha = north_pole[2] - vp[2]*npy.dot(north_pole,vp)
-        return npy.arctan2(sinalpha,cosalpha)
+        cosalpha = north_pole[2] - vp[2]*np.dot(north_pole,vp)
+        return np.arctan2(sinalpha,cosalpha)
 
     def __repr__(self):
         return '[ '+', '.join([str(self._coords),
@@ -388,10 +388,10 @@ def rotateVector(rotmat,vec,vy=None,vz=None, do_rot=True):
     Rotator
     """
     if vy is None and vz is None:
-       if do_rot: return npy.tensordot(rotmat,vec,axes=(1,0))
+       if do_rot: return np.tensordot(rotmat,vec,axes=(1,0))
        else: return vec
     elif vy is not None and vz is not None:
-       if do_rot: return npy.tensordot(rotmat,npy.array([vec,vy,vz]),axes=(1,0))
+       if do_rot: return np.tensordot(rotmat,np.array([vec,vy,vz]),axes=(1,0))
        else: return vec,vy,vz
     else:
        raise TypeError("You must give either vec only or vec, vy "
@@ -454,21 +454,21 @@ def vec2dir(vec,vy=None,vz=None,lonlat=False):
     --------
     :func:`dir2vec`, :func:`pixelfunc.ang2vec`, :func:`pixelfunc.vec2ang`
     """
-    if npy.any(npy.isnan(vec)):
-        return npy.nan, npy.nan
+    if np.any(np.isnan(vec)):
+        return np.nan, np.nan
     if vy is None and vz is None:
         vx,vy,vz = vec
     elif vy is not None and vz is not None:
         vx=vec
     else:
         raise TypeError("You must either give both vy and vz or none of them")
-    r = npy.sqrt(vx**2+vy**2+vz**2)
-    ang = npy.empty((2, r.size))
-    ang[0, :] = npy.arccos(vz / r)
-    ang[1, :] = npy.arctan2(vy, vx)
+    r = np.sqrt(vx**2+vy**2+vz**2)
+    ang = np.empty((2, r.size))
+    ang[0, :] = np.arccos(vz / r)
+    ang[1, :] = np.arctan2(vy, vx)
     if lonlat:
-        ang = npy.degrees(ang)
-        npy.negative(ang[0, :], ang[0, :])
+        ang = np.degrees(ang)
+        np.negative(ang[0, :], ang[0, :])
         ang[0, :] += 90.
         return ang[::-1,:].squeeze()
     else:
@@ -501,9 +501,9 @@ def dir2vec(theta,phi=None,lonlat=False):
         theta,phi=theta
     if lonlat:
         lon,lat=theta,phi
-        theta,phi = npy.pi/2.-npy.radians(lat),npy.radians(lon)
-    ct,st,cp,sp = npy.cos(theta),npy.sin(theta),npy.cos(phi),npy.sin(phi)
-    vec = npy.empty((3, ct.size), npy.float64)
+        theta,phi = np.pi/2.-np.radians(lat),np.radians(lon)
+    ct,st,cp,sp = np.cos(theta),np.sin(theta),np.cos(phi),np.sin(phi)
+    vec = np.empty((3, ct.size), np.float64)
     vec[0, :] = st * cp
     vec[1, :] = st * sp
     vec[2, :] = ct
@@ -535,37 +535,37 @@ def angdist(dir1,dir2,lonlat=False):
         lonlat1,lonlat2 = lonlat
     else:
         lonlat1=lonlat2=lonlat
-    dir1 = npy.asarray(dir1)
-    dir2 = npy.asarray(dir2)
+    dir1 = np.asarray(dir1)
+    dir2 = np.asarray(dir2)
     if dir1.ndim == 2:
         if dir1.shape[0] == 2: # theta, phi -> vec
             vec1 = dir2vec(dir1, lonlat = lonlat1)
         else:
-            vec1 = npy.reshape(dir1, (3, -1))
+            vec1 = np.reshape(dir1, (3, -1))
             vec1 = normalize_vec(vec1)
     elif dir1.ndim == 1:
         if dir1.shape[0] == 2: # theta, phi -> vec
-            vec1 = npy.reshape(dir2vec(dir1, lonlat = lonlat1), (3, 1))
+            vec1 = np.reshape(dir2vec(dir1, lonlat = lonlat1), (3, 1))
         else:
-            vec1 = npy.reshape(dir1, (3, 1))
+            vec1 = np.reshape(dir1, (3, 1))
             vec1 = normalize_vec(vec1)
     if dir2.ndim == 2:
         if dir2.shape[0] == 2: # theta, phi -> vec
             vec2 = dir2vec(dir2, lonlat = lonlat2)
         else:
-            vec2 = npy.reshape(dir2, (3, -1))
+            vec2 = np.reshape(dir2, (3, -1))
             vec2 = normalize_vec(vec2)
     elif dir2.ndim == 1:
         if dir2.shape[0] == 2: # theta, phi -> vec
-            vec2 = npy.reshape(dir2vec(dir2, lonlat = lonlat2), (3, 1))
+            vec2 = np.reshape(dir2vec(dir2, lonlat = lonlat2), (3, 1))
         else:
-            vec2 = npy.reshape(dir2, (3, 1))
+            vec2 = np.reshape(dir2, (3, 1))
             vec2 = normalize_vec(vec2)
     # compute scalar product
     pscal = (vec1*vec2).sum(axis=0)
     # if scalar product is greater than 1 but close, set it to 1
     pscal[(pscal - 1. > 0.) & (pscal - 1. < 1.e-14)] = 1. 
-    return npy.arccos(pscal)
+    return np.arccos(pscal)
 
 def normalize_vec(vec):
     """Normalize the vector(s) *vec* (in-place if it is a ndarray).
@@ -580,8 +580,8 @@ def normalize_vec(vec):
     vec_normed : float, array
       Normalized vec, shape (D,) or (D, N)
     """
-    vec = npy.array(vec, npy.float64)
-    r = npy.sqrt(npy.sum(vec ** 2, axis = 0))
+    vec = np.array(vec, np.float64)
+    r = np.sqrt(np.sum(vec ** 2, axis = 0))
     vec /= r
     return vec
 
@@ -645,12 +645,12 @@ def normalise_rot(rot,deg=False):
    If deg is True, convert from degree to radian, otherwise assume input
    is in radian.
    """
-   if deg: convert=npy.pi/180.
+   if deg: convert=np.pi/180.
    else: convert=1.
    if rot is None:
-      rot=npy.zeros(3)
+      rot=np.zeros(3)
    else:
-      rot=npy.array(rot,npy.float64).flatten()*convert
+      rot=np.array(rot,np.float64).flatten()*convert
       rot.resize(3)
    return rot
 
@@ -668,7 +668,7 @@ def get_rotation_matrix(rot, deg=False, eulertype='ZYX'):
       - normrot: the normalized version of the input rot.
    """
    rot = normalise_rot(rot, deg=deg)
-   if not npy.allclose(rot,npy.zeros(3),rtol=0.,atol=1.e-15):
+   if not np.allclose(rot,np.zeros(3),rtol=0.,atol=1.e-15):
       do_rot = True
    else:
       do_rot = False
@@ -701,33 +701,33 @@ def get_coordconv_matrix(coord):
    coord_norm = normalise_coord(coord)
    
    if coord_norm[0] == coord_norm[1]:
-      matconv = npy.identity(3)
+      matconv = np.identity(3)
       do_conv = False        
    else:
       eps = 23.452294 - 0.0130125 - 1.63889E-6 + 5.02778E-7
-      eps = eps * npy.pi / 180.
+      eps = eps * np.pi / 180.
       
       # ecliptic to galactic
-      e2g = npy.array([[-0.054882486, -0.993821033, -0.096476249],
+      e2g = np.array([[-0.054882486, -0.993821033, -0.096476249],
                    [ 0.494116468, -0.110993846,  0.862281440],
                    [-0.867661702, -0.000346354,  0.497154957]])
       
       # ecliptic to equatorial
-      e2q = npy.array([[1.,     0.    ,      0.         ],
-                   [0., npy.cos( eps ), -1. * npy.sin( eps )],
-                   [0., npy.sin( eps ),    npy.cos( eps )   ]])
+      e2q = np.array([[1.,     0.    ,      0.         ],
+                   [0., np.cos( eps ), -1. * np.sin( eps )],
+                   [0., np.sin( eps ),    np.cos( eps )   ]])
       
       # galactic to ecliptic
-      g2e = npy.linalg.inv(e2g)
+      g2e = np.linalg.inv(e2g)
       
       # galactic to equatorial                   
-      g2q = npy.dot(e2q , g2e)
+      g2q = np.dot(e2q , g2e)
       
       # equatorial to ecliptic
-      q2e = npy.linalg.inv(e2q)
+      q2e = np.linalg.inv(e2q)
       
       # equatorial to galactic
-      q2g = npy.dot(e2g , q2e)
+      q2g = np.dot(e2g , q2e)
    
       if coord_norm == ('E','G'):
          matconv = e2g
@@ -817,7 +817,7 @@ def euler(ai, bi, select, FK4 = 0):
    #     return
    #  endif
 
-   PI = npy.pi
+   PI = np.pi
    twopi   =   2.0*PI
    fourpi  =   4.0*PI
    deg_to_rad = 180.0/PI
@@ -866,15 +866,15 @@ def euler(ai, bi, select, FK4 = 0):
    i  = select - 1                         # IDL offset
    a  = ai/deg_to_rad - phi[i]
    b = bi/deg_to_rad
-   sb = npy.sin(b)
-   cb = npy.cos(b)
-   cbsa = cb * npy.sin(a)
+   sb = np.sin(b)
+   cb = np.cos(b)
+   cbsa = cb * np.sin(a)
    b  = -stheta[i] * cbsa + ctheta[i] * sb
    #bo    = math.asin(where(b<1.0, b, 1.0)*deg_to_rad)
-   bo    = npy.arcsin(b)*deg_to_rad
+   bo    = np.arcsin(b)*deg_to_rad
    #
-   a = npy.arctan2( ctheta[i] * cbsa + stheta[i] * sb, cb * npy.cos(a) )
-   ao = npy.fmod( (a+psi[i]+fourpi), twopi) * deg_to_rad
+   a = np.arctan2( ctheta[i] * cbsa + stheta[i] * sb, cb * np.cos(a) )
+   ao = np.fmod( (a+psi[i]+fourpi), twopi) * deg_to_rad
    return ao, bo
 
 
@@ -944,55 +944,55 @@ def euler_matrix_new(a1,a2,a3,X=True,Y=False,ZYX=False,deg=False):
    
    convert = 1.0
    if deg:
-      convert = npy.pi/180.
+      convert = np.pi/180.
       
-   c1 = npy.cos(a1*convert)
-   s1 = npy.sin(a1*convert)
-   c2 = npy.cos(a2*convert)
-   s2 = npy.sin(a2*convert)
-   c3 = npy.cos(a3*convert)
-   s3 = npy.sin(a3*convert)
+   c1 = np.cos(a1*convert)
+   s1 = np.sin(a1*convert)
+   c2 = np.cos(a2*convert)
+   s2 = np.sin(a2*convert)
+   c3 = np.cos(a3*convert)
+   s3 = np.sin(a3*convert)
         
    if ZYX:
-      m1 = npy.array([[ c1,-s1,  0],
+      m1 = np.array([[ c1,-s1,  0],
                   [ s1, c1,  0],
                   [  0,  0,  1]]) # around   z
 
-      m2 = npy.array([[ c2,  0, s2],
+      m2 = np.array([[ c2,  0, s2],
                   [  0,  1,  0],
                   [-s2,  0, c2]]) # around   y
 
-      m3 = npy.array([[  1,  0,  0],
+      m3 = np.array([[  1,  0,  0],
                   [  0, c3,-s3],
                   [  0, s3, c3]]) # around   x
 
    elif Y:
-      m1 = npy.array([[ c1,-s1,  0],
+      m1 = np.array([[ c1,-s1,  0],
                   [ s1, c1,  0],
                   [  0,  0,  1]]) # around   z
 
-      m2 = npy.array([[ c2,  0, s2],
+      m2 = np.array([[ c2,  0, s2],
                   [  0,  1,  0],
                   [-s2,  0, c2]]) # around   y
 
-      m3 = npy.array([[ c3,-s3,  0],
+      m3 = np.array([[ c3,-s3,  0],
                   [ s3, c3,  0],
                   [  0,  0,  1]]) # around   z
 
    else:
-      m1 = npy.array([[ c1,-s1,  0],
+      m1 = np.array([[ c1,-s1,  0],
                   [ s1, c1,  0],
                   [  0,  0,  1]]) # around   z
 
-      m2 = npy.array([[  1,  0,  0],
+      m2 = np.array([[  1,  0,  0],
                   [  0, c2,-s2],
                   [  0, s2, c2]]) # around   x
 
-      m3 = npy.array([[ c3,-s3,  0],
+      m3 = np.array([[ c3,-s3,  0],
                   [ s3, c3,  0],
                   [  0,  0,  1]]) # around   z
 
-   M = npy.dot(m3.T,npy.dot(m2.T,m1.T)) 
+   M = np.dot(m3.T,np.dot(m2.T,m1.T)) 
 
    return M
 

@@ -19,8 +19,8 @@
 # 
 import warnings
 import exceptions
-import numpy as npy
-pi = npy.pi
+import numpy as np
+pi = np.pi
 
 import _healpy_sph_transform_lib as sphtlib
 import _healpy_fitsio_lib as hfitslib
@@ -161,7 +161,7 @@ def alm2map(alm, nside, lmax=-1, mmax=-1,pixwin=False,
     smoothalm(alm,fwhm=fwhm,sigma=sigma,degree=degree,arcmin=arcmin)
     if pixwin:
         pw=globals()['pixwin'](nside,True)
-        if type(alm[0]) is npy.ndarray:
+        if type(alm[0]) is np.ndarray:
             if len(alm) != 3:
                 raise TypeError("alm must be a sequence of 3 ndarray "
                                 "or a 1D ndarray")
@@ -195,14 +195,14 @@ def synalm(cls, lmax=-1, mmax=-1):
     : a list of n alms (with n(n+1)/2 the number of input cl,
             or n=3 if there are 4 input cl).
     """
-    if not isinstance(cls[0], npy.ndarray):
+    if not isinstance(cls[0], np.ndarray):
         if lmax < 0: lmax = cls.size-1
         if mmax < 0: mmax = lmax
         cls_list = [cls]
         szalm = Alm.getsize(lmax,mmax)
-        alm = npy.zeros(szalm,'D')
-        alm.real = npy.random.standard_normal(szalm)
-        alm.imag = npy.random.standard_normal(szalm)
+        alm = np.zeros(szalm,'D')
+        alm.real = np.random.standard_normal(szalm)
+        alm.imag = np.random.standard_normal(szalm)
         alms_list=[alm]
         sphtlib._synalm(cls_list,alms_list,lmax,mmax)
         return alm
@@ -227,9 +227,9 @@ def synalm(cls, lmax=-1, mmax=-1):
     szalm = Alm.getsize(lmax,mmax)
     alms_list = []
     for i in xrange(sphtlib._getn(len(cls_list))):
-        alm = npy.zeros(szalm,'D')
-        alm.real = npy.random.standard_normal(szalm)
-        alm.imag = npy.random.standard_normal(szalm)
+        alm = np.zeros(szalm,'D')
+        alm.real = np.random.standard_normal(szalm)
+        alm.imag = np.random.standard_normal(szalm)
         alms_list.append(alm)
     sphtlib._synalm(cls_list, alms_list, lmax, mmax)
     if len(alms_list) > 1:
@@ -309,8 +309,8 @@ class Alm(object):
           If None, the function return l and m for i=0..Alm.getsize(lmax)
         """
         if i is None:
-            i=npy.arange(Alm.getsize(lmax))
-        m=(npy.ceil(((2*lmax+1)-npy.sqrt((2*lmax+1)**2-8*(i-lmax)))/2)).astype(int)
+            i=np.arange(Alm.getsize(lmax))
+        m=(np.ceil(((2*lmax+1)-np.sqrt((2*lmax+1)**2-8*(i-lmax)))/2)).astype(int)
         l = i-m*(2*lmax+1-m)/2
         return (l,m)
 
@@ -373,8 +373,8 @@ class Alm(object):
         if mmax >= 0:
             x=(2*s+mmax**2-mmax-2)/(2*mmax+2)
         else:
-            x=(-3+npy.sqrt(1+8*s))/2
-        if x != npy.floor(x):
+            x=(-3+np.sqrt(1+8*s))/2
+        if x != np.floor(x):
             return -1
         else:
             return int(x)
@@ -401,17 +401,17 @@ def alm2cl(alm,mmax=-1,nspec=4):
       the power spectrum estimated from alm.
     """
     # this is the expected lmax, given mmax
-    if isinstance(alm,npy.ndarray) and alm.ndim == 1:
+    if isinstance(alm,np.ndarray) and alm.ndim == 1:
         lmax = Alm.getlmax(alm.size,mmax)
         if lmax < 0:
             raise TypeError('Wrong alm size for the given mmax.')
         if mmax<0:
             mmax=lmax
-        cl_est = npy.zeros(lmax+1)
+        cl_est = np.zeros(lmax+1)
         for l in range(lmax+1):
-            i=Alm.getidx(lmax,l,npy.arange(min(mmax,l)+1))
-            cl_est[l] = (npy.abs(alm[i[0]])**2
-                         +2.*npy.sum(npy.abs(alm[i[1:]])**2))/(2*l+1)
+            i=Alm.getidx(lmax,l,np.arange(min(mmax,l)+1))
+            cl_est[l] = (np.abs(alm[i[0]])**2
+                         +2.*np.sum(np.abs(alm[i[1:]])**2))/(2*l+1)
         return cl_est
     else:
         almT,almE,almB=tuple(alm)
@@ -420,26 +420,26 @@ def alm2cl(alm,mmax=-1,nspec=4):
             raise TypeError('Wrong alm size for the given mmax.')
         if mmax<0:
             mmax=lmax
-        ctt_est = npy.zeros(lmax+1)
-        cee_est = npy.zeros(lmax+1)
-        cbb_est = npy.zeros(lmax+1)
-        cte_est = npy.zeros(lmax+1)
-        ctb_est = npy.zeros(lmax+1)
-        ceb_est = npy.zeros(lmax+1)
+        ctt_est = np.zeros(lmax+1)
+        cee_est = np.zeros(lmax+1)
+        cbb_est = np.zeros(lmax+1)
+        cte_est = np.zeros(lmax+1)
+        ctb_est = np.zeros(lmax+1)
+        ceb_est = np.zeros(lmax+1)
         for l in range(lmax+1):
-            i=Alm.getidx(lmax,l,npy.arange(min(mmax,l)+1))
-            ctt_est[l] = (npy.abs(almT[i[0]])**2
-                          +2.*npy.sum(npy.abs(almT[i[1:]])**2))/(2*l+1)
-            cee_est[l] = (npy.abs(almE[i[0]])**2
-                          +2.*npy.sum(npy.abs(almE[i[1:]])**2))/(2*l+1)
-            cbb_est[l] = (npy.abs(almB[i[0]])**2
-                          +2.*npy.sum(npy.abs(almB[i[1:]])**2))/(2*l+1)
+            i=Alm.getidx(lmax,l,np.arange(min(mmax,l)+1))
+            ctt_est[l] = (np.abs(almT[i[0]])**2
+                          +2.*np.sum(np.abs(almT[i[1:]])**2))/(2*l+1)
+            cee_est[l] = (np.abs(almE[i[0]])**2
+                          +2.*np.sum(np.abs(almE[i[1:]])**2))/(2*l+1)
+            cbb_est[l] = (np.abs(almB[i[0]])**2
+                          +2.*np.sum(np.abs(almB[i[1:]])**2))/(2*l+1)
             cte_est[l] = (almT[i[0]]*almE[i[0]].conj()
-                          +2.*npy.sum(almT[i[1:]]*almE[i[1:]].conj()))/(2*l+1)
+                          +2.*np.sum(almT[i[1:]]*almE[i[1:]].conj()))/(2*l+1)
             ctb_est[l] = (almT[i[0]]*almB[i[0]].conj()
-                          +2.*npy.sum(almT[i[1:]]*almB[i[1:]].conj()))/(2*l+1)
+                          +2.*np.sum(almT[i[1:]]*almB[i[1:]].conj()))/(2*l+1)
             ceb_est[l] = (almE[i[0]]*almB[i[0]].conj()
-                          +2.*npy.sum(almE[i[1:]]*almB[i[1:]].conj()))/(2*l+1)
+                          +2.*np.sum(almE[i[1:]]*almB[i[1:]].conj()))/(2*l+1)
         return (ctt_est,cee_est,cbb_est,cte_est,ctb_est,ceb_est)[:nspec]
         
     
@@ -469,7 +469,7 @@ def almxfl(alm,fl,mmax=-1,inplace=False):
         raise TypeError('Wrong alm size for the given mmax.')
     if mmax<0:
         mmax=lmax
-    fl = npy.array(fl)
+    fl = np.array(fl)
     if inplace:
         almout = alm
     else:
@@ -479,7 +479,7 @@ def almxfl(alm,fl,mmax=-1,inplace=False):
             a=fl[l]
         else:
             a=0
-        i=Alm.getidx(lmax,l,npy.arange(min(mmax,l)+1))
+        i=Alm.getidx(lmax,l,np.arange(min(mmax,l)+1))
         almout[i] *= a
     return almout
 
@@ -510,15 +510,15 @@ def smoothalm(alm,fwhm=0.0,sigma=None,degree=False,
     None
     """
     if sigma is None:
-        sigma = fwhm / (2.*npy.sqrt(2.*npy.log(2.)))
+        sigma = fwhm / (2.*np.sqrt(2.*np.log(2.)))
     if degree:
         sigma *= (pi/180.)
     elif arcmin:
         sigma *= (pi/180./60.)
     if verbose:
         print "Sigma is %f arcmin (%f rad) " %  (sigma*60*180/pi,sigma)
-        print "-> fwhm is %f arcmin" % (sigma*60*180/pi*(2.*npy.sqrt(2.*npy.log(2.))))
-    if type(alm[0]) == npy.ndarray:
+        print "-> fwhm is %f arcmin" % (sigma*60*180/pi*(2.*np.sqrt(2.*np.log(2.))))
+    if type(alm[0]) == np.ndarray:
         if len(alm) != 3:
             raise ValueError("alm must be en array or a sequence of 3 arrays")
         retval = []
@@ -529,8 +529,8 @@ def smoothalm(alm,fwhm=0.0,sigma=None,degree=False,
                                 'mmax (alms[%d]).'%(a.size))
             if mmax<0:
                 mmax=lmax
-            ell = npy.arange(lmax+1)
-            fact = npy.exp(-0.5*ell*(ell+1)*sigma**2)
+            ell = np.arange(lmax+1)
+            fact = np.exp(-0.5*ell*(ell+1)*sigma**2)
             almxfl(a,fact,mmax,inplace=True)
         return None
     else:
@@ -540,8 +540,8 @@ def smoothalm(alm,fwhm=0.0,sigma=None,degree=False,
                             'mmax (alms[%d]).'%(a.size))
         if mmax<0:
             mmax=lmax
-        ell = npy.arange(lmax+1)
-        fact = npy.exp(-0.5*ell*(ell+1)*sigma**2)
+        ell = np.arange(lmax+1)
+        fact = np.exp(-0.5*ell*(ell+1)*sigma**2)
         almxfl(alm,fact,mmax,inplace=True)
         return None
 
@@ -570,14 +570,14 @@ def smoothing(m,fwhm=0.0,sigma=None,degree=False,
     map_smo : array or tuple of 3 arrays
       The smoothed map(s)
     """
-    if type(m[0]) is npy.ndarray:
+    if type(m[0]) is np.ndarray:
         if len(m) != 3:
             raise TypeError("map must be en array or a list of 3 arrays")
         nside = pixelfunc.npix2nside(m[0].size)
         if (pixelfunc.npix2nside(m[1].size) != nside
             or pixelfunc.npix2nside(m[2].size) != nside):
             raise TypeError("all maps in the array must have identical nside")
-    elif type(m) == npy.ndarray:
+    elif type(m) == np.ndarray:
         nside=pixelfunc.npix2nside(m.size)
     else:
         raise TypeError("map must be en array or a list of 3 arrays")

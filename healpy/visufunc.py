@@ -52,13 +52,13 @@ __all__ = ['mollview', 'gnomview', 'cartview',
 
 import projaxes as PA
 import pylab
-import numpy as npy
+import numpy as np
 import matplotlib
 import matplotlib.colors as colors
 import matplotlib.cbook as cbook
 import pixelfunc
 
-pi = npy.pi
+pi = np.pi
 dtor = pi/180.
 
 def mollview(map=None,fig=None,rot=None,coord=None,unit='',
@@ -143,7 +143,7 @@ def mollview(map=None,fig=None,rot=None,coord=None,unit='',
         extent = (0.02,0.05,0.96,0.9)
     elif hold:
         f=pylab.gcf()
-        left,bottom,right,top = npy.array(f.gca().get_position()).ravel()
+        left,bottom,right,top = np.array(f.gca().get_position()).ravel()
         extent = (left,bottom,right-left,top-bottom)
         f.delaxes(f.gca())
     else: # using subplot syntax
@@ -175,7 +175,7 @@ def mollview(map=None,fig=None,rot=None,coord=None,unit='',
     pylab.ioff()
     try:
         if map is None:
-            map = npy.zeros(12)+npy.inf
+            map = np.zeros(12)+np.inf
             cbar=False
         ax=PA.HpxMollweideAxes(f,extent,coord=coord,rot=rot,
                                format=format2,flipconv=flip)
@@ -191,8 +191,8 @@ def mollview(map=None,fig=None,rot=None,coord=None,unit='',
                    cmap=cmap,norm=norm)
         if cbar:
             im = ax.get_images()[0]
-            b = im.norm.inverse(npy.linspace(0,1,im.cmap.N+1))
-            v = npy.linspace(im.norm.vmin,im.norm.vmax,im.cmap.N)
+            b = im.norm.inverse(np.linspace(0,1,im.cmap.N+1))
+            v = np.linspace(im.norm.vmin,im.norm.vmax,im.cmap.N)
             if matplotlib.__version__ >= '0.91.0':
                 cb=f.colorbar(im,ax=ax,
                               orientation='horizontal',
@@ -302,7 +302,7 @@ def gnomview(map=None,fig=None,rot=None,coord=None,unit='',
         extent = (0.0,0.0,1.0,1.0)
     elif hold:
         f=pylab.gcf()
-        left,bottom,right,top = npy.array(pylab.gca().get_position()).ravel()
+        left,bottom,right,top = np.array(pylab.gca().get_position()).ravel()
         if not margins:
             margins = (0.0,0.0,0.0,0.0)
         extent = (left,bottom,right-left,top-bottom)
@@ -335,7 +335,7 @@ def gnomview(map=None,fig=None,rot=None,coord=None,unit='',
     pylab.ioff()
     try:
         if map is None:
-            map = npy.zeros(12)+npy.inf
+            map = np.zeros(12)+np.inf
             cbar=False
         ax=PA.HpxGnomonicAxes(f,extent,coord=coord,rot=rot,
                               format=format,flipconv=flip)
@@ -348,8 +348,8 @@ def gnomview(map=None,fig=None,rot=None,coord=None,unit='',
                    xsize=xsize,ysize=ysize,reso=reso,cmap=cmap,norm=norm)
         if cbar:
             im = ax.get_images()[0]
-            b = im.norm.inverse(npy.linspace(0,1,im.cmap.N+1))
-            v = npy.linspace(im.norm.vmin,im.norm.vmax,im.cmap.N)
+            b = im.norm.inverse(np.linspace(0,1,im.cmap.N+1))
+            v = np.linspace(im.norm.vmin,im.norm.vmax,im.cmap.N)
             if matplotlib.__version__ >= '0.91.0':
                 cb=f.colorbar(im,ax=ax,
                               orientation='horizontal',
@@ -371,7 +371,7 @@ def gnomview(map=None,fig=None,rot=None,coord=None,unit='',
                      transform=ax.transAxes,rotation=90)
             ax.text(-0.07,0.6,ax.proj.coordsysstr,fontsize=14,
                      fontweight='bold',rotation=90,transform=ax.transAxes)
-            lon,lat = npy.around(ax.proj.get_center(lonlat=True),ax._coordprec)
+            lon,lat = np.around(ax.proj.get_center(lonlat=True),ax._coordprec)
             ax.text(0.5,-0.03,'(%g,%g)'%(lon,lat),
                     verticalalignment='center', horizontalalignment='center',
                     transform=ax.transAxes)
@@ -471,7 +471,7 @@ def cartview(map=None,fig=None,rot=None,zat=None,coord=None,unit='',
         extent = (0.0,0.0,1.0,1.0)
     elif hold:
         f=pylab.gcf()
-        left,bottom,right,top = npy.array(pylab.gca().get_position()).ravel()
+        left,bottom,right,top = np.array(pylab.gca().get_position()).ravel()
         if not margins:
             margins = (0.0,0.0,0.0,0.0)
         extent = (left,bottom,right-left,top-bottom)
@@ -504,12 +504,12 @@ def cartview(map=None,fig=None,rot=None,zat=None,coord=None,unit='',
     pylab.ioff()
     try:
         if map is None:
-            map = npy.zeros(12)+npy.inf
+            map = np.zeros(12)+np.inf
             cbar=False
         if zat and rot:
             raise ValueError('Only give rot or zat, not both')
         if zat:
-            rot = npy.array(zat,dtype=npy.float64)
+            rot = np.array(zat,dtype=np.float64)
             rot.resize(3)
             rot[1] -= 90
         ax=PA.HpxCartesianAxes(f,extent,coord=coord,rot=rot,
@@ -524,8 +524,8 @@ def cartview(map=None,fig=None,rot=None,zat=None,coord=None,unit='',
                    cmap=cmap,norm=norm,aspect=aspect)
         if cbar:
             im = ax.get_images()[0]
-            b = im.norm.inverse(npy.linspace(0,1,im.cmap.N+1))
-            v = npy.linspace(im.norm.vmin,im.norm.vmax,im.cmap.N)
+            b = im.norm.inverse(np.linspace(0,1,im.cmap.N+1))
+            v = np.linspace(im.norm.vmin,im.norm.vmax,im.cmap.N)
             if matplotlib.__version__ >= '0.91.0':
                 cb=f.colorbar(im,ax=ax,
                               orientation='horizontal',

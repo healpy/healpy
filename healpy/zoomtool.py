@@ -21,14 +21,14 @@
 import projaxes as PA
 import rotator as R
 import pylab
-import numpy as npy
+import numpy as np
 import matplotlib
 import matplotlib.colors as colors
 import matplotlib.cbook as cbook
 from _healpy_pixel_lib import UNSEEN
 import pixelfunc
 
-pi = npy.pi
+pi = np.pi
 dtor = pi/180.
 
 def mollzoom(map=None,fig=None,rot=None,coord=None,unit='',
@@ -89,7 +89,7 @@ def mollzoom(map=None,fig=None,rot=None,coord=None,unit='',
     pylab.ioff()
     try:
         if map is None:
-            map = npy.zeros(12)+npy.inf
+            map = np.zeros(12)+np.inf
         ax=PA.HpxMollweideAxes(f,extent,coord=coord,rot=rot,
                                format=format,flipconv=flip)
         f.add_axes(ax)
@@ -103,8 +103,8 @@ def mollzoom(map=None,fig=None,rot=None,coord=None,unit='',
         ax.projmap(map,nest=nest,xsize=xsize,coord=coord,vmin=min,vmax=max,
                    cmap=cmap,norm=norm)
         im = ax.get_images()[0]
-        b = im.norm.inverse(npy.linspace(0,1,im.cmap.N+1))
-        v = npy.linspace(im.norm.vmin,im.norm.vmax,im.cmap.N)
+        b = im.norm.inverse(np.linspace(0,1,im.cmap.N+1))
+        v = np.linspace(im.norm.vmin,im.norm.vmax,im.cmap.N)
         if matplotlib.__version__ >= '0.91.0':
             cb=f.colorbar(ax.get_images()[0],ax=ax,
                           orientation='horizontal',
@@ -137,8 +137,8 @@ def mollzoom(map=None,fig=None,rot=None,coord=None,unit='',
         g_ax.projmap(map,nest=nest,coord=coord,vmin=min,vmax=max,
                    xsize=g_xsize,ysize=g_xsize,reso=g_reso,cmap=cmap,norm=norm)
         im = g_ax.get_images()[0]
-        b = im.norm.inverse(npy.linspace(0,1,im.cmap.N+1))
-        v = npy.linspace(im.norm.vmin,im.norm.vmax,im.cmap.N)
+        b = im.norm.inverse(np.linspace(0,1,im.cmap.N+1))
+        v = np.linspace(im.norm.vmin,im.norm.vmax,im.cmap.N)
         if matplotlib.__version__ >= '0.91.0':
             cb=f.colorbar(g_ax.get_images()[0],ax=g_ax,
                           orientation='horizontal',
@@ -157,7 +157,7 @@ def mollzoom(map=None,fig=None,rot=None,coord=None,unit='',
                    transform=g_ax.transAxes,rotation=90)
         g_ax.text(-0.07,0.8,g_ax.proj.coordsysstr,fontsize=14,
                    fontweight='bold',rotation=90,transform=g_ax.transAxes)
-        lon,lat = npy.around(g_ax.proj.get_center(lonlat=True),g_ax._coordprec)
+        lon,lat = np.around(g_ax.proj.get_center(lonlat=True),g_ax._coordprec)
         g_ax.text(0.5,-0.03,'on (%g,%g)'%(lon,lat),
                   verticalalignment='center', horizontalalignment='center',
                   transform=g_ax.transAxes)
@@ -259,7 +259,7 @@ class ZoomTool(object):
         try:
             ax = ev.inaxes
             lon,lat = ax.get_lonlat(ev.xdata,ev.ydata)
-            if npy.isnan(lon) or npy.isnan(lat):
+            if np.isnan(lon) or np.isnan(lat):
                 raise ValueError('invalid position')
             val = ax.get_value(ev.xdata,ev.ydata)
             self.lastval = val
@@ -311,20 +311,20 @@ class ZoomTool(object):
             a = self._grat_ax
             t = a.transAxes
             a.text(0.1, 0.8,  'moll. grat.:',transform=t,weight='bold')
-            vdeg = npy.floor(npy.around(self._m_dpar/dtor,10))
+            vdeg = np.floor(np.around(self._m_dpar/dtor,10))
             varcmin = (self._m_dpar/dtor-vdeg)*60.
             a.text(0.1, 0.65, "   -par: %d d %.2f '"%(vdeg,varcmin),
                    transform=t)
-            vdeg = npy.floor(npy.around(self._m_dmer/dtor,10))
+            vdeg = np.floor(np.around(self._m_dmer/dtor,10))
             varcmin = (self._m_dmer/dtor-vdeg)*60.
             a.text(0.1, 0.5,  "   -mer: %d d %.2f '"%(vdeg,varcmin),
                    transform=t)
             a.text(0.1, 0.35,  'gnom. grat.:',transform=t,weight='bold')
-            vdeg = npy.floor(npy.around(self._g_dpar/dtor,10))
+            vdeg = np.floor(np.around(self._g_dpar/dtor,10))
             varcmin = (self._g_dpar/dtor-vdeg)*60.
             a.text(0.1, 0.2,  "   -par: %d d %.2f '"%(vdeg,varcmin),
                    transform=t)
-            vdeg = npy.floor(npy.around(self._g_dmer/dtor,10))
+            vdeg = np.floor(np.around(self._g_dmer/dtor,10))
             varcmin = (self._g_dmer/dtor-vdeg)*60.
             a.text(0.1, 0.05, "   -mer: %d d %.2f '"%(vdeg,varcmin),
                    transform=t)
@@ -426,7 +426,7 @@ class ZoomTool(object):
             else:
                 cb=self.f.colorbar(im,cax=self._gnom_cb_ax,
                                    orientation='horizontal',ticks=PA.BoundaryLocator())
-            lon,lat = npy.around(self._gnom_ax.proj.get_center(lonlat=True),
+            lon,lat = np.around(self._gnom_ax.proj.get_center(lonlat=True),
                                  self._gnom_ax._coordprec)
             self._text_loc.set_text('on (%g,%g)'%(lon,lat))
             reso = self._gnom_ax.proj.arrayinfo['reso']

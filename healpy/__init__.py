@@ -31,10 +31,6 @@ except NameError:
 
 from version import __version__
 
-#import numpy as npy
-#np = npy
-#nm = npy
-
 from pixelfunc import (ma, mask_good, mask_bad,
                        ang2pix, pix2ang,
                        pix2vec, vec2pix,

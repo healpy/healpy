@@ -82,7 +82,7 @@ Map data manipulation
   at given angular coordinates, using 4 nearest neighbours
 """
 
-import numpy as npy
+import numpy as np
 import exceptions
 import warnings
 import _healpy_pixel_lib as pixlib
@@ -126,16 +126,16 @@ def mask_bad(m, badval = UNSEEN, rtol = 1.e-5, atol = 1.e-8):
 
     Examples
     --------
-    >>> import healpy as hpy
-    >>> m = npy.arange(12.)
-    >>> m[3] = hpy.UNSEEN
-    >>> hpy.mask_bad(m)
+    >>> import healpy as hp
+    >>> m = np.arange(12.)
+    >>> m[3] = hp.UNSEEN
+    >>> hp.mask_bad(m)
     array([False, False, False,  True, False, False, False, False, False,
            False, False, False], dtype=bool)
     """
-    atol = npy.absolute(atol)
-    rtol = npy.absolute(rtol)
-    return npy.absolute(m - badval) <= atol + rtol * npy.absolute(badval)
+    atol = np.absolute(atol)
+    rtol = np.absolute(rtol)
+    return np.absolute(m - badval) <= atol + rtol * np.absolute(badval)
 
 def mask_good(m, badval = UNSEEN, rtol = 1.e-5, atol = 1.e-8):
     """Returns a bool array with ``False`` where m is close to badval.
@@ -161,16 +161,16 @@ def mask_good(m, badval = UNSEEN, rtol = 1.e-5, atol = 1.e-8):
 
     Examples
     --------
-    >>> import healpy as hpy
-    >>> m = npy.arange(12.)
-    >>> m[3] = hpy.UNSEEN
-    >>> hpy.mask_good(m)
+    >>> import healpy as hp
+    >>> m = np.arange(12.)
+    >>> m[3] = hp.UNSEEN
+    >>> hp.mask_good(m)
     array([ True,  True,  True, False,  True,  True,  True,  True,  True,
             True,  True,  True], dtype=bool)
     """
-    atol = npy.absolute(atol)
-    rtol = npy.absolute(rtol)
-    return npy.absolute(m - badval) > atol + rtol * npy.absolute(badval)
+    atol = np.absolute(atol)
+    rtol = np.absolute(rtol)
+    return np.absolute(m - badval) > atol + rtol * np.absolute(badval)
 
 def ma(m, badval = UNSEEN, rtol = 1e-5, atol = 1e-8, copy = True):
     """Return map as a masked array, with ``badval`` pixels masked.
@@ -198,16 +198,16 @@ def ma(m, badval = UNSEEN, rtol = 1e-5, atol = 1e-8, copy = True):
 
     Examples
     --------
-    >>> import healpy as hpy
-    >>> m = npy.arange(12.)
-    >>> m[3] = hpy.UNSEEN
-    >>> hpy.ma(m)
+    >>> import healpy as hp
+    >>> m = np.arange(12.)
+    >>> m[3] = hp.UNSEEN
+    >>> hp.ma(m)
     masked_array(data = [0.0 1.0 2.0 -- 4.0 5.0 6.0 7.0 8.0 9.0 10.0 11.0],
                  mask = [False False False  True False False False False False False False False],
            fill_value = -1.6375e+30)
     <BLANKLINE>
     """
-    return npy.ma.masked_values(m, badval, rtol = rtol, atol = atol, copy = copy)
+    return np.ma.masked_values(m, badval, rtol = rtol, atol = atol, copy = copy)
 
 def ang2pix(nside,theta,phi,nest=False):
     """ang2pix : nside,theta[rad],phi[rad],nest=False -> ipix (default:RING)
@@ -233,17 +233,17 @@ def ang2pix(nside,theta,phi,nest=False):
 
     Examples
     --------
-    >>> import healpy as hpy
-    >>> hpy.ang2pix(16, npy.pi/2, 0)
+    >>> import healpy as hp
+    >>> hp.ang2pix(16, np.pi/2, 0)
     1440
 
-    >>> hpy.ang2pix(16, [npy.pi/2, npy.pi/4, npy.pi/2, 0, npy.pi], [0., npy.pi/4, npy.pi/2, 0, 0])
+    >>> hp.ang2pix(16, [np.pi/2, np.pi/4, np.pi/2, 0, np.pi], [0., np.pi/4, np.pi/2, 0, 0])
     array([1440,  427, 1520,    0, 3068])
 
-    >>> hpy.ang2pix(16, npy.pi/2, [0, npy.pi/2])
+    >>> hp.ang2pix(16, np.pi/2, [0, np.pi/2])
     array([1440, 1520])
 
-    >>> hpy.ang2pix([1, 2, 4, 8, 16], npy.pi/2, 0)
+    >>> hp.ang2pix([1, 2, 4, 8, 16], np.pi/2, 0)
     array([   4,   12,   72,  336, 1440])
     """
     if nest:
@@ -275,14 +275,14 @@ def pix2ang(nside,ipix,nest=False):
 
     Examples
     --------
-    >>> import healpy as hpy
-    >>> hpy.pix2ang(16, 1440)
+    >>> import healpy as hp
+    >>> hp.pix2ang(16, 1440)
     (1.5291175943723188, 0.0)
 
-    >>> hpy.pix2ang(16, [1440,  427, 1520,    0, 3068])
+    >>> hp.pix2ang(16, [1440,  427, 1520,    0, 3068])
     (array([ 1.52911759,  0.78550497,  1.57079633,  0.05103658,  3.09055608]), array([ 0.        ,  0.78539816,  1.61988371,  0.78539816,  0.78539816]))
 
-    >>> hpy.pix2ang([1, 2, 4, 8], 11)
+    >>> hp.pix2ang([1, 2, 4, 8], 11)
     (array([ 2.30052398,  0.84106867,  0.41113786,  0.2044802 ]), array([ 5.49778714,  5.89048623,  5.89048623,  5.89048623]))
     """
     if nest:
@@ -314,14 +314,14 @@ def vec2pix(nside,x,y,z,nest=False):
 
     Examples
     --------
-    >>> import healpy as hpy
-    >>> hpy.vec2pix(16, 1, 0, 0)
+    >>> import healpy as hp
+    >>> hp.vec2pix(16, 1, 0, 0)
     1504
 
-    >>> hpy.vec2pix(16, [1, 0], [0, 1], [0, 0])
+    >>> hp.vec2pix(16, [1, 0], [0, 1], [0, 0])
     array([1504, 1520])
 
-    >>> hpy.vec2pix([1, 2, 4, 8], 1, 0, 0)
+    >>> hp.vec2pix([1, 2, 4, 8], 1, 0, 0)
     array([  4,  20,  88, 368])
     """
     if nest:
@@ -353,14 +353,14 @@ def pix2vec(nside,ipix,nest=False):
 
     Examples
     --------
-    >>> import healpy as hpy
-    >>> hpy.pix2vec(16, 1504)
+    >>> import healpy as hp
+    >>> hp.pix2vec(16, 1504)
     (0.99879545620517241, 0.049067674327418015, 0.0)
 
-    >>> hpy.pix2vec(16, [1440,  427])
+    >>> hp.pix2vec(16, [1440,  427])
     (array([ 0.99913157,  0.5000534 ]), array([ 0.       ,  0.5000534]), array([ 0.04166667,  0.70703125]))
 
-    >>> hpy.pix2vec([1, 2], 11)
+    >>> hp.pix2vec([1, 2], 11)
     (array([ 0.52704628,  0.68861915]), array([-0.52704628, -0.28523539]), array([-0.66666667,  0.66666667]))
     """
     if nest:
@@ -388,12 +388,12 @@ def ang2vec(theta, phi):
     --------
     vec2ang, rotator.dir2vec, rotator.vec2dir
     """
-    if npy.any(theta < 0) or npy.any(theta > npy.pi):
+    if np.any(theta < 0) or np.any(theta > np.pi):
         raise exceptions.ValueError('THETA is out of range [0,pi]')
-    sintheta = npy.sin(theta)
-    return npy.array([sintheta*npy.cos(phi),
-                      sintheta*npy.sin(phi),
-                      npy.cos(theta)]).T
+    sintheta = np.sin(theta)
+    return np.array([sintheta*np.cos(phi),
+                      sintheta*np.sin(phi),
+                      np.cos(theta)]).T
 
 def vec2ang(vectors):
     """vec2ang: vectors [x, y, z] -> theta[rad], phi[rad]
@@ -413,10 +413,10 @@ def vec2ang(vectors):
     ang2vec, rotator.vec2dir, rotator.dir2vec
     """
     vectors = vectors.reshape(-1,3)
-    dnorm = npy.sqrt(npy.sum(npy.square(vectors),axis=1))
-    theta = npy.arccos(vectors[:,2]/dnorm)
-    phi = npy.arctan2(vectors[:,1],vectors[:,0])
-    phi[phi < 0] += 2*npy.pi
+    dnorm = np.sqrt(np.sum(np.square(vectors),axis=1))
+    theta = np.arccos(vectors[:,2]/dnorm)
+    phi = np.arctan2(vectors[:,1],vectors[:,0])
+    phi[phi < 0] += 2*np.pi
     return theta, phi
 
 def ring2nest(nside, ipix):
@@ -440,14 +440,14 @@ def ring2nest(nside, ipix):
     
     Examples
     --------
-    >>> import healpy as hpy
-    >>> hpy.ring2nest(16, 1504)
+    >>> import healpy as hp
+    >>> hp.ring2nest(16, 1504)
     1130
 
-    >>> hpy.ring2nest(2, range(10))
+    >>> hp.ring2nest(2, range(10))
     array([ 3,  7, 11, 15,  2,  1,  6,  5, 10,  9])
     
-    >>> hpy.ring2nest([1, 2, 4, 8], 11)
+    >>> hp.ring2nest([1, 2, 4, 8], 11)
     array([ 11,  13,  61, 253])
     """
     return pixlib._ring2nest(nside, ipix)
@@ -473,14 +473,14 @@ def nest2ring(nside, ipix):
     
     Examples
     --------
-    >>> import healpy as hpy
-    >>> hpy.nest2ring(16, 1130)
+    >>> import healpy as hp
+    >>> hp.nest2ring(16, 1130)
     1504
 
-    >>> hpy.nest2ring(2, range(10))
+    >>> hp.nest2ring(2, range(10))
     array([13,  5,  4,  0, 15,  7,  6,  1, 17,  9])
     
-    >>> hpy.nest2ring([1, 2, 4, 8], 11)
+    >>> hp.nest2ring([1, 2, 4, 8], 11)
     array([ 11,   2,  12, 211])
     """
     return pixlib._nest2ring(nside, ipix)
@@ -514,12 +514,12 @@ def reorder(map_in, inp=None, out=None, r2n=None, n2r=None):
 
     Examples
     --------
-    >>> import healpy as hpy
-    >>> hpy.reorder(npy.arange(48), r2n = True)
+    >>> import healpy as hp
+    >>> hp.reorder(np.arange(48), r2n = True)
     array([13,  5,  4,  0, 15,  7,  6,  1, 17,  9,  8,  2, 19, 11, 10,  3, 28,
            20, 27, 12, 30, 22, 21, 14, 32, 24, 23, 16, 34, 26, 25, 18, 44, 37,
            36, 29, 45, 39, 38, 31, 46, 41, 40, 33, 47, 43, 42, 35])
-    >>> hpy.reorder(range(12), n2r = True)
+    >>> hp.reorder(range(12), n2r = True)
     array([ 0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11])
     """
     typ = maptype(map_in)
@@ -553,20 +553,20 @@ def reorder(map_in, inp=None, out=None, r2n=None, n2r=None):
         if inp == out:
             mapout.append(m_in)
         elif inp == 'RING':
-            m_out = npy.zeros(npix,dtype=type(m_in[0]))
+            m_out = np.zeros(npix,dtype=type(m_in[0]))
             for ibunch in range(npix/bunchsize):
-                ipix_n = npy.arange(ibunch*bunchsize,
+                ipix_n = np.arange(ibunch*bunchsize,
                                     (ibunch+1)*bunchsize)
                 ipix_r = nest2ring(nside, ipix_n)
-                m_out[ipix_n] = npy.asarray(m_in)[ipix_r]
+                m_out[ipix_n] = np.asarray(m_in)[ipix_r]
             mapout.append(m_out)
         elif inp == 'NEST':
-            m_out = npy.zeros(npix,dtype=type(m_in[0]))
+            m_out = np.zeros(npix,dtype=type(m_in[0]))
             for ibunch in range(npix/bunchsize):
-                ipix_r = npy.arange(ibunch*bunchsize,
+                ipix_r = np.arange(ibunch*bunchsize,
                                     (ibunch+1)*bunchsize)
                 ipix_n = ring2nest(nside, ipix_r)
-                m_out[ipix_r] = npy.asarray(m_in)[ipix_n]
+                m_out[ipix_r] = np.asarray(m_in)[ipix_n]
             mapout.append(m_out)
     if typ == 0:
         return mapout[0]
@@ -593,14 +593,14 @@ def nside2npix(nside):
 
     Examples
     --------
-    >>> import healpy as hpy
-    >>> hpy.nside2npix(8)
+    >>> import healpy as hp
+    >>> hp.nside2npix(8)
     768
 
-    >>> npy.all([hpy.nside2npix(nside) == 12 * nside**2 for nside in [2**n for n in range(12)]])
+    >>> np.all([hp.nside2npix(nside) == 12 * nside**2 for nside in [2**n for n in range(12)]])
     True
 
-    >>> hpy.nside2npix(7)
+    >>> hp.nside2npix(7)
     Traceback (most recent call last):
        ...
     ValueError: Given number is not a valid nside parameter (must be a power of 2)
@@ -634,14 +634,14 @@ def nside2resol(nside, arcmin=False):
 
     Examples
     --------
-    >>> import healpy as hpy
-    >>> hpy.nside2resol(128, arcmin = True)
+    >>> import healpy as hp
+    >>> hp.nside2resol(128, arcmin = True)
     27.483891294539248
 
-    >>> hpy.nside2resol(256)
+    >>> hp.nside2resol(256)
     0.0039973699529159707
 
-    >>> hpy.nside2resol(7)
+    >>> hp.nside2resol(7)
     Traceback (most recent call last):
        ...
     ValueError: Given number is not a valid nside parameter (must be a power of 2)
@@ -650,10 +650,10 @@ def nside2resol(nside, arcmin=False):
         raise ValueError("Given number is not a valid nside parameter "
                          "(must be a power of 2)")
     
-    resol = npy.sqrt(nside2pixarea(nside))
+    resol = np.sqrt(nside2pixarea(nside))
 
     if arcmin:
-        resol = npy.rad2deg(resol) * 60
+        resol = np.rad2deg(resol) * 60
         
     return resol
 
@@ -679,14 +679,14 @@ def nside2pixarea(nside, degrees=False):
 
     Examples
     --------
-    >>> import healpy as hpy
-    >>> hpy.nside2pixarea(128, degrees = True)
+    >>> import healpy as hp
+    >>> hp.nside2pixarea(128, degrees = True)
     0.2098234113027917
 
-    >>> hpy.nside2pixarea(256)
+    >>> hp.nside2pixarea(256)
     1.5978966540475428e-05
 
-    >>> hpy.nside2pixarea(7)
+    >>> hp.nside2pixarea(7)
     Traceback (most recent call last):
        ...
     ValueError: Given number is not a valid nside parameter (must be a power of 2)
@@ -695,10 +695,10 @@ def nside2pixarea(nside, degrees=False):
         raise ValueError("Given number is not a valid nside parameter "
                          "(must be a power of 2)")
     
-    pixarea = 4*npy.pi/nside2npix(nside)
+    pixarea = 4*np.pi/nside2npix(nside)
 
     if degrees:
-        pixarea = npy.rad2deg(npy.rad2deg(pixarea))
+        pixarea = np.rad2deg(np.rad2deg(pixarea))
         
     return pixarea
 
@@ -722,22 +722,22 @@ def npix2nside(npix):
 
     Examples
     --------
-    >>> import healpy as hpy
-    >>> hpy.npix2nside(768)
+    >>> import healpy as hp
+    >>> hp.npix2nside(768)
     8
 
-    >>> npy.all([hpy.npix2nside(12 * nside**2) == nside for nside in [2**n for n in range(12)]])
+    >>> np.all([hp.npix2nside(12 * nside**2) == nside for nside in [2**n for n in range(12)]])
     True
 
-    >>> hpy.npix2nside(1000)
+    >>> hp.npix2nside(1000)
     Traceback (most recent call last):
         ...
     ValueError: Wrong pixel number (it is not 12*nside**2)
     """
-    nside = npy.sqrt(npix/12.)
-    if nside != npy.floor(nside):
+    nside = np.sqrt(npix/12.)
+    if nside != np.floor(nside):
         raise ValueError("Wrong pixel number (it is not 12*nside**2)")
-    nside=int(npy.floor(nside))
+    nside=int(np.floor(nside))
     if not isnsideok(nside):
         raise ValueError("Wrong nside value (it is not 2**N)")
     return nside
@@ -757,22 +757,22 @@ def isnsideok(nside):
 
     Examples
     --------
-    >>> import healpy as hpy
-    >>> hpy.isnsideok(13)
+    >>> import healpy as hp
+    >>> hp.isnsideok(13)
     False
     
-    >>> hpy.isnsideok(32)
+    >>> hp.isnsideok(32)
     True
 
-    >>> hpy.isnsideok([1, 2, 3, 4, 8, 16])
+    >>> hp.isnsideok([1, 2, 3, 4, 8, 16])
     array([ True,  True, False,  True,  True,  True], dtype=bool)
     """
     if hasattr(nside, '__len__'):
-        return nside == 2**npy.int32(npy.around(npy.ma.log2(nside).filled(0)))
+        return nside == 2**np.int32(np.around(np.ma.log2(nside).filled(0)))
     elif nside <= 0:
         return False
     else:
-        return nside == 2**int(round(npy.log2(nside)))
+        return nside == 2**int(round(np.log2(nside)))
 
 def isnpixok(npix):
     """Return :const:`True` if npix is a valid value for healpix map size, :const:`False` otherwise.
@@ -789,21 +789,21 @@ def isnpixok(npix):
 
     Examples
     --------
-    >>> import healpy as hpy
-    >>> hpy.isnpixok(12)
+    >>> import healpy as hp
+    >>> hp.isnpixok(12)
     True
     
-    >>> hpy.isnpixok(768)
+    >>> hp.isnpixok(768)
     True
 
-    >>> hpy.isnpixok([12, 768, 1002])
+    >>> hp.isnpixok([12, 768, 1002])
     array([ True,  True, False], dtype=bool)
     """
     if hasattr(npix,'__len__'):
-        nside = npy.sqrt(npy.asarray(npix)/12.)
+        nside = np.sqrt(np.asarray(npix)/12.)
         return isnsideok(nside)
     else:
-        nside = npy.sqrt(npix/12.)
+        nside = np.sqrt(npix/12.)
         return isnsideok(nside)
 
 def get_interp_val(m,theta,phi,nest=False):
@@ -829,10 +829,10 @@ def get_interp_val(m,theta,phi,nest=False):
 
     Examples
     --------
-    >>> import healpy as hpy
-    >>> hpy.get_interp_val(npy.arange(12.), npy.pi/2, 0)
+    >>> import healpy as hp
+    >>> hp.get_interp_val(np.arange(12.), np.pi/2, 0)
     4.0
-    >>> hpy.get_interp_val(npy.arange(12.), npy.linspace(0, npy.pi, 10), 0)
+    >>> hp.get_interp_val(np.arange(12.), np.linspace(0, np.pi, 10), 0)
     array([ 1.5       ,  1.5       ,  1.5       ,  2.20618428,  3.40206143,
             5.31546486,  7.94639458,  9.5       ,  9.5       ,  9.5       ])
     """
@@ -842,10 +842,10 @@ def get_interp_val(m,theta,phi,nest=False):
         r=pixlib._get_interpol_nest(nside,theta,phi)
     else:
         r=pixlib._get_interpol_ring(nside,theta,phi)
-    p=npy.array(r[0:4])
-    w=npy.array(r[4:8])
+    p=np.array(r[0:4])
+    w=np.array(r[4:8])
     del r
-    return npy.sum(m2[p]*w,0)
+    return np.sum(m2[p]*w,0)
 
 def get_neighbours(nside,theta,phi=None,nest=False):
     """Return the 4 nearest pixels and corresponding weights.
@@ -872,14 +872,14 @@ def get_neighbours(nside,theta,phi=None,nest=False):
 
     Examples
     --------
-    >>> import healpy as hpy
-    >>> hpy.get_neighbours(1, 0)
+    >>> import healpy as hp
+    >>> hp.get_neighbours(1, 0)
     (array([0, 1, 4, 5]), array([ 1.,  0.,  0.,  0.]))
 
-    >>> hpy.get_neighbours(1, 0, 0)
+    >>> hp.get_neighbours(1, 0, 0)
     (array([1, 2, 3, 0]), array([ 0.25,  0.25,  0.25,  0.25]))
 
-    >>> hpy.get_neighbours(1, [0, npy.pi/2], 0)
+    >>> hp.get_neighbours(1, [0, np.pi/2], 0)
     (array([[ 1,  4],
            [ 2,  5],
            [ 3, 11],
@@ -896,8 +896,8 @@ def get_neighbours(nside,theta,phi=None,nest=False):
         r=pixlib._get_interpol_nest(nside,theta,phi)
     else:
         r=pixlib._get_interpol_ring(nside,theta,phi)
-    p=npy.array(r[0:4])
-    w=npy.array(r[4:8])
+    p=np.array(r[0:4])
+    w=np.array(r[4:8])
     return (p,w)
 
 def get_all_neighbours(nside, theta, phi=None, nest=False):
@@ -927,11 +927,11 @@ def get_all_neighbours(nside, theta, phi=None, nest=False):
 
     Examples
     --------
-    >>> import healpy as hpy
-    >>> hpy.get_all_neighbours(1, 4)
+    >>> import healpy as hp
+    >>> hp.get_all_neighbours(1, 4)
     array([11,  7,  3, -1,  0,  5,  8, -1])
 
-    >>> hpy.get_all_neighbours(1, npy.pi/2, npy.pi/2)
+    >>> hp.get_all_neighbours(1, np.pi/2, np.pi/2)
     array([ 8,  4,  0, -1,  1,  6,  9, -1])
     """
     if not isnsideok(nside):
@@ -942,7 +942,7 @@ def get_all_neighbours(nside, theta, phi=None, nest=False):
         r=pixlib._get_neighbors_nest(nside,theta)
     else:
         r=pixlib._get_neighbors_ring(nside,theta)
-    res=npy.array(r[0:8])
+    res=np.array(r[0:8])
     return res
 
 def fit_dipole(m, nest=False, bad=UNSEEN, gal_cut=0):
@@ -968,22 +968,22 @@ def fit_dipole(m, nest=False, bad=UNSEEN, gal_cut=0):
     --------
     remove_dipole, fit_monopole, remove_monopole
     """
-    m=npy.asarray(m)
+    m=np.asarray(m)
     npix = m.size
     nside = npix2nside(npix)
     if nside>128:
         bunchsize = npix/24
     else:
         bunchsize = npix
-    aa = npy.zeros((4,4),dtype=npy.float64)
-    v = npy.zeros(4,dtype=npy.float64)
+    aa = np.zeros((4,4),dtype=np.float64)
+    v = np.zeros(4,dtype=np.float64)
     for ibunch in range(npix/bunchsize):
-        ipix = npy.arange(ibunch*bunchsize,
+        ipix = np.arange(ibunch*bunchsize,
                           (ibunch+1)*bunchsize)
-        ipix = ipix[(m.flat[ipix]!=bad) & (npy.isfinite(m.flat[ipix]))]
+        ipix = ipix[(m.flat[ipix]!=bad) & (np.isfinite(m.flat[ipix]))]
         x,y,z = pix2vec(nside, ipix, nest)
         if gal_cut>0:
-            w = (npy.abs(z)>=npy.sin(gal_cut*npy.pi/180))
+            w = (np.abs(z)>=np.sin(gal_cut*np.pi/180))
             ipix=ipix[w]
             x=x[w]
             y=y[w]
@@ -1009,7 +1009,7 @@ def fit_dipole(m, nest=False, bad=UNSEEN, gal_cut=0):
     aa[1,2] = aa[2,1]
     aa[1,3] = aa[3,1]
     aa[2,3] = aa[3,2]
-    res = npy.dot(npy.linalg.inv(aa),v)
+    res = np.dot(np.linalg.inv(aa),v)
     mono = res[0]
     dipole = res[1:4]
     return mono,dipole
@@ -1046,7 +1046,7 @@ def remove_dipole(m,nest=False,bad=UNSEEN,gal_cut=0,fitval=False,
     --------
     fit_dipole, fit_monopole, remove_monopole
     """
-    m=npy.array(m,copy=copy)
+    m=np.array(m,copy=copy)
     npix = m.size
     nside = npix2nside(npix)
     if nside>128:
@@ -1055,9 +1055,9 @@ def remove_dipole(m,nest=False,bad=UNSEEN,gal_cut=0,fitval=False,
         bunchsize = npix
     mono,dipole = fit_dipole(m,nest=nest,bad=bad,gal_cut=gal_cut)
     for ibunch in range(npix/bunchsize):
-        ipix = npy.arange(ibunch*bunchsize,
+        ipix = np.arange(ibunch*bunchsize,
                           (ibunch+1)*bunchsize)
-        ipix = ipix[(m.flat[ipix]!=bad) & (npy.isfinite(m.flat[ipix]))]
+        ipix = ipix[(m.flat[ipix]!=bad) & (np.isfinite(m.flat[ipix]))]
         x,y,z = pix2vec(nside, ipix, nest)
         m.flat[ipix] -= (dipole[0]*x)
         m.flat[ipix] -= dipole[1]*y
@@ -1066,7 +1066,7 @@ def remove_dipole(m,nest=False,bad=UNSEEN,gal_cut=0,fitval=False,
     if verbose:
         import rotator as R
         lon,lat = R.vec2dir(dipole,lonlat=True)
-        amp = npy.sqrt((dipole**2).sum())
+        amp = np.sqrt((dipole**2).sum())
         print 'monopole: %g  dipole: lon: %g, lat: %g, amp: %g'%(mono,
                                                                  lon,
                                                                  lat,
@@ -1099,7 +1099,7 @@ def fit_monopole(m,nest=False,bad=pixlib.UNSEEN,gal_cut=0):
     --------
     fit_dipole, remove_monopole, remove_monopole
     """
-    m=npy.asarray(m)
+    m=np.asarray(m)
     npix=m.size
     nside = npix2nside(npix)
     if nside>128:
@@ -1108,12 +1108,12 @@ def fit_monopole(m,nest=False,bad=pixlib.UNSEEN,gal_cut=0):
         bunchsize=npix
     aa = v = 0.0
     for ibunch in range(npix/bunchsize):
-        ipix = npy.arange(ibunch*bunchsize,
+        ipix = np.arange(ibunch*bunchsize,
                           (ibunch+1)*bunchsize)
-        ipix = ipix[(m.flat[ipix]!=bad) & (npy.isfinite(m.flat[ipix]))]
+        ipix = ipix[(m.flat[ipix]!=bad) & (np.isfinite(m.flat[ipix]))]
         x,y,z = pix2vec(nside, ipix, nest)
         if gal_cut>0:
-            w = (npy.abs(z)>=npy.sin(gal_cut*npy.pi/180))
+            w = (np.abs(z)>=np.sin(gal_cut*np.pi/180))
             ipix=ipix[w]
             x=x[w]
             y=y[w]
@@ -1155,7 +1155,7 @@ def remove_monopole(m,nest=False,bad=pixlib.UNSEEN,gal_cut=0,fitval=False,
     --------
     fit_dipole, fit_monopole, remove_dipole
     """
-    m=npy.array(m,copy=copy)
+    m=np.array(m,copy=copy)
     npix = m.size
     nside = npix2nside(npix)
     if nside>128:
@@ -1164,9 +1164,9 @@ def remove_monopole(m,nest=False,bad=pixlib.UNSEEN,gal_cut=0,fitval=False,
         bunchsize = npix
     mono = fit_monopole(m,nest=nest,bad=bad,gal_cut=gal_cut)
     for ibunch in range(npix/bunchsize):
-        ipix = npy.arange(ibunch*bunchsize,
+        ipix = np.arange(ibunch*bunchsize,
                           (ibunch+1)*bunchsize)
-        ipix = ipix[(m.flat[ipix]!=bad) & (npy.isfinite(m.flat[ipix]))]
+        ipix = ipix[(m.flat[ipix]!=bad) & (np.isfinite(m.flat[ipix]))]
         x,y,z = pix2vec(nside, ipix, nest)
         m.flat[ipix] -= mono
     if verbose:
@@ -1200,16 +1200,16 @@ def get_map_size(m):
 
      Examples
      --------
-    >>> import healpy as hpy
+    >>> import healpy as hp
      >>> m = {0: 1, 1: 1, 2: 1, 'nside': 1}
-     >>> print hpy.get_map_size(m)
+     >>> print hp.get_map_size(m)
      12
 
      >>> m = {0: 1, 767: 1}
-     >>> print hpy.get_map_size(m)
+     >>> print hp.get_map_size(m)
      768
 
-     >>> print hpy.get_map_size(npy.zeros(12 * 8 ** 2))
+     >>> print hp.get_map_size(np.zeros(12 * 8 ** 2))
      768
     """
     if isinstance(m, dict):
@@ -1241,14 +1241,14 @@ def get_min_valid_nside(npix):
 
     Examples
     --------
-    >>> import healpy as hpy
-    >>> hpy.pixelfunc.get_min_valid_nside(355)
+    >>> import healpy as hp
+    >>> hp.pixelfunc.get_min_valid_nside(355)
     8
-    >>> hpy.pixelfunc.get_min_valid_nside(768)
+    >>> hp.pixelfunc.get_min_valid_nside(768)
     8
     """
-    order = 0.5 * npy.log2(npix / 12.)
-    return 2**int(npy.ceil(order))
+    order = 0.5 * np.log2(npix / 12.)
+    return 2**int(np.ceil(order))
 
 def maptype(m):
     """Describe the type of the map (valid, single, sequence of maps).
@@ -1267,14 +1267,14 @@ def maptype(m):
 
     Examples
     --------
-    >>> import healpy as hpy
-    >>> hpy.pixelfunc.maptype(npy.arange(12))
+    >>> import healpy as hp
+    >>> hp.pixelfunc.maptype(np.arange(12))
     0
-    >>> hpy.pixelfunc.maptype(2)
+    >>> hp.pixelfunc.maptype(2)
     -1
-    >>> hpy.pixelfunc.maptype([npy.arange(12), npy.arange(12)])
+    >>> hp.pixelfunc.maptype([np.arange(12), np.arange(12)])
     2
-    >>> hpy.pixelfunc.maptype([npy.arange(12), npy.arange(768)])
+    >>> hp.pixelfunc.maptype([np.arange(12), np.arange(768)])
     -1
     """
     if not hasattr(m, '__len__'):
@@ -1351,8 +1351,8 @@ def ud_grade(map_in,nside_out,pess=False,order_in='RING',order_out=None,
 
     Examples
     --------
-    >>> import healpy as hpy
-    >>> hpy.ud_grade(npy.arange(48.), 1)
+    >>> import healpy as hp
+    >>> hp.ud_grade(np.arange(48.), 1)
     array([  5.5 ,   7.25,   9.  ,  10.75,  21.75,  21.75,  23.75,  25.75,
             36.5 ,  38.25,  40.  ,  41.75])
     """
@@ -1401,12 +1401,12 @@ def _ud_grade_core(m,nside_out,pess=False,power=None, dtype=None):
     
     if nside_out > nside_in:
         rat2 = npix_out/npix_in
-        fact = npy.ones(rat2, dtype=type_out)*ratio
-        map_out = npy.outer(m,fact).reshape(npix_out)
+        fact = np.ones(rat2, dtype=type_out)*ratio
+        map_out = np.outer(m,fact).reshape(npix_out)
     elif nside_out < nside_in:
         rat2 = npix_in/npix_out
-        bads = (mask_bad(m) | (~npy.isfinite(m)))
-        hit = npy.ones(npix_in,dtype=npy.int16)
+        bads = (mask_bad(m) | (~np.isfinite(m)))
+        hit = np.ones(npix_in,dtype=np.int16)
         hit[bads] = 0
         m[bads] = 0
         mr = m.reshape(npix_out,rat2)
@@ -1414,9 +1414,9 @@ def _ud_grade_core(m,nside_out,pess=False,power=None, dtype=None):
         map_out = mr.sum(axis=1).astype(type_out)
         nhit = hit.sum(axis=1)
         if pess:
-            badout = npy.where(nhit != rat2)
+            badout = np.where(nhit != rat2)
         else:
-            badout = npy.where(nhit == 0)
+            badout = np.where(nhit == 0)
         if power:
             nhit /= ratio
         map_out /= nhit

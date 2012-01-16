@@ -22,10 +22,10 @@ import rotator as R
 import pixelfunc
 import matplotlib
 from matplotlib import axes,ticker,colors,cm,lines,cbook,figure
-import numpy as npy
+import numpy as np
 from _healpy_pixel_lib import UNSEEN
 
-pi = npy.pi
+pi = np.pi
 dtor = pi/180.
 
 class SphericalProjAxes(axes.Axes):
@@ -64,7 +64,7 @@ class SphericalProjAxes(axes.Axes):
         self.set_xlim(xmin,xmax)
         self.set_ylim(ymin,ymax)
         dx,dy = self.proj.ang2xy(pi/2.,1.*dtor,direct=True)
-        self._segment_threshold = 16.*npy.sqrt(dx**2+dy**2)
+        self._segment_threshold = 16.*np.sqrt(dx**2+dy**2)
         self._segment_step_rad = 0.1*pi/180
         self._do_border = True
         self._gratdef = {}
@@ -88,8 +88,8 @@ class SphericalProjAxes(axes.Axes):
         """
         format=self._format+' at '
         pos=self.get_lonlat(x,y)
-        if pos is None or npy.isnan(pos).any(): return ''
-        lon,lat = npy.around(pos,decimals=self._coordprec)
+        if pos is None or np.isnan(pos).any(): return ''
+        lon,lat = np.around(pos,decimals=self._coordprec)
         val = self.get_value(x,y)
         if val is None:
             format = '%s'
@@ -119,7 +119,7 @@ class SphericalProjAxes(axes.Axes):
         i,j = self.proj.xy2ij(x,y)
         if i is None or j is None:
             return None
-        elif arr.mask is not npy.ma.nomask and arr.mask[i,j]:
+        elif arr.mask is not np.ma.nomask and arr.mask[i,j]:
             return 'UNSEEN'
         else:
             return arr[i,j]
@@ -152,8 +152,8 @@ class SphericalProjAxes(axes.Axes):
         Other keywords are transmitted to :func:`matplotlib.Axes.imshow`
         """
         img = self.proj.projmap(map,vec2pix_func,rot=rot,coord=coord)
-        w = ~( npy.isnan(img) | 
-               npy.isinf(img) | 
+        w = ~( np.isnan(img) | 
+               np.isinf(img) | 
                pixelfunc.mask_bad(img, badval = badval) )
         try:
             if vmin is None: vmin = img[w].min()
@@ -170,7 +170,7 @@ class SphericalProjAxes(axes.Axes):
             vmax += 1.
         cm,nn = get_color_table(vmin,vmax,img[w],cmap=cmap,norm=norm)
         ext = self.proj.get_extent()
-        img = npy.ma.masked_values(img, badval)
+        img = np.ma.masked_values(img, badval)
         aximg = self.imshow(img,extent = ext,cmap=cm,norm=nn,
                             interpolation='nearest',origin='lower',
                             vmin=vmin,vmax=vmax,**kwds)
@@ -223,24 +223,24 @@ class SphericalProjAxes(axes.Axes):
         if len(args) < 1:
             raise ValueError("No argument given")
         if len(args) == 1:
-            theta,phi = npy.asarray(args[0])
+            theta,phi = np.asarray(args[0])
         elif len(args) == 2:
             if type(args[1]) is str:
                 fmt=args[1]
-                theta,phi = npy.asarray(args[0])
+                theta,phi = np.asarray(args[0])
             else:
-                theta,phi = npy.asarray(args[0]),npy.asarray(args[1])
+                theta,phi = np.asarray(args[0]),np.asarray(args[1])
         elif len(args) == 3:
             if type(args[2]) is not str:
                 raise TypeError("Third argument must be a string")
             else:
-                theta,phi = npy.asarray(args[0]),npy.asarray(args[1])
+                theta,phi = np.asarray(args[0]),np.asarray(args[1])
                 fmt = args[2]
         else:
             raise TypeError("Three args maximum")
         rot=kwds.pop('rot',None)
         if rot is not None:
-            rot = npy.array(npy.atleast_1d(rot),copy=1)
+            rot = np.array(np.atleast_1d(rot),copy=1)
             rot.resize(3)
             rot[1] = rot[1]-90.
         coord=self.proj.mkcoord(kwds.pop('coord',None))[::-1]
@@ -303,12 +303,12 @@ class SphericalProjAxes(axes.Axes):
         if save_input_data:
             input_data = (theta, phi, args, kwds.copy())
         if phi is None:
-            theta,phi = npy.asarray(theta)
+            theta,phi = np.asarray(theta)
         else:
-            theta, phi = npy.asarray(theta), npy.asarray(phi)
+            theta, phi = np.asarray(theta), np.asarray(phi)
         rot=kwds.pop('rot',None)
         if rot is not None:
-            rot = npy.array(npy.atleast_1d(rot),copy=1)
+            rot = np.array(np.atleast_1d(rot),copy=1)
             rot.resize(3)
             rot[1] = rot[1]-90.
         coord=self.proj.mkcoord(kwds.pop('coord',None))[::-1]
@@ -358,12 +358,12 @@ class SphericalProjAxes(axes.Axes):
         projplot, projscatter
         """
         if phi is None:
-            theta,phi = npy.asarray(theta)
+            theta,phi = np.asarray(theta)
         else:
-            theta, phi = npy.asarray(theta), npy.asarray(phi)
+            theta, phi = np.asarray(theta), np.asarray(phi)
         rot=kwds.pop('rot',None)
         if rot is not None:
-            rot = npy.array(npy.atleast_1d(rot),copy=1)
+            rot = np.array(np.atleast_1d(rot),copy=1)
             rot.resize(3)
             rot[1] = rot[1]-90.
         coord=self.proj.mkcoord(kwds.pop('coord',None))[::-1]
@@ -376,15 +376,15 @@ class SphericalProjAxes(axes.Axes):
     def _make_segment(self,x,y,threshold=None):
         if threshold is None:
             threshold = self._segment_threshold
-        x,y=npy.atleast_1d(x),npy.atleast_1d(y)
-        d2 = npy.sqrt((npy.roll(x,1)-x)**2+(npy.roll(y,1)-y)**2)
-        w=npy.where(d2 > threshold)[0]
+        x,y=np.atleast_1d(x),np.atleast_1d(y)
+        d2 = np.sqrt((np.roll(x,1)-x)**2+(np.roll(y,1)-y)**2)
+        w=np.where(d2 > threshold)[0]
         #w=w[w!=0]
         xx=[]
         yy=[]
         if len(w) == 1:
-            x=npy.roll(x,-w[0])
-            y=npy.roll(y,-w[0])
+            x=np.roll(x,-w[0])
+            y=np.roll(y,-w[0])
             xx.append(x)
             yy.append(y)
         elif len(w) >= 2:
@@ -415,7 +415,7 @@ class SphericalProjAxes(axes.Axes):
             vx,vy,vz = vx
         elif vy is None or vz is None:
             raise ValueError("Both vy and vz must be given or both not given")
-        a = npy.arccos(vz)
+        a = np.arccos(vz)
         fov = self.proj.get_fov()
         vmin = max(0., a-fov/2.)
         vmax = min(pi, a+fov/2.)
@@ -437,13 +437,13 @@ class SphericalProjAxes(axes.Axes):
         elif vy is None or vz is None:
             raise ValueError("Both vy and vz must be given or both not given")
         fov = self.proj.get_fov()
-        th = npy.arccos(vz)
+        th = np.arccos(vz)
         if th <= fov/2.: # test whether north pole is visible
-            return -npy.pi,npy.pi
+            return -np.pi,np.pi
         if abs(th-pi) <= fov/2.: # test whether south pole is visible
-            return -npy.pi,npy.pi
-        sth = npy.sin(th)
-        phi0 = npy.arctan2(vy,vx)
+            return -np.pi,np.pi
+        sth = np.sin(th)
+        phi0 = np.arctan2(vy,vx)
         return phi0 - fov/sth/2., phi0 + fov/sth/2.
 
     def graticule(self,dpar=None,dmer=None,coord=None,local=None,verbose=True,**kwds):
@@ -485,11 +485,11 @@ class SphericalProjAxes(axes.Axes):
             dpar,dmer = self._get_interv_graticule(pmin,pmax,dpar,
                                                    mmin,mmax,dmer,
                                                    verbose=verbose)
-        theta_list = npy.around(npy.arange(pmin,pmax+0.5*dpar,dpar)/dpar)*dpar
-        phi_list = npy.around(npy.arange(mmin,mmax+0.5*dmer,dmer)/dmer)*dmer
-        theta = npy.arange(pmin,pmax,min((pmax-pmin)/100.,
+        theta_list = np.around(np.arange(pmin,pmax+0.5*dpar,dpar)/dpar)*dpar
+        phi_list = np.around(np.arange(mmin,mmax+0.5*dmer,dmer)/dmer)*dmer
+        theta = np.arange(pmin,pmax,min((pmax-pmin)/100.,
                                          self._segment_step_rad))
-        phi = npy.arange(mmin,mmax,min((mmax-mmin)/100.,
+        phi = np.arange(mmin,mmax,min((mmax-mmin)/100.,
                                        self._segment_step_rad))
         equator = False
         gratlines = []
@@ -522,12 +522,12 @@ class SphericalProjAxes(axes.Axes):
                                            direct=local,**kwds))
         # Now the borders (only useful for full sky projection)
         if hasattr(self,'_do_border') and self._do_border:
-            theta = npy.arange(0,181)*dtor
+            theta = np.arange(0,181)*dtor
             gratlines.append(self.projplot(theta, theta*0-pi,'-k',
                                            lw=1,direct=True))
             gratlines.append(self.projplot(theta, theta*0+0.9999*pi,'-k',
                                            lw=1,direct=True))
-            phi = npy.arange(-180,180)*dtor
+            phi = np.arange(-180,180)*dtor
             gratlines.append(self.projplot(phi*0+1.e-10, phi,'-k',
                                            lw=1,direct=True))
             gratlines.append(self.projplot(phi*0+pi-1.e-10, phi,'-k',
@@ -560,10 +560,10 @@ class SphericalProjAxes(axes.Axes):
                 nn = 1
             x = d/n
             y = nn*x
-            ex = npy.floor(npy.log10(y))
-            z = npy.around(y/10**ex)*10**ex/nn
+            ex = np.floor(np.log10(y))
+            z = np.around(y/10**ex)*10**ex/nn
             if arcmin:
-                z = 1./npy.around(60./z)
+                z = 1./np.around(60./z)
             return z
         max_n_par = 18
         max_n_mer = 36
@@ -575,10 +575,10 @@ class SphericalProjAxes(axes.Axes):
             dmer = set_prec((mmax-mmin)/dtor,max_n_mer/2,nn=1)*dtor
         if dmer/dpar < 0.2 or dmer/dpar > 5.:
             dmer = dpar = max(dmer,dpar)
-        vdeg = npy.floor(npy.around(dpar/dtor,10))
+        vdeg = np.floor(np.around(dpar/dtor,10))
         varcmin = (dpar/dtor-vdeg)*60.
         if verbose: print "The interval between parallels is %d deg %.2f'."%(vdeg,varcmin)
-        vdeg = npy.floor(npy.around(dmer/dtor,10))
+        vdeg = np.floor(np.around(dmer/dtor,10))
         varcmin = (dmer/dtor-vdeg)*60.
         if verbose: print "The interval between meridians is %d deg %.2f'."%(vdeg,varcmin)
         return dpar,dmer
@@ -717,7 +717,7 @@ class BoundaryLocator(ticker.Locator):
             vmin,vmax = self.viewInterval.get_bounds()
         else:
             vmin, vmax = self.axis.get_view_interval()
-        locs = vmin + npy.arange(self.Nlocs)*(vmax-vmin)/(self.Nlocs-1.)
+        locs = vmin + np.arange(self.Nlocs)*(vmax-vmin)/(self.Nlocs-1.)
         return locs
 
     def autoscale(self):
@@ -749,10 +749,10 @@ class HistEqNorm(colors.Normalize):
 
         if cbook.iterable(value):
             vtype = 'array'
-            val = npy.ma.asarray(value).astype(npy.float)
+            val = np.ma.asarray(value).astype(np.float)
         else:
             vtype = 'scalar'
-            val = npy.ma.array([value]).astype(npy.float)
+            val = np.ma.array([value]).astype(np.float)
 
         self.autoscale_None(val)
 
@@ -763,12 +763,12 @@ class HistEqNorm(colors.Normalize):
             return 0.0 * val
         else:
             if clip:
-                mask = npy.ma.getmask(val)
-                val = npy.ma.array(npy.clip(val.filled(vmax), vmin, vmax),
+                mask = np.ma.getmask(val)
+                val = np.ma.array(np.clip(val.filled(vmax), vmin, vmax),
                                    mask=mask)
-            result = npy.ma.array(npy.interp(val, self.xval, self.yval),
-                                  mask=npy.ma.getmask(val))
-            result[npy.isinf(val.data)] = -npy.inf
+            result = np.ma.array(np.interp(val, self.xval, self.yval),
+                                  mask=np.ma.getmask(val))
+            result[np.isinf(val.data)] = -np.inf
         if vtype == 'scalar':
             result = result[0]
         return result
@@ -779,13 +779,13 @@ class HistEqNorm(colors.Normalize):
 
         if cbook.iterable(value):
             vtype='array'
-            val = npy.ma.array(value)
+            val = np.ma.array(value)
         else:
             vtype='scalar'
-            val = npy.ma.array([value])
-        result = npy.ma.array(self._lininterp(val, self.yval, self.xval),
-                              mask=npy.ma.getmask(val))
-        result[npy.isinf(val.data)] = -npy.inf
+            val = np.ma.array([value])
+        result = np.ma.array(self._lininterp(val, self.yval, self.xval),
+                              mask=np.ma.getmask(val))
+        result[np.isinf(val.data)] = -np.inf
         if vtype == 'scalar':
             result = result[0]
         return result
@@ -807,51 +807,51 @@ class HistEqNorm(colors.Normalize):
         self._set_xyvals(val)
 
     def _set_xyvals(self,val):
-        data = npy.ma.asarray(val).ravel()
-        w=npy.isinf(data.data)
-        if data.mask is not npy.ma.nomask:
+        data = np.ma.asarray(val).ravel()
+        w=np.isinf(data.data)
+        if data.mask is not np.ma.nomask:
             w = w|data.mask
         data2 = data.data[~w]
         bins = long(min(data2.size/20, 5000))
         if bins < 3: bins=data2.size
         try:
             # for numpy 1.1, use new bins format (left and right edges)
-            hist, bins = npy.histogram(data2,bins=bins,
+            hist, bins = np.histogram(data2,bins=bins,
                                        range=(self.vmin,self.vmax),
                                        new=True)
         except TypeError:
             # for numpy <= 1.0 or numpy >= 1.2, no new keyword
-            hist, bins = npy.histogram(data2,bins=bins,
+            hist, bins = np.histogram(data2,bins=bins,
                                        range=(self.vmin,self.vmax))
         if bins.size == hist.size+1:
             # new bins format, remove last point
             bins = bins[:-1]
-        hist = hist.astype(npy.float)/npy.float(hist.sum())
-        self.yval = npy.concatenate([0., hist.cumsum(), 1.], None)
-        self.xval = npy.concatenate([self.vmin,
+        hist = hist.astype(np.float)/np.float(hist.sum())
+        self.yval = np.concatenate([0., hist.cumsum(), 1.], None)
+        self.xval = np.concatenate([self.vmin,
                                      bins + 0.5*(bins[1]-bins[0]),
                                      self.vmax], None)
 
     def _lininterp(self,x,X,Y):
         if hasattr(x,'__len__'):
             xtype = 'array'
-            xx=npy.asarray(x).astype(npy.float)
+            xx=np.asarray(x).astype(np.float)
         else:
             xtype = 'scalar'
-            xx=npy.asarray([x]).astype(npy.float)
+            xx=np.asarray([x]).astype(np.float)
         idx = X.searchsorted(xx)
         yy = xx*0
         yy[idx>len(X)-1] = Y[-1]  # over
         yy[idx<=0] = Y[0]          # under
-        wok = npy.where((idx>0) & (idx<len(X)))  # the good ones
+        wok = np.where((idx>0) & (idx<len(X)))  # the good ones
         iok=idx[wok]
         yywok = Y[iok-1] + ( (Y[iok]-Y[iok-1])/(X[iok]-X[iok-1])
                              * (xx[wok]-X[iok-1]) )
-        w = npy.where( ((X[iok]-X[iok-1]) == 0) )   # where are the nan ?
+        w = np.where( ((X[iok]-X[iok-1]) == 0) )   # where are the nan ?
         yywok[w] = Y[iok[w]-1]    # replace by previous value
-        wl = npy.where(xx[wok] == X[0])
+        wl = np.where(xx[wok] == X[0])
         yywok[wl] = Y[0]
-        wh = npy.where(xx[wok] == X[-1])
+        wh = np.where(xx[wok] == X[-1])
         yywok[wh] = Y[-1]
         yy[wok] = yywok
         if xtype == 'scalar':
@@ -874,12 +874,12 @@ class LogNorm2(colors.Normalize):
 
         if cbook.iterable(value):
             vtype = 'array'
-            val = npy.ma.asarray(value).astype(npy.float)
+            val = np.ma.asarray(value).astype(np.float)
         else:
             vtype = 'scalar'
-            val = npy.ma.array([value]).astype(npy.float)
+            val = np.ma.array([value]).astype(np.float)
 
-        val = npy.ma.masked_where(npy.isinf(val.data),val)
+        val = np.ma.masked_where(np.isinf(val.data),val)
 
         self.autoscale_None(val)
         vmin, vmax = float(self.vmin), float(self.vmax)
@@ -888,18 +888,18 @@ class LogNorm2(colors.Normalize):
         elif vmin<=0:
             raise ValueError("values must all be positive")
         elif vmin==vmax:
-            return type(value)(0.0 * npy.asarray(value))
+            return type(value)(0.0 * np.asarray(value))
         else:
             if clip:
-                mask = npy.ma.getmask(val)
-                val = npy.ma.array(npy.clip(val.filled(vmax), vmin, vmax),
+                mask = np.ma.getmask(val)
+                val = np.ma.array(np.clip(val.filled(vmax), vmin, vmax),
                                    mask=mask)
-            result = (npy.ma.log(val)-npy.log(vmin))/(npy.log(vmax)-npy.log(vmin))
+            result = (np.ma.log(val)-np.log(vmin))/(np.log(vmax)-np.log(vmin))
             result.data[result.data<0]=0.0
             result.data[result.data>1]=1.0
-            result[npy.isinf(val.data)] = -npy.inf
-            if result.mask is not npy.ma.nomask:
-                result.mask[npy.isinf(val.data)] = False
+            result[np.isinf(val.data)] = -np.inf
+            if result.mask is not np.ma.nomask:
+                result.mask[np.isinf(val.data)] = False
         if vtype == 'scalar':
             result = result[0]
         return result
@@ -907,7 +907,7 @@ class LogNorm2(colors.Normalize):
     def autoscale_None(self, A):
         ' autoscale only None-valued vmin or vmax'
         if self.vmin is None or self.vmax is None:
-            val = npy.ma.masked_where(npy.isinf(A.data),A)
+            val = np.ma.masked_where(np.isinf(A.data),A)
             colors.Normalize.autoscale_None(self,val)
 
     def inverse(self, value):
@@ -916,10 +916,10 @@ class LogNorm2(colors.Normalize):
         vmin, vmax = float(self.vmin), float(self.vmax)
 
         if cbook.iterable(value):
-            val = npy.ma.asarray(value)
-            return vmin * npy.ma.power((vmax/vmin), val)
+            val = np.ma.asarray(value)
+            return vmin * np.ma.power((vmax/vmin), val)
         else:
-            return vmin * npy.pow((vmax/vmin), value)
+            return vmin * np.pow((vmax/vmin), value)
 
 
 
@@ -939,30 +939,30 @@ class LinNorm2(colors.Normalize):
 
         if cbook.iterable(value):
             vtype = 'array'
-            val = npy.ma.asarray(value).astype(npy.float)
+            val = np.ma.asarray(value).astype(np.float)
         else:
             vtype = 'scalar'
-            val = npy.ma.array([value]).astype(npy.float)
+            val = np.ma.array([value]).astype(np.float)
 
-        winf = npy.isinf(val.data)
-        val = npy.ma.masked_where(winf,val)
+        winf = np.isinf(val.data)
+        val = np.ma.masked_where(winf,val)
 
         self.autoscale_None(val)
         vmin, vmax = float(self.vmin), float(self.vmax)
         if vmin > vmax:
             raise ValueError("minvalue must be less than or equal to maxvalue")
         elif vmin==vmax:
-            return type(value)(0.0 * npy.asarray(value))
+            return type(value)(0.0 * np.asarray(value))
         else:
             if clip:
-                mask = npy.ma.getmask(val)
-                val = npy.ma.array(npy.clip(val.filled(vmax), vmin, vmax),
+                mask = np.ma.getmask(val)
+                val = np.ma.array(np.clip(val.filled(vmax), vmin, vmax),
                                    mask=mask)
             result = (val-vmin) * (1./(vmax-vmin))
             result.data[result.data<0]=0.0
             result.data[result.data>1]=1.0
-            result[winf] = -npy.inf
-            if result.mask is not npy.ma.nomask:
+            result[winf] = -np.inf
+            if result.mask is not np.ma.nomask:
                 result.mask[winf] = False
         if vtype == 'scalar':
             result = result[0]
@@ -971,7 +971,7 @@ class LinNorm2(colors.Normalize):
     def autoscale_None(self, A):
         ' autoscale only None-valued vmin or vmax'
         if self.vmin is None or self.vmax is None:
-            val = npy.ma.masked_where(npy.isinf(A.data),A)
+            val = np.ma.masked_where(np.isinf(A.data),A)
             colors.Normalize.autoscale_None(self,val)
 
     def inverse(self, value):
@@ -980,7 +980,7 @@ class LinNorm2(colors.Normalize):
         vmin, vmax = float(self.vmin), float(self.vmax)
 
         if cbook.iterable(value):
-            val = npy.ma.asarray(value)
+            val = np.ma.asarray(value)
             return vmin + (vmax-vmin) * val
         else:
             return vmin + (vmax-vmin) * value

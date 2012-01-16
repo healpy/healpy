@@ -20,8 +20,8 @@
 """Provides input and output functions for Healpix maps, alm, and cl.
 """
 
-import pyfits as pyf
-import numpy as npy
+import pyfits as pf
+import numpy as np
 import pixelfunc
 from sphtfunc import Alm
 import warnings
@@ -31,7 +31,7 @@ from exceptions import NotImplementedError
 class HealpixFitsWarning(Warning):
     pass
 
-def read_cl(filename,dtype=npy.float64,h=False):
+def read_cl(filename,dtype=np.float64,h=False):
     """Reads Cl from an healpix file, as IDL fits2cl.
 
     Parameters
@@ -46,10 +46,10 @@ def read_cl(filename,dtype=npy.float64,h=False):
     cl : array
       the cl array, currently TT only
     """
-    hdulist=pyf.open(filename)
+    hdulist=pf.open(filename)
     return hdulist[1].data.field(0)
 
-def write_cl(filename,cl,dtype=npy.float32):
+def write_cl(filename,cl,dtype=np.float32):
     """Writes Cl into an healpix file, as IDL cl2fits.
 
     Parameters
@@ -64,17 +64,17 @@ def write_cl(filename,cl,dtype=npy.float32):
     if isinstance(cl, list):
         raise NotImplementedError('Currently it supports only temperature-only cls')
     else: # we write only one TT
-        cols = [pyf.Column(name='TEMPERATURE',
+        cols = [pf.Column(name='TEMPERATURE',
                                format='%s'%fitsformat,
                                array=cl)]
             
-    coldefs=pyf.ColDefs(cols)
-    tbhdu = pyf.new_table(coldefs)
+    coldefs=pf.ColDefs(cols)
+    tbhdu = pf.new_table(coldefs)
     # add needed keywords
     tbhdu.header.update('CREATOR','healpy')
     tbhdu.writeto(filename,clobber=True)
 
-def write_map(filename,m,nest=False,dtype=npy.float32,fits_IDL=True,coord=None):
+def write_map(filename,m,nest=False,dtype=np.float32,fits_IDL=True,coord=None):
     """Writes an healpix map into an healpix file.
 
     Parameters
@@ -110,12 +110,12 @@ def write_map(filename,m,nest=False,dtype=npy.float32,fits_IDL=True,coord=None):
         for cn,mm in zip(colnames,m):
             if len(mm) > 1024 and fits_IDL:
                 # I need an ndarray, for reshape:
-                mm2 = npy.asarray(mm)
-                cols.append(pyf.Column(name=cn,
+                mm2 = np.asarray(mm)
+                cols.append(pf.Column(name=cn,
                                        format='1024%s'%fitsformat,
                                        array=mm2.reshape(mm2.size/1024,1024)))
             else:
-                cols.append(pyf.Column(name=cn,
+                cols.append(pf.Column(name=cn,
                                        format='%s'%fitsformat,
                                        array=mm))
     else: # we write only one map
@@ -123,16 +123,16 @@ def write_map(filename,m,nest=False,dtype=npy.float32,fits_IDL=True,coord=None):
         if nside < 0:
             raise ValueError('Invalid healpix map : wrong number of pixel')
         if m.size > 1024 and fits_IDL:
-            cols = [pyf.Column(name='I_STOKES',
+            cols = [pf.Column(name='I_STOKES',
                                format='1024%s'%fitsformat,
                                array=m.reshape(m.size/1024,1024))]
         else:
-            cols = [pyf.Column(name='I_STOKES',
+            cols = [pf.Column(name='I_STOKES',
                                format='%s'%fitsformat,
                                array=m)]
             
-    coldefs=pyf.ColDefs(cols)
-    tbhdu = pyf.new_table(coldefs)
+    coldefs=pf.ColDefs(cols)
+    tbhdu = pf.new_table(coldefs)
     # add needed keywords
     tbhdu.header.update('PIXTYPE','HEALPIX','HEALPIX pixelisation')
     if nest: ordering = 'NESTED'
@@ -153,7 +153,7 @@ def write_map(filename,m,nest=False,dtype=npy.float32,fits_IDL=True,coord=None):
     tbhdu.writeto(filename,clobber=True)
 
 
-def read_map(filename,field=0,dtype=npy.float64,nest=False,hdu=1,h=False,
+def read_map(filename,field=0,dtype=np.float64,nest=False,hdu=1,h=False,
              verbose=False):
     """Read an healpix map from a fits file.
 
@@ -166,7 +166,7 @@ def read_map(filename,field=0,dtype=npy.float64,nest=False,hdu=1,h=False,
       By convention 0 is temperature, 1 is Q, 2 is U.
       Field can be a tuple to read multiple columns (0,1,2)
     dtype : data type, optional
-      Force the conversion to some type. Default: npy.float64
+      Force the conversion to some type. Default: np.float64
     nest : bool, optional
       If True return the map in NEST ordering, otherwise in RING ordering; 
       use fits keyword ORDERING to decide whether conversion is needed or not
@@ -183,7 +183,7 @@ def read_map(filename,field=0,dtype=npy.float64,nest=False,hdu=1,h=False,
     m | (m0, m1, ...) [, header] : array or a tuple of arrays, optionally with header appended
       The map(s) read from the file, and the header if *h* is True.
     """
-    hdulist=pyf.open(filename)
+    hdulist=pf.open(filename)
     #print hdulist[1].header
     nside = hdulist[hdu].header.get('NSIDE')
     if nside is None:
@@ -214,11 +214,11 @@ def read_map(filename,field=0,dtype=npy.float64,nest=False,hdu=1,h=False,
             raise ValueError('Wrong nside parameter.')
         if not nest is None: # no conversion with None
             if nest and ordering == 'RING':
-                idx = pixelfunc.nest2ring(nside,npy.arange(m.size,dtype=npy.int32))
+                idx = pixelfunc.nest2ring(nside,np.arange(m.size,dtype=np.int32))
                 m = m[idx]
                 if verbose: print 'Ordering converted to NEST'
             elif (not nest) and ordering == 'NESTED':
-                idx = pixelfunc.ring2nest(nside,npy.arange(m.size,dtype=npy.int32))
+                idx = pixelfunc.ring2nest(nside,np.arange(m.size,dtype=np.int32))
                 m = m[idx]
                 if verbose: print 'Ordering converted to RING'
         try:
@@ -282,7 +282,7 @@ def write_alm(filename,alms,out_dtype=None,lmax=-1,mmax=-1,mmax_in=-1):
         out_dtype = alms.real.dtype
 
     l,m = Alm.getlm(lmax)
-    idx = npy.where((l <= lmax)*(m <= mmax))
+    idx = np.where((l <= lmax)*(m <= mmax))
     l = l[idx]
     m = m[idx]
 
@@ -290,19 +290,19 @@ def write_alm(filename,alms,out_dtype=None,lmax=-1,mmax=-1,mmax_in=-1):
     
     index = l**2 + l + m + 1
 
-    out_data = npy.empty(len(index),\
+    out_data = np.empty(len(index),\
                              dtype=[('index','i'),\
                                         ('real',out_dtype),('imag',out_dtype)])
     out_data['index'] = index
     out_data['real'] = alms.real[idx_in_original]
     out_data['imag'] = alms.imag[idx_in_original]
 
-    cindex = pyf.Column(name="index", format=getformat(npy.int32), unit="l*l+l+m+1", array=out_data['index'])
-    creal = pyf.Column(name="real", format=getformat(out_dtype), unit="unknown", array=out_data['real'])
-    cimag = pyf.Column(name="imag", format=getformat(out_dtype), unit="unknown", array=out_data['imag'])
+    cindex = pf.Column(name="index", format=getformat(np.int32), unit="l*l+l+m+1", array=out_data['index'])
+    creal = pf.Column(name="real", format=getformat(out_dtype), unit="unknown", array=out_data['real'])
+    cimag = pf.Column(name="imag", format=getformat(out_dtype), unit="unknown", array=out_data['imag'])
 
-    coldefs=pyf.ColDefs([cindex,creal,cimag])
-    tbhdu = pyf.new_table(coldefs)
+    coldefs=pf.ColDefs([cindex,creal,cimag])
+    tbhdu = pf.new_table(coldefs)
     tbhdu.writeto(filename,clobber=True)       
     
 def read_alm(filename,hdu=1,return_mmax=False):
@@ -326,7 +326,7 @@ def read_alm(filename,hdu=1,return_mmax=False):
       The alms read from the file and optionally mmax read from the file
     """
     idx, almr, almi = mrdfits(filename,hdu=hdu)
-    l = npy.floor(npy.sqrt(idx-1)).astype(long)
+    l = np.floor(np.sqrt(idx-1)).astype(long)
     m = idx - l**2 - l - 1
     if (m<0).any():
         raise ValueError('Negative m value encountered !')
@@ -358,7 +358,7 @@ def mrdfits(filename,hdu=1):
     cols : a list of arrays
       A list of column data in the given header
     """
-    hdulist=pyf.open(filename)
+    hdulist=pf.open(filename)
     if hdu>=len(hdulist):
         raise ValueError('Available hdu in [0-%d]'%len(hdulist))
     hdu=hdulist[hdu]
@@ -393,11 +393,11 @@ def mwrfits(filename,data,hdu=1,colnames=None,keys=None):
         colnames = ['']*len(data)
     cols=[]
     for line in xrange(len(data)):
-        cols.append(pyf.Column(name=colnames[line],
+        cols.append(pf.Column(name=colnames[line],
                                format=getformat(data[line]),
                                array=data[line]))
-    coldefs=pyf.ColDefs(cols)
-    tbhdu = pyf.new_table(coldefs)
+    coldefs=pf.ColDefs(cols)
+    tbhdu = pf.new_table(coldefs)
     if type(keys) is dict:
         for k,v in keys.items():
             tbhdu.header.update(k,v)
@@ -418,15 +418,15 @@ def getformat(t):
       The FITS string code describing the data type, or None if unknown type.
     """
     conv = {
-        npy.dtype(npy.bool): 'L',
-        npy.dtype(npy.uint8): 'B',
-        npy.dtype(npy.int16): 'I',
-        npy.dtype(npy.int32): 'J',
-        npy.dtype(npy.int64): 'K',
-        npy.dtype(npy.float32): 'E',
-        npy.dtype(npy.float64): 'D',
-        npy.dtype(npy.complex64): 'C',
-        npy.dtype(npy.complex128): 'M'
+        np.dtype(np.bool): 'L',
+        np.dtype(np.uint8): 'B',
+        np.dtype(np.int16): 'I',
+        np.dtype(np.int32): 'J',
+        np.dtype(np.int64): 'K',
+        np.dtype(np.float32): 'E',
+        np.dtype(np.float64): 'D',
+        np.dtype(np.complex64): 'C',
+        np.dtype(np.complex128): 'M'
         }
     try:
         if t in conv:
@@ -434,18 +434,18 @@ def getformat(t):
     except:
         pass
     try:
-        if npy.dtype(t) in conv:
-            return conv[npy.dtype(t)]
+        if np.dtype(t) in conv:
+            return conv[np.dtype(t)]
     except:
         pass
     try:
-        if npy.dtype(type(t)) in conv:
-            return conv[npy.dtype(type(t))]
+        if np.dtype(type(t)) in conv:
+            return conv[np.dtype(type(t))]
     except:
         pass
     try:
-        if npy.dtype(type(t[0])) in conv:
-            return conv[npy.dtype(type(t[0]))]
+        if np.dtype(type(t[0])) in conv:
+            return conv[np.dtype(type(t[0]))]
     except:
         pass
     try:
