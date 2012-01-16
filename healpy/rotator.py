@@ -71,6 +71,10 @@ class Rotator(object):
     >>> theta_ecl, phi_ecl = Rotator(coord='ge')(theta_gal, phi_gal) # In one line
     >>> print theta_ecl, phi_ecl
     1.66742286715 -1.62596400306
+    >>> vec_gal = npy.array([1, 0, 0]) #Using vectors
+    >>> vec_ecl = r(vec_gal)
+    >>> print vec_ecl
+    [-0.05488249 -0.99382103 -0.09647625]
     """
     ErrMessWrongPar = ("rot and coord must be single elements or "
                        "sequence of same size.")
