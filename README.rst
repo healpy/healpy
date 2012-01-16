@@ -12,7 +12,8 @@ Numpy and matplotlib.
 To find find more information about Healpix, please visit its home
 page at http://healpix.jpl.nasa.gov/.
 
-The documentation can be found at http://healpy.github.com/healpy/.
+The documentation can be found at http://healpy.readthedocs.org, 
+tutorial at http://healpy.readthedocs.org/en/latest/tutorial.html.
 
 Characteristics
 ---------------
@@ -63,6 +64,14 @@ The latest released version is 0.10.2 and is available as a source
 package at
 http://code.google.com/p/healpy/downloads/list.
 
+Collaboration
+-------------
+
+Project development takes place on github, http://github.com/healpy,
+please open an issue over there for reporting bugs or suggest improvements.
+Collaboration is very welcome, just fork the project on github and 
+send pull requests back to the main repository.
+
 Installation
 ------------
 
@@ -97,4 +106,3 @@ include both of the following:
 
 As healpy is based on HEALPix Software (the C++ library), the same
 condition applies to it.
-
