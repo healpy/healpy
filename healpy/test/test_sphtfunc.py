@@ -10,9 +10,10 @@ import healpy as hp
 class TestSphtFunc(unittest.TestCase):
 
     def setUp(self):
+        path = os.path.dirname( os.path.realpath( __file__ ) )
         try:
-            self.map = hp.ma(hp.read_map(os.path.join('data', 'wmap_band_imap_r9_7yr_W_v4.fits')))
-            self.mask = hp.read_map(os.path.join('data', 'wmap_temperature_analysis_mask_r9_7yr_v4.fits')).astype(np.bool)
+            self.map = hp.ma(hp.read_map(os.path.join(path, 'data', 'wmap_band_imap_r9_7yr_W_v4.fits')))
+            self.mask = hp.read_map(os.path.join(path, 'data', 'wmap_temperature_analysis_mask_r9_7yr_v4.fits')).astype(np.bool)
         except exceptions.IOError:
             warnings.warn("""Missing Wmap test maps from the data folder, please download them from Lambda and copy them in the test/data folder:
             http://lambda.gsfc.nasa.gov/data/map/dr4/skymaps/7yr/raw/wmap_band_imap_r9_7yr_W_v4.fits
@@ -21,7 +22,7 @@ class TestSphtFunc(unittest.TestCase):
             """)
             raise
         self.map.mask = np.logical_not(self.mask)
-        self.cla = hp.read_cl(os.path.join('data', 'cl_wmap_fortran.fits'))
+        self.cla = hp.read_cl(os.path.join(path, 'data', 'cl_wmap_fortran.fits'))
     
     def test_anafast(self):
         cl = hp.anafast(self.map.filled(), lmax = 1024)
