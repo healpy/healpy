@@ -170,12 +170,11 @@ class Rotator(object):
 
         Accepted forms:
 
-        >>> r = Rotator()
-        >>> r(x,y,z)  # x,y,z either scalars or arrays
-        >>> r(theta,phi) # theta, phi scalars or arrays 
-        >>> r(lon,lat,lonlat=True)  # lon, lat scalars or arrays
-        >>> r(vec) # vec 1-D array with 3 elements, or 2-D array 3xN
-        >>> r(direction) # direction 1-D array with 2 elements, or 2xN array
+        r(x,y,z)  # x,y,z either scalars or arrays
+        r(theta,phi) # theta, phi scalars or arrays 
+        r(lon,lat,lonlat=True)  # lon, lat scalars or arrays
+        r(vec) # vec 1-D array with 3 elements, or 2-D array 3xN
+        r(direction) # direction 1-D array with 2 elements, or 2xN array
 
         Parameters
         ----------
