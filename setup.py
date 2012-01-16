@@ -94,12 +94,12 @@ try:
   from Cython.Distutils import build_ext
   import Cython.Compiler.Version
   version = [int(v) for v in Cython.Compiler.Version.version.split(".")]
-  assert version[1]>=12
+  assert version[1]>=14
   ext = "pyx"
 except Exception:
   from distutils.command.build_ext import build_ext
   ext = "c"
-  print "No Cython >= 0.12 found, defaulting to pregenerated c version."
+  print "No Cython >= 0.14 found, defaulting to pregenerated c version."
   
 if on_rtd:
     numpy_inc = ''
