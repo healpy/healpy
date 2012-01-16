@@ -1,4 +1,4 @@
-Healpy's tutorial
+Healpy tutorial
 =================
 
 Creating and manipulating maps
