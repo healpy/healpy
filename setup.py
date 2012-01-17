@@ -156,22 +156,23 @@ if do_compile:
 
 ###############################################
 
-library_dirs = [healpix_cxx_lib]
-include_dirs = [numpy_inc, healpix_cxx_inc]
+# Standard system libraries in /usr are included, as in most linux distribution
+# the cfitsio package installed via package manager is located there;
+# this way install should work often without specifying CFITSIO_EXT_PREFIX
+library_dirs = ['/usr/lib', healpix_cxx_lib]
+include_dirs = ['/usr/include', numpy_inc, healpix_cxx_inc]
 extra_link = []
 
 if 'CFITSIO_EXT_PREFIX' in os.environ:
     cfitsio_inc_dir = os.path.join(os.environ['CFITSIO_EXT_PREFIX'], 'include')
     cfitsio_lib_dir = os.path.join(os.environ['CFITSIO_EXT_PREFIX'], 'lib')
     include_dirs.append(cfitsio_inc_dir)
-    #library_dirs.append(cfitsio_lib_dir)
     extra_link.append(os.path.join(cfitsio_lib_dir, 'libcfitsio.a'))
 if 'CFITSIO_EXT_INC' in os.environ:
     cfitsio_inc_dir = os.environ['CFITSIO_EXT_INC']
     include_dirs.append(cfitsio_inc_dir)
 if 'CFITSIO_EXT_LIB' in os.environ:
     cfitsio_lib_dir = os.environ['CFITSIO_EXT_LIB']
-    #library_dirs.append(cfitsio_lib_dir)
     extra_link.append(os.path.join(cfitsio_lib_dir, 'libcfitsio.a'))
 
 healpix_libs =['healpix_cxx','cxxsupport','psht','fftpack','c_utils']
@@ -239,7 +240,7 @@ else:
 setup(name='healpy',
       version=get_version(),
       description='Healpix tools package for Python',
-      author='C. Rosset',
+      author='C. Rosset, A. Zonca',
       author_email='cyrille.rosset@apc.univ-paris-diderot.fr',
       url='http://github.com/healpy',
       packages=['healpy'],
@@ -252,5 +253,3 @@ setup(name='healpy',
       package_data = {'healpy': ['data/*.fits']},
       license='GPLv2'
       )
-
-
