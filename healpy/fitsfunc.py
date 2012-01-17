@@ -68,8 +68,7 @@ def write_cl(filename,cl,dtype=np.float32):
                                format='%s'%fitsformat,
                                array=cl)]
             
-    coldefs=pf.ColDefs(cols)
-    tbhdu = pf.new_table(coldefs)
+    tbhdu = pf.new_table(cols)
     # add needed keywords
     tbhdu.header.update('CREATOR','healpy')
     tbhdu.writeto(filename,clobber=True)
@@ -131,8 +130,7 @@ def write_map(filename,m,nest=False,dtype=np.float32,fits_IDL=True,coord=None):
                                format='%s'%fitsformat,
                                array=m)]
             
-    coldefs=pf.ColDefs(cols)
-    tbhdu = pf.new_table(coldefs)
+    tbhdu = pf.new_table(cols)
     # add needed keywords
     tbhdu.header.update('PIXTYPE','HEALPIX','HEALPIX pixelisation')
     if nest: ordering = 'NESTED'
@@ -241,8 +239,9 @@ def read_map(filename,field=0,dtype=np.float64,nest=False,hdu=1,h=False,
 
 
 def write_alm(filename,alms,out_dtype=None,lmax=-1,mmax=-1,mmax_in=-1):
-    """
-    Write alms to a fits file. In the fits file the alms are written 
+    """Write alms to a fits file. 
+    
+    In the fits file the alms are written 
     with explicit index scheme, index = l*l + l + m +1, possibly out of order.
     By default write_alm makes a table with the same precision as the alms.
     If specified, the lmax and mmax parameters truncate the input data to
@@ -301,12 +300,13 @@ def write_alm(filename,alms,out_dtype=None,lmax=-1,mmax=-1,mmax_in=-1):
     creal = pf.Column(name="real", format=getformat(out_dtype), unit="unknown", array=out_data['real'])
     cimag = pf.Column(name="imag", format=getformat(out_dtype), unit="unknown", array=out_data['imag'])
 
-    coldefs=pf.ColDefs([cindex,creal,cimag])
-    tbhdu = pf.new_table(coldefs)
+    tbhdu = pf.new_table([cindex,creal,cimag])
     tbhdu.writeto(filename,clobber=True)       
     
 def read_alm(filename,hdu=1,return_mmax=False):
-    """Read alm from a fits file. In the fits file, the alm are written
+    """Read alm from a fits file. 
+    
+    In the fits file, the alm are written
     with explicit index scheme, index = l**2+l+m+1, while healpix cxx
     uses index = m*(2*lmax+1-m)/2+l. The conversion is done in this 
     function.
@@ -396,8 +396,7 @@ def mwrfits(filename,data,hdu=1,colnames=None,keys=None):
         cols.append(pf.Column(name=colnames[line],
                                format=getformat(data[line]),
                                array=data[line]))
-    coldefs=pf.ColDefs(cols)
-    tbhdu = pf.new_table(coldefs)
+    tbhdu = pf.new_table(cols)
     if type(keys) is dict:
         for k,v in keys.items():
             tbhdu.header.update(k,v)
