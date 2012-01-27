@@ -96,7 +96,7 @@ try:
   version = [int(v) for v in Cython.Compiler.Version.version.split(".")]
   assert version[1]>=14
   ext = "pyx"
-except Exception:
+except:
   from distutils.command.build_ext import build_ext
   ext = "c"
   print "No Cython >= 0.14 found, defaulting to pregenerated c version."
