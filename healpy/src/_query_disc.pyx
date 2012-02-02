@@ -116,6 +116,8 @@ def query_disc(nside, vec, radius, inclusive = False, nest = False):
       If False, return the exact set of pixels whose pixel centers lie 
       within the disk; if True, return all pixels that overlap with the disk,
       and maybe a few more.
+    nest: bool, optional
+      if True, assume NESTED pixel ordering, otherwise, RING pixel ordering
 
     Returns
     -------
@@ -159,6 +161,8 @@ def query_polygon(nside, vertices, inclusive = False, nest = False):
       If False, return the exact set of pixels whose pixel centers lie
       within the polygon; if True, return all pixels that overlap with the
       polygon, and maybe a few more.
+    nest: bool, optional
+      if True, assume NESTED pixel ordering, otherwise, RING pixel ordering
     
     Returns
     -------
@@ -209,6 +213,8 @@ def query_strip(nside, theta1, theta2, inclusive = False, nest = False):
       If False, return the exact set of pixels whose pixels centers lie 
       within the region; if True, return all pixels that overlap with the
       region.
+    nest: bool, optional
+      if True, assume NESTED pixel ordering, otherwise, RING pixel ordering
 
     Returns
     -------
