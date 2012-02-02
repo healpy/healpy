@@ -236,6 +236,8 @@ else:
                                 library_dirs = library_dirs,
                                 language='c++')
                       ]
+    for e in extension_list[-2:]: #extra setup for Cython extensions
+        e.pyrex_directives = {"embedsignature": True}
 
 setup(name='healpy',
       version=get_version(),
