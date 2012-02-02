@@ -117,7 +117,7 @@ def query_disc(nside, vec, radius, inclusive = False, nest = False):
       within the disk; if True, return all pixels that overlap with the disk,
       and maybe a few more.
     nest: bool, optional
-    if True, assume NESTED pixel ordering, otherwise, RING pixel ordering
+      if True, assume NESTED pixel ordering, otherwise, RING pixel ordering
 
     Returns
     -------
