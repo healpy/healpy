@@ -2,5 +2,6 @@
 build
 *so
 pshyt.c
+_query_disc.cpp
 ipython_log*
 *fits
