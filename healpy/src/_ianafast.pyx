@@ -4,12 +4,15 @@ import numpy as np
 cimport numpy as np
 #from libcpp cimport bool
 #from libcpp.vector cimport vector
-from libc.math cimport sqrt
+from libcpp.string cimport string
+from libc.math cimport sqrt, floor
 cimport libc
 from healpy import npix2nside
 from healpy.pixelfunc import maptype
 ctypedef unsigned size_t
 ctypedef size_t tsize
+import os
+import cython
 
 cdef extern from "arr.h":    
     cdef cppclass arr[T]:
@@ -17,6 +20,7 @@ cdef extern from "arr.h":
         arr(T *ptr, tsize sz)
         void allocAndFill (tsize sz, T &inival)
         tsize size()
+        T &operator[] (tsize n)
 
 cdef extern from "xcomplex.h":
     cdef cppclass xcomplex[T]:
@@ -50,6 +54,9 @@ cdef extern from "alm_healpix_tools.h":
                                Alm[xcomplex[double]] &almC,
                                int num_iter,
                                arr[double] &weight)
+
+cdef extern from "healpix_data_io.h":
+    cdef void read_weight_ring (string &dir, int nside, arr[double] &weight)
 
 cdef extern from "hack.h":
     cdef xcomplex[double]* cast_to_ptr_xcomplex_d(char *)
@@ -104,8 +111,38 @@ cdef class WrapAlm(object):
             #print "deallocating alm wrapper..."
             del self.a, self.h
 
-def map2alm(m, lmax = -1, mmax = -1, niter = 3, regression = True):
+DATAPATH = None
 
+def get_datapath():
+    global DATAPATH
+    if DATAPATH is None:
+        DATAPATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data')
+    return DATAPATH
+
+def map2alm(m, lmax = None, mmax = None, niter = 3, use_weights = False,
+            regression = True, datapath = None):
+    """Computes the alm of an Healpix map.
+
+    Parameters
+    ----------
+    m : array-like, shape (Npix,) or (3, Npix)
+      The input map or a list of 3 input maps (polariztion).
+    lmax : int, scalar, optional
+      Maximum l of the power spectrum. Default: 3*nside-1
+    mmax : int, scalar, optional
+      Maximum m of the alm. Default: lmax
+    iter : int, scalar, optional
+      Number of iteration (default: 1)
+    use_weights: bool, scalar, optional
+      If True, use the ring weighting. Default: False.
+    regression: bool, scalar, optional
+      If True, subtract map average before computing alm. Default: True.
+    
+    Returns
+    -------
+    alm : array or tuple of arrays
+      alm or a tuple of 3 alm (almT, almE, almB) if polarized input.
+    """
     # Check if the input map is polarized or not
     info = maptype(m)
     if info == 0:
@@ -128,15 +165,24 @@ def map2alm(m, lmax = -1, mmax = -1, niter = 3, regression = True):
     if polarization:
         mq = np.ascontiguousarray(mmq, dtype = np.float64)
         mu = np.ascontiguousarray(mmu, dtype = np.float64)
-    
+
     # Adjust lmax and mmax
-    cdef int lmax_ = lmax, mmax_ = mmax, nside, npix
+    cdef int lmax_, mmax_, nside, npix
     npix = mi.size
     nside = npix2nside(npix)
-    if lmax_ < 0:
+    if lmax is None:
         lmax_ = 3 * nside - 1
-    if mmax_ < 0 or mmax_ > lmax_:
+    else:
+        lmax_ = lmax
+    if mmax is None:
         mmax_ = lmax_
+    else:
+        mmax_ = mmax
+
+    # Check all maps have same npix
+    if polarization:
+        if mq.size != npix or mu.size != npix:
+            raise ValueError("Input maps must have same size")
     
     # Wrap the map into an Healpix_Map
     MI = WrapMap(mi)
@@ -166,7 +212,20 @@ def map2alm(m, lmax = -1, mmax = -1, niter = 3, regression = True):
 
     # ring weights
     cdef arr[double] * w_arr = new arr[double]()
-    w_arr.allocAndFill(2 * nside, 1.)
+    cdef int i
+    cdef char *c_datapath
+    if use_weights:
+        if datapath is None:
+            datapath = get_datapath()
+        c_datapath = datapath
+        weightfile = 'weight_ring_n%05d.fits' % (nside)
+        if not os.path.isfile(os.path.join(datapath, weightfile)):
+            raise IOError('Weight file not found in %s' % (datapath))
+        read_weight_ring(string(c_datapath), nside, w_arr[0])
+        for i in range(w_arr.size()):
+            w_arr[0][i] += 1
+    else:
+        w_arr.allocAndFill(2 * nside, 1.)
     
     if polarization:
         map2alm_pol_iter(MI.h[0], MQ.h[0], MU.h[0], AI.h[0], AG.h[0], AC.h[0],
@@ -185,5 +244,115 @@ def map2alm(m, lmax = -1, mmax = -1, niter = 3, regression = True):
         return almI
 
 
-def alm2cl(alm, lmax = None, mmax = None, nspec = None):
-    pass
+def alm2cl(alm, alm2 = None, lmax = None, mmax = None, lmax_out = None):
+    """Computes (cross-)spectra from alm(s). If alm2 is given, cross-spectra between
+    alm and alm2 are computed. If alm (and alm2 if provided) is polarized,
+    then TT, EE, BB, TE, TB, EB are computed.
+
+    Parameters
+    ----------
+    alm : complex, array or sequence of arrays
+      The alm from which to compute the power spectrum. If n>=2 arrays are given,
+      computes cross-spectra.
+    alm2 : complex, array or sequence of 3 arrays, optional
+      If provided, computes cross-spectra between alm and alm2.
+      Default: alm2=alm, so autospectra are computed.
+    lmax : None or int, optional
+      The maximum l of the input alm. Default: computed from size of alm
+      and mmax_in
+    mmax : None or int, optional
+      The maximum m of the input alm. Default: assume mmax_in = lmax_in
+    lmax_out : None or int, optional
+      The maximum l of the returned spectra. By default: the lmax of the given
+      alm(s).
+
+    Returns
+    -------
+    cl : array or tuple of 6 arrays
+      If not polarized, returns an array of size lmax + 1. If polarized,
+      returns a tuple of 6 arrays corresponding to the power spectra :
+      TT, TE, TB, EE, EB, EB (in that order)
+    """
+    # Check alm and if it is polarized
+    if not hasattr(alm, '__len__'):
+        raise ValueError('alm must be an array or a sequence of 3 arrays')
+    if hasattr(alm[0], '__len__'):
+        if len(alm) == 3:
+            polarization = True
+        else:
+            raise ValueError('alm must be an array or a sequence of 3 arrays')
+    else:
+        polarization = False
+    if alm2 is None:
+        alm2 = alm
+    if not hasattr(alm, '__len__'):
+        raise ValueError('alm must be an array or a sequence of 3 arrays')
+    if hasattr(alm[0], '__len__'):
+        if len(alm) == 3:
+            polarization2 = True
+        else:
+            raise ValueError('alm must be an array or a sequence of 3 arrays')
+    else:
+        polarization2 = False
+    if polarization != polarization2:
+        raise ValueError('both alm must be polarized')
+    # Check sizes of alm's
+    if polarization:
+        s = alm[0].size
+        for i in xrange(3):
+            if alm[i] != s or alm2[i] != s:
+                raise ValueError('all alm must have same size')
+    else:
+        s = alm.size
+        if alm.size != alm2.size:
+            raise ValueError('all alm must have same size')
+    if lmax is None:
+        if mmax is None:
+            lmax = alm_getlmax(s)
+            mmax = lmax
+        else:
+            lmax = alm_getlmax2(s, mmax)
+    if lmax_out is None:
+        lmax_out = lmax
+    cdef int j, l, m, limit
+    cdef int lmax_ = lmax, mmax_ = mmax
+    cdef int lmax_out_ = lmax_out
+    cdef np.ndarray[double, ndim=1] ctt = np.zeros(lmax + 1)
+    cdef np.ndarray[np.complex128_t, ndim=1] alm1_
+    cdef np.ndarray[np.complex128_t, ndim=1] alm2_
+    if polarization:
+        raise NotImplemented
+    else:
+        alm1_ = alm
+        alm2_ = alm2
+        for l in range(lmax_ + 1):
+            j = alm_getidx(lmax_, l, 0)
+            ctt[l] = alm1_[j].real * alm2_[j].real
+            limit = l if l <= mmax else mmax
+            for m in range(1, limit + 1):
+                j = alm_getidx(lmax_, l, m)
+                ctt[l] += 2 * (alm1_[j].real * alm2_[j].real +
+                              alm1_[j].imag * alm2_[j].imag)
+            ctt[l] /= (2 * l + 1)
+        return ctt
+
+@cython.cdivision(True)
+cdef inline int alm_getidx(int lmax, int l, int m):
+    return m*(2*lmax+1-m)/2+l
+
+
+cdef inline int alm_getlmax(int s):
+    cdef double x
+    x=(-3+np.sqrt(1+8*s))/2
+    if x != floor(x):
+        return -1
+    else:
+        return <int>floor(x)
+
+cdef inline int alm_getlmax2(int s, int mmax):
+    cdef double x
+    x = (2 * s + mmax ** 2 - mmax - 2.) / (2 * mmax + 2.)
+    if x != floor(x):
+        return -1
+    else:
+        return <int>floor(x)
