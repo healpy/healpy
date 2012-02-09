@@ -75,7 +75,8 @@ def anafast(m,lmax=None,mmax=None,iter=1,alm=False, use_weights=False, regressio
     # Replace UNSEEN pixels with zeros
     info = maptype(m)
     if info == 0:
-        m[m == UNSEEN] = 0
+        mask = mask_bad(m)
+        m[mask] = 0
     elif info == 3:
         mi, mq, mu = m
         mask = mask_bad(mi)
@@ -125,7 +126,8 @@ def map2alm(m,lmax=None,mmax=None,iter=1,use_weights=False,regression=True):
     if mmax is None or mmax < 0 or mmax > lmax:
         mmax = lmax
     # Replace UNSEEN pixels with zeros
-    m[m == UNSEEN] = 0
+    mask = mask_bad(m)
+    m[mask] = 0
     # Check the presence of weights file
     if use_weights:
         weightfile = 'weight_ring_n%05d.fits' % (nside)
@@ -370,7 +372,7 @@ class Alm(object):
     @staticmethod
     def getlmax(s,mmax=-1):
         """Returns the lmax corresponding to a given array size.
-
+        
         Parameters
         ----------
         s : int
@@ -595,7 +597,8 @@ def smoothing(m,fwhm=0.0,sigma=None,degree=False,
     else:
         raise TypeError("map must be en array or a list of 3 arrays")
     # Replace UNSEEN pixels with zeros
-    m[m == UNSEEN] = 0
+    mask = mask_bad(m)
+    m[mask] = 0
     alm = map2alm(m)
     return alm2map(alm,nside,fwhm=fwhm,sigma=sigma,
                    degree=degree,arcmin=arcmin)
