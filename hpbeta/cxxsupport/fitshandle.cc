@@ -786,6 +786,8 @@ void fitshandle::read_subimage_void (void *data, PDT type, tsize ndata,
   check_errors();
   }
 
+#if 0 // disabled because Python does not like globals with constructor
+
 namespace {
 
 class cfitsio_checker
@@ -808,3 +810,5 @@ class cfitsio_checker
 cfitsio_checker Cfitsio_Checker;
 
 } // unnamed namespace
+
+#endif
