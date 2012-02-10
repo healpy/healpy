@@ -5,7 +5,7 @@ cimport numpy as np
 #from libcpp cimport bool
 #from libcpp.vector cimport vector
 from libcpp.string cimport string
-from libc.math cimport sqrt, floor
+from libc.math cimport sqrt, floor, fabs
 cimport libc
 from healpy import npix2nside
 from healpy.pixelfunc import maptype
@@ -13,6 +13,9 @@ ctypedef unsigned size_t
 ctypedef size_t tsize
 import os
 import cython
+
+cdef double UNSEEN = -1.6375e30
+cdef double rtol_UNSEEN = 1.e-7 * 1.6375e30
 
 cdef extern from "arr.h":    
     cdef cppclass arr[T]:
@@ -162,10 +165,15 @@ def map2alm(m, lmax = None, mmax = None, niter = 3, use_weights = False,
     # Get the map as a contiguous ndarray object if it isn't
     cdef np.ndarray[np.float64_t, ndim=1] mi, mq, mu
     mi = np.ascontiguousarray(mmi, dtype = np.float64)
+    # replace bad pixels with 0.0 (otherwise, healpix_cxx crashes)
+    mask_mi = mask_and_fill_zero(mi)
+    # same for polarization maps if needed
     if polarization:
         mq = np.ascontiguousarray(mmq, dtype = np.float64)
+        mask_mq = mask_and_fill_zero(mq)
         mu = np.ascontiguousarray(mmu, dtype = np.float64)
-
+        mask_mu = mask_and_fill_zero(mu)
+        
     # Adjust lmax and mmax
     cdef int lmax_, mmax_, nside, npix
     npix = mi.size
@@ -276,86 +284,88 @@ def alm2cl(alm, alm2 = None, lmax = None, mmax = None, lmax_out = None):
       For example, if *alm* is almT, almE, almB, then the returned spectra are:
       TT, EE, BB, TE, EB, TB.
     """
-    # Check alm and if it is polarized
+    #############################
+    # Check alm and number of spectra
+    #
+    cdef int Nspec, Nspec2
     if not hasattr(alm, '__len__'):
         raise ValueError('alm must be an array or a sequence of 3 arrays')
-    if hasattr(alm[0], '__len__'):
-        polarization = True
-        Nspec = len(alm)
+    if not hasattr(alm[0], '__len__'):
+        alm_lonely = True
+        alm = [alm]
     else:
-        Nspec = 1
-        polarization = False
+        alm_lonely = False
+
+    Nspec = len(alm)
+
     if alm2 is None:
         alm2 = alm
+
     if not hasattr(alm2, '__len__'):
-        raise ValueError('alm must be an array or a sequence of 3 arrays')
-    if hasattr(alm[0], '__len__'):
-        Nspec2 = len(alm2)
-        polarization2 = True
-    else:
-        Nspec2 = 1
-        polarization2 = False
-    if polarization != polarization2 or Nspec != Nspec2:
-        raise ValueError('both alm must have same dimension')
-    # Check sizes of alm's
+        raise ValueError('alm2 must be an array or a sequence of 3 arrays')
+    if not hasattr(alm[0], '__len__'):
+        alm2 = [alm2]
+    Nspec2 = len(alm2)
+
+    if Nspec != Nspec2:
+        raise ValueError('alm and alm2 must have same number of spectra')
+
+    ##############################################
+    # Check sizes of alm's and lmax/mmax/lmax_out
+    #
     cdef int almsize
-    if polarization:
-        almsize = alm[0].size
-        for i in xrange(Nspec):
-            if alm[i].size != almsize or alm2[i].size != almsize:
-                raise ValueError('all alm must have same size')
-    else:
-        almsize = alm.size
-        if alm.size != alm2.size:
+    almsize = alm[0].size
+    for i in xrange(Nspec):
+        if alm[i].size != almsize or alm2[i].size != almsize:
             raise ValueError('all alm must have same size')
+
     if lmax is None:
         if mmax is None:
             lmax = alm_getlmax(almsize)
             mmax = lmax
         else:
             lmax = alm_getlmax2(almsize, mmax)
+
     if lmax_out is None:
         lmax_out = lmax
+
+
+    #######################
+    # Computing the spectra
+    #
     cdef int j, l, m, limit
     cdef int lmax_ = lmax, mmax_ = mmax
     cdef int lmax_out_ = lmax_out
+
     cdef np.ndarray[double, ndim=1] powspec_
     cdef np.ndarray[np.complex128_t, ndim=1] alm1_
     cdef np.ndarray[np.complex128_t, ndim=1] alm2_
-    if polarization:
-        spectra = []
-        for n in xrange(Nspec):
-            for m in xrange(0, Nspec - n):
-                powspec_ = np.zeros(lmax + 1)
-                alm1_ = alm[m]
-                alm2_ = alm2[m + n]
-                # compute cross-spectrum alm1[n] x alm2[n+m]
-                # and place result in result list
-                for l in range(lmax_ + 1):
-                    j = alm_getidx(lmax_, l, 0)
-                    powspec_[l] = alm1_[j].real * alm2_[j].real
-                    limit = l if l <= mmax else mmax
-                    for m in range(1, limit + 1):
-                        j = alm_getidx(lmax_, l, m)
-                        powspec_[l] += 2 * (alm1_[j].real * alm2_[j].real +
-                                            alm1_[j].imag * alm2_[j].imag)
-                    powspec_[l] /= (2 * l + 1)
-                spectra.append(powspec_)
-        return spectra
-    else:
-        alm1_ = alm
-        alm2_ = alm2
-        powspec_ = np.zeros(lmax + 1)
-        for l in range(lmax_ + 1):
-            j = alm_getidx(lmax_, l, 0)
-            powspec_[l] = alm1_[j].real * alm2_[j].real
-            limit = l if l <= mmax else mmax
-            for m in range(1, limit + 1):
-                j = alm_getidx(lmax_, l, m)
-                powspec_[l] += 2 * (alm1_[j].real * alm2_[j].real +
-                              alm1_[j].imag * alm2_[j].imag)
-            powspec_[l] /= (2 * l + 1)
-        return powspec_
+
+    spectra = []
+    for n in xrange(Nspec): # diagonal rank
+        for m in xrange(0, Nspec - n): # position in the diagonal
+            powspec_ = np.zeros(lmax + 1)
+            alm1_ = alm[m]
+            alm2_ = alm2[m + n]
+            # compute cross-spectrum alm1[n] x alm2[n+m]
+            # and place result in result list
+            for l in range(lmax_ + 1):
+                j = alm_getidx(lmax_, l, 0)
+                powspec_[l] = alm1_[j].real * alm2_[j].real
+                limit = l if l <= mmax else mmax
+                for m in range(1, limit + 1):
+                    j = alm_getidx(lmax_, l, m)
+                    powspec_[l] += 2 * (alm1_[j].real * alm2_[j].real +
+                                        alm1_[j].imag * alm2_[j].imag)
+                powspec_[l] /= (2 * l + 1)
+            spectra.append(powspec_)
+    
+    # if only one alm was given, returns only cl and not a list with one cl
+    if alm_lonely:
+        spectra = spectra[0]
+
+    return spectra
+
 
 @cython.cdivision(True)
 cdef inline int alm_getidx(int lmax, int l, int m):
@@ -377,3 +387,32 @@ cdef inline int alm_getlmax2(int s, int mmax):
         return -1
     else:
         return <int>floor(x)
+
+def mask_and_fill_zero(np.ndarray[double, ndim=1] m):
+    cdef int nbad
+    cdef int size = m.size
+    cdef int i
+    # first, count number of bad pixels, to see if allocating a mask is needed
+    nbad = count_bad(m)
+    cdef np.ndarray[np.int8_t, ndim=1] mask
+    if nbad == 0:
+        return False
+    else:
+        mask = np.empty(size, dtype = np.int8)
+        for i in xrange(size):
+            if fabs(m[i] - UNSEEN) < rtol_UNSEEN:
+                mask[i] = 1
+    mask.dtype = bool
+    return mask
+            
+@cython.wraparound(False)
+@cython.boundscheck(False)
+cdef int count_bad(np.ndarray[double, ndim=1] m):
+    cdef int i
+    cdef int nbad = 0
+    cdef size = m.size
+    for i in xrange(m.size):
+        if fabs(m[i] - UNSEEN) < rtol_UNSEEN:
+            nbad += 1
+    return nbad
+
