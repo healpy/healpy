@@ -102,7 +102,7 @@ def map2alm(m,lmax=None,mmax=None,iter=1,use_weights=False,regression=True):
     Parameters
     ----------
     m : array-like, shape (Npix,) or (3, Npix)
-      The input map or a list of 3 input maps (polariztion).
+      The input map or a list of 3 input maps (polarization).
     lmax : int, scalar, optional
       Maximum l of the power spectrum. Default: 3*nside-1
     mmax : int, scalar, optional
@@ -126,8 +126,21 @@ def map2alm(m,lmax=None,mmax=None,iter=1,use_weights=False,regression=True):
     if mmax is None or mmax < 0 or mmax > lmax:
         mmax = lmax
     # Replace UNSEEN pixels with zeros
-    mask = mask_bad(m)
-    m[mask] = 0
+    # Replace UNSEEN pixels with zeros
+    info = maptype(m)
+    if info == 0:
+        mask = mask_bad(m)
+        m[mask] = 0
+    elif info == 3:
+        mi, mq, mu = m
+        mask = mask_bad(mi)
+        mask |= mask_bad(mq)
+        mask |= mask_bad(mu)
+        mi[mask] = 0
+        mq[mask] = 0
+        mu[mask] = 0
+    else:
+        raise TypeError("Input map must be an array or a sequence of 3 arrays (for polarization)")
     # Check the presence of weights file
     if use_weights:
         weightfile = 'weight_ring_n%05d.fits' % (nside)
