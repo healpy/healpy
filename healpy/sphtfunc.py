@@ -220,8 +220,9 @@ def synalm(cls, lmax=-1, mmax=-1):
 
     Returns
     -------
-    : a list of n alms (with n(n+1)/2 the number of input cl,
-            or n=3 if there are 4 input cl).
+    alms : array or list of arrays
+      the generated alm if one spectrum is given, or a list of n alms 
+      (with n(n+1)/2 the number of input cl, or n=3 if there are 4 input cl).
     """
     if not isinstance(cls[0], np.ndarray):
         if lmax < 0: lmax = cls.size-1
@@ -421,8 +422,8 @@ def alm2cl(alm,mmax=-1,nspec=4):
       The maximum m for alm(s)
     nspec : int, optional
       The number of spectra to return if 3 alms were given:
-      nspec==[0-6], in order TT,EE,BB,TE,TB,EB. 
-
+      nspec==[0-6], in order TT,EE,BB,TE,TB,EB.
+      
     Returns
     -------
     cl : array or sequence of arrays
