@@ -246,17 +246,17 @@ def map2alm(m, lmax = None, mmax = None, niter = 3, use_weights = False,
 
 def alm2cl(alm, alm2 = None, lmax = None, mmax = None, lmax_out = None):
     """Computes (cross-)spectra from alm(s). If alm2 is given, cross-spectra between
-    alm and alm2 are computed. If alm (and alm2 if provided) is polarized,
-    then TT, EE, BB, TE, TB, EB are computed.
+    alm and alm2 are computed. If alm (and alm2 if provided) contains n alm,
+    then n(n+1)/2 auto and cross-spectra are returned.
 
     Parameters
     ----------
     alm : complex, array or sequence of arrays
       The alm from which to compute the power spectrum. If n>=2 arrays are given,
-      computes cross-spectra.
+      computes both auto- and cross-spectra.
     alm2 : complex, array or sequence of 3 arrays, optional
       If provided, computes cross-spectra between alm and alm2.
-      Default: alm2=alm, so autospectra are computed.
+      Default: alm2=alm, so auto-spectra are computed.
     lmax : None or int, optional
       The maximum l of the input alm. Default: computed from size of alm
       and mmax_in
@@ -268,73 +268,94 @@ def alm2cl(alm, alm2 = None, lmax = None, mmax = None, lmax_out = None):
 
     Returns
     -------
-    cl : array or tuple of 6 arrays
-      If not polarized, returns an array of size lmax + 1. If polarized,
-      returns a tuple of 6 arrays corresponding to the power spectra :
-      TT, TE, TB, EE, EB, EB (in that order)
+    cl : array or tuple of n(n+1)/2 arrays
+      the spectrum <*alm* x *alm2*> if *alm* (and *alm2*) is one alm, or 
+      the auto- and cross-spectra <*alm*[i] x *alm2*[j]> if alm (and alm2)
+      contains more than one spectra.
+      If more than one spectrum is returned, they are ordered by diagonal.
+      For example, if *alm* is almT, almE, almB, then the returned spectra are:
+      TT, EE, BB, TE, EB, TB.
     """
     # Check alm and if it is polarized
     if not hasattr(alm, '__len__'):
         raise ValueError('alm must be an array or a sequence of 3 arrays')
     if hasattr(alm[0], '__len__'):
-        if len(alm) == 3:
-            polarization = True
-        else:
-            raise ValueError('alm must be an array or a sequence of 3 arrays')
+        polarization = True
+        Nspec = len(alm)
     else:
+        Nspec = 1
         polarization = False
     if alm2 is None:
         alm2 = alm
-    if not hasattr(alm, '__len__'):
+    if not hasattr(alm2, '__len__'):
         raise ValueError('alm must be an array or a sequence of 3 arrays')
     if hasattr(alm[0], '__len__'):
-        if len(alm) == 3:
-            polarization2 = True
-        else:
-            raise ValueError('alm must be an array or a sequence of 3 arrays')
+        Nspec2 = len(alm2)
+        polarization2 = True
     else:
+        Nspec2 = 1
         polarization2 = False
-    if polarization != polarization2:
-        raise ValueError('both alm must be polarized')
+    if polarization != polarization2 or Nspec != Nspec2:
+        raise ValueError('both alm must have same dimension')
     # Check sizes of alm's
+    cdef int almsize
     if polarization:
-        s = alm[0].size
-        for i in xrange(3):
-            if alm[i] != s or alm2[i] != s:
+        almsize = alm[0].size
+        for i in xrange(Nspec):
+            if alm[i].size != almsize or alm2[i].size != almsize:
                 raise ValueError('all alm must have same size')
     else:
-        s = alm.size
+        almsize = alm.size
         if alm.size != alm2.size:
             raise ValueError('all alm must have same size')
     if lmax is None:
         if mmax is None:
-            lmax = alm_getlmax(s)
+            lmax = alm_getlmax(almsize)
             mmax = lmax
         else:
-            lmax = alm_getlmax2(s, mmax)
+            lmax = alm_getlmax2(almsize, mmax)
     if lmax_out is None:
         lmax_out = lmax
     cdef int j, l, m, limit
     cdef int lmax_ = lmax, mmax_ = mmax
     cdef int lmax_out_ = lmax_out
-    cdef np.ndarray[double, ndim=1] ctt = np.zeros(lmax + 1)
+    cdef np.ndarray[double, ndim=1] powspec_
     cdef np.ndarray[np.complex128_t, ndim=1] alm1_
     cdef np.ndarray[np.complex128_t, ndim=1] alm2_
     if polarization:
-        raise NotImplemented
+        spectra = []
+        for n in xrange(Nspec):
+            for m in xrange(0, Nspec - n):
+                powspec_ = np.zeros(lmax + 1)
+                alm1_ = alm[m]
+                alm2_ = alm2[m + n]
+                # compute cross-spectrum alm1[n] x alm2[n+m]
+                # and place result in result list
+                for l in range(lmax_ + 1):
+                    j = alm_getidx(lmax_, l, 0)
+                    powspec_[l] = alm1_[j].real * alm2_[j].real
+                    limit = l if l <= mmax else mmax
+                    for m in range(1, limit + 1):
+                        j = alm_getidx(lmax_, l, m)
+                        powspec_[l] += 2 * (alm1_[j].real * alm2_[j].real +
+                                            alm1_[j].imag * alm2_[j].imag)
+                    powspec_[l] /= (2 * l + 1)
+                spectra.append(powspec_)
+        return spectra
     else:
         alm1_ = alm
         alm2_ = alm2
+        powspec_ = np.zeros(lmax + 1)
         for l in range(lmax_ + 1):
             j = alm_getidx(lmax_, l, 0)
-            ctt[l] = alm1_[j].real * alm2_[j].real
+            powspec_[l] = alm1_[j].real * alm2_[j].real
             limit = l if l <= mmax else mmax
             for m in range(1, limit + 1):
                 j = alm_getidx(lmax_, l, m)
-                ctt[l] += 2 * (alm1_[j].real * alm2_[j].real +
+                powspec_[l] += 2 * (alm1_[j].real * alm2_[j].real +
                               alm1_[j].imag * alm2_[j].imag)
-            ctt[l] /= (2 * l + 1)
-        return ctt
+            powspec_[l] /= (2 * l + 1)
+        return powspec_
 
 @cython.cdivision(True)
 cdef inline int alm_getidx(int lmax, int l, int m):
