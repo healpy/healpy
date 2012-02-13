@@ -53,6 +53,12 @@ $ python setup.py install --install-lib=~/Softs/Python # will install healpy in 
 or
 $ python setup.py install --user # will install it in your User python directory (python >= 2.6)
 
+Compile on OSX
+--------------
+
+Suggested compilation on OSX Lion is installing pyfits, cython and cfitsio using mac ports and run:
+>>> python setup.py --without-openmp
+
 Development install
 -------------------
 
