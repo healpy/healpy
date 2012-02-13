@@ -161,19 +161,28 @@ def map2alm(m, lmax = None, mmax = None, niter = 3, use_weights = False,
         mmu = m[2]
     else:
         raise ValueError("Wrong input map (must be a valid healpix map or a sequence of 1 or 3 maps)")
-        
+    
     # Get the map as a contiguous ndarray object if it isn't
     cdef np.ndarray[np.float64_t, ndim=1] mi, mq, mu
     mi = np.ascontiguousarray(mmi, dtype = np.float64)
-    # replace bad pixels with 0.0 (otherwise, healpix_cxx crashes)
-    mask_mi = mask_and_fill_zero(mi)
+    # create UNSEEN mask for I map
+    mask_mi = False if count_bad(mi) == 0 else mkmask(mi)
     # same for polarization maps if needed
     if polarization:
         mq = np.ascontiguousarray(mmq, dtype = np.float64)
-        mask_mq = mask_and_fill_zero(mq)
+        mask_mq = False if count_bad(mq) == 0 else mkmask(mq)
         mu = np.ascontiguousarray(mmu, dtype = np.float64)
-        mask_mu = mask_and_fill_zero(mu)
-        
+        mask_mu = False if count_bad(mu) == 0 else mkmask(mu)
+
+    # replace UNSEEN pixels with zeros
+    if mask_mi is not False:
+        mi[mask_mi] = 0.0
+    if polarization:
+        if mask_mq is not False:
+            mq[mask_mq] = 0.0
+        if mask_mu is not False:
+            mu[mask_mu] = 0.0
+
     # Adjust lmax and mmax
     cdef int lmax_, mmax_, nside, npix
     npix = mi.size
@@ -240,6 +249,15 @@ def map2alm(m, lmax = None, mmax = None, niter = 3, use_weights = False,
                          niter, w_arr[0])
     else:
         map2alm_iter(MI.h[0], AI.h[0], niter, w_arr[0])
+    
+    # restore input map with UNSEEN pixels
+    if mask_mi is not False:
+        mi[mask_mi] = UNSEEN
+    if polarization:
+        if mask_mq is not False:
+            mq[mask_mq] = UNSEEN
+        if mask_mu is not False:
+            mu[mask_mu] = UNSEEN
     
     if regression:
         MI.h.Add(avg)
@@ -388,18 +406,22 @@ cdef inline int alm_getlmax2(int s, int mmax):
     else:
         return <int>floor(x)
 
-def mask_and_fill_zero(np.ndarray[double, ndim=1] m):
+@cython.wraparound(False)
+@cython.boundscheck(False)
+def mkmask(np.ndarray[double, ndim=1] m):
     cdef int nbad
     cdef int size = m.size
     cdef int i
     # first, count number of bad pixels, to see if allocating a mask is needed
     nbad = count_bad(m)
     cdef np.ndarray[np.int8_t, ndim=1] mask
+    cdef np.ndarray[double, ndim=1] m_
     if nbad == 0:
         return False
     else:
-        mask = np.empty(size, dtype = np.int8)
-        for i in xrange(size):
+        mask = np.zeros(size, dtype = np.int8)
+        m_ = m
+        for i in range(size):
             if fabs(m[i] - UNSEEN) < rtol_UNSEEN:
                 mask[i] = 1
     mask.dtype = bool
