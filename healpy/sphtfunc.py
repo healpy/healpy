@@ -24,6 +24,7 @@ pi = np.pi
 
 import _healpy_sph_transform_lib as sphtlib
 import _healpy_fitsio_lib as hfitslib
+import healpy._ianafast as _ianafast
 
 import os.path
 import pixelfunc
@@ -33,12 +34,18 @@ from pixelfunc import mask_bad, maptype, UNSEEN
 DATAPATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data')
 
 # Spherical harmonics transformation
-def anafast(m,lmax=None,mmax=None,iter=1,alm=False, use_weights=False, regression=True):
-    """Computes the power spectrum of an Healpix map.
+def anafast(map1, map2 = None, lmax = None, mmax = None, 
+            iter=3, alm=False, use_weights=False, regression=True, 
+            datapath = None):
+    """Computes the power spectrum of an Healpix map, or the cross-spectrum
+    between two maps if *map2* is given.
 
     Parameters
     ----------
-    m : float, array-like shape (Npix,) or (3, Npix)
+    map1 : float, array-like shape (Npix,) or (3, Npix)
+      Either an array representing a map, or a sequence of 3 arrays
+      representing I, Q, U maps
+    map2 : float, array-like shape (Npix,) or (3, Npix)
       Either an array representing a map, or a sequence of 3 arrays
       representing I, Q, U maps
     lmax : int, scalar, optional
@@ -46,57 +53,46 @@ def anafast(m,lmax=None,mmax=None,iter=1,alm=False, use_weights=False, regressio
     mmax : int, scalar, optional
       Maximum m of the alm (default: lmax)
     iter : int, scalar, optional
-      Number of iteration (default: 1)
+      Number of iteration (default: 3)
     alm : bool, scalar, optional
       If True, returns both cl and alm, otherwise only cl is returned
     regression : bool, scalar, optional
       If True, map average is removed before computing alm. Default: True.
-    
+    datapath : None or str, optional
+      If given, the directory where to find the weights data.
+
     Returns
     -------
     res : array or sequence of arrays
-      If *alm* is False, returns cl or a list of cl (TT, EE, BB, TE for
+      If *alm* is False, returns cl or a list of cl's (TT, EE, BB, TE, EB, TB for
       polarized input map)
       Otherwise, returns a tuple (cl, alm), where cl is as above and
       alm is the spherical harmonic transform or a list of almT, almE, almB
       for polarized input
     """
-    datapath = DATAPATH #os.path.dirname(__file__)+'/data'
-    nside = _get_nside(m)
-    if lmax is None:
-        lmax = 3*nside-1
-    if mmax is None or mmax < 0 or mmax > lmax:
-        mmax = lmax
-    # Check the presence of weights file
-    if use_weights:
-        weightfile = 'weight_ring_n%05d.fits' % (nside)
-        if not os.path.isfile(datapath+'/'+weightfile):
-            raise IOError('File not found : '+datapath+'/'+weightfile)
-    # Replace UNSEEN pixels with zeros
-    info = maptype(m)
-    if info == 0:
-        mask = mask_bad(m)
-        m[mask] = 0
-    elif info == 3:
-        mi, mq, mu = m
-        mask = mask_bad(mi)
-        mask |= mask_bad(mq)
-        mask |= mask_bad(mu)
-        mi[mask] = 0
-        mq[mask] = 0
-        mu[mask] = 0
+    alms1 = _ianafast.map2alm(map1, niter = iter, regression = regression, 
+                              datapath = datapath, use_weights = use_weights,
+                              lmax = lmax, mmax = mmax)
+    if map2 is not None:
+        alms2 = _ianafast.map2alm(map2, niter = iter, regression = regression, 
+                                  datapath = datapath, use_weights = use_weights,
+                                  lmax = lmax, mmax = mmax)
     else:
-        raise TypeError("Input map must be an array or a sequence of 3 arrays (for polarization)")
-    #m[m == UNSEEN] = 0
-    clout,almout = sphtlib._map2alm(m,lmax=lmax,mmax=mmax,iter=iter,cl=True,
-                                    use_weights=use_weights,data_path=datapath,
-                                    regression=regression)
-    if alm:
-        return (clout,almout)
-    else:
-        return clout
+        alms2 = None
+    
+    cls = _ianafast.alm2cl(alms1, alm2 = alms2, lmax = lmax, mmax = mmax,
+                           lmax_out = lmax)
 
-def map2alm(m,lmax=None,mmax=None,iter=1,use_weights=False,regression=True):
+    if alm:
+        if map2 is not None:
+            return (cls,alms1, alms2)
+        else:
+            return (cls, alms1)
+    else:
+        return cls
+
+def map2alm(m, lmax=None, mmax=None, iter=3, use_weights=False, regression=True,
+            datapath = None):
     """Computes the alm of an Healpix map.
 
     Parameters
@@ -108,7 +104,7 @@ def map2alm(m,lmax=None,mmax=None,iter=1,use_weights=False,regression=True):
     mmax : int, scalar, optional
       Maximum m of the alm. Default: lmax
     iter : int, scalar, optional
-      Number of iteration (default: 1)
+      Number of iteration (default: 3)
     use_weights: bool, scalar, optional
       If True, use the ring weighting. Default: False.
     regression: bool, scalar, optional
@@ -119,39 +115,10 @@ def map2alm(m,lmax=None,mmax=None,iter=1,use_weights=False,regression=True):
     alm : array or tuple of array
       alm or a tuple of 3 alm (almT, almE, almB) if polarized input.
     """
-    datapath = DATAPATH #os.path.dirname(__file__)+'/data'
-    nside = _get_nside(m)
-    if lmax is None:
-        lmax = 3*nside-1
-    if mmax is None or mmax < 0 or mmax > lmax:
-        mmax = lmax
-    # Replace UNSEEN pixels with zeros
-    # Replace UNSEEN pixels with zeros
-    info = maptype(m)
-    if info == 0:
-        mask = mask_bad(m)
-        m[mask] = 0
-    elif info == 3:
-        mi, mq, mu = m
-        mask = mask_bad(mi)
-        mask |= mask_bad(mq)
-        mask |= mask_bad(mu)
-        mi[mask] = 0
-        mq[mask] = 0
-        mu[mask] = 0
-    else:
-        raise TypeError("Input map must be an array or a sequence of 3 arrays (for polarization)")
-    # Check the presence of weights file
-    if use_weights:
-        weightfile = 'weight_ring_n%05d.fits' % (nside)
-        if not os.path.isfile(datapath+'/'+weightfile):
-            raise IOError('File not found : '+datapath+'/'+weightfile)
-    alm = sphtlib._map2alm(m,lmax=lmax,mmax=mmax,cl=False,
-                           iter=iter,
-                           use_weights=use_weights,data_path=datapath,
-                           regression=regression)
+    alm = _ianafast.map2alm(m, niter = iter, regression = regression, 
+                            datapath = datapath, use_weights = use_weights,
+                            lmax = lmax, mmax = mmax)
     return alm
-
 
 def alm2map(alm, nside, lmax=-1, mmax=-1,pixwin=False,
             fwhm=0.0,sigma=None,degree=False,arcmin=False):

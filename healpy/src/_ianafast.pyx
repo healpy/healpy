@@ -307,7 +307,7 @@ def alm2cl(alm, alm2 = None, lmax = None, mmax = None, lmax_out = None):
     #
     cdef int Nspec, Nspec2
     if not hasattr(alm, '__len__'):
-        raise ValueError('alm must be an array or a sequence of 3 arrays')
+        raise ValueError('alm must be an array or a sequence of arrays')
     if not hasattr(alm[0], '__len__'):
         alm_lonely = True
         alm = [alm]
@@ -318,13 +318,13 @@ def alm2cl(alm, alm2 = None, lmax = None, mmax = None, lmax_out = None):
 
     if alm2 is None:
         alm2 = alm
-
+    
     if not hasattr(alm2, '__len__'):
-        raise ValueError('alm2 must be an array or a sequence of 3 arrays')
-    if not hasattr(alm[0], '__len__'):
+        raise ValueError('alm2 must be an array or a sequence of arrays')
+    if not hasattr(alm2[0], '__len__'):
         alm2 = [alm2]
     Nspec2 = len(alm2)
-
+    
     if Nspec != Nspec2:
         raise ValueError('alm and alm2 must have same number of spectra')
 
