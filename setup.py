@@ -230,7 +230,7 @@ else:
                                 libraries = healpix_pshyt_libs,
                                 library_dirs = library_dirs),
                       Extension("healpy._query_disc", 
-                                ['healpy/src/_query_disc.'+ext],
+                                ['healpy/src/_query_disc.'+ext.replace('c','cpp')],
                                 include_dirs = [numpy_inc, healpix_cxx_inc],
                                 libraries = healpix_libs,
                                 library_dirs = library_dirs,
