@@ -155,9 +155,9 @@ Fail if the joblist is not empty.
    cdef double *_map
    cdef pshtd_cmplx *_alm
 
-   alm_proxy=c_numpy.PyArray_ContiguousFromAny(alm,c_numpy.np_COMPLEX128,1,1)
+   alm_proxy=c_numpy.PyArray_ContiguousFromAny(alm,c_numpy.NPY_COMPLEX128,1,1)
    if rmap !=None:
-     rmap_proxy=c_numpy.PyArray_ContiguousFromAny(rmap,c_numpy.np_DOUBLE,1,1)
+     rmap_proxy=c_numpy.PyArray_ContiguousFromAny(rmap,c_numpy.NPY_DOUBLE,1,1)
      addo = 1
    else:
      rmap_proxy = self._newmap()
@@ -175,15 +175,15 @@ Fail if the joblist is not empty.
    cdef double *_mapT,*_mapQ,*_mapU
    cdef pshtd_cmplx *_almT,*_almG,*_almC
 
-   almT_proxy=c_numpy.PyArray_ContiguousFromAny(alm[0],c_numpy.np_COMPLEX128,1,1)
-   almG_proxy=c_numpy.PyArray_ContiguousFromAny(alm[1],c_numpy.np_COMPLEX128,1,1)
-   almC_proxy=c_numpy.PyArray_ContiguousFromAny(alm[2],c_numpy.np_COMPLEX128,1,1)
+   almT_proxy=c_numpy.PyArray_ContiguousFromAny(alm[0],c_numpy.NPY_COMPLEX128,1,1)
+   almG_proxy=c_numpy.PyArray_ContiguousFromAny(alm[1],c_numpy.NPY_COMPLEX128,1,1)
+   almC_proxy=c_numpy.PyArray_ContiguousFromAny(alm[2],c_numpy.NPY_COMPLEX128,1,1)
    if rmap !=None:
      if _howManyMaps(rmap)!=3:
        raise pshtError("not enough maps")
-     rmapT_proxy=c_numpy.PyArray_ContiguousFromAny(rmap[0],c_numpy.np_DOUBLE,1,1)
-     rmapQ_proxy=c_numpy.PyArray_ContiguousFromAny(rmap[1],c_numpy.np_DOUBLE,1,1)
-     rmapU_proxy=c_numpy.PyArray_ContiguousFromAny(rmap[2],c_numpy.np_DOUBLE,1,1)
+     rmapT_proxy=c_numpy.PyArray_ContiguousFromAny(rmap[0],c_numpy.NPY_DOUBLE,1,1)
+     rmapQ_proxy=c_numpy.PyArray_ContiguousFromAny(rmap[1],c_numpy.NPY_DOUBLE,1,1)
+     rmapU_proxy=c_numpy.PyArray_ContiguousFromAny(rmap[2],c_numpy.NPY_DOUBLE,1,1)
      addo = 1
    else:
      rmapT_proxy = self._newmap()
@@ -232,10 +232,10 @@ Fail if the joblist is not empty.
    cdef double *_map
    cdef pshtd_cmplx *_alm
 
-   rmap_proxy=c_numpy.PyArray_ContiguousFromAny(rmap,c_numpy.np_DOUBLE,1,1)
+   rmap_proxy=c_numpy.PyArray_ContiguousFromAny(rmap,c_numpy.NPY_DOUBLE,1,1)
 
    if alm !=None:
-     alm_proxy=c_numpy.PyArray_ContiguousFromAny(alm,c_numpy.np_COMPLEX128,1,1)
+     alm_proxy=c_numpy.PyArray_ContiguousFromAny(alm,c_numpy.NPY_COMPLEX128,1,1)
      addo = 1
    else:
      alm_proxy = self._newalm()
@@ -253,16 +253,16 @@ Fail if the joblist is not empty.
    cdef double *_mapT,*_mapQ,*_mapU
    cdef pshtd_cmplx *_almT,*_almG,*_almC
 
-   rmapT_proxy=c_numpy.PyArray_ContiguousFromAny(rmap[0],c_numpy.np_DOUBLE,1,1)
-   rmapQ_proxy=c_numpy.PyArray_ContiguousFromAny(rmap[1],c_numpy.np_DOUBLE,1,1)
-   rmapU_proxy=c_numpy.PyArray_ContiguousFromAny(rmap[2],c_numpy.np_DOUBLE,1,1)
+   rmapT_proxy=c_numpy.PyArray_ContiguousFromAny(rmap[0],c_numpy.NPY_DOUBLE,1,1)
+   rmapQ_proxy=c_numpy.PyArray_ContiguousFromAny(rmap[1],c_numpy.NPY_DOUBLE,1,1)
+   rmapU_proxy=c_numpy.PyArray_ContiguousFromAny(rmap[2],c_numpy.NPY_DOUBLE,1,1)
 
    if alm !=None:
      if _howManyMaps(alm)!=3:
        raise pshtError("not enough alm")
-     almT_proxy=c_numpy.PyArray_ContiguousFromAny(alm[0],c_numpy.np_COMPLEX128,1,1)
-     almG_proxy=c_numpy.PyArray_ContiguousFromAny(alm[1],c_numpy.np_COMPLEX128,1,1)
-     almC_proxy=c_numpy.PyArray_ContiguousFromAny(alm[2],c_numpy.np_COMPLEX128,1,1)
+     almT_proxy=c_numpy.PyArray_ContiguousFromAny(alm[0],c_numpy.NPY_COMPLEX128,1,1)
+     almG_proxy=c_numpy.PyArray_ContiguousFromAny(alm[1],c_numpy.NPY_COMPLEX128,1,1)
+     almC_proxy=c_numpy.PyArray_ContiguousFromAny(alm[2],c_numpy.NPY_COMPLEX128,1,1)
      addo = 1
    else:
      almT_proxy = self._newalm()
@@ -298,14 +298,14 @@ Add a alm2map_spin transform to the job list.
    if _howManyMaps(alm)!=2:
      raise pshtError("not enough alm")
 
-   alm1_proxy=c_numpy.PyArray_ContiguousFromAny(alm[0],c_numpy.np_COMPLEX128,1,1)
-   alm2_proxy=c_numpy.PyArray_ContiguousFromAny(alm[1],c_numpy.np_COMPLEX128,1,1)
+   alm1_proxy=c_numpy.PyArray_ContiguousFromAny(alm[0],c_numpy.NPY_COMPLEX128,1,1)
+   alm2_proxy=c_numpy.PyArray_ContiguousFromAny(alm[1],c_numpy.NPY_COMPLEX128,1,1)
 
    if rmap !=None:
      if _howManyMaps(rmap)!=2:
        raise pshtError("not enough map")
-     rmap1_proxy=c_numpy.PyArray_ContiguousFromAny(rmap[0],c_numpy.np_DOUBLE,1,1)
-     rmap2_proxy=c_numpy.PyArray_ContiguousFromAny(rmap[1],c_numpy.np_DOUBLE,1,1)
+     rmap1_proxy=c_numpy.PyArray_ContiguousFromAny(rmap[0],c_numpy.NPY_DOUBLE,1,1)
+     rmap2_proxy=c_numpy.PyArray_ContiguousFromAny(rmap[1],c_numpy.NPY_DOUBLE,1,1)
      addo = 1
    else:
      rmap1_proxy = self._newmap()
@@ -337,14 +337,14 @@ Add a map2alm_spin transform to the job list.
    if _howManyMaps(rmap)!=2:
      raise pshtError("not enough map")
 
-   rmap1_proxy=c_numpy.PyArray_ContiguousFromAny(rmap[0],c_numpy.np_DOUBLE,1,1)
-   rmap2_proxy=c_numpy.PyArray_ContiguousFromAny(rmap[1],c_numpy.np_DOUBLE,1,1)
+   rmap1_proxy=c_numpy.PyArray_ContiguousFromAny(rmap[0],c_numpy.NPY_DOUBLE,1,1)
+   rmap2_proxy=c_numpy.PyArray_ContiguousFromAny(rmap[1],c_numpy.NPY_DOUBLE,1,1)
 
    if alm !=None:
      if _howManyMaps(alm)!=2:
        raise pshtError("not enough alm")
-     alm1_proxy=c_numpy.PyArray_ContiguousFromAny(alm[0],c_numpy.np_COMPLEX128,1,1)
-     alm2_proxy=c_numpy.PyArray_ContiguousFromAny(alm[1],c_numpy.np_COMPLEX128,1,1)
+     alm1_proxy=c_numpy.PyArray_ContiguousFromAny(alm[0],c_numpy.NPY_COMPLEX128,1,1)
+     alm2_proxy=c_numpy.PyArray_ContiguousFromAny(alm[1],c_numpy.NPY_COMPLEX128,1,1)
      addo = 1
    else:
      alm1_proxy = self._newalm()
@@ -372,13 +372,13 @@ Add a alm2map_der1 transform to the job list.
    cdef double *_map1,*_map2
    cdef pshtd_cmplx *_alm
 
-   alm_proxy=c_numpy.PyArray_ContiguousFromAny(alm,c_numpy.np_COMPLEX128,1,1)
+   alm_proxy=c_numpy.PyArray_ContiguousFromAny(alm,c_numpy.NPY_COMPLEX128,1,1)
 
    if rmap !=None:
      if _howManyMaps(rmap)!=2:
        raise pshtError("not enough map")
-     rmap1_proxy=c_numpy.PyArray_ContiguousFromAny(rmap[0],c_numpy.np_DOUBLE,1,1)
-     rmap2_proxy=c_numpy.PyArray_ContiguousFromAny(rmap[1],c_numpy.np_DOUBLE,1,1)
+     rmap1_proxy=c_numpy.PyArray_ContiguousFromAny(rmap[0],c_numpy.NPY_DOUBLE,1,1)
+     rmap2_proxy=c_numpy.PyArray_ContiguousFromAny(rmap[1],c_numpy.NPY_DOUBLE,1,1)
      addo = 1
    else:
      rmap1_proxy = self._newmap()
@@ -538,26 +538,26 @@ Computes the spinned alm of two Healpix maps using PSHT.
  res = jb.execute()
  return res[0]
 
-#def alm2map_der1(alm,nside,lmax=None,mmax=None):
-# """alm2map_der1(alm,nside,lmax=None,mmax=None)
-#Computes two healpix maps corresponding to the derivatives of an alm using PSHT.
-#
-# Input:
-#   - alm : the alm
-# Parameters:
-#   - nside : nside of the result maps
-#   - lmax : maximum l of the power spectrum. Default: 3*nside-1
-#   - mmax : maximum m of the alm. Default: lmax
-# Return:
-#   - a list of two maps
-# """
-# lmax,mmax = __tlm(lmax,mmax)
-# if lmax==-1:
-#   lmax = __getlmax(len(alm),mmax)
-# jb = job(nside,lmax,mmax)
-# jb.add_alm2map_der1(alm)
-# res = jb.execute()
-# return res[0]
+def alm2map_der1(alm,nside,lmax=None,mmax=None):
+ """alm2map_der1(alm,nside,lmax=None,mmax=None)
+Computes two healpix maps corresponding to the derivatives of an alm using PSHT.
+
+ Input:
+   - alm : the alm
+ Parameters:
+   - nside : nside of the result maps
+   - lmax : maximum l of the power spectrum. Default: 3*nside-1
+   - mmax : maximum m of the alm. Default: lmax
+ Return:
+   - a list of two maps
+ """
+ lmax,mmax = __tlm(lmax,mmax)
+ if lmax==-1:
+   lmax = __getlmax(len(alm),mmax)
+ jb = job(nside,lmax,mmax)
+ jb.add_alm2map_der1(alm)
+ res = jb.execute()
+ return res[0]
 
 def __getlmax_from_hp(s,mmax=-1):
    if mmax >= 0:
