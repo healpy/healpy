@@ -70,13 +70,13 @@ def anafast(map1, map2 = None, lmax = None, mmax = None,
       alm is the spherical harmonic transform or a list of almT, almE, almB
       for polarized input
     """
-    alms1 = _ianafast.map2alm(map1, niter = iter, regression = regression, 
-                              datapath = datapath, use_weights = use_weights,
-                              lmax = lmax, mmax = mmax)
+    alms1 = map2alm(map1, lmax = lmax, mmax = mmax, niter = iter, 
+                    use_weights = use_weights, regression = regression, 
+                    datapath = datapath)
     if map2 is not None:
-        alms2 = _ianafast.map2alm(map2, niter = iter, regression = regression, 
-                                  datapath = datapath, use_weights = use_weights,
-                                  lmax = lmax, mmax = mmax)
+        alms2 = map2alm(map1, lmax = lmax, mmax = mmax, niter = iter, 
+                    use_weights = use_weights, regression = regression, 
+                    datapath = datapath)
     else:
         alms2 = None
     
@@ -167,7 +167,7 @@ def alm2map(alm, nside, lmax=-1, mmax=-1,pixwin=False,
             alm = almxfl(alm,pw[0],inplace=True)
     return sphtlib._alm2map(alm,nside,lmax=lmax,mmax=mmax)
 
-def synalm(cls, lmax=-1, mmax=-1):
+def synalm(cls, lmax=-1, mmax=-1, new = False):
     """Generate a set of alm given cl.
     The cl are given as a float array. Corresponding alm are generated.
     If lmax is not given or negative, it is assumed lmax=cl.size-1
@@ -191,7 +191,10 @@ def synalm(cls, lmax=-1, mmax=-1):
       the generated alm if one spectrum is given, or a list of n alms 
       (with n(n+1)/2 the number of input cl, or n=3 if there are 4 input cl).
     """
-    if not isinstance(cls[0], np.ndarray):
+    if not hasattr(cls, '__len__'):
+        raise TypeError('cls must be an array or a sequence of arrays')
+
+    if not hasattr(cls[0], '__len__'):
         if lmax < 0: lmax = cls.size-1
         if mmax < 0: mmax = lmax
         cls_list = [cls]
@@ -202,36 +205,39 @@ def synalm(cls, lmax=-1, mmax=-1):
         alms_list=[alm]
         sphtlib._synalm(cls_list,alms_list,lmax,mmax)
         return alm
-    # otherwise, cls must be a sequence of arrays
-    try:
-        cls_list = list(cls)
-        maxsize = 0
-        for c in cls_list:
-            if c is not None:
-                if c.size > maxsize: maxsize=c.size
-    except:
-        raise TypeError("First argument must be an array or a sequence of arrays.")
+
+    cls_list = list(cls)
+    maxsize = max([len(c) for c in cls])
+
     if lmax < 0: lmax = maxsize-1
     if mmax < 0: mmax = lmax
-    if sphtlib._getn(len(cls_list)) <= 0:
-        if len(cls_list) == 4:  # if 4 cls are given, assume TT, TE, EE, BB
-            cls_list = [cls[0], cls[1], None, cls[2], None, cls[3]]
+
+    Nspec = sphtlib._getn(len(cls_list))
+
+    if Nspec <= 0:
+        if len(cls_list) == 4:
+            if new: ## new input order: TT EE BB TE -> TT EE BB TE 0 0
+                cls_list = [cls[0], cls[1], cls[2], cls[3], None, None]
+            else: ## old input order: TT TE EE BB -> TT TE 0 EE 0 BB
+                cls_list = [cls[0], cls[1], None, cls[2], None, cls[3]]
+            Nspec = 3
         else:
             raise TypeError("The sequence of arrays must have either 4 elements "
-                            "(TT,TE,EE,BB)\n"
                             "or n(n+1)/2 elements (some may be None)")
+    
+    print 'Nspec=', Nspec
+    
     szalm = Alm.getsize(lmax,mmax)
     alms_list = []
-    for i in xrange(sphtlib._getn(len(cls_list))):
+    for i in xrange(Nspec):
         alm = np.zeros(szalm,'D')
         alm.real = np.random.standard_normal(szalm)
         alm.imag = np.random.standard_normal(szalm)
         alms_list.append(alm)
+    if new: # new input order: input given by diagonal, should be given by row
+        cls_list = new_to_old_spectra_order(cls_list)
     sphtlib._synalm(cls_list, alms_list, lmax, mmax)
-    if len(alms_list) > 1:
-        return alms_list
-    else:
-        return alms_list[0]
+    return alms_list
 
 def synfast(cls,nside,lmax=-1,mmax=-1,alm=False,
             pixwin=False,fwhm=0.0,sigma=None,degree=False,
@@ -377,66 +383,47 @@ class Alm(object):
 
 
 
-def alm2cl(alm,mmax=-1,nspec=4):
-    """Compute the auto- and cross- spectra of the given alm's
-    (either 1 alm or 3 alm).
+def alm2cl(alms1, alms2 = None, lmax = None, mmax = None,
+           lmax_out = None, nspec = None):
+    """Computes (cross-)spectra from alm(s). If alm2 is given, cross-spectra between
+    alm and alm2 are computed. If alm (and alm2 if provided) contains n alm,
+    then n(n+1)/2 auto and cross-spectra are returned.
 
     Parameters
     ----------
-    alm : array or sequence of arrays
-      one array or a sequence of 3 arrays of identical size
-    mmax : int, optional
-      The maximum m for alm(s)
-    nspec : int, optional
-      The number of spectra to return if 3 alms were given:
-      nspec==[0-6], in order TT,EE,BB,TE,TB,EB.
-      
+    alm : complex, array or sequence of arrays
+      The alm from which to compute the power spectrum. If n>=2 arrays are given,
+      computes both auto- and cross-spectra.
+    alm2 : complex, array or sequence of 3 arrays, optional
+      If provided, computes cross-spectra between alm and alm2.
+      Default: alm2=alm, so auto-spectra are computed.
+    lmax : None or int, optional
+      The maximum l of the input alm. Default: computed from size of alm
+      and mmax_in
+    mmax : None or int, optional
+      The maximum m of the input alm. Default: assume mmax_in = lmax_in
+    lmax_out : None or int, optional
+      The maximum l of the returned spectra. By default: the lmax of the given
+      alm(s).
+    nspec : None or int, optional
+      The number of spectra to return. None means all, otherwise returns cl[:nspec]
+
     Returns
     -------
-    cl : array or sequence of arrays
-      the power spectrum estimated from alm.
+    cl : array or tuple of n(n+1)/2 arrays
+      the spectrum <*alm* x *alm2*> if *alm* (and *alm2*) is one alm, or 
+      the auto- and cross-spectra <*alm*[i] x *alm2*[j]> if alm (and alm2)
+      contains more than one spectra.
+      If more than one spectrum is returned, they are ordered by diagonal.
+      For example, if *alm* is almT, almE, almB, then the returned spectra are:
+      TT, EE, BB, TE, EB, TB.
     """
-    # this is the expected lmax, given mmax
-    if isinstance(alm,np.ndarray) and alm.ndim == 1:
-        lmax = Alm.getlmax(alm.size,mmax)
-        if lmax < 0:
-            raise TypeError('Wrong alm size for the given mmax.')
-        if mmax<0:
-            mmax=lmax
-        cl_est = np.zeros(lmax+1)
-        for l in range(lmax+1):
-            i=Alm.getidx(lmax,l,np.arange(min(mmax,l)+1))
-            cl_est[l] = (np.abs(alm[i[0]])**2
-                         +2.*np.sum(np.abs(alm[i[1:]])**2))/(2*l+1)
-        return cl_est
+    cls = _ianafast.alm2cl(alms1, alms2 = alms2, lmax = lmax,
+                           mmax = mmax, lmax_out = lmax_out)
+    if nspec is None:
+        return cls
     else:
-        almT,almE,almB=tuple(alm)
-        lmax = Alm.getlmax(almT.size,mmax)
-        if lmax < 0:
-            raise TypeError('Wrong alm size for the given mmax.')
-        if mmax<0:
-            mmax=lmax
-        ctt_est = np.zeros(lmax+1)
-        cee_est = np.zeros(lmax+1)
-        cbb_est = np.zeros(lmax+1)
-        cte_est = np.zeros(lmax+1)
-        ctb_est = np.zeros(lmax+1)
-        ceb_est = np.zeros(lmax+1)
-        for l in range(lmax+1):
-            i=Alm.getidx(lmax,l,np.arange(min(mmax,l)+1))
-            ctt_est[l] = (np.abs(almT[i[0]])**2
-                          +2.*np.sum(np.abs(almT[i[1:]])**2))/(2*l+1)
-            cee_est[l] = (np.abs(almE[i[0]])**2
-                          +2.*np.sum(np.abs(almE[i[1:]])**2))/(2*l+1)
-            cbb_est[l] = (np.abs(almB[i[0]])**2
-                          +2.*np.sum(np.abs(almB[i[1:]])**2))/(2*l+1)
-            cte_est[l] = (almT[i[0]]*almE[i[0]].conj()
-                          +2.*np.sum(almT[i[1:]]*almE[i[1:]].conj()))/(2*l+1)
-            ctb_est[l] = (almT[i[0]]*almB[i[0]].conj()
-                          +2.*np.sum(almT[i[1:]]*almB[i[1:]].conj()))/(2*l+1)
-            ceb_est[l] = (almE[i[0]]*almB[i[0]].conj()
-                          +2.*np.sum(almE[i[1:]]*almB[i[1:]].conj()))/(2*l+1)
-        return (ctt_est,cee_est,cbb_est,cte_est,ctb_est,ceb_est)[:nspec]
+        return cls[:nspec]
         
     
 def almxfl(alm,fl,mmax=-1,inplace=False):
@@ -661,3 +648,35 @@ def _get_nside(m):
         raise TypeError('You must give an array or a tuple of arrays '
                         'as input')
     return nside
+
+def new_to_old_spectra_order(cls_new_order):
+    """Reorder the cls from new order (by diagonal) to old order (by row).
+    For example : TT, EE, BB, TE, EB, BB => TT, TE, TB, EE, EB, BB
+    """
+    Nspec = sphtlib._getn(len(cls_new_order))
+    cls_old_order = []
+    for i in xrange(Nspec):
+        for j in xrange(i, Nspec):
+            p = j - i
+            q = i
+            idx_new = p * (2 * Nspec + 1 - p) / 2 + q
+            cls_old_order.append(cls_new_order[idx_new])
+    return cls_old_order
+
+def load_sample_spectra():
+    """Read a sample power spectra for testing and demo purpose.
+    Based on LambdaCDM. Gives TT, EE, BB, TE.
+
+    Returns
+    -------
+    ell, f, cls : arrays
+      ell is the array of ell values (from 0 to lmax)
+      f is the factor ell*(ell+1)/2pi (in general, plots show f * cl)
+      cls is a sequence of the power spectra TT, EE, BB and TE
+    """
+    cls = np.loadtxt(os.path.join(DATAPATH, 'totcls.dat'), unpack = True)
+    ell = cls[0]
+    f = ell * (ell + 1) / 2 / np.pi
+    cls[1:, 1:] /= f[1:]
+    return ell, f, cls[1:]
+
