@@ -35,8 +35,8 @@ DATAPATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data')
 
 # Spherical harmonics transformation
 def anafast(map1, map2 = None, lmax = None, mmax = None, 
-            iter=3, alm=False, use_weights=False, regression=True, 
-            datapath = None):
+            iter = 3, alm = False, use_weights = False, regression = True, 
+            datapath = None, nspec = None):
     """Computes the power spectrum of an Healpix map, or the cross-spectrum
     between two maps if *map2* is given.
 
@@ -48,6 +48,9 @@ def anafast(map1, map2 = None, lmax = None, mmax = None,
     map2 : float, array-like shape (Npix,) or (3, Npix)
       Either an array representing a map, or a sequence of 3 arrays
       representing I, Q, U maps
+    nspec : None or int, optional
+      The number of spectra to return. If None, returns all, otherwise
+      returns cls[:nspec]
     lmax : int, scalar, optional
       Maximum l of the power spectrum (default: 3*nside-1)
     mmax : int, scalar, optional
@@ -74,25 +77,25 @@ def anafast(map1, map2 = None, lmax = None, mmax = None,
                     use_weights = use_weights, regression = regression, 
                     datapath = datapath)
     if map2 is not None:
-        alms2 = map2alm(map1, lmax = lmax, mmax = mmax, niter = iter, 
+        alms2 = map2alm(map2, lmax = lmax, mmax = mmax, niter = iter, 
                     use_weights = use_weights, regression = regression, 
                     datapath = datapath)
     else:
         alms2 = None
     
-    cls = _ianafast.alm2cl(alms1, alm2 = alms2, lmax = lmax, mmax = mmax,
-                           lmax_out = lmax)
+    cls = alm2cl(alms1, alm2 = alms2, lmax = lmax, mmax = mmax,
+                 lmax_out = lmax, nspec = nspec)
 
     if alm:
         if map2 is not None:
-            return (cls,alms1, alms2)
+            return (cls, alms1, alms2)
         else:
             return (cls, alms1)
     else:
         return cls
 
-def map2alm(m, lmax=None, mmax=None, iter=3, use_weights=False, regression=True,
-            datapath = None):
+def map2alm(m, lmax = None, mmax = None, iter = 3, use_weights = False, 
+            regression = True, datapath = None):
     """Computes the alm of an Healpix map.
 
     Parameters
@@ -120,8 +123,8 @@ def map2alm(m, lmax=None, mmax=None, iter=3, use_weights=False, regression=True,
                             lmax = lmax, mmax = mmax)
     return alm
 
-def alm2map(alm, nside, lmax=-1, mmax=-1,pixwin=False,
-            fwhm=0.0,sigma=None,degree=False,arcmin=False):
+def alm2map(alm, nside, lmax = None, mmax = None, pixwin = False,
+            fwhm = 0.0, sigma = None):
     """Computes an Healpix map given the alm.
 
     The alm are given as a complex array. You can specify lmax
@@ -134,18 +137,16 @@ def alm2map(alm, nside, lmax=-1, mmax=-1,pixwin=False,
       A complex array of alm. Size must be of the form mmax*(lmax-mmax+1)/2+lmax
     nside : int, scalar
       The nside of the output map.
-    lmax : int, scalar, optional
+    lmax : None or int, scalar, optional
       Explicitly define lmax (needed if mmax!=lmax)
-    mmax : int, scalar, optional
+    mmax : None or int, scalar, optional
       Explicitly define mmax (needed if mmax!=lmax)
     fwhm : float, scalar, optional
       The fwhm of the Gaussian used to smooth the map (applied on alm)
+      [in radians]
     sigma : float, scalar, optional
       The sigma of the Gaussian used to smooth the map (applied on alm)
-    degree : bool, scalar, optional
-      If True, unit of sigma or fwhm is degree, otherwise it is radian
-    arcmin : bool, scalar, optional
-      If True, unit of sigma or fwhm is arcmin, otherwise it is radian
+      [in radians]
 
     Returns
     -------
@@ -153,7 +154,7 @@ def alm2map(alm, nside, lmax=-1, mmax=-1,pixwin=False,
       An Healpix map in RING scheme at nside or a list of T,Q,U maps (if
       polarized input)
     """
-    smoothalm(alm,fwhm=fwhm,sigma=sigma,degree=degree,arcmin=arcmin)
+    smoothalm(alm, fwhm = fwhm, sigma = sigma)
     if pixwin:
         pw=globals()['pixwin'](nside,True)
         if type(alm[0]) is np.ndarray:
@@ -165,13 +166,17 @@ def alm2map(alm, nside, lmax=-1, mmax=-1,pixwin=False,
             alm[2] = almxfl(alm[2],pw[1],inplace=True)
         else:
             alm = almxfl(alm,pw[0],inplace=True)
-    return sphtlib._alm2map(alm,nside,lmax=lmax,mmax=mmax)
+    if lmax is None:
+        lmax = -1
+    if mmax is None:
+        mmax = -1
+    return sphtlib._alm2map(alm, nside, lmax = lmax, mmax = mmax)
 
-def synalm(cls, lmax=-1, mmax=-1, new = False):
+def synalm(cls, lmax = None, mmax = None, new = False):
     """Generate a set of alm given cl.
     The cl are given as a float array. Corresponding alm are generated.
-    If lmax is not given or negative, it is assumed lmax=cl.size-1
-    If mmax is not given or negative, it is assumed mmax=lmax.
+    If lmax is None, it is assumed lmax=cl.size-1
+    If mmax is None, it is assumed mmax=lmax.
 
     Parameters
     ----------
@@ -181,9 +186,9 @@ def synalm(cls, lmax=-1, mmax=-1, new = False):
       cross-correlation. For example, (TT,TE,TB,EE,EB,BB).
       NOTE: this order differs from the alm2cl function !
     lmax : int, scalar, optional
-      The lmax (if <0, the largest size-1 of cls)
+      The lmax (if None or <0, the largest size-1 of cls)
     mmax : int, scalar, optional
-      The mmax (if <0, =lmax)
+      The mmax (if None or <0, =lmax)
 
     Returns
     -------
@@ -195,8 +200,10 @@ def synalm(cls, lmax=-1, mmax=-1, new = False):
         raise TypeError('cls must be an array or a sequence of arrays')
 
     if not hasattr(cls[0], '__len__'):
-        if lmax < 0: lmax = cls.size-1
-        if mmax < 0: mmax = lmax
+        if lmax is None or lmax < 0:
+            lmax = cls.size-1
+        if mmax is None or mmax < 0:
+            mmax = lmax
         cls_list = [cls]
         szalm = Alm.getsize(lmax,mmax)
         alm = np.zeros(szalm,'D')
@@ -209,8 +216,10 @@ def synalm(cls, lmax=-1, mmax=-1, new = False):
     cls_list = list(cls)
     maxsize = max([len(c) for c in cls])
 
-    if lmax < 0: lmax = maxsize-1
-    if mmax < 0: mmax = lmax
+    if lmax is None or lmax < 0:
+        lmax = maxsize-1
+    if mmax is None or mmax < 0:
+        mmax = lmax
 
     Nspec = sphtlib._getn(len(cls_list))
 
@@ -239,9 +248,8 @@ def synalm(cls, lmax=-1, mmax=-1, new = False):
     sphtlib._synalm(cls_list, alms_list, lmax, mmax)
     return alms_list
 
-def synfast(cls,nside,lmax=-1,mmax=-1,alm=False,
-            pixwin=False,fwhm=0.0,sigma=None,degree=False,
-            arcmin=False):
+def synfast(cls, nside, lmax = None, mmax = None, alm = False,
+            pixwin = False,fwhm = 0.0,sigma = None, new = False):
     """Create a map(s) from cl(s).
 
     Parameters
@@ -260,12 +268,10 @@ def synfast(cls,nside,lmax=-1,mmax=-1,alm=False,
       If True, convolve the alm by the pixel window function. Default: False.
     fwhm : float, scalar, optional
       The fwhm of the Gaussian used to smooth the map (applied on alm)
+      [in radians]
     sigma : float, scalar, optional
       The sigma of the Gaussian used to smooth the map (applied on alm)
-    degree : bool, scalar, optional
-      If True, unit of sigma or fwhm is degree, otherwise it is radian
-    arcmin : bool, scalar, optional
-      If True, unit of sigma or fwhm is arcmin, otherwise it is radian
+      [in radians]
 
     Returns
     -------
@@ -276,14 +282,15 @@ def synfast(cls,nside,lmax=-1,mmax=-1,alm=False,
     """
     if not pixelfunc.isnsideok(nside):
         raise ValueError("Wrong nside value (must be a power of two).")
-    if lmax < 0:
+    if lmax is None or lmax < 0:
         lmax = 3*nside-1
-    alms = synalm(cls,lmax,mmax)
-    maps = alm2map(alms,nside,lmax,mmax,pixwin=pixwin,
-                   fwhm=fwhm,sigma=sigma,degree=degree,
-                   arcmin=arcmin)
-    if alm: return maps,alms
-    else: return maps
+    alms = synalm(cls, lmax = lmax, mmax = mmax, new = new)
+    maps = alm2map(alms, nside, lmax, mmax, pixwin = pixwin,
+                   fwhm = fwhm, sigma = sigma, new = new)
+    if alm:
+        return maps,alms
+    else:
+        return maps
     
 class Alm(object):
     """This class provides some static methods for alm index computation.
@@ -337,7 +344,7 @@ class Alm(object):
         return m*(2*lmax+1-m)/2+l
 
     @staticmethod
-    def getsize(lmax,mmax=-1):
+    def getsize(lmax,mmax = None):
         """Returns the size of the array needed to store alm up to *lmax* and *mmax*
 
         Parameters
@@ -352,19 +359,19 @@ class Alm(object):
         size : int
           The size of the array needed to store alm up to lmax, mmax.
         """
-        if mmax<0 or mmax > lmax:
-            mmax=lmax
-        return mmax*(2*lmax+1-mmax)/2+lmax+1
+        if mmax is None or mmax < 0 or mmax > lmax:
+            mmax = lmax
+        return mmax * (2 * lmax + 1 - mmax) / 2 + lmax + 1
 
     @staticmethod
-    def getlmax(s,mmax=-1):
+    def getlmax(s, mmax = None):
         """Returns the lmax corresponding to a given array size.
         
         Parameters
         ----------
         s : int
           Size of the array
-        mmax : int, optional
+        mmax : None or int, optional
           The maximum m, defines the alm layout. Default: lmax.
 
         Returns
@@ -372,15 +379,14 @@ class Alm(object):
         lmax : int
           The maximum l of the array, or -1 if it is not a valid size.
         """
-        if mmax >= 0:
-            x=(2*s+mmax**2-mmax-2)/(2*mmax+2)
+        if mmax is not None and mmax >= 0:
+            x = (2 * s + mmax ** 2 - mmax - 2) / (2 * mmax + 2)
         else:
-            x=(-3+np.sqrt(1+8*s))/2
+            x = (-3 + np.sqrt(1 + 8 * s)) / 2
         if x != np.floor(x):
             return -1
         else:
             return int(x)
-
 
 
 def alm2cl(alms1, alms2 = None, lmax = None, mmax = None,
@@ -426,7 +432,7 @@ def alm2cl(alms1, alms2 = None, lmax = None, mmax = None,
         return cls[:nspec]
         
     
-def almxfl(alm,fl,mmax=-1,inplace=False):
+def almxfl(alm, fl, mmax = None, inplace = False):
     """Multiply alm by a function of l. The function is assumed
     to be zero where not defined.
 
@@ -436,7 +442,7 @@ def almxfl(alm,fl,mmax=-1,inplace=False):
       The alm to multiply
     fl : array
       The function (at l=0..fl.size-1) by which alm must be multiplied.
-    mmax : int, optional
+    mmax : None or int, optional
       The maximum m defining the alm layout. Default: lmax.
     inplace : bool, optional
       If True, modify the given alm, otherwise make a copy before multiplying.
@@ -447,10 +453,10 @@ def almxfl(alm,fl,mmax=-1,inplace=False):
       The modified alm, either a new array or a reference to input alm, if inplace is True.
     """
     # this is the expected lmax, given mmax
-    lmax = Alm.getlmax(alm.size,mmax)
+    lmax = Alm.getlmax(alm.size, mmax)
     if lmax < 0:
         raise TypeError('Wrong alm size for the given mmax.')
-    if mmax<0:
+    if mmax is None or mmax<0:
         mmax=lmax
     fl = np.array(fl)
     if inplace:
@@ -462,12 +468,12 @@ def almxfl(alm,fl,mmax=-1,inplace=False):
             a=fl[l]
         else:
             a=0
-        i=Alm.getidx(lmax,l,np.arange(min(mmax,l)+1))
+        i=Alm.getidx(lmax, l, np.arange(min(mmax,l) + 1))
         almout[i] *= a
     return almout
 
-def smoothalm(alm,fwhm=0.0,sigma=None,degree=False,
-              arcmin=False,mmax=-1,verbose=False):
+def smoothalm(alm, fwhm = 0.0, sigma = None, mmax = -1,
+              verbose = False):
     """Smooth alm with a Gaussian symmetric beam function in place.
 
     Parameters
@@ -477,13 +483,11 @@ def smoothalm(alm,fwhm=0.0,sigma=None,degree=False,
       3 arrays representing 3 alm
     fwhm : float, optional
       The full width half max parameter of the Gaussian. Default:0.0
+      [in radians]
     sigma : float, optional
       The sigma of the Gaussian. Override fwhm.
-    degree : bool, optional
-      If True, parameter given in degree. Override arcmin. Default: False
-    arcmin : bool, optional
-      If True, parameter given in arcmin. Default: False
-    mmax : int, optional
+      [in radians]
+    mmax : None or int, optional
       The maximum m for alm. Default: mmax=lmax
     verbose : bool, optional
       If True prints diagnostic information. Default: False
@@ -494,10 +498,6 @@ def smoothalm(alm,fwhm=0.0,sigma=None,degree=False,
     """
     if sigma is None:
         sigma = fwhm / (2.*np.sqrt(2.*np.log(2.)))
-    if degree:
-        sigma *= (pi/180.)
-    elif arcmin:
-        sigma *= (pi/180./60.)
     if verbose:
         print "Sigma is %f arcmin (%f rad) " %  (sigma*60*180/pi,sigma)
         print "-> fwhm is %f arcmin" % (sigma*60*180/pi*(2.*np.sqrt(2.*np.log(2.))))
@@ -506,11 +506,11 @@ def smoothalm(alm,fwhm=0.0,sigma=None,degree=False,
             raise ValueError("alm must be en array or a sequence of 3 arrays")
         retval = []
         for a in alm:
-            lmax = Alm.getlmax(a.size,mmax)
+            lmax = Alm.getlmax(a.size, mmax)
             if lmax < 0:
                 raise TypeError('Wrong alm size for the given '
                                 'mmax (alms[%d]).'%(a.size))
-            if mmax<0:
+            if mmax is None or mmax < 0:
                 mmax=lmax
             ell = np.arange(lmax+1)
             fact = np.exp(-0.5*ell*(ell+1)*sigma**2)
@@ -521,15 +521,14 @@ def smoothalm(alm,fwhm=0.0,sigma=None,degree=False,
         if lmax < 0:
             raise TypeError('Wrong alm size for the given '
                             'mmax (alms[%d]).'%(a.size))
-        if mmax<0:
+        if mmax is None or mmax<0:
             mmax=lmax
         ell = np.arange(lmax+1)
         fact = np.exp(-0.5*ell*(ell+1)*sigma**2)
         almxfl(alm,fact,mmax,inplace=True)
         return None
 
-def smoothing(m,fwhm=0.0,sigma=None,degree=False,
-              arcmin=False):
+def smoothing(m, fwhm = 0.0, sigma = None):
     """Smooth a map with a Gaussian symmetric beam.
 
     Parameters
@@ -541,12 +540,6 @@ def smoothing(m,fwhm=0.0,sigma=None,degree=False,
       The full width half max parameter of the Gaussian. Default:0.0
     sigma : float, optional
       The sigma of the Gaussian. Override fwhm.
-    degree : bool, optional
-      If True, parameter given in degree. Override arcmin. Default: False
-    arcmin : bool, optional
-      If True, parameter given in arcmin. Default: False
-    mmax : int, optional
-      The maximum m for alm. Default: mmax=lmax
 
     Returns
     -------
@@ -568,10 +561,10 @@ def smoothing(m,fwhm=0.0,sigma=None,degree=False,
     mask = mask_bad(m)
     m[mask] = 0
     alm = map2alm(m)
-    return alm2map(alm,nside,fwhm=fwhm,sigma=sigma,
-                   degree=degree,arcmin=arcmin)
+    return alm2map(alm,nside,fwhm=fwhm,sigma=sigma)
 
-def pixwin(nside,pol=False):
+
+def pixwin(nside, pol = False):
     """Return the pixel window function for the given nside.
 
     Parameters
@@ -609,7 +602,7 @@ def pixwin(nside,pol=False):
     else:
         return pw_temp
 
-def alm2map_der1(alm, nside, lmax=-1, mmax=-1):
+def alm2map_der1(alm, nside, lmax = None, mmax = None):
    """Computes an Healpix map and its first derivatives given the alm.
 
    The alm are given as a complex array. You can specify lmax
@@ -622,15 +615,16 @@ def alm2map_der1(alm, nside, lmax=-1, mmax=-1):
      A complex array of alm. Size must be of the form mmax(lmax-mmax+1)/2+lmax
    nside : int
      The nside of the output map.
-   lmax : int, optional
+   lmax : None or int, optional
      Explicitly define lmax (needed if mmax!=lmax)
-   mmax : int, optional
+   mmax : None or int, optional
      Explicitly define mmax (needed if mmax!=lmax)
 
    Returns
    -------
    m, d_theta, d_phi : tuple of arrays
-     The maps correponding to alm, and its derivatives with respect to theta and phi.
+     The maps correponding to alm, and its derivatives with respect to
+     theta and phi.
    """
    return sphtlib._alm2map_der1(alm,nside,lmax=lmax,mmax=mmax)
 
