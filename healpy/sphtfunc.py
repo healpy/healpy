@@ -433,7 +433,7 @@ def alm2cl(alms1, alms2 = None, lmax = None, mmax = None,
         return cls
     else:
         return cls[:nspec]
-        
+
     
 def almxfl(alm, fl, mmax = None, inplace = False):
     """Multiply alm by a function of l. The function is assumed
@@ -456,24 +456,7 @@ def almxfl(alm, fl, mmax = None, inplace = False):
       The modified alm, either a new array or a reference to input alm, 
       if inplace is True.
     """
-    # this is the expected lmax, given mmax
-    lmax = Alm.getlmax(alm.size, mmax)
-    if lmax < 0:
-        raise TypeError('Wrong alm size for the given mmax.')
-    if mmax is None or mmax<0:
-        mmax=lmax
-    fl = np.array(fl)
-    if inplace:
-        almout = alm
-    else:
-        almout = alm.copy()
-    for l in xrange(lmax+1):
-        if l < fl.size:
-            a=fl[l]
-        else:
-            a=0
-        i=Alm.getidx(lmax, l, np.arange(min(mmax,l) + 1))
-        almout[i] *= a
+    almout = _sphtools.almxfl(alm, fl, mmax = mmax, inplace = inplace)
     return almout
 
 def smoothalm(alm, fwhm = 0.0, sigma = None, mmax = -1,

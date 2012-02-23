@@ -385,11 +385,68 @@ def alm2cl(alm, alm2 = None, lmax = None, mmax = None, lmax_out = None):
     return spectra
 
 
+@cython.wraparound(False)
+@cython.boundscheck(False)
+def almxfl(alm, fl, mmax = None, inplace = False):
+    """Multiply an a_lm by a vector b_l.
+
+    Parameters
+    ----------
+    alm : array, double
+      The array representing the spherical harmonics coefficients
+    fl : array, double
+      The array giving the factor f_l by which to multiply a_lm
+    mmax : None or int, optional
+      The maximum m of the input alm
+    inplace : bool, optional
+      If True, performs the computation in-place if possible (input alm
+      is modified if it is a 1d-array of type float64). Otherwise,
+      a copy of alm is done.
+
+    Returns
+    -------
+    alm : array, double
+      The result of a_lm * f_l. If *inplace* is True, returns the input
+      alm modified
+    """
+    cdef np.ndarray[np.complex128_t, ndim=1] alm_
+    cdef np.ndarray[np.complex128_t, ndim=1] fl_
+
+    if inplace:
+        alm_ = np.ascontiguousarray(alm, dtype = np.complex128)
+    else:
+        alm_ = np.array(alm, dtype = np.complex128, copy = True)
+    
+    fl_ = np.ascontiguousarray(fl, dtype = np.complex128)
+
+    cdef int lmax_, mmax_
+    cdef int l, m
+    if mmax is None:
+        lmax_ = alm_getlmax(alm_.size)
+        mmax_ = lmax_
+    else:
+        lmax_ = alm_getlmax2(alm_.size, mmax)
+        mmax_ = mmax
+    
+    cdef np.complex128_t f
+    cdef int maxm, i
+    cdef int flsize = fl_.size
+    for l in xrange(lmax_ + 1):
+        f = fl_[l] if l < flsize else 0.
+        maxm = l if l <= mmax_ else mmax_
+        for m in xrange(maxm + 1):
+            i = alm_getidx(lmax_, l, m)
+            alm_[i] *= f
+
+    return alm_
+
+
 @cython.cdivision(True)
 cdef inline int alm_getidx(int lmax, int l, int m):
     return m*(2*lmax+1-m)/2+l
 
 
+@cython.cdivision(True)
 cdef inline int alm_getlmax(int s):
     cdef double x
     x=(-3+np.sqrt(1+8*s))/2
@@ -398,6 +455,7 @@ cdef inline int alm_getlmax(int s):
     else:
         return <int>floor(x)
 
+@cython.cdivision(True)
 cdef inline int alm_getlmax2(int s, int mmax):
     cdef double x
     x = (2 * s + mmax ** 2 - mmax - 2.) / (2 * mmax + 2.)
