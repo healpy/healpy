@@ -10,3 +10,4 @@ doc/generated
 *~
 hpbeta/build.*
 hpbeta/healpy_*
+healpy/src/_ianafast.cpp
