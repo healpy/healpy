@@ -25,6 +25,7 @@ pi = np.pi
 import _healpy_sph_transform_lib as sphtlib
 import _healpy_fitsio_lib as hfitslib
 import healpy._ianafast as _ianafast
+import healpy.cookbook as cb
 
 import os.path
 import pixelfunc
@@ -196,10 +197,10 @@ def synalm(cls, lmax = None, mmax = None, new = False):
       the generated alm if one spectrum is given, or a list of n alms 
       (with n(n+1)/2 the number of input cl, or n=3 if there are 4 input cl).
     """
-    if not hasattr(cls, '__len__'):
+    if not cb.is_seq(cls):
         raise TypeError('cls must be an array or a sequence of arrays')
 
-    if not hasattr(cls[0], '__len__'):
+    if not cb.is_seq_of_seq(cls):
         # Only one spectrum
         if lmax is None or lmax < 0:
             lmax = cls.size-1
@@ -504,21 +505,34 @@ def smoothalm(alm, fwhm = 0.0, sigma = None, mmax = -1,
     if verbose:
         print "Sigma is %f arcmin (%f rad) " %  (sigma*60*180/pi,sigma)
         print "-> fwhm is %f arcmin" % (sigma*60*180/pi*(2.*np.sqrt(2.*np.log(2.))))
-    if type(alm[0]) == np.ndarray:
-        if len(alm) != 3:
-            raise ValueError("alm must be en array or a sequence of 3 arrays")
-        retval = []
-        for a in alm:
-            lmax = Alm.getlmax(a.size, mmax)
-            if lmax < 0:
-                raise TypeError('Wrong alm size for the given '
-                                'mmax (alms[%d]).'%(a.size))
-            if mmax is None or mmax < 0:
-                mmax=lmax
-            ell = np.arange(lmax+1)
-            fact = np.exp(-0.5*ell*(ell+1)*sigma**2)
-            almxfl(a,fact,mmax,inplace=True)
-        return None
+    # Check alm
+    if not cb.is_seq(alm):
+        raise ValueError("alm must be a sequence")
+    
+    if cb.is_seq_of_seq(alm):
+        if len(alm) == 1:
+            alm = alm[0]
+        elif len(alm) != 3:
+            raise ValueError("alm must be a sequence of scalar or"
+                             " of 1 or 3 sequences")
+        else:
+            # we have 3 alms -> apply smoothing to each map.
+            # BUG: polarization has different B_l from temperature
+            # exp{-[ell(ell+1) - s**2] * sigma**2/2}
+            # with s the spin of spherical harmonics
+            # s = 2 for pol, s=0 for temperature
+            retval = []
+            for a in alm:
+                lmax = Alm.getlmax(a.size, mmax)
+                if lmax < 0:
+                    raise TypeError('Wrong alm size for the given '
+                                    'mmax (alms[%d]).'%(a.size))
+                if mmax is None or mmax < 0:
+                    mmax=lmax
+                ell = np.arange(lmax+1)
+                fact = np.exp(-0.5*ell*(ell+1)*sigma**2)
+                almxfl(a,fact,mmax,inplace=True)
+            return None
     else:
         lmax = Alm.getlmax(alm.size,mmax)
         if lmax < 0:
@@ -635,20 +649,6 @@ def alm2map_der1(alm, nside, lmax = None, mmax = None):
        mmax = -1
    return sphtlib._alm2map_der1(alm,nside,lmax=lmax,mmax=mmax)
 
-# Helper function : get nside from m, an array or a sequence
-# of arrays
-def _get_nside(m):
-    if hasattr(m,'__len__'):
-        if len(m) == 0:
-            raise TypeError('Empty sequence !')
-        if hasattr(m[0],'__len__'):
-            nside=pixelfunc.npix2nside(len(m[0]))
-        else:
-            nside=pixelfunc.npix2nside(len(m))
-    else:
-        raise TypeError('You must give an array or a tuple of arrays '
-                        'as input')
-    return nside
 
 def new_to_old_spectra_order(cls_new_order):
     """Reorder the cls from new order (by diagonal) to old order (by row).
