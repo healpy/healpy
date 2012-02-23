@@ -24,7 +24,7 @@ pi = np.pi
 
 import _healpy_sph_transform_lib as sphtlib
 import _healpy_fitsio_lib as hfitslib
-import healpy._ianafast as _ianafast
+import healpy._sphtools as _sphtools
 import healpy.cookbook as cb
 
 import os.path
@@ -119,7 +119,7 @@ def map2alm(m, lmax = None, mmax = None, iter = 3, use_weights = False,
     alm : array or tuple of array
       alm or a tuple of 3 alm (almT, almE, almB) if polarized input.
     """
-    alm = _ianafast.map2alm(m, niter = iter, regression = regression, 
+    alm = _sphtools.map2alm(m, niter = iter, regression = regression, 
                             datapath = datapath, use_weights = use_weights,
                             lmax = lmax, mmax = mmax)
     return alm
@@ -427,7 +427,7 @@ def alm2cl(alms1, alms2 = None, lmax = None, mmax = None,
       For example, if *alm* is almT, almE, almB, then the returned spectra are:
       TT, EE, BB, TE, EB, TB.
     """
-    cls = _ianafast.alm2cl(alms1, alms2 = alms2, lmax = lmax,
+    cls = _sphtools.alm2cl(alms1, alms2 = alms2, lmax = lmax,
                            mmax = mmax, lmax_out = lmax_out)
     if nspec is None:
         return cls
