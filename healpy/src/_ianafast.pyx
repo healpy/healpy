@@ -429,7 +429,7 @@ def mkmask(np.ndarray[double, ndim=1] m):
             
 @cython.wraparound(False)
 @cython.boundscheck(False)
-cdef int count_bad(np.ndarray[double, ndim=1] m):
+cpdef int count_bad(np.ndarray[double, ndim=1] m):
     cdef int i
     cdef int nbad = 0
     cdef size = m.size

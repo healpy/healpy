@@ -34,9 +34,9 @@ from pixelfunc import mask_bad, maptype, UNSEEN
 DATAPATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data')
 
 # Spherical harmonics transformation
-def anafast(map1, map2 = None, lmax = None, mmax = None, 
+def anafast(map1, map2 = None, nspec = None, lmax = None, mmax = None, 
             iter = 3, alm = False, use_weights = False, regression = True, 
-            datapath = None, nspec = None):
+            datapath = None):
     """Computes the power spectrum of an Healpix map, or the cross-spectrum
     between two maps if *map2* is given.
 
@@ -200,6 +200,7 @@ def synalm(cls, lmax = None, mmax = None, new = False):
         raise TypeError('cls must be an array or a sequence of arrays')
 
     if not hasattr(cls[0], '__len__'):
+        # Only one spectrum
         if lmax is None or lmax < 0:
             lmax = cls.size-1
         if mmax is None or mmax < 0:
@@ -213,6 +214,7 @@ def synalm(cls, lmax = None, mmax = None, new = False):
         sphtlib._synalm(cls_list,alms_list,lmax,mmax)
         return alm
 
+    # From here, we interpret cls as a list of spectra
     cls_list = list(cls)
     maxsize = max([len(c) for c in cls])
 
@@ -450,7 +452,8 @@ def almxfl(alm, fl, mmax = None, inplace = False):
     Returns
     -------
     alm : array
-      The modified alm, either a new array or a reference to input alm, if inplace is True.
+      The modified alm, either a new array or a reference to input alm, 
+      if inplace is True.
     """
     # this is the expected lmax, given mmax
     lmax = Alm.getlmax(alm.size, mmax)
@@ -626,6 +629,10 @@ def alm2map_der1(alm, nside, lmax = None, mmax = None):
      The maps correponding to alm, and its derivatives with respect to
      theta and phi.
    """
+   if lmax is None:
+       lmax = -1
+   if mmax is None:
+       mmax = -1
    return sphtlib._alm2map_der1(alm,nside,lmax=lmax,mmax=mmax)
 
 # Helper function : get nside from m, an array or a sequence
