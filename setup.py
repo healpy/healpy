@@ -237,8 +237,8 @@ else:
                                 libraries = healpix_libs,
                                 library_dirs = library_dirs,
                                 language='c++'),
-                      Extension("healpy._ianafast", 
-                                ['healpy/src/_ianafast.'+ext],
+                      Extension("healpy._sphtools", 
+                                ['healpy/src/_sphtools.'+ext],
                                 include_dirs = [numpy_inc, healpix_cxx_inc],
                                 libraries = healpix_libs,
                                 library_dirs = library_dirs,
@@ -246,7 +246,7 @@ else:
                                 extra_link_args = extra_link,
                                 language='c++')
                       ]
-    for e in extension_list[-2:]: #extra setup for Cython extensions
+    for e in extension_list[-3:]: #extra setup for Cython extensions
         e.pyrex_directives = {"embedsignature": True}
 
 setup(name='healpy',
