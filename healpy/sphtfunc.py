@@ -655,6 +655,8 @@ def new_to_old_spectra_order(cls_new_order):
     For example : TT, EE, BB, TE, EB, BB => TT, TE, TB, EE, EB, BB
     """
     Nspec = sphtlib._getn(len(cls_new_order))
+    if Nspec < 0:
+        raise ValueError("Input must be a list of n(n+1)/2 arrays")
     cls_old_order = []
     for i in xrange(Nspec):
         for j in xrange(i, Nspec):
