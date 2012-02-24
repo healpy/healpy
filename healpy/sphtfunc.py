@@ -459,13 +459,13 @@ def almxfl(alm, fl, mmax = None, inplace = False):
     almout = _sphtools.almxfl(alm, fl, mmax = mmax, inplace = inplace)
     return almout
 
-def smoothalm(alm, fwhm = 0.0, sigma = None, mmax = -1,
-              verbose = False):
-    """Smooth alm with a Gaussian symmetric beam function in place.
+def smoothalm(alms, fwhm = 0.0, sigma = None, mmax = None,
+              verbose = False, inplace = True):
+    """Smooth alm with a Gaussian symmetric beam function.
 
     Parameters
     ----------
-    alm : array or sequence of 3 arrays
+    alms : array or sequence of 3 arrays
       Either an array representing one alm, or a sequence of
       3 arrays representing 3 alm
     fwhm : float, optional
@@ -476,57 +476,68 @@ def smoothalm(alm, fwhm = 0.0, sigma = None, mmax = -1,
       [in radians]
     mmax : None or int, optional
       The maximum m for alm. Default: mmax=lmax
+    inplace : bool, optional
+      If True, the alm's are modified inplace if they are contiguous arrays
+      of type complex128. Otherwise, a copy of alm is made. Default: True.
     verbose : bool, optional
       If True prints diagnostic information. Default: False
 
     Returns
     -------
-    None
+    alms : array or sequence of 3 arrays
+      The smoothed alm. If alm[i] is a contiguous array of type complex128,
+      and *inplace* is True the smoothing is applied inplace.
+      Otherwise, a copy is made.
     """
     if sigma is None:
         sigma = fwhm / (2.*np.sqrt(2.*np.log(2.)))
     if verbose:
         print "Sigma is %f arcmin (%f rad) " %  (sigma*60*180/pi,sigma)
         print "-> fwhm is %f arcmin" % (sigma*60*180/pi*(2.*np.sqrt(2.*np.log(2.))))
-    # Check alm
-    if not cb.is_seq(alm):
+    # Check alms
+    if not cb.is_seq(alms):
         raise ValueError("alm must be a sequence")
+
+    lonely = False
+    if not cb.is_seq_of_seq(alms):
+        alms = [alms]
+        lonely = True
     
-    if cb.is_seq_of_seq(alm):
-        if len(alm) == 1:
-            alm = alm[0]
-        elif len(alm) != 3:
-            raise ValueError("alm must be a sequence of scalar or"
-                             " of 1 or 3 sequences")
-        else:
-            # we have 3 alms -> apply smoothing to each map.
-            # BUG: polarization has different B_l from temperature
-            # exp{-[ell(ell+1) - s**2] * sigma**2/2}
-            # with s the spin of spherical harmonics
-            # s = 2 for pol, s=0 for temperature
-            retval = []
-            for a in alm:
-                lmax = Alm.getlmax(a.size, mmax)
-                if lmax < 0:
-                    raise TypeError('Wrong alm size for the given '
-                                    'mmax (alms[%d]).'%(a.size))
-                if mmax is None or mmax < 0:
-                    mmax=lmax
-                ell = np.arange(lmax+1)
-                fact = np.exp(-0.5*ell*(ell+1)*sigma**2)
-                almxfl(a,fact,mmax,inplace=True)
-            return None
-    else:
-        lmax = Alm.getlmax(alm.size,mmax)
+    if len(alms) not in (1, 3):
+        raise ValueError("alms must be a sequence of scalar or"
+                         " of 1 or 3 sequences")
+    # we have 3 alms -> apply smoothing to each map.
+    # BUG: polarization has different B_l from temperature
+    # exp{-[ell(ell+1) - s**2] * sigma**2/2}
+    # with s the spin of spherical harmonics
+    # s = 2 for pol, s=0 for temperature
+    retalm = []
+    for ialm, alm in enumerate(alms):
+        lmax = Alm.getlmax(len(alm), mmax)
         if lmax < 0:
             raise TypeError('Wrong alm size for the given '
-                            'mmax (alms[%d]).'%(a.size))
-        if mmax is None or mmax<0:
-            mmax=lmax
-        ell = np.arange(lmax+1)
-        fact = np.exp(-0.5*ell*(ell+1)*sigma**2)
-        almxfl(alm,fact,mmax,inplace=True)
-        return None
+                            'mmax (len(alms[%d]) = %d).'%(ialm, len(alm)))
+        ell = np.arange(lmax + 1.)
+        s = 2 if ialm >= 1 else 0
+        fact = np.exp(-0.5 * (ell * (ell + 1) - s ** 2) * sigma ** 2)
+        res = almxfl(alm, fact, mmax = mmax, inplace = inplace)
+        retalm.append(res)
+    # Test what to return (inplace/not inplace...)
+    # Case 1: 1d input, return 1d output
+    if lonely:
+        return retalm[0]
+    # case 2: 2d input, check if in-place smoothing for all alm's
+    for i in xrange(len(alms)):
+        samearray = alms[i] is retalm[i]
+        if not samearray:
+            # Case 2a:
+            # at least one of the alm could not be smoothed in place:
+            # return the list of alm
+            return retalm
+    # Case 2b:
+    # all smoothing have been performed in place:
+    # return the input alms
+    return alms
 
 def smoothing(m, fwhm = 0.0, sigma = None):
     """Smooth a map with a Gaussian symmetric beam.

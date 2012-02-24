@@ -262,6 +262,6 @@ setup(name='healpy',
                   'healpy.projaxes','healpy.version'],
       cmdclass = {'build_ext': build_ext},
       ext_modules = extension_list,
-      package_data = {'healpy': ['data/*.fits']},
+      package_data = {'healpy': ['data/*.fits', 'data/totcls.dat']},
       license='GPLv2'
       )
