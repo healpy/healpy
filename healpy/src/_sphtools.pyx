@@ -122,7 +122,7 @@ def get_datapath():
         DATAPATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data')
     return DATAPATH
 
-def map2alm(m, lmax = None, mmax = None, niter = 3, use_weights = False,
+def map2alm(m, lmax = None, mmax = None, niter = 3, use_weights = False, 
             regression = True, datapath = None):
     """Computes the alm of an Healpix map.
 
@@ -160,7 +160,8 @@ def map2alm(m, lmax = None, mmax = None, niter = 3, use_weights = False,
         mmq = m[1]
         mmu = m[2]
     else:
-        raise ValueError("Wrong input map (must be a valid healpix map or a sequence of 1 or 3 maps)")
+        raise ValueError("Wrong input map (must be a valid healpix map "
+                         "or a sequence of 1 or 3 maps)")
     
     # Get the map as a contiguous ndarray object if it isn't
     cdef np.ndarray[np.float64_t, ndim=1] mi, mq, mu
@@ -466,19 +467,19 @@ cdef inline int alm_getlmax2(int s, int mmax):
 
 @cython.wraparound(False)
 @cython.boundscheck(False)
-def mkmask(np.ndarray[double, ndim=1] m):
+cpdef mkmask(np.ndarray[double, ndim=1] m):
     cdef int nbad
     cdef int size = m.size
     cdef int i
     # first, count number of bad pixels, to see if allocating a mask is needed
     nbad = count_bad(m)
     cdef np.ndarray[np.int8_t, ndim=1] mask
-    cdef np.ndarray[double, ndim=1] m_
+    #cdef np.ndarray[double, ndim=1] m_
     if nbad == 0:
         return False
     else:
         mask = np.zeros(size, dtype = np.int8)
-        m_ = m
+        #m_ = m
         for i in range(size):
             if fabs(m[i] - UNSEEN) < rtol_UNSEEN:
                 mask[i] = 1

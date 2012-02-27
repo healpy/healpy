@@ -28,16 +28,16 @@ import healpy._sphtools as _sphtools
 import healpy.cookbook as cb
 
 import os.path
-import pixelfunc
+import healpy.pixelfunc as pixelfunc
 
-from pixelfunc import mask_bad, maptype, UNSEEN
+from healpy.pixelfunc import mask_bad, maptype, UNSEEN
 
 DATAPATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data')
 
 # Spherical harmonics transformation
 def anafast(map1, map2 = None, nspec = None, lmax = None, mmax = None, 
-            iter = 3, alm = False, use_weights = False, regression = True, 
-            datapath = None):
+            iter = 3, alm = False, pol = True, use_weights = False,
+            regression = True, datapath = None):
     """Computes the power spectrum of an Healpix map, or the cross-spectrum
     between two maps if *map2* is given.
 
@@ -60,6 +60,12 @@ def anafast(map1, map2 = None, nspec = None, lmax = None, mmax = None,
       Number of iteration (default: 3)
     alm : bool, scalar, optional
       If True, returns both cl and alm, otherwise only cl is returned
+    pol : bool, optional
+      If True, assumes input maps are TQU. Output will be TEB cl's and
+      correlations (input must be 1 or 3 maps).
+      If False, maps are assumed to be described by spin 0 spherical harmonics.
+      (input can be any number of maps)
+      If there is only one input map, it has no effect. Default: True.
     regression : bool, scalar, optional
       If True, map average is removed before computing alm. Default: True.
     datapath : None or str, optional
@@ -74,13 +80,13 @@ def anafast(map1, map2 = None, nspec = None, lmax = None, mmax = None,
       alm is the spherical harmonic transform or a list of almT, almE, almB
       for polarized input
     """
-    alms1 = map2alm(map1, lmax = lmax, mmax = mmax, niter = iter, 
+    alms1 = map2alm(map1, lmax = lmax, mmax = mmax, pol = pol, niter = iter, 
                     use_weights = use_weights, regression = regression, 
                     datapath = datapath)
     if map2 is not None:
-        alms2 = map2alm(map2, lmax = lmax, mmax = mmax, niter = iter, 
-                    use_weights = use_weights, regression = regression, 
-                    datapath = datapath)
+        alms2 = map2alm(map2, lmax = lmax, mmax = mmax, pol = pol,
+                        niter = iter, use_weights = use_weights, 
+                        regression = regression, datapath = datapath)
     else:
         alms2 = None
     
@@ -95,37 +101,63 @@ def anafast(map1, map2 = None, nspec = None, lmax = None, mmax = None,
     else:
         return cls
 
-def map2alm(m, lmax = None, mmax = None, iter = 3, use_weights = False, 
-            regression = True, datapath = None):
+def map2alm(maps, lmax = None, mmax = None, iter = 3, pol = True, 
+            use_weights = False, regression = True, datapath = None):
     """Computes the alm of an Healpix map.
 
     Parameters
     ----------
-    m : array-like, shape (Npix,) or (3, Npix)
-      The input map or a list of 3 input maps (polarization).
+    maps : array-like, shape (Npix,) or (n, Npix)
+      The input map or a list of n input maps.
     lmax : int, scalar, optional
       Maximum l of the power spectrum. Default: 3*nside-1
     mmax : int, scalar, optional
       Maximum m of the alm. Default: lmax
     iter : int, scalar, optional
       Number of iteration (default: 3)
+    pol : bool, optional
+      If True, assumes input maps are TQU. Output will be TEB alm's.
+      (input must be 1 or 3 maps)
+      If False, apply spin 0 harmonic transform to each map.
+      (input can be any number of maps)
+      If there is only one input map, it has no effect. Default: True.
     use_weights: bool, scalar, optional
       If True, use the ring weighting. Default: False.
     regression: bool, scalar, optional
       If True, subtract map average before computing alm. Default: True.
+    datapath : None or str, optional
+      If given, the directory where to find the weights data.
     
     Returns
     -------
-    alm : array or tuple of array
+    alms : array or tuple of array
       alm or a tuple of 3 alm (almT, almE, almB) if polarized input.
-    """
-    alm = _sphtools.map2alm(m, niter = iter, regression = regression, 
-                            datapath = datapath, use_weights = use_weights,
-                            lmax = lmax, mmax = mmax)
-    return alm
 
-def alm2map(alm, nside, lmax = None, mmax = None, pixwin = False,
-            fwhm = 0.0, sigma = None):
+    Notes
+    -----
+    The pixels which have the special `UNSEEN` value are replaced by zeros
+    before spherical harmonic transform. They are converted back to `UNSEEN`
+    value, so that the input maps are not modified. Each map have its own, 
+    independent mask.
+    """
+    info = maptype(maps)
+    if info < 0:
+        raise TypeError("Input must be a map or a sequence of maps")
+    if pol or info in (0, 1):
+        alms = _sphtools.map2alm(maps, niter = iter, regression = regression, 
+                                 datapath = datapath, use_weights = use_weights,
+                                 lmax = lmax, mmax = mmax)
+    else:
+        # info >= 2 and pol is False : spin 0 spht for each map
+        alms = [_sphtools.map2alm(mm, niter = iter, regression = regression,
+                                  datapath = datapath, use_weights = use_weights,
+                                  lmax = lmax, mmax = mmax)
+               for mm in m]
+    return alms
+
+def alm2map(alms, nside, lmax = None, mmax = None, pixwin = False,
+            fwhm = 0.0, sigma = None, invert = False, pol = True,
+            inplace = False):
     """Computes an Healpix map given the alm.
 
     The alm are given as a complex array. You can specify lmax
@@ -134,44 +166,79 @@ def alm2map(alm, nside, lmax = None, mmax = None, pixwin = False,
 
     Parameters
     ----------
-    alm : complex, array
-      A complex array of alm. Size must be of the form mmax*(lmax-mmax+1)/2+lmax
+    alms : complex, array or sequence of arrays
+      A complex array or a sequence of complex arrays.
+      Each array must have a size of the form mmax*(lmax-mmax+1)/2+lmax
     nside : int, scalar
       The nside of the output map.
     lmax : None or int, scalar, optional
       Explicitly define lmax (needed if mmax!=lmax)
     mmax : None or int, scalar, optional
       Explicitly define mmax (needed if mmax!=lmax)
+    pixwin : bool, optional
+      Smooth the alm using the pixel window functions. Default: False.
     fwhm : float, scalar, optional
       The fwhm of the Gaussian used to smooth the map (applied on alm)
       [in radians]
     sigma : float, scalar, optional
       The sigma of the Gaussian used to smooth the map (applied on alm)
       [in radians]
-
+    invert : bool, optional
+      If True, alms are divided by Gaussian beam function (un-smooth).
+      Otherwise, alms are multiplied by Gaussian beam function (smooth).
+      Default: False.
+    pol : bool, optional
+      If True, assumes input alms are TEB. Output will be TQU maps.
+      (input must be 1 or 3 alms)
+      If False, apply spin 0 harmonic transform to each alm.
+      (input can be any number of alms)
+      If there is only one input alm, it has no effect. Default: True.
+    inplace : bool, optional
+      If True, input alms may be modified by pixel window function and beam
+      smoothing (if alm(s) are complex128 contiguous arrays).
+      Otherwise, input alms are not modified. A copy is made if needed to
+      apply beam smoothing or pixel window.
+      
     Returns
     -------
-    map : array or list of arrays
+    maps : array or list of arrays
       An Healpix map in RING scheme at nside or a list of T,Q,U maps (if
       polarized input)
     """
-    smoothalm(alm, fwhm = fwhm, sigma = sigma)
+    if not is_seq(alms):
+        raise TypeError("alms must be a sequence")
+
+    alms = smoothalm(alms, fwhm = fwhm, sigma = sigma, invert = invert, 
+                     pol = pol, inplace = inplace)
+
+    if not is_seq_of_seq(alms):
+        alms = [alms]
+        lonely = True
+    else:
+        lonely = False
+    
     if pixwin:
-        pw=globals()['pixwin'](nside,True)
-        if type(alm[0]) is np.ndarray:
-            if len(alm) != 3:
-                raise TypeError("alm must be a sequence of 3 ndarray "
-                                "or a 1D ndarray")
-            alm[0] = almxfl(alm[0],pw[0],inplace=True)
-            alm[1] = almxfl(alm[1],pw[1],inplace=True)
-            alm[2] = almxfl(alm[2],pw[1],inplace=True)
-        else:
-            alm = almxfl(alm,pw[0],inplace=True)
+        pw = globals()['pixwin'](nside,True)
+        alms_new = []
+        for ialm, alm in enumerate(alms):
+            pixelwindow = pw[1] if ialm >= 1 and pol else pw[0]
+            alms_new.append(almxfl(alm, pixelwindow, inplace = inplace))
+    else:
+        alms_new = alms
+
     if lmax is None:
         lmax = -1
     if mmax is None:
         mmax = -1
-    return sphtlib._alm2map(alm, nside, lmax = lmax, mmax = mmax)
+    if pol:
+        output = sphtlib._alm2map(alms_new, nside, lmax = lmax, mmax = mmax)
+    else:
+        output = [sphtlib._alm2map(alm, nside, lmax = lmax, mmax = mmax)
+                  for alm in alms_new]
+    if lonely:
+        return output[0]
+    else:
+        return output
 
 def synalm(cls, lmax = None, mmax = None, new = False):
     """Generate a set of alm given cl.
@@ -252,7 +319,8 @@ def synalm(cls, lmax = None, mmax = None, new = False):
     return alms_list
 
 def synfast(cls, nside, lmax = None, mmax = None, alm = False,
-            pixwin = False,fwhm = 0.0,sigma = None, new = False):
+            pol = True, pixwin = False, fwhm = 0.0, sigma = None,
+            new = False):
     """Create a map(s) from cl(s).
 
     Parameters
@@ -267,6 +335,12 @@ def synfast(cls, nside, lmax = None, mmax = None, alm = False,
       Maximum m for alm. Default: 3*nside-1
     alm : bool, scalar, optional
       If True, return also alm(s). Default: False.
+    pol : bool, optional
+      If True, assumes input cls are TEB and correlation. Output will be TQU maps.
+      (input must be 1, 4 or 6 cl's)
+      If False, fields are assumed to be described by spin 0 spherical harmonics.
+      (input can be any number of cl's)
+      If there is only one input cl, it has no effect. Default: True.
     pixwin : bool, scalar, optional
       If True, convolve the alm by the pixel window function. Default: False.
     fwhm : float, scalar, optional
@@ -278,7 +352,7 @@ def synfast(cls, nside, lmax = None, mmax = None, alm = False,
 
     Returns
     -------
-    map : array or tuple of arrays
+    maps : array or tuple of arrays
       The output map (possibly list of maps if polarized input).
       or, if alm is True, a tuple of (map,alm)
       (alm possibly a list of alm if polarized input)
@@ -286,12 +360,12 @@ def synfast(cls, nside, lmax = None, mmax = None, alm = False,
     if not pixelfunc.isnsideok(nside):
         raise ValueError("Wrong nside value (must be a power of two).")
     if lmax is None or lmax < 0:
-        lmax = 3*nside-1
-    alms = synalm(cls, lmax = lmax, mmax = mmax, new = new)
-    maps = alm2map(alms, nside, lmax, mmax, pixwin = pixwin,
-                   fwhm = fwhm, sigma = sigma, new = new)
+        lmax = 3 * nside - 1
+    alms = synalm(cls, lmax = lmax, mmax = mmax, new = new, pol = pol)
+    maps = alm2map(alms, nside, lmax = lmax, mmax = mmax, pixwin = pixwin,
+                   pol = pol, fwhm = fwhm, sigma = sigma, inplace = True)
     if alm:
-        return maps,alms
+        return maps, alms
     else:
         return maps
     
@@ -459,21 +533,31 @@ def almxfl(alm, fl, mmax = None, inplace = False):
     almout = _sphtools.almxfl(alm, fl, mmax = mmax, inplace = inplace)
     return almout
 
-def smoothalm(alms, fwhm = 0.0, sigma = None, mmax = None,
-              verbose = False, inplace = True):
+def smoothalm(alms, fwhm = 0.0, sigma = None, invert = False, pol = True,
+              mmax = None, verbose = False, inplace = True):
     """Smooth alm with a Gaussian symmetric beam function.
 
     Parameters
     ----------
     alms : array or sequence of 3 arrays
-      Either an array representing one alm, or a sequence of
-      3 arrays representing 3 alm
+      Either an array representing one alm, or a sequence of arrays.
+      See *pol* parameter.
     fwhm : float, optional
       The full width half max parameter of the Gaussian. Default:0.0
       [in radians]
     sigma : float, optional
       The sigma of the Gaussian. Override fwhm.
       [in radians]
+    invert : bool, optional
+      If True, alms are divided by Gaussian beam function (un-smooth).
+      Otherwise, alms are multiplied by Gaussian beam function (smooth).
+      Default: False.
+    pol : bool, optional
+      If True, assumes input alms are TEB. Output will be TQU maps.
+      (input must be 1 or 3 alms)
+      If False, apply spin 0 harmonic transform to each alm.
+      (input can be any number of alms)
+      If there is only one input alm, it has no effect. Default: True.
     mmax : None or int, optional
       The maximum m for alm. Default: mmax=lmax
     inplace : bool, optional
@@ -491,23 +575,26 @@ def smoothalm(alms, fwhm = 0.0, sigma = None, mmax = None,
     """
     if sigma is None:
         sigma = fwhm / (2.*np.sqrt(2.*np.log(2.)))
+
     if verbose:
         print "Sigma is %f arcmin (%f rad) " %  (sigma*60*180/pi,sigma)
         print "-> fwhm is %f arcmin" % (sigma*60*180/pi*(2.*np.sqrt(2.*np.log(2.))))
+
     # Check alms
     if not cb.is_seq(alms):
         raise ValueError("alm must be a sequence")
+
+    if sigma == 0:
+        # nothing to be done
+        return alms
 
     lonely = False
     if not cb.is_seq_of_seq(alms):
         alms = [alms]
         lonely = True
     
-    if len(alms) not in (1, 3):
-        raise ValueError("alms must be a sequence of scalar or"
-                         " of 1 or 3 sequences")
     # we have 3 alms -> apply smoothing to each map.
-    # BUG: polarization has different B_l from temperature
+    # polarization has different B_l from temperature
     # exp{-[ell(ell+1) - s**2] * sigma**2/2}
     # with s the spin of spherical harmonics
     # s = 2 for pol, s=0 for temperature
@@ -518,7 +605,7 @@ def smoothalm(alms, fwhm = 0.0, sigma = None, mmax = None,
             raise TypeError('Wrong alm size for the given '
                             'mmax (len(alms[%d]) = %d).'%(ialm, len(alm)))
         ell = np.arange(lmax + 1.)
-        s = 2 if ialm >= 1 else 0
+        s = 2 if ialm >= 1 and pol else spin
         fact = np.exp(-0.5 * (ell * (ell + 1) - s ** 2) * sigma ** 2)
         res = almxfl(alm, fact, mmax = mmax, inplace = inplace)
         retalm.append(res)
@@ -539,40 +626,77 @@ def smoothalm(alms, fwhm = 0.0, sigma = None, mmax = None,
     # return the input alms
     return alms
 
-def smoothing(m, fwhm = 0.0, sigma = None):
+def smoothing(maps, fwhm = 0.0, sigma = None, invert = False, pol = True,
+              iter = 3, lmax = None, mmax = None, use_weights = False,
+              regression = True, datapath = None):
     """Smooth a map with a Gaussian symmetric beam.
 
     Parameters
     ----------
-    map : array or sequence of 3 arrays
+    maps : array or sequence of 3 arrays
       Either an array representing one map, or a sequence of
       3 arrays representing 3 maps
     fwhm : float, optional
       The full width half max parameter of the Gaussian. Default:0.0
     sigma : float, optional
       The sigma of the Gaussian. Override fwhm.
+    invert : bool, optional
+      If True, alms are divided by Gaussian beam function (un-smooth).
+      Otherwise, alms are multiplied by Gaussian beam function (smooth).
+      Default: False.
+    pol : bool, optional
+      If True, assumes input maps are TQU. Output will be TQU maps.
+      (input must be 1 or 3 alms)
+      If False, each map is assumed to be a spin 0 map and is 
+      treated independently (input can be any number of alms).
+      If there is only one input map, it has no effect. Default: True.
+    iter : int, scalar, optional
+      Number of iteration (default: 3)
+    lmax : int, scalar, optional
+      Maximum l of the power spectrum. Default: 3*nside-1
+    mmax : int, scalar, optional
+      Maximum m of the alm. Default: lmax
+    use_weights: bool, scalar, optional
+      If True, use the ring weighting. Default: False.
+    regression: bool, scalar, optional
+      If True, subtract map average before computing alm. Default: True.
+    datapath : None or str, optional
+      If given, the directory where to find the weights data.
 
     Returns
     -------
-    map_smo : array or tuple of 3 arrays
+    maps : array or list of 3 arrays
       The smoothed map(s)
     """
-    if type(m[0]) is np.ndarray:
-        if len(m) != 3:
-            raise TypeError("map must be en array or a list of 3 arrays")
-        nside = pixelfunc.npix2nside(m[0].size)
-        if (pixelfunc.npix2nside(m[1].size) != nside
-            or pixelfunc.npix2nside(m[2].size) != nside):
-            raise TypeError("all maps in the array must have identical nside")
-    elif type(m) == np.ndarray:
-        nside=pixelfunc.npix2nside(m.size)
+    if not is_seq(maps):
+        raise TypeError("maps must be a sequence")
+
+    if is_seq_of_seq(maps):
+        nside = pixelfunc.npix2nside(len(maps[0]))
+        n_maps = len(maps)
     else:
-        raise TypeError("map must be en array or a list of 3 arrays")
-    # Replace UNSEEN pixels with zeros
-    mask = mask_bad(m)
-    m[mask] = 0
-    alm = map2alm(m)
-    return alm2map(alm,nside,fwhm=fwhm,sigma=sigma)
+        nside = pixelfunc.npix2nside(len(maps))
+        n_maps = 0
+
+    if pol or n_maps in (0, 1):
+        # Treat the maps together (1 or 3 maps)
+        alms = map2alm(maps, lmax = lmax, mmax = mmax, iter = iter,
+                       pol = pol, use_weights = use_weights,
+                       regression = regression, datapath = datapath)
+        smoothalm(alms, fwhm = fwhm, sigma = sigma, invert = invert,
+                  inplace = True)
+        return alm2map(alms, nside, pixwin = False)
+    else:
+        # Treat each map independently (any number)
+        retmaps = []
+        for m in maps:
+            alm = map2alm(maps, iter = iter, pol = pol,
+                          use_weights = use_weights,
+                       regression = regression, datapath = datapath)
+            smoothalm(alm, fwhm = fwhm, sigma = sigma, invert = invert,
+                      inplace = True)
+            retmaps.append(alm2map(alm, nside, pixwin = False))
+        return retmaps
 
 
 def pixwin(nside, pol = False):
