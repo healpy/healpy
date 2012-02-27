@@ -32,6 +32,9 @@ import healpy.pixelfunc as pixelfunc
 
 from healpy.pixelfunc import mask_bad, maptype, UNSEEN
 
+class FutureChangeWarning(UserWarning):
+    pass
+
 DATAPATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data')
 
 # Spherical harmonics transformation
@@ -205,13 +208,13 @@ def alm2map(alms, nside, lmax = None, mmax = None, pixwin = False,
       An Healpix map in RING scheme at nside or a list of T,Q,U maps (if
       polarized input)
     """
-    if not is_seq(alms):
+    if not cb.is_seq(alms):
         raise TypeError("alms must be a sequence")
 
     alms = smoothalm(alms, fwhm = fwhm, sigma = sigma, invert = invert, 
                      pol = pol, inplace = inplace)
 
-    if not is_seq_of_seq(alms):
+    if not cb.is_seq_of_seq(alms):
         alms = [alms]
         lonely = True
     else:
@@ -249,21 +252,44 @@ def synalm(cls, lmax = None, mmax = None, new = False):
     Parameters
     ----------
     cls : float, array or tuple of arrays
-      Either one cl (1D array) or a tuple of either 4 cl (TT,TE,EE,BB)
-      or of n*(n+1)/2 cl. Some of the cl may be None, implying no
-      cross-correlation. For example, (TT,TE,TB,EE,EB,BB).
-      NOTE: this order differs from the alm2cl function !
+      Either one cl (1D array) or a tuple of either 4 cl
+      or of n*(n+1)/2 cl.
+      Some of the cl may be None, implying no
+      cross-correlation. See *new* parameter.
     lmax : int, scalar, optional
       The lmax (if None or <0, the largest size-1 of cls)
     mmax : int, scalar, optional
       The mmax (if None or <0, =lmax)
+    new : bool, optional
+      If True, use the new ordering of cl's, ie by diagonal
+      (e.g. TT, EE, BB, TE, EB, TB or TT, EE, BB, TE if 4 cl as input).
+      If False, use the old ordering, ie by row
+      (e.g. TT, TE, TB, EE, EB, BB or TT, TE, EE, BB if 4 cl as input).      
 
     Returns
     -------
     alms : array or list of arrays
       the generated alm if one spectrum is given, or a list of n alms 
       (with n(n+1)/2 the number of input cl, or n=3 if there are 4 input cl).
+
+    Notes
+    -----
+    The order of the spectra will change in a future release. The new= parameter
+    help to make the transition smoother. You can start using the new order
+    by setting new=True.
+    In the next version of healpy, the default will be new=True.
+    This change is done for consistency between the different tools
+    (alm2cl, synfast, anafast).
+    In the new order, the spectra are ordered by diagonal of the correlation
+    matrix. Eg, if fields are T, E, B, the spectra are TT, EE, BB, TE, EB, TB
+    with new=True, and TT, TE, TB, EE, EB, BB if new=False.
     """
+    if not new:
+        warnings.warn("The order of the input cl's will change in a future "
+                      "release.\n"
+                      "Use new=True keyword to start using the new order.\n"
+                      "See documentation of healpy.synalm.",
+                      category=FutureChangeWarning)
     if not cb.is_seq(cls):
         raise TypeError('cls must be an array or a sequence of arrays')
 
@@ -303,8 +329,6 @@ def synalm(cls, lmax = None, mmax = None, new = False):
         else:
             raise TypeError("The sequence of arrays must have either 4 elements "
                             "or n(n+1)/2 elements (some may be None)")
-    
-    print 'Nspec=', Nspec
     
     szalm = Alm.getsize(lmax,mmax)
     alms_list = []
@@ -356,6 +380,18 @@ def synfast(cls, nside, lmax = None, mmax = None, alm = False,
       The output map (possibly list of maps if polarized input).
       or, if alm is True, a tuple of (map,alm)
       (alm possibly a list of alm if polarized input)
+
+    Notes
+    -----
+    The order of the spectra will change in a future release. The new= parameter
+    help to make the transition smoother. You can start using the new order
+    by setting new=True.
+    In the next version of healpy, the default will be new=True.
+    This change is done for consistency between the different tools
+    (alm2cl, synfast, anafast).
+    In the new order, the spectra are ordered by diagonal of the correlation
+    matrix. Eg, if fields are T, E, B, the spectra are TT, EE, BB, TE, EB, TB
+    with new=True, and TT, TE, TB, EE, EB, BB if new=False.
     """
     if not pixelfunc.isnsideok(nside):
         raise ValueError("Wrong nside value (must be a power of two).")
@@ -668,10 +704,10 @@ def smoothing(maps, fwhm = 0.0, sigma = None, invert = False, pol = True,
     maps : array or list of 3 arrays
       The smoothed map(s)
     """
-    if not is_seq(maps):
+    if not cb.is_seq(maps):
         raise TypeError("maps must be a sequence")
 
-    if is_seq_of_seq(maps):
+    if cb.is_seq_of_seq(maps):
         nside = pixelfunc.npix2nside(len(maps[0]))
         n_maps = len(maps)
     else:
