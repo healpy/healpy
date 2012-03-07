@@ -5,9 +5,20 @@ To create documentation :
 
 - compile healpy and install it so that it is accessible from python
 - go to the doc/ directory
-- 'make html'
+- [OPTIONAL]
+  $ export SPHINXBUILD=/usr/bin/sphinx-build 
+  $ # or wherever sphinx-build is installed
+- $ make html
 
 This will create the documentation in doc/.build/html.
+
+The documentation of the master branch is also available at readthedoc :
+
+    http://healpy.readthedocs.org/en/latest/index.html
+
+It is rebuild from the master branch at each commit (so it is always the latest version). 
+
+-- 
 
 The documentation is also on github, using gh pages (I followed the tutorial there : 
 http://lucasbardella.com/report/hosting-your-sphinx-docs-in-github/).
@@ -31,4 +42,5 @@ cd .../healpy
 cd doc/
 BUILDDIR=/path/to/healpydoc/ make html
 
-It will override the files in healpydoc/html, which you can then check and commit.
+It will override the files in healpydoc/html, which you can then check and commit. Since the building of the documentation is manual, it is not necessarily up-to-date. Prefer the readthedocs method.
+
