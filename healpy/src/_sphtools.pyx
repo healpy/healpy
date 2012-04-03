@@ -345,6 +345,9 @@ def alm2cl(alms, alms2 = None, lmax = None, mmax = None, lmax_out = None):
         else:
             lmax = alm_getlmax2(almsize, mmax)
 
+    if mmax is None:
+        mmax = lmax
+
     if lmax_out is None:
         lmax_out = lmax
 

@@ -234,7 +234,8 @@ def alm2map(alms, nside, lmax = None, mmax = None, pixwin = False,
     if mmax is None:
         mmax = -1
     if pol:
-        output = sphtlib._alm2map(alms_new, nside, lmax = lmax, mmax = mmax)
+        output = sphtlib._alm2map(alms_new[0] if lonely else alms_new,
+                                  nside, lmax = lmax, mmax = mmax)
     else:
         output = [sphtlib._alm2map(alm, nside, lmax = lmax, mmax = mmax)
                   for alm in alms_new]
@@ -311,14 +312,14 @@ def synalm(cls, lmax = None, mmax = None, new = False):
     # From here, we interpret cls as a list of spectra
     cls_list = list(cls)
     maxsize = max([len(c) for c in cls])
-
+    
     if lmax is None or lmax < 0:
         lmax = maxsize-1
     if mmax is None or mmax < 0:
         mmax = lmax
-
+    
     Nspec = sphtlib._getn(len(cls_list))
-
+    
     if Nspec <= 0:
         if len(cls_list) == 4:
             if new: ## new input order: TT EE BB TE -> TT EE BB TE 0 0
@@ -397,7 +398,7 @@ def synfast(cls, nside, lmax = None, mmax = None, alm = False,
         raise ValueError("Wrong nside value (must be a power of two).")
     if lmax is None or lmax < 0:
         lmax = 3 * nside - 1
-    alms = synalm(cls, lmax = lmax, mmax = mmax, new = new, pol = pol)
+    alms = synalm(cls, lmax = lmax, mmax = mmax, new = new)
     maps = alm2map(alms, nside, lmax = lmax, mmax = mmax, pixwin = pixwin,
                    pol = pol, fwhm = fwhm, sigma = sigma, inplace = True)
     if alm:
