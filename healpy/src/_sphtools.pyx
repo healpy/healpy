@@ -271,17 +271,17 @@ def map2alm(m, lmax = None, mmax = None, niter = 3, use_weights = False,
         return almI
 
 
-def alm2cl(alm, alm2 = None, lmax = None, mmax = None, lmax_out = None):
+def alm2cl(alms, alms2 = None, lmax = None, mmax = None, lmax_out = None):
     """Computes (cross-)spectra from alm(s). If alm2 is given, cross-spectra between
     alm and alm2 are computed. If alm (and alm2 if provided) contains n alm,
     then n(n+1)/2 auto and cross-spectra are returned.
 
     Parameters
     ----------
-    alm : complex, array or sequence of arrays
+    alms : complex, array or sequence of arrays
       The alm from which to compute the power spectrum. If n>=2 arrays are given,
       computes both auto- and cross-spectra.
-    alm2 : complex, array or sequence of 3 arrays, optional
+    alms2 : complex, array or sequence of 3 arrays, optional
       If provided, computes cross-spectra between alm and alm2.
       Default: alm2=alm, so auto-spectra are computed.
     lmax : None or int, optional
@@ -307,36 +307,36 @@ def alm2cl(alm, alm2 = None, lmax = None, mmax = None, lmax_out = None):
     # Check alm and number of spectra
     #
     cdef int Nspec, Nspec2
-    if not hasattr(alm, '__len__'):
-        raise ValueError('alm must be an array or a sequence of arrays')
-    if not hasattr(alm[0], '__len__'):
-        alm_lonely = True
-        alm = [alm]
+    if not hasattr(alms, '__len__'):
+        raise ValueError('alms must be an array or a sequence of arrays')
+    if not hasattr(alms[0], '__len__'):
+        alms_lonely = True
+        alms = [alms]
     else:
-        alm_lonely = False
+        alms_lonely = False
 
-    Nspec = len(alm)
+    Nspec = len(alms)
 
-    if alm2 is None:
-        alm2 = alm
+    if alms2 is None:
+        alms2 = alms
     
-    if not hasattr(alm2, '__len__'):
-        raise ValueError('alm2 must be an array or a sequence of arrays')
-    if not hasattr(alm2[0], '__len__'):
-        alm2 = [alm2]
-    Nspec2 = len(alm2)
+    if not hasattr(alms2, '__len__'):
+        raise ValueError('alms2 must be an array or a sequence of arrays')
+    if not hasattr(alms2[0], '__len__'):
+        alms2 = [alms2]
+    Nspec2 = len(alms2)
     
     if Nspec != Nspec2:
-        raise ValueError('alm and alm2 must have same number of spectra')
-
+        raise ValueError('alms and alms2 must have same number of spectra')
+    
     ##############################################
     # Check sizes of alm's and lmax/mmax/lmax_out
     #
     cdef int almsize
-    almsize = alm[0].size
+    almsize = alms[0].size
     for i in xrange(Nspec):
-        if alm[i].size != almsize or alm2[i].size != almsize:
-            raise ValueError('all alm must have same size')
+        if alms[i].size != almsize or alms2[i].size != almsize:
+            raise ValueError('all alms must have same size')
 
     if lmax is None:
         if mmax is None:
@@ -364,8 +364,8 @@ def alm2cl(alm, alm2 = None, lmax = None, mmax = None, lmax_out = None):
     for n in xrange(Nspec): # diagonal rank
         for m in xrange(0, Nspec - n): # position in the diagonal
             powspec_ = np.zeros(lmax + 1)
-            alm1_ = alm[m]
-            alm2_ = alm2[m + n]
+            alm1_ = alms[m]
+            alm2_ = alms2[m + n]
             # compute cross-spectrum alm1[n] x alm2[n+m]
             # and place result in result list
             for l in range(lmax_ + 1):
@@ -380,7 +380,7 @@ def alm2cl(alm, alm2 = None, lmax = None, mmax = None, lmax_out = None):
             spectra.append(powspec_)
     
     # if only one alm was given, returns only cl and not a list with one cl
-    if alm_lonely:
+    if alms_lonely:
         spectra = spectra[0]
 
     return spectra

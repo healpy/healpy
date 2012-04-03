@@ -83,17 +83,17 @@ def anafast(map1, map2 = None, nspec = None, lmax = None, mmax = None,
       alm is the spherical harmonic transform or a list of almT, almE, almB
       for polarized input
     """
-    alms1 = map2alm(map1, lmax = lmax, mmax = mmax, pol = pol, niter = iter, 
+    alms1 = map2alm(map1, lmax = lmax, mmax = mmax, pol = pol, iter = iter, 
                     use_weights = use_weights, regression = regression, 
                     datapath = datapath)
     if map2 is not None:
         alms2 = map2alm(map2, lmax = lmax, mmax = mmax, pol = pol,
-                        niter = iter, use_weights = use_weights, 
+                        iter = iter, use_weights = use_weights, 
                         regression = regression, datapath = datapath)
     else:
         alms2 = None
     
-    cls = alm2cl(alms1, alm2 = alms2, lmax = lmax, mmax = mmax,
+    cls = alm2cl(alms1, alms2 = alms2, lmax = lmax, mmax = mmax,
                  lmax_out = lmax, nspec = nspec)
 
     if alm:
@@ -107,7 +107,7 @@ def anafast(map1, map2 = None, nspec = None, lmax = None, mmax = None,
 def map2alm(maps, lmax = None, mmax = None, iter = 3, pol = True, 
             use_weights = False, regression = True, datapath = None):
     """Computes the alm of an Healpix map.
-
+    
     Parameters
     ----------
     maps : array-like, shape (Npix,) or (n, Npix)
@@ -135,7 +135,7 @@ def map2alm(maps, lmax = None, mmax = None, iter = 3, pol = True,
     -------
     alms : array or tuple of array
       alm or a tuple of 3 alm (almT, almE, almB) if polarized input.
-
+    
     Notes
     -----
     The pixels which have the special `UNSEEN` value are replaced by zeros
@@ -513,7 +513,7 @@ def alm2cl(alms1, alms2 = None, lmax = None, mmax = None,
     alm : complex, array or sequence of arrays
       The alm from which to compute the power spectrum. If n>=2 arrays are given,
       computes both auto- and cross-spectra.
-    alm2 : complex, array or sequence of 3 arrays, optional
+    alms2 : complex, array or sequence of 3 arrays, optional
       If provided, computes cross-spectra between alm and alm2.
       Default: alm2=alm, so auto-spectra are computed.
     lmax : None or int, optional
