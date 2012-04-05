@@ -1252,6 +1252,8 @@ def get_min_valid_nside(npix):
 
 def maptype(m):
     """Describe the type of the map (valid, single, sequence of maps).
+    Checks : the number of maps, that all maps have same length and that this
+    length is a valid map size (using :func:`isnpixok`).
 
     Parameters
     ----------
@@ -1261,9 +1263,9 @@ def maptype(m):
     Returns
     -------
     info : int
-      Returns -1 if the given object is not a valid map.
-      Returns 0 if it is a map.
-      Returns info>0 if it is a sequence of maps (info: number of maps in the sequence)
+      -1 if the given object is not a valid map, 0 if it is a single map,
+      *info* > 0 if it is a sequence of maps (*info* is then the number of
+      maps)
 
     Examples
     --------

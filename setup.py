@@ -96,9 +96,11 @@ try:
   version = [int(v) for v in Cython.Compiler.Version.version.split(".")]
   assert version[1]>=14
   ext = "pyx"
-except:
+  extcpp = "pyx"
+except AssertionError:
   from distutils.command.build_ext import build_ext
   ext = "c"
+  extcpp = "cpp"
   print "No Cython >= 0.14 found, defaulting to pregenerated c version."
   
 if on_rtd:
@@ -234,9 +236,17 @@ else:
                                 include_dirs = [numpy_inc, healpix_cxx_inc],
                                 libraries = healpix_libs,
                                 library_dirs = library_dirs,
+                                language='c++'),
+                      Extension("healpy._sphtools", 
+                                ['healpy/src/_sphtools.'+ext],
+                                include_dirs = [numpy_inc, healpix_cxx_inc],
+                                libraries = healpix_libs,
+                                library_dirs = library_dirs,
+                                extra_compile_args = healpix_args,
+                                extra_link_args = extra_link,
                                 language='c++')
                       ]
-    for e in extension_list[-2:]: #extra setup for Cython extensions
+    for e in extension_list[-3:]: #extra setup for Cython extensions
         e.pyrex_directives = {"embedsignature": True}
 
 setup(name='healpy',
@@ -252,6 +262,6 @@ setup(name='healpy',
                   'healpy.projaxes','healpy.version'],
       cmdclass = {'build_ext': build_ext},
       ext_modules = extension_list,
-      package_data = {'healpy': ['data/*.fits']},
+      package_data = {'healpy': ['data/*.fits', 'data/totcls.dat']},
       license='GPLv2'
       )
