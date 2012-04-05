@@ -30,6 +30,8 @@ class TestSphtFunc(unittest.TestCase):
         self.cla = hp.read_cl(os.path.join(path, 'data', 'cl_wmap_fortran.fits'))
         self.clx = hp.read_cl(os.path.join(path, 'data', 'clx.fits'))
         self.cliqu = np.array(pyfits.open(os.path.join(path, 'data', 'cl_iqu_wmap_fortran.fits'))[1].data)
+
+        self.sim_map_fortran = hp.read_map(os.path.join(path, 'data', 'sim_map.fits'))
     
     def test_anafast(self):
         cl = hp.anafast(self.map1[0].filled(), lmax = 1024)
@@ -47,6 +49,10 @@ class TestSphtFunc(unittest.TestCase):
         cl = hp.anafast(self.map1[0].filled(), self.map2[0].filled(), lmax = 1024)
         self.assertEqual(len(cl), 1025)
         np.testing.assert_array_almost_equal(cl, self.clx, decimal=8)
+
+    def test_synfast(self):
+        sim_map = hp.synfast(self.cla, 32, 64, pixwin=False, fwhm=np.radians(7), new=False, pol=False)
+        np.testing.assert_array_almost_equal(sim_map, self.sim_map_fortran, decimal=3)
 
 if __name__ == '__main__':
     unittest.main()
