@@ -642,7 +642,7 @@ def smoothalm(alms, fwhm = 0.0, sigma = None, invert = False, pol = True,
             raise TypeError('Wrong alm size for the given '
                             'mmax (len(alms[%d]) = %d).'%(ialm, len(alm)))
         ell = np.arange(lmax + 1.)
-        s = 2 if ialm >= 1 and pol else spin
+        s = 2 if ialm >= 1 and pol else 0
         fact = np.exp(-0.5 * (ell * (ell + 1) - s ** 2) * sigma ** 2)
         res = almxfl(alm, fact, mmax = mmax, inplace = inplace)
         retalm.append(res)
