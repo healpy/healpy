@@ -171,7 +171,7 @@ def alm2map(alms, nside, lmax = None, mmax = None, pixwin = False,
     ----------
     alms : complex, array or sequence of arrays
       A complex array or a sequence of complex arrays.
-      Each array must have a size of the form mmax*(lmax-mmax+1)/2+lmax
+      Each array must have a size of the form: mmax * (2 * lmax + 1 - mmax) / 2 + lmax + 1
     nside : int, scalar
       The nside of the output map.
     lmax : None or int, scalar, optional
