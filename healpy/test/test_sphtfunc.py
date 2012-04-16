@@ -51,8 +51,17 @@ class TestSphtFunc(unittest.TestCase):
         np.testing.assert_array_almost_equal(cl, self.clx, decimal=8)
 
     def test_synfast(self):
-        sim_map = hp.synfast(self.cla, 32, 64, pixwin=False, fwhm=np.radians(7), new=False, pol=False)
-        np.testing.assert_array_almost_equal(sim_map, self.sim_map_fortran, decimal=3)
-
+        nside = 32
+        lmax = 64
+        fwhm_deg = 7.
+        seed = 12345
+        np.random.seed(seed)
+        map_pregen = hp.read_map(os.path.join('data',
+                                              'map_pregen_seed%d.fits' % seed))
+        sim_map = hp.synfast(self.cla, nside, lmax = lmax, pixwin=False,
+                             fwhm=np.radians(fwhm_deg), new=False, pol=False)
+        np.testing.assert_array_almost_equal(sim_map, map_pregen,
+                                             decimal=8)
+        
 if __name__ == '__main__':
     unittest.main()
