@@ -236,6 +236,8 @@ def alm2map(alms, nside, lmax = None, mmax = None, pixwin = False,
     if pol:
         output = sphtlib._alm2map(alms_new[0] if lonely else alms_new,
                                   nside, lmax = lmax, mmax = mmax)
+        if lonely:
+            output = [output]
     else:
         output = [sphtlib._alm2map(alm, nside, lmax = lmax, mmax = mmax)
                   for alm in alms_new]
@@ -300,7 +302,7 @@ def synalm(cls, lmax = None, mmax = None, new = False):
             lmax = cls.size-1
         if mmax is None or mmax < 0:
             mmax = lmax
-        cls_list = [cls]
+        cls_list = [np.asarray(cls, dtype = np.float64)]
         szalm = Alm.getsize(lmax,mmax)
         alm = np.zeros(szalm,'D')
         alm.real = np.random.standard_normal(szalm)
@@ -340,6 +342,9 @@ def synalm(cls, lmax = None, mmax = None, new = False):
         alms_list.append(alm)
     if new: # new input order: input given by diagonal, should be given by row
         cls_list = new_to_old_spectra_order(cls_list)
+    # ensure cls are float64
+    cls_list = [(np.asarray(cl, dtype = np.float64) if cl is not None else None)
+                for cl in cls_list]
     sphtlib._synalm(cls_list, alms_list, lmax, mmax)
     return alms_list
 

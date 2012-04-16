@@ -829,7 +829,8 @@ static PyObject *healpy_synalm(PyObject *self, PyObject *args,
       if( cls[i] == NULL )
         continue;
       if( (cls[i]->nd != 1)
-          || ((cls[i]->descr->type != 'd') && (cls[i]->descr->type != 'f')) )
+          //|| ((cls[i]->descr->type != 'd') && (cls[i]->descr->type != 'f')) )
+          || (cls[i]->descr->type != 'd') )
         {
           PyErr_SetString(PyExc_TypeError,
                       "Type of cls must be float64 and arrays must be 1D.");
