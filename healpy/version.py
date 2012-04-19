@@ -20,13 +20,4 @@
 
 import re
 
-rev  = "$Revision$"
-revnumber = re.findall(': *(\d*) *\$',rev)
-
-if revnumber:
-    __version__='trunk-r%s' % revnumber[0]
-else:
-    __version__='github-devel'
-
-date = "$Date$"
-
+__version__ = '1.0'
