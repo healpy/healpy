@@ -5,6 +5,20 @@ import os
 import sys
 import shutil
 
+def is_clang_the_default_cc():
+    """Check if the cc command runs clang or not. Return true if it does.
+    """
+    import subprocess
+    import re
+
+    try:
+        cc_output = subprocess.check_output(['cc', '--version'],
+                                            stderr = subprocess.STDOUT)
+    except:
+        return False
+
+    return re.search('clang', cc_output) is not None
+
 TARGET_DICT = {
     'linux': 'healpy',
     'darwin': 'healpy_osx'
@@ -32,6 +46,13 @@ try:
     HEALPIX_TARGET = TARGET_DICT[SYSTEM_STRING]
 except KeyError:
     raise AssertionError ('Unsupported platform: %s' % SYSTEM_STRING)
+
+try:
+    if is_clang_the_default_cc():
+        print ("Detected clang compiler, disabling openMP, as it is currently unsupported")
+        default_options['openmp'] = False
+except:
+    print ("Cannot check if compiler is clang")
 
 # Command distclean to remove the build directory (both healpy and in hpbeta)
 # 
