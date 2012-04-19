@@ -26,7 +26,7 @@ if you have cython installed it will be run in the build phase.
 Installation
 ------------
 
-$ cd healpy-0.9.3.1
+$ cd healpy
 $ python setup.py build
 
 OR, if you do not want OpenMP support (sometimes, it causes SegFault)
