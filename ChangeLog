@@ -1,1112 +1,2277 @@
-2011-07-05 12:54  cyrille.rosset@gmail.com
+commit 19bc851b5f0097e81dd36df3cb4aa233f44a9b26
+Merge: 8703105 2c7a9b0
+Author: Andrea Zonca <code@andreazonca.com>
+Date:   Thu Apr 19 10:56:56 2012 -0700
 
-	* [r194] healpy/pixelfunc.py: correct bug in _ud_grade_core (wrong
-	  masking of bad pixel). Now uses function mask_bad. Solve issue 59
+    Merge branch 'master' into 1.x
 
-2011-06-21 13:17  cyrille.rosset@gmail.com
+commit 870310560e8336582ddadd30ed927e33937b68f5
+Author: Andrea Zonca <code@andreazonca.com>
+Date:   Thu Apr 19 10:33:40 2012 -0700
 
-	* [r193] INSTALL, setup.py: Modify setup.py to allow setting option
-	  through environment variable - see INSTALL
+    marked version 1.0
 
-2011-06-08 15:08  martin.reinecke1@gmx.de
+commit 2c7a9b0319344a4f7879999cda22522989d8eadb
+Author: Andrea Zonca <code@andreazonca.com>
+Date:   Thu Apr 19 10:31:45 2012 -0700
 
-	* [r192] setup.py: try to fix issue 60 for real this time
+    reference to 1.0 released version
 
-2011-06-08 09:53  martin.reinecke1@gmx.de
+commit 1a6c6547cf89bf0c963a09178045d1dbb7970a8c
+Author: Andrea Zonca <code@andreazonca.com>
+Date:   Thu Apr 19 10:28:07 2012 -0700
 
-	* [r191] INSTALL, hpbeta/config/config.healpy,
-	  hpbeta/config/config.healpy_openmp,
-	  hpbeta/config/config.healpy_osx,
-	  hpbeta/config/config.healpy_osx_openmp, setup.py: try to fix
-	  issue 60 (by adding a flag "--without-native" to setup.py)
-	  use the same mechanism for controlling OpenMP
+    sphtools cpp cython file
 
-2011-06-07 16:36  cyrille.rosset@gmail.com
+commit ac5e2731e2a119bc291d370b19ea9a30496b854d
+Author: Andrea Zonca <code@andreazonca.com>
+Date:   Thu Apr 19 10:09:49 2012 -0700
 
-	* [r190] hpbeta/config/config.healpy_openmp,
-	  hpbeta/config/config.healpy_osx_openmp: Forgot files for with and
-	  without openmp_support
+    checking if compiler is clang in setup.py, if so disables openMP, thanks to Maurizio Tomasi, closes #32
 
-2011-06-07 16:35  cyrille.rosset@gmail.com
+commit d7aa24987893ecd0632162725c2dd5e6d4b6cb67
+Author: Andrea Zonca <code@andreazonca.com>
+Date:   Thu Apr 19 09:59:55 2012 -0700
 
-	* [r189] INSTALL, hpbeta/config/config.healpy,
-	  hpbeta/config/config.healpy_osx, setup.py: Add option
-	  --without-openmp, as openmp seems to cause segfaults on some
-	  platforms ; also add command distclean to setup.py, which remove
-	  any build results to ensure full recompilation (both healpix_cxx
-	  and healpy)
+    fixed path in synfast test script, closes #13
 
-2011-05-10 15:54  cyrille.rosset@gmail.com
+commit b703e6cd6575774232955c020e814385b6c983d4
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Mon Apr 16 17:09:33 2012 +0200
 
-	* [r188] healpy/version.py: update version.py
+    make comparison with pregenerated map, fixing the seed. Caveat: it was pre-generated with healpy itself... #13
 
-2011-05-10 15:53  cyrille.rosset@gmail.com
+commit f05373403a241aee6b57e5e337fbd5c3374d4f0d
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Mon Apr 16 12:33:27 2012 +0200
 
-	* [r187] healpy/zoomtool.py: remove show() call in mollzoom (avoid
-	  blocking in interactive session on some platforms)
+    correct the bug signalled by AZ. The test is still failing, but it's because we can't compare directly randomly generated numbers... Maybe check that the cl of the generated map is not too far from the input cl ? #13
 
-2011-05-10 01:09  andrea.zonca@gmail.com
+commit 06afc2b4796f96be4b365ab93dc7329329633cdb
+Author: Andrea Zonca <code@andreazonca.com>
+Date:   Thu Apr 12 16:55:33 2012 -0700
 
-	* [r186] healpy/pixelfunc.py: Merge pull request #5 from
-	  ziotom78/patch-1
-	  
-	  Properly take into account NaNs and INFs
+    fixed typo in documentation of alm2map, related to alm size, thanks to Chris North!
 
-2011-04-27 09:50  martin.reinecke1@gmx.de
+commit b95d4e14d0c3982cebc0cbf3c99cc9d802d1265a
+Merge: 6fdfad1 fd2c6eb
+Author: Andrea Zonca <code@andreazonca.com>
+Date:   Wed Apr 4 17:21:35 2012 -0700
 
-	* [r185] hpbeta/Healpix_cxx/alm_healpix_tools.cc,
-	  hpbeta/Healpix_cxx/healpix_base.cc,
-	  hpbeta/Healpix_cxx/healpix_base.h,
-	  hpbeta/Healpix_cxx/healpix_map.h,
-	  hpbeta/Healpix_cxx/healpix_tables.cc,
-	  hpbeta/Healpix_cxx/healpix_tables.h,
-	  hpbeta/Healpix_cxx/planck.make, hpbeta/c_utils/c_utils.c,
-	  hpbeta/c_utils/c_utils.h, hpbeta/cxxsupport/arr.h,
-	  hpbeta/cxxsupport/cxxutils.cc, hpbeta/cxxsupport/cxxutils.h,
-	  hpbeta/cxxsupport/datatypes.h,
-	  hpbeta/cxxsupport/error_handling.cc,
-	  hpbeta/cxxsupport/fitshandle.cc, hpbeta/cxxsupport/geom_utils.cc,
-	  hpbeta/cxxsupport/geom_utils.h, hpbeta/cxxsupport/math_utils.h,
-	  hpbeta/cxxsupport/openmp_support.h,
-	  hpbeta/cxxsupport/paramfile.cc, hpbeta/cxxsupport/paramfile.h,
-	  hpbeta/cxxsupport/planck.make, hpbeta/cxxsupport/pointing.cc,
-	  hpbeta/cxxsupport/pointing.h, hpbeta/cxxsupport/rangeset.h,
-	  hpbeta/cxxsupport/rotmatrix.cc, hpbeta/cxxsupport/rotmatrix.h,
-	  hpbeta/cxxsupport/share_utils.h,
-	  hpbeta/cxxsupport/string_utils.cc,
-	  hpbeta/cxxsupport/string_utils.h, hpbeta/cxxsupport/trafos.cc:
-	  sync with master sources
+    Merge branch 'xspectra'
 
-2011-04-21 12:25  cyrille.rosset@gmail.com
+commit fd2c6eba03a922a6859c1416ba7130bd2ee2c921
+Author: Andrea Zonca <code@andreazonca.com>
+Date:   Wed Apr 4 17:12:54 2012 -0700
 
-	* [r184] healpy/sphtfunc.py: correct issue 52 (undefined variable i
-	  in smoothalm)
+    synfast test FAILING #13
 
-2011-04-15 09:01  cyrille.rosset@gmail.com
+commit 115330f77cc3e8613d852d804ecc5fef21583d51
+Author: Andrea Zonca <code@andreazonca.com>
+Date:   Wed Apr 4 17:11:58 2012 -0700
 
-	* [r183] setup.py: correction in setup.py
+    fixed bug: spin was not defined
 
-2011-04-14 16:44  cyrille.rosset@gmail.com
+commit 69e2e0e38f0fdc9e11eb10269e9260365a0e8348
+Author: Andrea Zonca <code@andreazonca.com>
+Date:   Wed Apr 4 16:51:01 2012 -0700
 
-	* [r182] ChangeLog: update ChangeLog
+    added xspecta and iqu spectra tests for anafast
 
-2011-04-14 16:42  cyrille.rosset@gmail.com
+commit 1feaf17f7ed0d0b7265cd0a2f42bbf5afea1308e
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Tue Apr 3 15:30:48 2012 +0200
 
-	* [r181] ChangeLog: update ChangeLog
+    correct some bugs in anafast/synfast #13
 
-2011-04-14 16:32  cyrille.rosset@gmail.com
+commit 8eb32702187c52220319d0107b91236099564497
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Tue Apr 3 14:12:38 2012 +0200
 
-	* [r178] healpy/__init__.py, healpy/pixelfunc.py,
-	  healpy/projaxes.py, healpy/projector.py, healpy/zoomtool.py:
-	  Solve issue 51 ; add support for explicit pixellization through
-	  dict (keys are pixel numbers, 'nside' key define the nside)
+    correct some mispelling of keywords #13
 
-2011-04-13 15:08  cyrille.rosset@gmail.com
+commit 6fdfad18a7e4e4aad8b1d2e2676eb7dec88c693f
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Wed Mar 7 16:34:41 2012 +0100
 
-	* [r177] healpy/__init__.py, healpy/fitsfunc.py,
-	  healpy/visufunc.py: Change setting to UNSEEN in read_map ;
-	  position of unit ; remove 'on' in gnomonic position text
-
-2011-04-13 13:38  cyrille.rosset@gmail.com
-
-	* [r176] setup.py: force use of libcfitsio.a instead of the shared
-	  library through extra_link_args
-
-2011-04-13 10:05  cyrille.rosset@gmail.com
-
-	* [r175] setup.py: remove unnecessary compilation options
-
-2011-04-05 11:13  martin.reinecke1@gmx.de
-
-	* [r174] hpbeta/Healpix_cxx/alm.cc, hpbeta/Healpix_cxx/alm.h,
-	  hpbeta/Healpix_cxx/alm_healpix_tools.h,
-	  hpbeta/Healpix_cxx/healpix_base.cc,
-	  hpbeta/Healpix_cxx/healpix_base.h,
-	  hpbeta/Healpix_cxx/healpix_map.h, hpbeta/Healpix_cxx/planck.make,
-	  hpbeta/Healpix_cxx/powspec.cc, hpbeta/Healpix_cxx/powspec.h,
-	  hpbeta/cxxsupport/arr.h, hpbeta/cxxsupport/cxxutils.cc,
-	  hpbeta/cxxsupport/cxxutils.h, hpbeta/cxxsupport/datatypes.h,
-	  hpbeta/cxxsupport/error_handling.cc,
-	  hpbeta/cxxsupport/error_handling.h,
-	  hpbeta/cxxsupport/fitshandle.cc, hpbeta/cxxsupport/fitshandle.h,
-	  hpbeta/cxxsupport/geom_utils.h, hpbeta/cxxsupport/paramfile.cc,
-	  hpbeta/cxxsupport/paramfile.h, hpbeta/cxxsupport/planck.make,
-	  hpbeta/cxxsupport/pointing.cc, hpbeta/cxxsupport/pointing.h,
-	  hpbeta/cxxsupport/rangeset.h, hpbeta/cxxsupport/rotmatrix.cc,
-	  hpbeta/cxxsupport/rotmatrix.h, hpbeta/cxxsupport/trafos.cc,
-	  hpbeta/cxxsupport/trafos.h: sync with master sources
-
-2011-03-07 09:49  martin.reinecke1@gmx.de
-
-	* [r173] hpbeta/Healpix_cxx/healpix_base.cc,
-	  hpbeta/Healpix_cxx/healpix_base.h, hpbeta/README.compilation,
-	  hpbeta/config/rules.common, hpbeta/cxxsupport/cxxutils.cc,
-	  hpbeta/cxxsupport/levels_facilities.h,
-	  hpbeta/cxxsupport/rangeset.h, hpbeta/docsrc/planck.make,
-	  hpbeta/libcfitsio/planck.make, hpbeta/libpsht/libpsht.dox,
-	  hpbeta/libpsht/psht.c, hpbeta/libpsht/psht.h,
-	  hpbeta/libpsht/psht_almhelpers.c,
-	  hpbeta/libpsht/psht_almhelpers.h,
-	  hpbeta/libpsht/psht_geomhelpers.c,
-	  hpbeta/libpsht/psht_geomhelpers.h, hpbeta/libpsht/psht_inc.c,
-	  hpbeta/libpsht/ylmgen_c.c, hpbeta/libpsht/ylmgen_c.h: sync with
-	  master sources
-
-2011-03-07 09:19  martin.reinecke1@gmx.de
-
-	* [r172] setup.py: add "-fpermissive" flag to allow cfitsio
-	  compilation on some platforms
-
-2011-03-01 16:02  cyrille.rosset@gmail.com
-
-	* [r168] healpy/sphtfunc.py: Change documentation of anafast to
-	  match real output of code (consistent with order of alm2cl
-	  output)
-
-2011-03-01 12:40  cyrille.rosset@gmail.com
-
-	* [r167] healpy/version.py: update version.py
-
-2011-03-01 12:19  cyrille.rosset@gmail.com
-
-	* [r166] pshyt/pshyt.c, setup.py: remove cython-generated pshyt.c
-
-2011-01-31 12:07  martin.reinecke1@gmx.de
-
-	* [r165] hpbeta/Healpix_cxx/alm_powspec_tools.cc,
-	  hpbeta/config/config.aix64, hpbeta/config/config.generic_gcc,
-	  hpbeta/config/config.healpy, hpbeta/config/config.healpy_osx,
-	  hpbeta/config/config.irix64, hpbeta/config/config.linux_icc,
-	  hpbeta/config/config.osx, hpbeta/cxxsupport/cxxutils.cc,
-	  hpbeta/docsrc/Healpix_cxx.dox, hpbeta/docsrc/cxxsupport.dox,
-	  hpbeta/docsrc/libfftpack.dox, hpbeta/libfftpack/ls_fft.c,
-	  hpbeta/libpsht/libpsht.dox, hpbeta/libpsht/ylmgen_c.c: warning
-	  fixes and cleanups
-
-2011-01-26 15:34  martin.reinecke1@gmx.de
-
-	* [r164] hpbeta/libpsht/ylmgen_c.c: hopefully fix a sign error
-
-2011-01-26 13:38  cyrille.rosset@gmail.com
-
-	* [r163] healpy/visufunc.py: remove the pylab.show() call in
-	  visufunc (blocking for some backend and unnecessary)
-
-2011-01-26 12:22  martin.reinecke1@gmx.de
-
-	* [r162] hpbeta/Healpix_cxx/alm2map_cxx.cc,
-	  hpbeta/Healpix_cxx/alm2map_cxx.par.txt,
-	  hpbeta/Healpix_cxx/alm_fitsio.cc,
-	  hpbeta/Healpix_cxx/alm_fitsio.h,
-	  hpbeta/Healpix_cxx/anafast_cxx.cc,
-	  hpbeta/Healpix_cxx/anafast_cxx.par.txt,
-	  hpbeta/Healpix_cxx/calc_powspec.cc,
-	  hpbeta/Healpix_cxx/healpix_base2.cc,
-	  hpbeta/Healpix_cxx/healpix_base2.h,
-	  hpbeta/Healpix_cxx/healpix_map_fitsio.cc,
-	  hpbeta/Healpix_cxx/healpix_map_fitsio.h,
-	  hpbeta/Healpix_cxx/hotspots_cxx.cc,
-	  hpbeta/Healpix_cxx/hpxtest.cc, hpbeta/Healpix_cxx/map2tga.cc,
-	  hpbeta/Healpix_cxx/map2tga.par.txt,
-	  hpbeta/Healpix_cxx/median_filter_cxx.cc,
-	  hpbeta/Healpix_cxx/mult_alm.cc,
-	  hpbeta/Healpix_cxx/mult_alm.par.txt,
-	  hpbeta/Healpix_cxx/planck.make,
-	  hpbeta/Healpix_cxx/powspec_fitsio.cc,
-	  hpbeta/Healpix_cxx/powspec_fitsio.h,
-	  hpbeta/Healpix_cxx/rotalm_cxx.cc,
-	  hpbeta/Healpix_cxx/smoothing_cxx.cc,
-	  hpbeta/Healpix_cxx/smoothing_cxx.par.txt,
-	  hpbeta/Healpix_cxx/syn_alm_cxx.cc,
-	  hpbeta/Healpix_cxx/syn_alm_cxx.par.txt,
-	  hpbeta/Healpix_cxx/udgrade_cxx.cc, hpbeta/c_utils/planck.make,
-	  hpbeta/c_utils/walltime_c.c, hpbeta/c_utils/walltime_c.h,
-	  hpbeta/cxxsupport/bstream.h, hpbeta/cxxsupport/fftpack_support.h,
-	  hpbeta/cxxsupport/font_data.inc, hpbeta/cxxsupport/ls_image.cc,
-	  hpbeta/cxxsupport/ls_image.h, hpbeta/cxxsupport/planck.make:
-	  remove more unused C++ sources
+    mention the readthedocs.com documentation provider
 
-2011-01-25 16:12  martin.reinecke1@gmx.de
+commit b5120901025fb4cfaa65a1806f9d0d21abcd66e8
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Wed Mar 7 16:25:27 2012 +0100
 
-	* [r161] healpy/src/_healpy_sph_transform_lib.cc: more rearranging
-	  and usage of assertions
+    use SPHINXBUILD from environment if defined ; default is 'sphinx-build'
 
-2011-01-25 13:29  martin.reinecke1@gmx.de
+commit f04311786cc9ba9dfd3d6c7ce66c8aba347690e8
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Mon Feb 27 16:53:00 2012 +0100
 
-	* [r160] hpbeta/Healpix_cxx/alm2map_cxx_module.cc,
-	  hpbeta/Healpix_cxx/anafast_cxx_module.cc,
-	  hpbeta/Healpix_cxx/calc_powspec_module.cc,
-	  hpbeta/Healpix_cxx/hotspots_cxx_module.cc,
-	  hpbeta/Healpix_cxx/map2tga_module.cc,
-	  hpbeta/Healpix_cxx/median_filter_cxx_module.cc,
-	  hpbeta/Healpix_cxx/mult_alm_module.cc,
-	  hpbeta/Healpix_cxx/planck.make,
-	  hpbeta/Healpix_cxx/smoothing_cxx_module.cc,
-	  hpbeta/Healpix_cxx/syn_alm_cxx_module.cc,
-	  hpbeta/Healpix_cxx/udgrade_cxx_module.cc, hpbeta/Makefile,
-	  hpbeta/alice, hpbeta/libpsht/planck.make,
-	  hpbeta/libpsht/psht_perftest.c, hpbeta/libpsht/psht_test.c,
-	  hpbeta/test: get rid of unused C++ code
+    add some documentation concerning the new= keyword for synalm and synfast
 
-2011-01-25 13:16  martin.reinecke1@gmx.de
+commit b60a7c9e3259f9a2aa87376c68a437732e3d16d9
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Mon Feb 27 12:01:34 2012 +0100
 
-	* [r159] healpy/src/_healpy_fitsio_lib.cc,
-	  healpy/src/_healpy_pixel_lib.cc,
-	  healpy/src/_healpy_sph_transform_lib.cc,
-	  healpy/src/_healpy_utils.h: - restructure _healpy_pixel_lib.cc
-	  * re-order functions to avoid the need for prototypes
-	  * only call setNside() if really needed; this should save time
-	  - avoid compiler warnings
+    Add a pol= keyword to map2alm, alm2map, smoothalm, synfast, anafast and smoothing in order to make distinction between polarized maps (TQU maps which are converted to/from TEB alm's) and sequence of spin-0 maps. Default is not changed compared to before (pol=True). Remove arcmin= and degree= keywords (must use numpy.radians() function instead).
 
-2011-01-25 10:34  martin.reinecke1@gmx.de
+commit a0820b25d278ccc01afd3576336fe4908220c9f9
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Fri Feb 24 12:05:35 2012 +0100
 
-	* [r158] healpy/src/_healpy_pixel_lib.cc: apply patch provided with
-	  issue #39 to avoid code duplication
+    Correct bug for polarization in smoothalm. Add data file totcls.dat in setup.py.
 
-2011-01-25 10:16  martin.reinecke1@gmx.de
+commit df097c326ea73e7bda3e47aab920b18e51ceb351
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Thu Feb 23 19:10:22 2012 +0100
 
-	* [r157] healpy/src/_healpy_sph_transform_lib.cc: - whitespace
-	  cleanup
-	  - make use of assert() macros to shorten code
+    almxfl function is now written in cython : around x5 faster
 
-2011-01-24 17:28  andrea.zonca@gmail.com
+commit 897a86aee63fdfd08d880e117088538df3b123d6
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Thu Feb 23 19:06:42 2012 +0100
 
-	* [r156] healpy/__init__.py: added write_alm to __init__
+    change _ianafast to _sphtools in setup.py
 
-2011-01-17 14:52  martin.reinecke1@gmx.de
+commit 8bfcdfb014ca904bdc65915d0d62d551bb389dd0
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Thu Feb 23 17:54:40 2012 +0100
 
-	* [r155] hpbeta/c_utils/walltime_c.c, hpbeta/c_utils/walltime_c.h,
-	  hpbeta/config/config.healpy, hpbeta/cxxsupport/bstream.h,
-	  hpbeta/cxxsupport/xcomplex.h, hpbeta/libpsht/psht.c,
-	  hpbeta/libpsht/psht.h, hpbeta/libpsht/psht_almhelpers.c,
-	  hpbeta/libpsht/psht_cxx.h, hpbeta/libpsht/psht_geomhelpers.c,
-	  hpbeta/libpsht/psht_inc.c, hpbeta/libpsht/psht_perftest.c,
-	  hpbeta/libpsht/psht_test.c, hpbeta/libpsht/ylmgen_c.c,
-	  hpbeta/libpsht/ylmgen_c.h: synchronize with master sources
-
-2011-01-17 14:51  martin.reinecke1@gmx.de
-
-	* [r154] INSTALL: update testing instructions
-
-2010-12-30 11:33  andrea.zonca@gmail.com
-
-	* [r153] healpy/test/test_fitsfunc.py: Use the new return_mmax
-	  mechanism
-
-2010-12-30 11:33  andrea.zonca@gmail.com
-
-	* [r152] healpy/fitsfunc.py: Added more detailed documentation for
-	  read_alm
-
-2010-12-30 11:33  andrea.zonca@gmail.com
-
-	* [r151] healpy/fitsfunc.py: Added support for optionally returning
-	  mmax in read_alm
-
-2010-12-27 17:06  andrea.zonca@gmail.com
-
-	* [r150] healpy/fitsfunc.py, healpy/test/test_fitsfunc.py: fixed
-	  bug in write_alm and test case
-
-2010-12-27 17:06  andrea.zonca@gmail.com
-
-	* [r149] healpy/fitsfunc.py, healpy/test/test_fitsfunc.py: merged
-	  patch and test case, NEEDS VERIFICATION
-
-2010-12-06 16:54  cyrille.rosset
-
-	* [r148] pshyt/pshyt.c, setup.py: Add cfitsio library dir (from
-	  CFITSIO_EXT_LIB etc.) to setup call
-
-2010-12-06 14:22  cyrille.rosset
-
-	* [r147] ChangeLog: Update ChangeLog
-
-2010-12-06 14:20  cyrille.rosset
-
-	* [r146] MANIFEST.in, healpy/__init__.py, healpy/version.py,
-	  pshyt/pshyt.c, pshyt/pshyt.pyx, setup.py: Add doc to pshyt module
-	  ; move pshyt into healpy for installation ; add alias for numpy
-	  (nm=np=npy=numpy in healpy and pshyt)
-
-2010-12-06 13:08  lejeune@apc.univ-paris7.fr
-
-	* [r145] healpy/__init__.py, pshyt, pshyt/pshyt.c, pshyt/pshyt.pyx,
-	  setup.py: include Karim's pshyt module
-
-2010-12-06 11:22  lejeune@apc.univ-paris7.fr
-
-	* [r144] healpy/__init__.py: add numpy to init
-
-2010-12-03 14:04  cyrille.rosset
-
-	* [r143] MANIFEST.in, healpy/version.py,
-	  hpbeta/config/config.healpy: Change default PREFIX to /usr
-	  instead of /usr/local, update MANIFEST.in
-
-2010-12-01 10:12  lejeune@apc.univ-paris7.fr
-
-	* [r142] setup.py: from now, no need to compile twice
-
-2010-11-25 17:20  cyrille.rosset
-
-	* [r141] healpy/version.py, healpy/visufunc.py: remove pylab.show()
-	  at the end of plotting commands
-
-2010-11-25 14:04  martin.reinecke1@gmx.de
-
-	* [r140] ., INSTALL, healpy/__init__.py, healpy/sphtfunc.py,
-	  healpy/src/_healpy_fitsio_lib.cc,
-	  healpy/src/_healpy_pixel_lib.cc,
-	  healpy/src/_healpy_sph_transform_lib.cc,
-	  healpy/src/_healpy_utils.h, hpbeta/Healpix_cxx/Healpix_cxx.dox,
-	  hpbeta/Healpix_cxx/alm.h, hpbeta/Healpix_cxx/alm2map_cxx.cc,
-	  hpbeta/Healpix_cxx/alm2map_cxx_module.cc,
-	  hpbeta/Healpix_cxx/alm_fitsio.cc,
-	  hpbeta/Healpix_cxx/alm_fitsio.h,
-	  hpbeta/Healpix_cxx/alm_healpix_tools.cc,
-	  hpbeta/Healpix_cxx/alm_healpix_tools.h,
-	  hpbeta/Healpix_cxx/alm_map_tools.cc,
-	  hpbeta/Healpix_cxx/alm_map_tools.h,
-	  hpbeta/Healpix_cxx/alm_powspec_tools.cc,
-	  hpbeta/Healpix_cxx/alm_powspec_tools.h,
-	  hpbeta/Healpix_cxx/anafast_cxx.cc,
-	  hpbeta/Healpix_cxx/anafast_cxx.par.txt,
-	  hpbeta/Healpix_cxx/anafast_cxx_module.cc,
-	  hpbeta/Healpix_cxx/calc_powspec.cc,
-	  hpbeta/Healpix_cxx/calc_powspec_module.cc,
-	  hpbeta/Healpix_cxx/healpix_base.cc,
-	  hpbeta/Healpix_cxx/healpix_base.h,
-	  hpbeta/Healpix_cxx/healpix_base2.cc,
-	  hpbeta/Healpix_cxx/healpix_base2.h,
-	  hpbeta/Healpix_cxx/healpix_data_io.cc,
-	  hpbeta/Healpix_cxx/healpix_data_io.h,
-	  hpbeta/Healpix_cxx/healpix_map.cc,
-	  hpbeta/Healpix_cxx/healpix_map.h,
-	  hpbeta/Healpix_cxx/healpix_map_fitsio.cc,
-	  hpbeta/Healpix_cxx/healpix_map_fitsio.h,
-	  hpbeta/Healpix_cxx/hotspots_cxx.cc,
-	  hpbeta/Healpix_cxx/hotspots_cxx_module.cc,
-	  hpbeta/Healpix_cxx/hpxtest.cc, hpbeta/Healpix_cxx/map2tga.cc,
-	  hpbeta/Healpix_cxx/map2tga_module.cc,
-	  hpbeta/Healpix_cxx/median_filter.cc,
-	  hpbeta/Healpix_cxx/median_filter_cxx.cc,
-	  hpbeta/Healpix_cxx/median_filter_cxx_module.cc,
-	  hpbeta/Healpix_cxx/mult_alm.cc,
-	  hpbeta/Healpix_cxx/mult_alm_module.cc,
-	  hpbeta/Healpix_cxx/planck.make, hpbeta/Healpix_cxx/powspec.cc,
-	  hpbeta/Healpix_cxx/powspec.h,
-	  hpbeta/Healpix_cxx/powspec_fitsio.cc,
-	  hpbeta/Healpix_cxx/powspec_fitsio.h,
-	  hpbeta/Healpix_cxx/rotalm_cxx.cc,
-	  hpbeta/Healpix_cxx/smoothing_cxx.cc,
-	  hpbeta/Healpix_cxx/smoothing_cxx.par.txt,
-	  hpbeta/Healpix_cxx/smoothing_cxx_module.cc,
-	  hpbeta/Healpix_cxx/syn_alm_cxx.cc,
-	  hpbeta/Healpix_cxx/syn_alm_cxx_module.cc,
-	  hpbeta/Healpix_cxx/udgrade_cxx.cc,
-	  hpbeta/Healpix_cxx/udgrade_cxx_module.cc,
-	  hpbeta/Healpix_cxx/ylmgen.h, hpbeta/Makefile,
-	  hpbeta/README.compilation, hpbeta/alice/MollweideSkyMap.cc,
-	  hpbeta/alice/OrthogonalSkyMap.h,
-	  hpbeta/alice/PolarizationHolder.cc,
-	  hpbeta/alice/PolarizationHolder.h, hpbeta/alice/RectSkyMap.h,
-	  hpbeta/alice/SkyMap.h, hpbeta/alice/SoSSkyMap.cc,
-	  hpbeta/alice/SoSSkyMap.h, hpbeta/alice/TextureHolder.cc,
-	  hpbeta/alice/TextureHolder.h, hpbeta/alice/alice2.cc,
-	  hpbeta/alice/alice_usage.txt, hpbeta/alice/alice_utils.h,
-	  hpbeta/alice/color.cc, hpbeta/alice/generateTexture.cc,
-	  hpbeta/alice/planck.make, hpbeta/alice/test.cc,
-	  hpbeta/alice/testMollweideSkyMap.cc,
-	  hpbeta/alice/testOrthogonalSkyMap.cc,
-	  hpbeta/alice/testSoSSkyMap.cc, hpbeta/c_utils,
-	  hpbeta/c_utils/c_utils.c, hpbeta/c_utils/c_utils.h,
-	  hpbeta/c_utils/planck.make, hpbeta/c_utils/sse_utils.h,
-	  hpbeta/c_utils/walltime_c.c, hpbeta/c_utils/walltime_c.h,
-	  hpbeta/config/config.gcc_omp, hpbeta/config/config.generic_gcc,
-	  hpbeta/config/config.healpy, hpbeta/config/config.healpy_osx,
-	  hpbeta/config/config.linux_icc, hpbeta/config/config.osx,
-	  hpbeta/config/rules.common, hpbeta/cxxsupport/arr.h,
-	  hpbeta/cxxsupport/bstream.h, hpbeta/cxxsupport/compat_headers,
-	  hpbeta/cxxsupport/cxxutils.cc, hpbeta/cxxsupport/cxxutils.h,
-	  hpbeta/cxxsupport/datatypes.h,
-	  hpbeta/cxxsupport/error_handling.cc,
-	  hpbeta/cxxsupport/error_handling.h,
-	  hpbeta/cxxsupport/fftpack_support.h,
-	  hpbeta/cxxsupport/fitshandle.cc, hpbeta/cxxsupport/fitshandle.h,
-	  hpbeta/cxxsupport/font_data.inc, hpbeta/cxxsupport/geom_utils.h,
-	  hpbeta/cxxsupport/levels_facilities.h,
-	  hpbeta/cxxsupport/ls_image.cc, hpbeta/cxxsupport/ls_image.h,
-	  hpbeta/cxxsupport/lsconstants.h,
-	  hpbeta/cxxsupport/message_error.h,
-	  hpbeta/cxxsupport/openmp_support.h,
-	  hpbeta/cxxsupport/paramfile.h, hpbeta/cxxsupport/planck.make,
-	  hpbeta/cxxsupport/planck_rng.h, hpbeta/cxxsupport/pointing.h,
-	  hpbeta/cxxsupport/rotmatrix.cc, hpbeta/cxxsupport/rotmatrix.h,
-	  hpbeta/cxxsupport/safe_cast.h, hpbeta/cxxsupport/simparams.cc,
-	  hpbeta/cxxsupport/simparams.h, hpbeta/cxxsupport/tga_image.cc,
-	  hpbeta/cxxsupport/tga_image.h, hpbeta/cxxsupport/trafos.cc,
-	  hpbeta/cxxsupport/trafos.h, hpbeta/cxxsupport/vec3.h,
-	  hpbeta/cxxsupport/wigner.cc, hpbeta/cxxsupport/wigner.h,
-	  hpbeta/cxxsupport/xcomplex.h, hpbeta/doc,
-	  hpbeta/docsrc/Healpix_cxx.dox, hpbeta/docsrc/cxxsupport.dox,
-	  hpbeta/docsrc/libfftpack.dox, hpbeta/docsrc/planck.make,
-	  hpbeta/libcfitsio/cfitsio3100.tar.gz,
-	  hpbeta/libcfitsio/planck.make, hpbeta/libfftpack/README,
-	  hpbeta/libfftpack/bluestein.c, hpbeta/libfftpack/bluestein.h,
-	  hpbeta/libfftpack/fftpack.c, hpbeta/libfftpack/fftpack.h,
-	  hpbeta/libfftpack/fftpack_inc.c, hpbeta/libfftpack/ls_fft.c,
-	  hpbeta/libfftpack/ls_fft.h, hpbeta/libfftpack/planck.make,
-	  hpbeta/libpsht, hpbeta/libpsht/libpsht.dox,
-	  hpbeta/libpsht/planck.make, hpbeta/libpsht/psht.c,
-	  hpbeta/libpsht/psht.h, hpbeta/libpsht/psht_almhelpers.c,
-	  hpbeta/libpsht/psht_almhelpers.h, hpbeta/libpsht/psht_cxx.h,
-	  hpbeta/libpsht/psht_geomhelpers.c,
-	  hpbeta/libpsht/psht_geomhelpers.h, hpbeta/libpsht/psht_inc.c,
-	  hpbeta/libpsht/psht_perftest.c, hpbeta/libpsht/psht_test.c,
-	  hpbeta/libpsht/ylmgen_c.c, hpbeta/libpsht/ylmgen_c.h,
-	  hpbeta/test/cl.fits, setup.py: merge revision 132 to 139 on the
-	  cxx_integration_nov_2010 branch to trunk
-
-2010-11-05 13:54  cyrille.rosset
-
-	* [r137] setup.py: correct get_version()
-
-2010-11-04 12:33  martin.reinecke1@gmx.de
-
-	* [r130] healpy/src/_healpy_sph_transform_lib.cc: fix a bug in
-	  sky_signal_direct()
-
-2010-10-12 00:57  andrea.zonca@gmail.com
-
-	* [r129] healpy/pixelfunc.py: get_neighbours bug issue 45 fixed
-
-2010-10-12 00:40  andrea.zonca@gmail.com
-
-	* [r128] healpy/fitsfunc.py, healpy/test/test_fitsfunc.py: fixed
-	  issue 24, added test case
-
-2010-10-11 18:15  andrea.zonca@gmail.com
-
-	* [r127] healpy/pixelfunc.py: docstring for resol fixed
-
-2010-10-11 18:00  andrea.zonca@gmail.com
-
-	* [r126] healpy/__init__.py: nside2resol and nside2pixarea exported
-
-2010-10-11 18:00  andrea.zonca@gmail.com
-
-	* [r125] healpy/pixelfunc.py, healpy/test,
-	  healpy/test/test_pixelfunc.py: pixel area and resolution from
-	  nside, with test case
-
-2010-10-11 14:38  cyrille.rosset
+    rename _ianafast.pyx to _sphtools.pyx
 
-	* [r122] healpy/version.py: update version.py
-
-2010-10-11 14:29  cyrille.rosset
+commit adcc5764f2c5adfa59259665ae1d5d3fe45d39bb
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Thu Feb 23 15:00:27 2012 +0100
 
-	* [r121] healpy/projaxes.py, healpy/zoomtool.py: correct bug in
-	  zoomtool - redisplays scatter plot when changing the gnomview
+    temporarily add _ianafast.cpp to .gitignore
 
-2010-10-02 02:12  andrea.zonca@gmail.com
+commit 794f40d5d7fc1c8d1fbc945d4b769e9f38f004ab
+Merge: 920f49d a32d558
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Thu Feb 23 14:57:44 2012 +0100
 
-	* [r120] healpy/fitsfunc.py, healpy/sphtfunc.py,
-	  hpbeta/config/config.osx, setup.py: Merge branch 'devel'
+    Merge branch 'xspectra' of github.com:healpy/healpy into xspectra
 
-2010-10-02 01:53  andrea.zonca@gmail.com
+commit 920f49d8ff76556275c0b60c98a27a5378aa5f8b
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Thu Feb 23 14:34:53 2012 +0100
 
-	* [r119] healpy/version.py: fixed version number also for github
-	  repo
+    Add a check in sphtfunc.py:new_to_old_spectra_order()
 
-2010-09-07 20:07  andrea.zonca@gmail.com
+commit 90056b12f9334aafbc8ad5f0674c9a0eb1f77b20
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Thu Feb 23 14:12:38 2012 +0100
 
-	* [r116] healpy/__init__.py, healpy/fitsfunc.py: first
-	  implementation of read cl and write cl for T only, needs testing
-	  with IDL
+    Add a sample power spectra file for testing and demo purpose.
+    
+    Used by the sphtfunc.py/load_sample_spectra() function.
 
-2010-08-30 20:21  andrea.zonca@gmail.com
+commit 7d7ce594dfec2a28569d71c4ff32bc25dfb89bbc
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Thu Feb 23 14:11:41 2012 +0100
 
-	* [r115] healpy/pixelfunc.py: bug fixed in theta check
+    Add a cookbook.py module which gather some generic functions.
+    
+    Use is_seq() and is_seq_of_seq() functions in sphtfunc.py. Also removed
+    unused _get_nside function in sphtfunc.py (duplicate
+    pixelfunc.py/get_nside anyway).
 
-2010-08-20 07:51  andrea.zonca@gmail.com
+commit cf9f5bca64c0eff5aab43b906fd428b54f6b1bba
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Thu Feb 23 12:24:59 2012 +0100
 
-	* [r114] healpy/pixelfunc.py: fixed bug in vec2ang in case of
-	  monodimensional arrays
+    Add some directories to .gitignore
+    
+    ignore the build doc directories and hpbeta build directories
 
-2010-08-20 00:02  andrea.zonca@gmail.com
+commit c4c60b34ac20e6f3553d4018535520d7e736902e
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Thu Feb 23 11:19:04 2012 +0100
 
-	* [r113] healpy/__init__.py, healpy/pixelfunc.py: implemented
-	  vec2ang
+    Cosmetic changes to docstrings or comments
 
-2010-07-30 09:36  cyrille.rosset
+commit fe038a449bd7acbdd3b7eab43ea27bcb2886ad84
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Wed Feb 22 18:24:12 2012 +0100
 
-	* [r112] ChangeLog: update ChangeLog
+    Some cleaning, lmax/mmax can be None (same as <0).
 
-2010-07-30 09:28  cyrille.rosset
+commit ab03a0d3d2df673ae45678f9dd846ddab4929f98
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Wed Feb 22 17:48:57 2012 +0100
 
-	* [r111] ChangeLog: update ChangeLog
+    Wrap new functions from _ianafast.pyx to replace equivalent in sphtfunc.py. BEWARE : introduce a keyword new= in synalm and synfast to select the new ordering of power spectra. This new order is used in alm2cl (which is almost identical to what it was before - synalm and alm2cl were not compatible). When new=True, all functions have a consistent power spectra order. Neew to decide whether we set it to True or False for healpy v1.0. #13
 
-2010-07-29 16:37  cyrille.rosset
+commit d7ec2f85b2dccd87d9be80192f5651d4db5713e5
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Mon Feb 13 19:07:29 2012 +0100
 
-	* [r108] ChangeLog, healpy/sphtfunc.py,
-	  healpy/src/_healpy_sph_transform_lib.cc: Add an option to map2alm
-	  and anafast not to subtract map average before computing alm
-	  (issue 40)
+    modify map2alm ans anafast in sphtfunc.py to call the _ianafast functions. Now anafast computes the cross-spectra if two maps are provided. #13
 
-2010-07-29 16:28  cyrille.rosset
+commit a1144fd35d0e95af6c243f872a60d11d5865397b
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Mon Feb 13 18:16:34 2012 +0100
 
-	* [r107] healpy/pixelfunc.py, healpy/projaxes.py,
-	  healpy/version.py: UNSEEN is now taken into account properly (was
-	  broken for float32 maps)
+    modify map2alm to take care correctly of the UNSEEN pixels #13
 
-2010-07-14 18:30  andrea.zonca@gmail.com
+commit 46b3d5aa8fb1b0abbb4f34ad6f14865b1fb571b2
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Fri Feb 10 17:45:35 2012 +0100
 
-	* [r106] healpy/fitsfunc.py: nest=None for reading a map in the
-	  same ordering whichever it is
+    starting to add stuff to take care of UNSEEN pixels
 
-2010-06-22 20:54  andrea.zonca@gmail.com
+commit 919bdd3d3be675f8c4d97c5b8b30bb49793fe775
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Fri Feb 10 17:44:51 2012 +0100
 
-	* [r105] healpy/fitsfunc.py: fix if the UNSEEN value read from fits
-	  file is not exaclty -1.6375e30
+    cleaning doc
 
-2010-06-22 20:08  andrea.zonca@gmail.com
+commit 7e2d352bfc096a0e85908a1c64918befb80973e8
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Fri Feb 10 13:03:10 2012 +0100
 
-	* [r104] healpy/__init__.py, healpy/pixelfunc.py: create a masked
-	  array for map, useful for summing, averaging and making
-	  histograms (using .compressed())
+    healpy._ianafast.alm2cl : allow polarization (or any number actually) of input alm. Computes cross- and auto-spectra. Note the change in spectra order compared to healpy.alm2cl. Need to decide which one to choose #13
 
-2010-06-22 19:48  andrea.zonca@gmail.com
+commit 8a16f5aa27dc77b398db00460623d21d86b381c9
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Fri Feb 10 12:57:55 2012 +0100
 
-	* [r103] healpy/fitsfunc.py: fix in case the NSIDE is stored as
-	  string in the header
+    In map2alm, correct the way to replace UNSEEN pixels by zeros, so it works for sequence of maps
 
-2010-06-17 22:46  andrea.zonca@gmail.com
+commit 90155981b88e3e1444d93245add12849f9850144
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Thu Feb 9 19:42:02 2012 +0100
 
-	* [r102] healpy/pixelfunc.py: removed import math, not used anymore
+    start new alm2cl function for xspectra #13
 
-2010-06-17 22:44  andrea.zonca@gmail.com
+commit 894552137ebcc79812e41b6bb6610f959aee7aed
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Thu Feb 9 19:40:54 2012 +0100
 
-	* [r101] healpy/__init__.py, healpy/pixelfunc.py: implementation of
-	  ang2vec (in python, with support for vectors
+    modify the way the bad pixels are set to 0 (use mask_bad function)
 
-2010-06-10 15:12  cyrille.rosset@gmail.com
+commit 9974cd23edb35ac44fb32e416c86929b550748d9
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Thu Dec 8 19:24:02 2011 +0100
 
-	* [r98] healpy/query_disc_func.py: query_disc now returns int64
-	  array
+    rename ianafast to map2alm (can actually replace the c++ version). Starting a alm2cl function.
 
-2010-06-07 12:54  lejeune@apc.univ-paris7.fr
+commit 12f3d3a783801fead8632d502f792e5548364b0b
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Thu Dec 8 18:53:54 2011 +0100
 
-	* [r96] setup.py: omp compilation affects spht_lib only
+    Correct bug in anafast for polarization case (need to 'or' the masks, not 'and'...). #3
 
-2010-06-03 10:00  cyrille.rosset@gmail.com
+commit d694ec7472708b4e3b8b636b247765ea8e9a5ca3
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Thu Dec 8 18:51:28 2011 +0100
 
-	* [r93] healpy/rotator.py, healpy/sphtfunc.py,
-	  healpy/src/_healpy_fitsio_lib.cc: use pyfits to get pixwin
-	  function (segfault with c++ version)
+    Correct bug in anafast for polarization case. #3
 
-2010-05-28 23:27  andrea.zonca@gmail.com
+commit a0e11be479a5bd6e8561dc5207419a4fa1906679
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Thu Dec 8 17:53:17 2011 +0100
 
-	* [r92] healpy: ignore pyc and so files
+    correct bug in previous version, start polarization. Just realized that current shptfunc.anafast is actually not working for polarization... #13
 
-2010-05-28 23:11  andrea.zonca@gmail.com
+commit e91c6f0c06934a1bb45f67e82944ddf39b12df9d
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Wed Dec 7 19:11:31 2011 +0100
 
-	* [r91] healpy/visufunc.py: added norm documentation to mollview
+    Some corrections. Needs to add polarization, weights, etc. #13
 
-2010-05-28 23:05  andrea.zonca@gmail.com
+commit 005ca06439a72544c80f30b2416486aba3c6df35
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Wed Dec 7 09:26:10 2011 +0100
 
-	* [r90] healpy/fitsfunc.py: added documentation to read_map for
-	  reading polarization
+    First working (basic) version of ianafast in cython. Gives same results as current anafast. #13
 
-2010-05-27 10:31  lejeune@apc.univ-paris7.fr
+commit 2cddd0550e180afc428bc7d64809633f3319a554
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Mon Dec 5 18:32:34 2011 +0100
 
-	* [r89] setup.py: license option restored
+    interediate version
 
-2010-05-27 10:27  lejeune@apc.univ-paris7.fr
+commit efb94251f2c062197dd3a47cd806b24658fc0bb8
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Mon Dec 5 18:04:13 2011 +0100
 
-	* [r88] hpbeta/config/config.gcc_omp, setup.py: + openmp
+    start implementation of ianafast (like anafast, but allow 2 input maps). #13
 
-2010-05-03 10:33  cyrille.rosset@gmail.com
+commit e808b85ffdd0188a9ca702660f4b628729c8fd90
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Thu Dec 8 19:24:02 2011 +0100
 
-	* [r87] healpy/version.py: change version.py
+    rename ianafast to map2alm (can actually replace the c++ version). Starting a alm2cl function.
 
-2010-05-03 10:30  cyrille.rosset@gmail.com
+commit d675c9d7480855d8690613f2ada0008c2f146609
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Thu Dec 8 18:53:54 2011 +0100
 
-	* [r86] doc/healpy_fits.rst, healpy/__init__.py,
-	  healpy/fitsfunc.py, healpy/projaxes.py, healpy/projector.py,
-	  healpy/rotator.py, healpy/sphtfunc.py, healpy/visufunc.py,
-	  healpy/zoomtool.py: Correct doc typos
+    Correct bug in anafast for polarization case (need to 'or' the masks, not 'and'...). #3
 
-2010-05-03 10:11  cyrille.rosset@gmail.com
+commit 216563ce9bdcaffb7a3a97e6568c8c8a1ac4510c
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Thu Dec 8 18:51:28 2011 +0100
 
-	* [r85] healpy/pixelfunc.py: correct error message for bad
-	  npix/nside values
+    Correct bug in anafast for polarization case. #3
 
-2010-04-19 17:00  cyrille.rosset@gmail.com
+commit a56afdc3feb885d0abaddbc3229156ef49381aaa
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Thu Dec 8 17:53:17 2011 +0100
 
-	* [r84] healpy/query_disc_func.py: Correct bug in query_disc (error
-	  when no pixel in disc). Solve issue 31.
+    correct bug in previous version, start polarization. Just realized that current shptfunc.anafast is actually not working for polarization... #13
 
-2010-04-19 16:33  cyrille.rosset@gmail.com
+commit 573b7a9ad9a1cc995879c2bfe47f1ba553dab2be
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Wed Dec 7 19:11:31 2011 +0100
 
-	* [r83] healpy/pixelfunc.py: Correct bug in ud_grade for bool maps
+    Some corrections. Needs to add polarization, weights, etc. #13
 
-2009-09-24 05:41  cyrille.rosset
+commit 8b8f82f769cbdc347bc0b00e3c16a6af0e71a8f0
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Wed Dec 7 09:26:10 2011 +0100
 
-	* [r79] healpy/zoomtool.py: adjust position of help text
+    First working (basic) version of ianafast in cython. Gives same results as current anafast. #13
 
-2009-09-23 17:51  cyrille.rosset
+commit 7a55aabeb17471d2b6a6c6ff88e6daf271c3d800
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Mon Dec 5 18:32:34 2011 +0100
 
-	* [r78] healpy/projaxes.py, healpy/zoomtool.py: add info display to
-	  mollzoom; correct bug for graticule near south pole
+    interediate version
 
-2009-08-11 20:14  cyrille.rosset
+commit c257bc83ec194dc176ae38244b8021c23701cc54
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Mon Dec 5 18:04:13 2011 +0100
 
-	* [r77] healpy/src/_healpy_pixel_lib.cc: remove const qualifier to
-	  solve issue 19 (in python 2.4
+    start implementation of ianafast (like anafast, but allow 2 input maps). #13
 
-2009-08-11 13:52  cyrille.rosset
+commit a32d5584172612095351c8725b0d34f820310287
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Thu Feb 23 14:34:53 2012 +0100
 
-	* [r76] healpy/sphtfunc.py: add npy. in sphtfunc.py/alm2cl. Solve
-	  issue 22.
+    Add a check in sphtfunc.py:new_to_old_spectra_order()
 
-2009-08-11 13:50  cyrille.rosset
+commit 71ec80ca7cdf8d62f4154cf8a03a097472e179ec
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Thu Feb 23 14:12:38 2012 +0100
 
-	* [r75] healpy/projaxes.py, healpy/rotator.py: correct bug in
-	  rotator (missing npy) and in projaxes (missing verbose keyword)
+    Add a sample power spectra file for testing and demo purpose.
+    
+    Used by the sphtfunc.py/load_sample_spectra() function.
 
-2009-07-22 16:21  cyrille.rosset
+commit 09d4299338c5353b9ab7f0e1c9193af941b5305b
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Thu Feb 23 14:11:41 2012 +0100
 
-	* [r74] healpy/sphtfunc.py, healpy/version.py: correctionf for
-	  issue 20
+    Add a cookbook.py module which gather some generic functions.
+    
+    Use is_seq() and is_seq_of_seq() functions in sphtfunc.py. Also removed
+    unused _get_nside function in sphtfunc.py (duplicate
+    pixelfunc.py/get_nside anyway).
 
-2009-07-21 15:41  cyrille.rosset
+commit 061887384782ef56dfa573bb370999e05d233730
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Thu Feb 23 12:24:59 2012 +0100
 
-	* [r70] ChangeLog, healpy/version.py: new tag 0.9.8
+    Add some directories to .gitignore
+    
+    ignore the build doc directories and hpbeta build directories
 
-2009-07-21 15:14  cyrille.rosset
+commit 6837a357ac8e74e9a708ee2a4a049818917eefb2
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Thu Feb 23 11:19:04 2012 +0100
 
-	* [r68] healpy/__init__.py, hpbeta/alice/testMollweideSkyMap.cc,
-	  hpbeta/alice/testOrthogonalSkyMap.cc: correct bug in __init__;
-	  add cstdio in some files of hpbeta
+    Cosmetic changes to docstrings or comments
 
-2009-07-16 15:22  cyrille.rosset
+commit da856fa5333b121a19103ec06482bddd32d65647
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Wed Feb 22 18:24:12 2012 +0100
 
-	* [r67] healpy/projaxes.py, healpy/zoomtool.py: update zoomtool
+    Some cleaning, lmax/mmax can be None (same as <0).
 
-2009-07-16 15:05  cyrille.rosset
+commit 43687d17d426c719b269fa299716131935f0c45f
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Wed Feb 22 17:48:57 2012 +0100
 
-	* [r66] healpy/__init__.py, healpy/projector.py, healpy/rotator.py,
-	  healpy/zoomtool.py: add zoomtool capabilities
+    Wrap new functions from _ianafast.pyx to replace equivalent in sphtfunc.py. BEWARE : introduce a keyword new= in synalm and synfast to select the new ordering of power spectra. This new order is used in alm2cl (which is almost identical to what it was before - synalm and alm2cl were not compatible). When new=True, all functions have a consistent power spectra order. Neew to decide whether we set it to True or False for healpy v1.0. #13
 
-2009-07-15 13:16  cyrille.rosset
+commit 1ffd5ed3693076646ab740152137d9f6a2b1fc22
+Author: Andrea Zonca <code@andreazonca.com>
+Date:   Mon Feb 13 14:45:18 2012 -0800
 
-	* [r65] healpy/version.py: addinformation for graticule, to easily
-	  rebuild it if needed (for mollzoom)
+    suggested options for OSX
 
-2009-07-15 13:14  cyrille.rosset
+commit a5a936522dff869fdfe8978d5316e372575a2478
+Author: Andrea Zonca <code@andreazonca.com>
+Date:   Mon Feb 13 14:20:31 2012 -0800
 
-	* [r64] healpy/projaxes.py: addinformation for graticule, to easily
-	  rebuild it if needed (for mollzoom)
+    query_disc has cpp extension!
 
-2009-07-10 00:31  cyrille.rosset
+commit 530a26730a0bf89b9105a66e03b4733b8b0a0356
+Author: Andrea Zonca <code@andreazonca.com>
+Date:   Mon Feb 13 14:18:35 2012 -0800
 
-	* [r63] ChangeLog: set version number and modify ChangeLog
+    fixed BUG I added (npy-> np also where inappropriate) in commit 67cd5a21c9eb9fd53bf230679d33d230c761bd58
 
-2009-07-10 00:23  cyrille.rosset
+commit 0846ac4bd951d1b6b310e0398daa831e3fcd3fe7
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Mon Feb 13 19:07:29 2012 +0100
 
-	* [r61] ChangeLog: svn cleaning
+    modify map2alm ans anafast in sphtfunc.py to call the _ianafast functions. Now anafast computes the cross-spectra if two maps are provided. #13
 
-2009-07-10 00:11  cyrille.rosset
+commit e5f3e05703ef4319d656586b6124e444b5e43452
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Mon Feb 13 18:16:34 2012 +0100
 
-	* [r60] healpy/__init__.py, healpy/projector.py, setup.py: correct
-	  error in gnomview (was indicating wrong latitude/map value in the
-	  status bar). Cartview is available as healpy.cartview
+    modify map2alm to take care correctly of the UNSEEN pixels #13
 
-2009-06-17 07:21  cyrille.rosset
+commit cf4de1954bd4eee55d6d88bb2e435ce39ab87d59
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Fri Feb 10 17:45:35 2012 +0100
 
-	* [r59] ChangeLog: Update Changelog
+    starting to add stuff to take care of UNSEEN pixels
 
-2009-06-17 07:18  cyrille.rosset
+commit 7d9692129598e252713a54ee4d38576662891ac9
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Fri Feb 10 17:44:51 2012 +0100
 
-	* [r58] MANIFEST.in: Add version 0.9.6.2, correcting MANIFEST.in
-	  file to add COPYING in tarball
+    cleaning doc
 
-2009-06-16 21:46  cyrille.rosset
+commit 98cdbd5b954eb4b27e4039481a1e225650d442c7
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Fri Feb 10 13:03:10 2012 +0100
 
-	* [r57] test/test_fit_dipole.py: add license information at top of
-	  test_fit_dipole.py
+    healpy._ianafast.alm2cl : allow polarization (or any number actually) of input alm. Computes cross- and auto-spectra. Note the change in spectra order compared to healpy.alm2cl. Need to decide which one to choose #13
 
-2009-06-09 13:55  cyrille.rosset
+commit 9b7983248519282b79a7fb3216a8446703f0ee91
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Fri Feb 10 12:57:55 2012 +0100
 
-	* [r55] ChangeLog: Update ChangeLog
+    In map2alm, correct the way to replace UNSEEN pixels by zeros, so it works for sequence of maps
 
-2009-06-09 13:47  cyrille.rosset
+commit 5f98b624fa433426af16051ceafc4699d96f952b
+Merge: d536bc6 5f9d53e
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Thu Feb 9 19:47:48 2012 +0100
 
-	* [r53] COPYING: Add COPYING file at top. Also add missing
-	  Py_INCREF(Py_None).
+    correct bad pull...
 
-2009-06-09 13:43  cyrille.rosset
+commit d536bc633a90c219ed278dd5db2845642fe1c165
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Thu Feb 9 19:42:02 2012 +0100
 
-	* [r52] healpy/__init__.py, healpy/fitsfunc.py,
-	  healpy/pixelfunc.py, healpy/projaxes.py, healpy/projector.py,
-	  healpy/query_disc_func.py, healpy/rotator.py, healpy/sphtfunc.py,
-	  healpy/src/_healpy_fitsio_lib.cc,
-	  healpy/src/_healpy_pixel_lib.cc,
-	  healpy/src/_healpy_sph_transform_lib.cc, healpy/version.py,
-	  healpy/visufunc.py: Add license information in files and in
-	  COPYING file at the top of directory tree
+    start new alm2cl function for xspectra #13
 
-2009-04-17 02:45  cyrille.rosset
+commit 967c037c0c3219f16c8b075ae26ec98b1fd61cef
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Thu Feb 9 19:40:54 2012 +0100
 
-	* [r51] ChangeLog: Update ChangeLog
+    modify the way the bad pixels are set to 0 (use mask_bad function)
 
-2009-04-17 02:40  cyrille.rosset
+commit 125c5192cd5ba5d1a3219b42ee495e9903c912b0
+Author: Martin Reinecke <martin@mpa-garching.mpg.de>
+Date:   Thu Feb 9 11:46:41 2012 +0100
 
-	* [r49] ChangeLog: Update ChangeLog; tag version 0.9.6
+    try to fix issue 28 (crash during import)
 
-2009-03-29 17:46  cyrille.rosset
+commit 5f9d53e3398ba4d387ae0c189b2a68c9c7edaac0
+Author: Martin Reinecke <martin@mpa-garching.mpg.de>
+Date:   Thu Feb 9 11:38:15 2012 +0100
 
-	* [r48] healpy/__init__.py, healpy/pixelfunc.py,
-	  healpy/src/_healpy_pixel_lib.cc: Add get_all_neighbours function
-	  (contribution from Sergey E. Koposov). Solve issue 17.
+    try to fix issue #28 (crash on startup)
 
-2009-03-29 16:24  cyrille.rosset
+commit 44f6b5502a1dedeeaa99f36e555af0a77953817f
+Author: Andrea Zonca <code@andreazonca.com>
+Date:   Tue Feb 7 09:48:50 2012 -0800
 
-	* [r47] healpy/query_disc_func.py: add ring2nest import in
-	  query_disc_func, so it works with nest=True; solve issue 18.
+    ignoring _query_disc.cpp
 
-2009-03-25 16:10  cyrille.rosset
+commit 3715c30bae77864408f2303d287a63930cb94bf3
+Author: Andrea Zonca <code@andreazonca.com>
+Date:   Tue Feb 7 09:47:43 2012 -0800
 
-	* [r46] healpy/__init__.py: change warnings.ImportWarning to
-	  ImportWarning, and define ImportWarning if it does not exist
-	  (solve issue 16)
+    adding pregenerated query disc
 
-2009-03-12 16:51  cyrille.rosset
+commit 5d6761e86dec9991a23b0e6b369cd85ac703d097
+Author: Andrea Zonca <code@andreazonca.com>
+Date:   Thu Feb 2 11:03:49 2012 -0800
 
-	* [r45] ChangeLog: Update ChangeLog
+    function signature for cython extension
 
-2009-03-12 14:55  cyrille.rosset
+commit 456b15febd312354c674453943091f1cd283398b
+Merge: ff70303 e7db456
+Author: Andrea Zonca <code@andreazonca.com>
+Date:   Thu Feb 2 11:04:54 2012 -0800
 
-	* [r43] hpbeta/cxxsupport/fitshandle.cc: Add #include <cstring> for
-	  compatibility with some new compilers
+    Merge pull request #27 from montefra/patch-1
+    
+    Help string in functions 'query_disc', 'query_polygon' and 'query_strip' ...
 
-2009-02-22 22:41  cyrille.rosset
+commit e7db45697e0285a318d1a4ab6cf72bae86a55819
+Author: montefra <franz.bergesund@googlemail.com>
+Date:   Thu Feb 2 10:10:40 2012 +0100
 
-	* [r42] healpy/pixelfunc.py: Correct missing npy. in _ud_grade_core
+    Indent in line 120 fixed
 
-2009-01-24 16:19  cyrille.rosset
+commit ff70303b2dbe9dabffcc502a7b6d19227e5dd1a7
+Author: Andrea Zonca <code@andreazonca.com>
+Date:   Wed Feb 1 17:04:13 2012 -0800
 
-	* [r41] healpy/version.py: Update version.py
+    install also unit tests
 
-2009-01-24 16:19  cyrille.rosset
+commit d3ab512e0a99fc3b0f4890207b598f4f35f8870d
+Author: montefra <franz.bergesund@googlemail.com>
+Date:   Wed Feb 1 15:38:06 2012 +0100
 
-	* [r40] healpy/projaxes.py, healpy/projector.py,
-	  healpy/visufunc.py: Add cartwiew, CartesianAxes, CartesianProj;
-	  tweak _segment_threshold, add _segment_step_rad, some new
-	  keywords to graticule...
+    Help string in functions 'query_disk', 'query_polygon' and 'query_disk' correcteded with the addition of the description of the keyword nest
 
-2009-01-18 20:51  cyrille.rosset
+commit 0326806313113e089b420289614732e85ecc6bf5
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Thu Dec 8 19:24:02 2011 +0100
 
-	* [r39] MANIFEST.in, healpy/pixelfunc.py,
-	  healpy/src/_healpy_pixel_lib.cc: update documentation for
-	  ang2pix, etc to precise dimension of theta,phi [rad]
+    rename ianafast to map2alm (can actually replace the c++ version). Starting a alm2cl function.
 
-2009-01-12 18:09  cyrille.rosset
+commit c67c0503863e2039c16bb545876943638305935a
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Thu Dec 8 18:53:54 2011 +0100
 
-	* [r37] ChangeLog: Add tag version 0.9.4
+    Correct bug in anafast for polarization case (need to 'or' the masks, not 'and'...). #3
 
-2009-01-11 03:04  cyrille.rosset
+commit 05d7a8890f4b0af1a822a23d9cc64a00f1ff505e
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Thu Dec 8 18:51:28 2011 +0100
 
-	* [r36] healpy/rotator.py: correct bug in Rotator.angle_ref
+    Correct bug in anafast for polarization case. #3
 
-2009-01-08 19:24  cyrille.rosset
+commit 6b9b7664b8b7310c1d8b8ff04c0042f991bb2e6a
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Thu Dec 8 17:53:17 2011 +0100
 
-	* [r35] INSTALL, TODO, do_inst: update the INSTALL, TODO files;
-	  remove obsolete do_inst script
+    correct bug in previous version, start polarization. Just realized that current shptfunc.anafast is actually not working for polarization... #13
 
-2009-01-08 18:47  cyrille.rosset
+commit 167f0b99a653b3c79ee05153d05a06fb26c8b33f
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Wed Dec 7 19:11:31 2011 +0100
 
-	* [r34] ., ChangeLog, healpy/version.py, hpbeta: Add svn:ignore
-	  properties ; update version
+    Some corrections. Needs to add polarization, weights, etc. #13
 
-2009-01-08 18:14  cyrille.rosset
+commit 27db4f6e250bda67559cc09bec47f7115d05c703
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Wed Dec 7 09:26:10 2011 +0100
 
-	* [r33] healpy/__init__.py, healpy/rotator.py: Add documentation to
-	  the Rotator class; makes it available as healpy.Rotator
+    First working (basic) version of ianafast in cython. Gives same results as current anafast. #13
 
-2009-01-06 13:35  cyrille.rosset
+commit dc3acfc1662ceec6225299a7738186f5b5a253b0
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Mon Dec 5 18:32:34 2011 +0100
 
-	* [r32] healpy/version.py: update version number
+    interediate version
 
-2009-01-06 13:19  cyrille.rosset
+commit 6d5b54d48e0efc0cab7394823df098417c4f3f7e
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Mon Dec 5 18:04:13 2011 +0100
 
-	* [r31] ChangeLog: update ChangeLog
+    start implementation of ianafast (like anafast, but allow 2 input maps). #13
 
-2009-01-06 13:04  cyrille.rosset
+commit 5ac5a16175327201333bb015946628699789c67f
+Author: Andrea Zonca <code@andreazonca.com>
+Date:   Thu Jan 26 17:00:03 2012 -0800
 
-	* [r30] healpy/__init__.py, healpy/projaxes.py, healpy/visufunc.py:
-	  Add flip keyword to mollview/gnomview (solve issue 13); correct
-	  graticule paramters (solve issue 12); extend xlim/ylim for
-	  mollview (solve issue 14)
+    more general exception catching for detecting cython
 
-2008-12-29 14:02  cyrille.rosset
+commit cce3e936ce80401dcd95ab94c766c52fa91fdcf8
+Author: Andrea Zonca <code@andreazonca.com>
+Date:   Tue Jan 17 11:07:34 2012 +0100
 
-	* [r29] ChangeLog: Update ChangeLog
+    added standard /usr paths for building healpix
 
-2008-12-29 13:48  cyrille.rosset
+commit 7de89b53990c1bd2770f6e723b3015a733aa3d6c
+Author: Andrea Zonca <code@andreazonca.com>
+Date:   Tue Jan 17 10:07:03 2012 +0100
 
-	* [r28] ChangeLog: Add margins keyword to mollview; invert cols and
-	  rows for sub= in mollview and gnomview
+    removed pyfits coldefs
 
-2008-12-29 13:38  cyrille.rosset
+commit bc2e576decc7abb455eb4dbe7e487f67eaad12e6
+Author: Andrea Zonca <code@andreazonca.com>
+Date:   Mon Jan 16 17:35:50 2012 +0100
 
-	* [r27] healpy/visufunc.py: Add margins keyword to mollview; invert
-	  cols and rows for sub= in mollview and gnomview
+    typo in docs
 
-2008-12-17 17:01  cyrille.rosset
+commit 2036fe4b7bdea7fbc0e37e704bbdfcfc0278180b
+Author: Andrea Zonca <code@andreazonca.com>
+Date:   Mon Jan 16 17:31:08 2012 +0100
 
-	* [r26] ChangeLog: Add ChangeLog file
+    added note about collaborating
 
-2008-12-12 14:00  cyrille.rosset
+commit 67cd5a21c9eb9fd53bf230679d33d230c761bd58
+Author: Andrea Zonca <code@andreazonca.com>
+Date:   Mon Jan 16 17:20:12 2012 +0100
 
-	* [r25] healpy/version.py: add property on version.py
+    npy to np, hpy to hp
 
-2008-12-12 13:48  cyrille.rosset
+commit 42ea0d51a359216f3cf9f94d1d2ac05463eba6ed
+Author: Andrea Zonca <code@andreazonca.com>
+Date:   Mon Jan 16 17:07:23 2012 +0100
 
-	* [r23] setup.py: minor bug corrected (ud_grade: order_out=order_in
-	  if not given ; reorder imported in __init__.py); no compilation
-	  of healpy for setup.py sdist
+    formatted for sphinx
 
-2008-12-12 13:27  cyrille.rosset
+commit 26634ce53b7fb0dfdb7833d5d46cf4fb3a34dec6
+Author: Andrea Zonca <code@andreazonca.com>
+Date:   Mon Jan 16 17:00:21 2012 +0100
 
-	* [r21] healpy/__init__.py, healpy/pixelfunc.py: order_out=order_in
-	  if not given in ud_grade ; import reorder in __init__.py
+    more complete gitignore
 
-2008-12-12 08:03  cyrille.rosset
+commit 07ecef0fd8931504f6637a0017e234147d792cf0
+Author: Andrea Zonca <code@andreazonca.com>
+Date:   Mon Jan 16 16:56:42 2012 +0100
 
-	* [r19] healpy/projaxes.py: Adapt HistEqNorm to numpy 1.2 (change
-	  in histogram bins format)
+    increased requirement of Cython version to .14, closes #23
 
-2008-12-11 22:45  cyrille.rosset
+commit e80a700fb51c5790f0709bc26575d000c1b3bf79
+Author: Andrea Zonca <code@andreazonca.com>
+Date:   Mon Jan 16 16:04:02 2012 +0100
 
-	* [r17] healpy/projaxes.py: Correct bug in LinNorm2 giving
-	  incorrect color scale with some version of numpy (masked array
-	  problem?)
+    added vector example doctest to rotator, issue #15
 
-2008-12-08 18:54  cyrille.rosset
+commit 5f8e556db4a5b3244090b05303ae209b1d19389e
+Author: Andrea Zonca <code@andreazonca.com>
+Date:   Mon Jan 16 15:58:31 2012 +0100
 
-	* [r15] doc, doc/Makefile, doc/conf.py, doc/healpy_fits.rst,
-	  doc/healpy_pix.rst, doc/healpy_projaxes.rst,
-	  doc/healpy_projector.rst, doc/healpy_rotator.rst,
-	  doc/healpy_spht.rst, doc/healpy_visu.rst, doc/index.rst, test,
-	  test/test_fit_dipole.py: Add test directory and doc directory
+    turned rotator example in simple documentation instead of doctest
 
-2008-12-08 18:33  cyrille.rosset
+commit b447ab658b3222226665a1223a9c1cef7bb9e568
+Author: Andrea Zonca <code@andreazonca.com>
+Date:   Mon Jan 16 15:53:58 2012 +0100
 
-	* [r14] healpy/fitsfunc.py, healpy/rotator.py: Add reference
-	  direction rotation in rotator (for polarisation). Not yet tested.
+    tests now run both from root and from test folder
 
-2008-12-02 18:25  cyrille.rosset
+commit 24beb1aa3618d5d5005d13b4c4a3c2a23b523b9c
+Merge: 692d0da af19f95
+Author: Andrea Zonca <code@andreazonca.com>
+Date:   Tue Jan 3 14:18:06 2012 -0800
 
-	* [r13] healpy/visufunc.py: modify gnomview and mollview to make
-	  blank maps (for overplotting), to replace current axes (option
-	  hold), or to make subplots on the current figure (option sub)
+    Merge pull request #24 from dhanson/master
+    
+    pshyt typo fixes.
 
-2008-11-26 12:04  cyrille.rosset
+commit af19f95fd3c72bfda35fdf9076728d073646eccf
+Author: Duncan Hanson <dhanson@jpl.nasa.gov>
+Date:   Fri Dec 23 10:50:03 2011 -0800
 
-	* [r12] hpbeta/config/config.generic_gcc: Add -fPIC into compiler
-	  option
+    blatant typo fixes in pshyt.pyx. spin transforms were operating on Q+iQ rather than Q+iU.
 
-2008-11-17 13:40  cyrille.rosset
+commit 842b92b59390bb629089e0e49397e992b9719963
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Thu Dec 8 19:24:02 2011 +0100
 
-	* [r11] healpy/sphtfunc.py: default for number of iteration set to
-	  1 instead of 3
+    rename ianafast to map2alm (can actually replace the c++ version). Starting a alm2cl function.
 
-2008-11-07 09:24  cyrille.rosset
+commit 8f2370fa3501a63ff3f79d1d2d3832ed3ac68a90
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Thu Dec 8 18:53:54 2011 +0100
 
-	* [r10] healpy/rotator.py: correct issue 4: lonlat keyword not
-	  taken into account for output
+    Correct bug in anafast for polarization case (need to 'or' the masks, not 'and'...). #3
 
-2008-11-05 11:58  cyrille.rosset
+commit f91e70ac28ed88fa4fc32007a6c247e78dd9188d
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Thu Dec 8 18:51:28 2011 +0100
 
-	* [r9] healpy/__init__.py, healpy/query_disc_func.py: add
-	  query_disc function and related functions
+    Correct bug in anafast for polarization case. #3
 
-2008-11-03 13:45  cyrille.rosset
+commit f25ca8e4c7288211b24cfb14d2f50748d9293902
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Thu Dec 8 17:53:17 2011 +0100
 
-	* [r8] healpy/src/_healpy_sph_transform_lib.cc: - correct bug in
-	  healpy.alm2map_der1 : was setting almI(0,0) to zero (same bug as
-	  in alm2map)
+    correct bug in previous version, start polarization. Just realized that current shptfunc.anafast is actually not working for polarization... #13
 
-2008-11-03 13:43  cyrille.rosset
+commit ae99095043ec1a545856859d25a83a6ee505d820
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Wed Dec 7 19:11:31 2011 +0100
 
-	* [r7] healpy/__init__.py, healpy/pixelfunc.py,
-	  healpy/src/_healpy_sph_transform_lib.cc,
-	  hpbeta/Healpix_cxx/alm_map_tools.cc: - correct bug in
-	  alm_map_tools.cc for alm2map_der1\n- correct bug in
-	  healpy.alm2map : was setting almI(0,0) to zero
+    Some corrections. Needs to add polarization, weights, etc. #13
 
-2008-10-28 09:21  cyrille.rosset
+commit 987ff305d0128b44ff58beec55990e80126d2f0f
+Merge: d6cf5ca 692d0da
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Wed Dec 7 09:27:03 2011 +0100
 
-	* [r6] healpy/__init__.py, healpy/pixelfunc.py, healpy/sphtfunc.py,
-	  healpy/src/_healpy_sph_transform_lib.cc: add alm2map_der1
+    Merge branch 'master' of github.com:healpy/healpy into xspectra
 
-2008-10-28 09:20  cyrille.rosset
+commit d6cf5cac795c1832fec1c520c65fc5c84e2396bc
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Wed Dec 7 09:26:10 2011 +0100
 
-	* [r5] hpbeta/Healpix_cxx/alm_map_tools.cc,
-	  hpbeta/Healpix_cxx/healpix_base.h, hpbeta/Healpix_cxx/hpxtest.cc,
-	  hpbeta/Healpix_cxx/ylmgen.h, hpbeta/Makefile,
-	  hpbeta/README.compilation, hpbeta/alice,
-	  hpbeta/alice/MollweideSkyMap.cc, hpbeta/alice/MollweideSkyMap.h,
-	  hpbeta/alice/OrthogonalSkyMap.h,
-	  hpbeta/alice/PolarizationHolder.cc,
-	  hpbeta/alice/PolarizationHolder.h, hpbeta/alice/RectSkyMap.h,
-	  hpbeta/alice/SkyMap.h, hpbeta/alice/SoSSkyMap.cc,
-	  hpbeta/alice/SoSSkyMap.h, hpbeta/alice/TextureHolder.cc,
-	  hpbeta/alice/TextureHolder.h, hpbeta/alice/alice2.cc,
-	  hpbeta/alice/alice_usage.h, hpbeta/alice/alice_usage.txt,
-	  hpbeta/alice/alice_utils.h, hpbeta/alice/color.cc,
-	  hpbeta/alice/color.h, hpbeta/alice/generateTexture.cc,
-	  hpbeta/alice/makeusage.sh, hpbeta/alice/planck.make,
-	  hpbeta/alice/test.cc, hpbeta/alice/testMollweideSkyMap.cc,
-	  hpbeta/alice/testOrthogonalSkyMap.cc,
-	  hpbeta/alice/testSoSSkyMap.cc,
-	  hpbeta/alice/wmap_ilc_3yr_v2_r6_sim.fits,
-	  hpbeta/config/config.generic_gcc, hpbeta/config/rules.common,
-	  hpbeta/cxxsupport/constants.h, hpbeta/cxxsupport/cxxutils.cc,
-	  hpbeta/cxxsupport/cxxutils.h, hpbeta/cxxsupport/fitshandle.cc,
-	  hpbeta/cxxsupport/lsconstants.h, hpbeta/cxxsupport/paramfile.h,
-	  hpbeta/cxxsupport/planck.make, hpbeta/cxxsupport/rotmatrix.cc,
-	  hpbeta/cxxsupport/trafos.cc,
-	  hpbeta/libcfitsio/cfitsio3040.tar.gz,
-	  hpbeta/libcfitsio/cfitsio3100.tar.gz,
-	  hpbeta/libcfitsio/planck.make, hpbeta/libfftpack/README: Update
-	  to Healpix_2.10 version
+    First working (basic) version of ianafast in cython. Gives same results as current anafast. #13
 
-2008-10-03 12:24  cyrille.rosset
+commit 692d0da4ce06525cd51b542c6d7228b8b0c11bca
+Author: Andrea Zonca <code@andreazonca.com>
+Date:   Tue Dec 6 20:37:53 2011 -0800
 
-	* [r4] healpy/__init__.py, healpy/pixelfunc.py,
-	  healpy/projector.py, healpy/visufunc.py: Add
-	  fit/remove_dipole/monopole
+    fixed typo in warnings module name
 
-2008-08-31 16:56  cyrille.rosset@gmail.com
+commit f8be441e644c9ed50b6e9ddd3f8e3249ce5c1f32
+Author: Andrea Zonca <code@andreazonca.com>
+Date:   Tue Dec 6 20:35:26 2011 -0800
 
-	* [r2] INSTALL, MANIFEST.in, TODO, do_inst, healpy,
-	  healpy/__init__.py, healpy/data,
-	  healpy/data/pixel_window_n0002.fits,
-	  healpy/data/pixel_window_n0004.fits,
-	  healpy/data/pixel_window_n0008.fits,
-	  healpy/data/pixel_window_n0016.fits,
-	  healpy/data/pixel_window_n0032.fits,
-	  healpy/data/pixel_window_n0064.fits,
-	  healpy/data/pixel_window_n0128.fits,
-	  healpy/data/pixel_window_n0256.fits,
-	  healpy/data/pixel_window_n0512.fits,
-	  healpy/data/pixel_window_n1024.fits,
-	  healpy/data/pixel_window_n2048.fits,
-	  healpy/data/pixel_window_n4096.fits,
-	  healpy/data/pixel_window_n8192.fits,
-	  healpy/data/weight_ring_n00002.fits,
-	  healpy/data/weight_ring_n00004.fits,
-	  healpy/data/weight_ring_n00008.fits,
-	  healpy/data/weight_ring_n00016.fits,
-	  healpy/data/weight_ring_n00032.fits,
-	  healpy/data/weight_ring_n00064.fits,
-	  healpy/data/weight_ring_n00128.fits,
-	  healpy/data/weight_ring_n00256.fits,
-	  healpy/data/weight_ring_n00512.fits,
-	  healpy/data/weight_ring_n01024.fits,
-	  healpy/data/weight_ring_n02048.fits,
-	  healpy/data/weight_ring_n04096.fits,
-	  healpy/data/weight_ring_n08192.fits, healpy/fitsfunc.py,
-	  healpy/pixelfunc.py, healpy/projaxes.py, healpy/projector.py,
-	  healpy/rotator.py, healpy/sphtfunc.py, healpy/src,
-	  healpy/src/_healpy_fitsio_lib.cc,
-	  healpy/src/_healpy_pixel_lib.cc,
-	  healpy/src/_healpy_sph_transform_lib.cc, healpy/version.py,
-	  healpy/visufunc.py, hpbeta, hpbeta/COPYING, hpbeta/Healpix_cxx,
-	  hpbeta/Healpix_cxx/Healpix_cxx.dox, hpbeta/Healpix_cxx/alm.h,
-	  hpbeta/Healpix_cxx/alm2map_cxx.cc,
-	  hpbeta/Healpix_cxx/alm2map_cxx.par.txt,
-	  hpbeta/Healpix_cxx/alm_fitsio.cc,
-	  hpbeta/Healpix_cxx/alm_fitsio.h,
-	  hpbeta/Healpix_cxx/alm_healpix_tools.cc,
-	  hpbeta/Healpix_cxx/alm_healpix_tools.h,
-	  hpbeta/Healpix_cxx/alm_map_tools.cc,
-	  hpbeta/Healpix_cxx/alm_map_tools.h,
-	  hpbeta/Healpix_cxx/alm_powspec_tools.cc,
-	  hpbeta/Healpix_cxx/alm_powspec_tools.h,
-	  hpbeta/Healpix_cxx/anafast_cxx.cc,
-	  hpbeta/Healpix_cxx/anafast_cxx.par.txt,
-	  hpbeta/Healpix_cxx/calc_powspec.cc,
-	  hpbeta/Healpix_cxx/healpix_base.cc,
-	  hpbeta/Healpix_cxx/healpix_base.h,
-	  hpbeta/Healpix_cxx/healpix_base2.cc,
-	  hpbeta/Healpix_cxx/healpix_base2.h,
-	  hpbeta/Healpix_cxx/healpix_data_io.cc,
-	  hpbeta/Healpix_cxx/healpix_data_io.h,
-	  hpbeta/Healpix_cxx/healpix_map.cc,
-	  hpbeta/Healpix_cxx/healpix_map.h,
-	  hpbeta/Healpix_cxx/healpix_map_fitsio.cc,
-	  hpbeta/Healpix_cxx/healpix_map_fitsio.h,
-	  hpbeta/Healpix_cxx/hotspots_cxx.cc,
-	  hpbeta/Healpix_cxx/hpxtest.cc, hpbeta/Healpix_cxx/map2tga.cc,
-	  hpbeta/Healpix_cxx/map2tga.par.txt,
-	  hpbeta/Healpix_cxx/median_filter.cc,
-	  hpbeta/Healpix_cxx/mult_alm.cc,
-	  hpbeta/Healpix_cxx/mult_alm.par.txt,
-	  hpbeta/Healpix_cxx/planck.make, hpbeta/Healpix_cxx/powspec.cc,
-	  hpbeta/Healpix_cxx/powspec.h,
-	  hpbeta/Healpix_cxx/powspec_fitsio.cc,
-	  hpbeta/Healpix_cxx/powspec_fitsio.h,
-	  hpbeta/Healpix_cxx/rotalm_cxx.cc,
-	  hpbeta/Healpix_cxx/smoothing_cxx.cc,
-	  hpbeta/Healpix_cxx/smoothing_cxx.par.txt,
-	  hpbeta/Healpix_cxx/syn_alm_cxx.cc,
-	  hpbeta/Healpix_cxx/syn_alm_cxx.par.txt,
-	  hpbeta/Healpix_cxx/udgrade_cxx.cc, hpbeta/Healpix_cxx/ylmgen.h,
-	  hpbeta/Makefile, hpbeta/README.compilation, hpbeta/config,
-	  hpbeta/config/config.aix64, hpbeta/config/config.generic_gcc,
-	  hpbeta/config/config.irix64, hpbeta/config/config.linux_icc,
-	  hpbeta/config/config.osx, hpbeta/config/rules.common,
-	  hpbeta/cxxsupport, hpbeta/cxxsupport/arr.h,
-	  hpbeta/cxxsupport/compat_headers,
-	  hpbeta/cxxsupport/compat_headers/cmath,
-	  hpbeta/cxxsupport/compat_headers/cstdio,
-	  hpbeta/cxxsupport/constants.h, hpbeta/cxxsupport/cxxsupport.dox,
-	  hpbeta/cxxsupport/cxxutils.cc, hpbeta/cxxsupport/cxxutils.h,
-	  hpbeta/cxxsupport/datatypes.h,
-	  hpbeta/cxxsupport/fftpack_support.h,
-	  hpbeta/cxxsupport/fitshandle.cc, hpbeta/cxxsupport/fitshandle.h,
-	  hpbeta/cxxsupport/font_data.inc, hpbeta/cxxsupport/geom_utils.h,
-	  hpbeta/cxxsupport/message_error.h,
-	  hpbeta/cxxsupport/openmp_support.h,
-	  hpbeta/cxxsupport/paramfile.h, hpbeta/cxxsupport/planck.make,
-	  hpbeta/cxxsupport/planck_rng.h, hpbeta/cxxsupport/pointing.h,
-	  hpbeta/cxxsupport/rotmatrix.cc, hpbeta/cxxsupport/rotmatrix.h,
-	  hpbeta/cxxsupport/simparams.cc, hpbeta/cxxsupport/simparams.h,
-	  hpbeta/cxxsupport/tga_image.cc, hpbeta/cxxsupport/tga_image.h,
-	  hpbeta/cxxsupport/trafos.cc, hpbeta/cxxsupport/trafos.h,
-	  hpbeta/cxxsupport/vec3.h, hpbeta/cxxsupport/xcomplex.h,
-	  hpbeta/doc, hpbeta/docsrc, hpbeta/docsrc/Healpix_cxx.dox,
-	  hpbeta/docsrc/cxxsupport.dox, hpbeta/docsrc/footer.html,
-	  hpbeta/docsrc/header.html, hpbeta/docsrc/index_cxx.html,
-	  hpbeta/docsrc/libfftpack.dox, hpbeta/docsrc/planck.make,
-	  hpbeta/docsrc/sheet.css, hpbeta/libcfitsio,
-	  hpbeta/libcfitsio/cfitsio3040.tar.gz,
-	  hpbeta/libcfitsio/planck.make, hpbeta/libfftpack,
-	  hpbeta/libfftpack/bluestein.c, hpbeta/libfftpack/bluestein.h,
-	  hpbeta/libfftpack/fftpack.c, hpbeta/libfftpack/fftpack.h,
-	  hpbeta/libfftpack/libfftpack.dox, hpbeta/libfftpack/ls_fft.c,
-	  hpbeta/libfftpack/ls_fft.h, hpbeta/libfftpack/planck.make,
-	  hpbeta/test, hpbeta/test/alm2map.par, hpbeta/test/alm2map2.par,
-	  hpbeta/test/alm2map3.par, hpbeta/test/anafast.par,
-	  hpbeta/test/anafast_fortran.par, hpbeta/test/cl.fits,
-	  hpbeta/test/runtest.sh, hpbeta/test/syn_alm.par,
-	  hpbeta/test/udgrade.par, setup.py: First import of current trunk.
+    query disc import inside try except
 
-2008-08-29 09:32  
+commit e03aa483d18493af375b0920569f78e833341bfc
+Author: Andrea Zonca <code@andreazonca.com>
+Date:   Tue Dec 6 20:30:14 2011 -0800
 
-	* [r1] .: Initial directory structure.
+    added zoomtool doc
 
+commit d35296c6d9a2e3f47883217c4d52ea0b1fa14f56
+Author: Andrea Zonca <code@andreazonca.com>
+Date:   Tue Dec 6 20:29:38 2011 -0800
+
+    formatted zoomtool for sphinx, Closes #14
+
+commit 03ab00142b3e9bf0becf3177bb5b8e035c1c8261
+Author: Andrea Zonca <code@andreazonca.com>
+Date:   Tue Dec 6 19:54:11 2011 -0800
+
+    completed first version of the tutorial Closes #16
+
+commit 228b0679848db2a7d2df9cf28d6fd06827b95ce1
+Author: Andrea Zonca <code@andreazonca.com>
+Date:   Tue Dec 6 18:43:25 2011 -0800
+
+    script for generating images
+
+commit 3cbb73f9944fea942cd5ed5709cd132288e89918
+Author: Andrea Zonca <code@andreazonca.com>
+Date:   Tue Dec 6 18:26:59 2011 -0800
+
+    introduction on manipulating maps
+
+commit 5c4361389c34d93f9946493cbc635290ad6d5e40
+Author: Andrea Zonca <code@andreazonca.com>
+Date:   Tue Oct 25 17:05:55 2011 -0700
+
+    adding image
+
+commit 97a5da3165554a892c3aa37c2ad5896c051be1e5
+Author: Andrea Zonca <code@andreazonca.com>
+Date:   Tue Oct 25 16:58:02 2011 -0700
+
+    testing images in docs, issue #16
+
+commit 1180ae92d3994ef9e09e8b0202e154d9861a1e9d
+Author: Andrea Zonca <code@andreazonca.com>
+Date:   Tue Oct 25 16:40:05 2011 -0700
+
+    fix to support local build and readthedocs
+
+commit 90521907dba4184e37e80eac875646820a5699a0
+Author: Andrea Zonca <code@andreazonca.com>
+Date:   Tue Oct 25 16:14:02 2011 -0700
+
+    tutorial started
+
+commit d6f7a942757cc4c9c315a9dc7c3caf3948ad934f
+Merge: d25418c c3212e4
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Mon Dec 5 18:34:12 2011 +0100
+
+    Merge branch 'master' into xspectra
+
+commit d25418c284d9cae79abed65ba3c71d576c76d2a6
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Mon Dec 5 18:32:34 2011 +0100
+
+    interediate version
+
+commit e2fb28d586b72cd3b27de77cd8271e0cc7ceed11
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Mon Dec 5 18:04:13 2011 +0100
+
+    start implementation of ianafast (like anafast, but allow 2 input maps). #13
+
+commit c3212e4b80bf4ddd3e85599c422cedffe6affc1e
+Author: Martin Reinecke <martin@mpa-garching.mpg.de>
+Date:   Wed Nov 23 15:15:45 2011 +0100
+
+    sync with master sources
+
+commit f1ba08536f0c68e44b00e4220ffe3aa96b540f1a
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Tue Nov 15 15:06:34 2011 +0100
+
+    modify setup.py so that it compiles healpix_cxx only if needed #21
+
+commit 2f2c574a7901da16198a2e1499d01846d239d28c
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Tue Nov 15 13:06:08 2011 +0100
+
+    change query_disc2 to query_disc to follow replacement of query_disc #4
+
+commit 48506e84b835ae3516dd16a8e15775c0a57efd7d
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Tue Nov 15 12:05:18 2011 +0100
+
+    correction in doc of query_disc
+
+commit 7535988d0a7ebd07c1e7d3cedfb46217464d23fe
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Tue Nov 15 12:03:33 2011 +0100
+
+    Remove old query_disc_func.py
+
+commit 7967d31560862a500582ee74627426522b6d6666
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Tue Nov 15 12:02:14 2011 +0100
+
+    Add query_polygon and query_strip
+
+commit ba67041018d64468ca8ad1544a991ceb113e105b
+Author: Cyrille Rosset <cyrille.rosset@apc.univ-paris-diderot.fr>
+Date:   Fri Oct 14 12:07:43 2011 +0200
+
+    update documentation #4
+
+commit c6229ac1d7ce0919f572353d5c3447d6b33b22c6
+Author: Cyrille Rosset <cyrille.rosset@apc.univ-paris-diderot.fr>
+Date:   Fri Oct 14 11:56:30 2011 +0200
+
+    Add query_polygon and query_strip
+
+commit 2509bf4665a21044701f112d5d5d76a8aa45a82f
+Author: Andrea Zonca <code@andreazonca.com>
+Date:   Thu Oct 13 16:09:32 2011 -0700
+
+    added test case for query_disc2, comparing with healpix IDL, issue #4
+
+commit 4ae4e23f94c1e02716f1147c90c540d0df8210b8
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Thu Oct 13 18:08:34 2011 +0200
+
+    new query_disc2 function, written in cython, wrapping the c++ Healpix_Base2::query_disc(). Seems to work ok (same results as IDL. Issue #4.
+
+commit 5090ba30cb415c58c9d85d39bb697dd57fe71b4a
+Author: Andrea Zonca <code@andreazonca.com>
+Date:   Fri Oct 7 12:59:23 2011 -0700
+
+    fixed website to github
+
+commit a3284a89ff3391424ec3ee39d28b9a304aaeffa8
+Merge: 8524844 f9fe1bf
+Author: Andrea Zonca <code@andreazonca.com>
+Date:   Thu Oct 6 19:01:17 2011 -0700
+
+    fixed merge in pixelfunc
+
+commit 8524844ae0762de2776d81b6c9f46017ca7f819e
+Author: Andrea Zonca <code@andreazonca.com>
+Date:   Thu Oct 6 18:55:51 2011 -0700
+
+    added import healpy as hpy to pixelfunc doctests in order to support test runners (nose and py.test) #15
+
+commit f9fe1bf6eea2ad5c537cb8c2a9f83e3af1b8d1ee
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Thu Oct 6 18:11:10 2011 -0700
+
+    Remove doc style in conf.py (issue #14)
+
+commit 1c91c308d886b31893d5bcf7aedab171e321480b
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Thu Oct 6 18:11:01 2011 -0700
+
+    Remove doc style in conf.py (issue #14)
+
+commit ddef3fba6cf891492240eb523662d9fef69ac926
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Thu Oct 6 18:01:39 2011 -0700
+
+    Try to modify conf.py to have doc compiling on ReadTheDocs (issue #14)
+
+commit 923e908522c1a4c1239141e9c2e5b3704cee5498
+Merge: 6b33026 f860ca7
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Thu Oct 6 17:50:27 2011 -0700
+
+    Merge branch 'master' of github.com:healpy/healpy
+
+commit 6b330267d510731ac063c9f647007426ef33cd24
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Thu Oct 6 17:50:11 2011 -0700
+
+    Modify conf.py to add Mock modules for ReadTheDocs documentation purpose (issue #14)
+
+commit f860ca7fae87ef29c004839da976224720f07230
+Author: Andrea Zonca <code@andreazonca.com>
+Date:   Thu Oct 6 16:53:17 2011 -0700
+
+    added test on cl array length, #13
+
+commit 53908a71b245eba42c80ef5750cc30491c987c50
+Merge: 5698287 bfeb81e
+Author: Andrea Zonca <code@andreazonca.com>
+Date:   Thu Oct 6 16:47:47 2011 -0700
+
+    Merge remote branch 'origin/master'
+
+commit 569828790986360e6c8ebbc505a213450f196826
+Author: Andrea Zonca <code@andreazonca.com>
+Date:   Thu Oct 6 16:46:15 2011 -0700
+
+    added test for anafast, it needs wmap map and mask, which must be downloaded separately from healpy, anafast performance is similar to anafast fortran, #13
+
+commit bfeb81e19804c61054cd6ca9dcfcfa5cd3d33b25
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Thu Oct 6 15:53:03 2011 -0700
+
+    remove import numpy in __init__.py (not used and breaks documentation building in ReadTheDocs)
+
+commit 0113757d048d76c48b14670f2d54b24a1be2c599
+Merge: 2aa997f 59d964b
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Thu Oct 6 15:48:02 2011 -0700
+
+    Merge branch 'master' of github.com:healpy/healpy
+
+commit 2aa997f6c683780e1e13fe9a2e60a5e758522b10
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Thu Oct 6 15:47:22 2011 -0700
+
+    Modify setup.py for ReadTheDocs (install without binary extensions)
+
+commit 59d964b9be81fc62405a2aa433d8d26a842c5fbe
+Author: Andrea Zonca <code@andreazonca.com>
+Date:   Thu Oct 6 15:07:25 2011 -0700
+
+    C++ interface imports in try, except clauses
+
+commit b8a53832b27ae4db5e470759db457d4bce504421
+Author: Andrea Zonca <code@andreazonca.com>
+Date:   Thu Oct 6 14:52:07 2011 -0700
+
+    removed ext path from conf.py
+
+commit 262b1e640331e784088b15aafb2bd420cba50777
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Thu Oct 6 12:37:01 2011 -0700
+
+    remove ext directory
+
+commit 739f4f4d580fdcb875cd9c85a8dad0a0a96e0004
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Thu Oct 6 12:34:37 2011 -0700
+
+    fic the sphinx-build name in Makefile
+
+commit 4e3156079a36ca99db8b82a2f7c20257d4e4ce5a
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Thu Oct 6 12:31:50 2011 -0700
+
+    Use sphinx.ext.autosummary instead of mysummary
+
+commit 1ea64ac2acc2509a89dffed4d31d705a105d9139
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Thu Oct 6 12:30:08 2011 -0700
+
+    correct colorbar in gnomview and mollview
+
+commit fdaa641f781d142e6f2725c321732e7ebf14df4a
+Merge: 48d7c1d 581381c
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Thu Oct 6 12:14:29 2011 -0700
+
+    Merge branch 'master' of github.com:healpy/healpy
+
+commit 581381ce87ca232a04c2e0213c69da3cabf9135b
+Author: Andrea Zonca <code@andreazonca.com>
+Date:   Thu Oct 6 11:31:09 2011 -0700
+
+    fixed wrong indentation
+
+commit 83707d9d6c864bab08511242c45c51ead27c9c24
+Merge: 1d85bc3 8094bd7
+Author: Andrea Zonca <code@andreazonca.com>
+Date:   Thu Oct 6 11:29:57 2011 -0700
+
+    Merge remote-tracking branch 'origin/master'
+
+commit 1d85bc3e2a5aec6d899aa3b7f8c0e1e5b9528e21
+Author: Andrea Zonca <code@andreazonca.com>
+Date:   Thu Oct 6 11:29:31 2011 -0700
+
+    removed useless setUp
+
+commit 48d7c1d1d7b0a51089ef6b9d94e6fd1c5b195e9d
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Mon Oct 3 19:45:17 2011 -0700
+
+    correct bug in colorbar display gnomview and cartview when using a special color normalization
+
+commit 8094bd7640e67c0da12e70eb2cf72b54fa7aa1f5
+Merge: 68df254 c2d64cb
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Fri Sep 30 14:32:52 2011 -0700
+
+    Merge branch 'master' of github.com:healpy/healpy
+
+commit 68df2549bdb95b55a2f5836348f1061db1eb12fe
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Fri Sep 30 14:32:23 2011 -0700
+
+    Add a check to angdist to avoid NaN's
+
+commit fe21cefb0faf31434bdd0c23a313448d7792ba7c
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Fri Sep 30 14:31:41 2011 -0700
+
+    include install procedure into documentation index
+
+commit c2d64cbca2560213f451f2aed5c88d584b893910
+Author: Martin Reinecke <martin@mpa-garching.mpg.de>
+Date:   Thu Sep 29 09:53:19 2011 +0200
+
+    sync with master sources
+
+commit db11058e50863cb8820497719fd6da00c8fcece3
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Wed Sep 28 16:09:50 2011 -0700
+
+    Skeleton for tutorial, need to be filled... Issue #16
+
+commit e0cae4633a68e1cf19586c07393782aedfffc5aa
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Wed Sep 28 15:14:32 2011 -0700
+
+    correct bug to follow documentation
+
+commit 8e4416b79558e7d1eb0f5d4e40f79eb820c27a2e
+Merge: 97fcb88 ea0681e
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Tue Sep 27 14:53:46 2011 -0700
+
+    Merge branch 'master' of github.com:healpy/healpy
+
+commit 97fcb88ebc8129d78d2ea581abc6d4392e2d5343
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Tue Sep 27 14:52:24 2011 -0700
+
+    cosmetic changes to setup.py
+
+commit ea0681ecd56185bdfc1e8bfd6fbd46eb13a47742
+Author: Andrea Zonca <code@andreazonca.com>
+Date:   Tue Sep 20 16:26:41 2011 -0700
+
+    added doc, fit_dipole and fit_monopole gal_cut is in degrees
+
+commit c39a0507a3a46f451d08ec5caf7592c038acf0ab
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Wed Sep 14 19:20:13 2011 +0200
+
+    Add a link to documentation in README.rst
+
+commit a1bdbc43af911a793405fa566249e897b3d881b0
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Wed Sep 14 19:18:58 2011 +0200
+
+    Simple documentation on howto build documentation
+
+commit cf777e6fe7318142845939ea4801a77f5a1ae629
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Wed Sep 14 19:03:09 2011 +0200
+
+    Add BUILDIR variable to doc/Makefile; add extension sphinxtogithub for doc
+
+commit 1479f7efe70258d30cbbc19479694f8b69897402
+Merge: 733a08a d505761
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Tue Sep 13 19:01:05 2011 +0200
+
+    Fix conflict
+
+commit 733a08af8ef48ebf16ecda91959ec5ee895f2a6f
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Tue Sep 13 18:59:25 2011 +0200
+
+    update documentation; correct bug in vec2dir.
+
+commit aad0a3a7cb5038468f08d0d609c8573968962cc3
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Tue Sep 13 16:21:21 2011 +0200
+
+    Patch documentation extension numpydoc to exclude documentation of matplotlib.axes.Axes methods
+
+commit 3a4c82c71ead8dbb4d7b5838576f3d0b7bb17640
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Tue Sep 13 16:19:55 2011 +0200
+
+    Need patch to autosummary to avoid documenting matplotlib.axes.Axes methods...
+
+commit d505761f6d92b93611143795d83f435b6cecd49a
+Author: Andrea Zonca <code@andreazonca.com>
+Date:   Mon Sep 12 17:37:32 2011 -0700
+
+    fixed bug in vec2dir in latitude/longitude mode, this was affecting the determination of position in all projections. closes #10, closes #11.
+
+commit 264e9373d49116922fca66e3540de1146a6e0600
+Author: Andrea Zonca <code@andreazonca.com>
+Date:   Mon Sep 12 14:49:25 2011 -0700
+
+    not moved before first argument
+
+commit 3d6dd8c661a110a80b85b1ca617f7d3c03e94bc3
+Author: Andrea Zonca <code@andreazonca.com>
+Date:   Mon Sep 12 14:45:33 2011 -0700
+
+    using "is" instead of != for checking None
+
+commit 7339e489009f13ff97e53dbe30e576038f531bac
+Author: Andrea Zonca <code@andreazonca.com>
+Date:   Mon Sep 12 14:35:16 2011 -0700
+
+    conversion of nside to int moved after checking if nside is none to avoid error when nside is not defined
+
+commit 268f827c6d250512a26d58d2ac615957e2342895
+Merge: 14feeb4 fe61033
+Author: Andrea Zonca <code@andreazonca.com>
+Date:   Sat Sep 10 13:38:05 2011 -0700
+
+    Merge pull request #9 from ziotom78/master
+    
+    Syntax error fix
+
+commit 14feeb462a65960f01b0c7707b8e2292924fad9b
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Thu Sep 8 15:08:34 2011 +0200
+
+    Update documentation
+
+commit ea4e542baa3e19ad2bb618d7350c224c6d6757a8
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Thu Sep 8 15:08:05 2011 +0200
+
+    Typo in setup.py
+
+commit fe61033621c9a19793ce14beded0c299ce81f7ca
+Author: Maurizio Tomasi <ziotom78@gmail.com>
+Date:   Thu Sep 8 10:34:12 2011 +0200
+
+    Syntax error fix
+    
+    The not-existing variable "theta" has been replaced with "vx".
+
+commit 203157358b3305c33cc93956983878cf08214294
+Author: Maurizio Tomasi <ziotom78@gmail.com>
+Date:   Thu Sep 8 11:08:21 2011 +0300
+
+    Syntax error fix
+    Wrong variable name "healpy_pshyt_libs" changed into "healpix_pshyt_libs".
+
+commit 20554a32743b18601c4a9f95469e4097de4aacf9
+Merge: 7a8d9e9 a965943
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Tue Sep 6 09:22:52 2011 +0200
+
+    Merge branch 'master' of github.com:healpy/healpy
+
+commit 7a8d9e9d6b27f3d27d3829ab0d545deb9c6ae07a
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Tue Sep 6 09:22:27 2011 +0200
+
+    Improve documentation
+
+commit a965943e1abbed6fcc983e06ed37bde6f5feb6cb
+Merge: 5d3a20c c9f3ee9
+Author: Andrea Zonca <code@andreazonca.com>
+Date:   Mon Sep 5 22:02:27 2011 -0700
+
+    Merge pull request #8 from segasai/patch-1
+    
+    Fix the inclusion of the -gomp flag for the linking of the pshyt library,
+
+commit 5d3a20c0306df0c74288c791d534254b94b99c77
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Fri Sep 2 18:57:36 2011 +0200
+
+    Modification to the documentation...
+
+commit 03142c9bc3c48783eae01bae9efbcef1dab055ca
+Merge: 0a40b7d bbb4092
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Fri Sep 2 14:46:12 2011 +0200
+
+    merged master
+
+commit 0a40b7d5e7ff05c43cd5b476f0c2d661bd74fce0
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Fri Sep 2 14:30:04 2011 +0200
+
+    Add documentation for visufunc
+
+commit bbb4092c0df931e97ef459f357f1bff93689dd60
+Author: Martin Reinecke <martin@mpa-garching.mpg.de>
+Date:   Mon Aug 29 12:19:30 2011 +0200
+
+    updates to sync with master sources
+
+commit c9f3ee90903bfedc43dc972471a3dd9681b0022f
+Author: Sergey Koposov <math@sai.msu.ru>
+Date:   Sun Aug 21 14:51:02 2011 +0200
+
+    Fix the inclusion of the -gomp flag for the linking of the pshyt library, despite the WITHOUT_OPENMP variable.
+
+commit 837b0c99e7f068ca68a20f8536015e6b66fea63d
+Author: Martin Reinecke <martin@mpa-garching.mpg.de>
+Date:   Wed Aug 3 11:37:03 2011 +0200
+
+    Be more clear about environment variables related to external
+    libcfitsio
+
+commit 3385a66a0ec7a75d975ee13a0b87650dd7350503
+Author: Andrea Zonca <code@andreazonca.com>
+Date:   Tue Aug 2 04:27:30 2011 -0700
+
+    now smoothing and anafast replace UNSEEN with zeros before calling c++, closes #3
+
+commit 055b8f31c60dd26929269a3535be1283f01f74d0
+Author: Andrea Zonca <code@andreazonca.com>
+Date:   Thu Jul 21 03:35:30 2011 -0700
+
+    support for coord in write_map
+
+commit 79a33c0a0aed33a5961bf865fac75e98f57d7840
+Author: Andrea Zonca <code@andreazonca.com>
+Date:   Thu Jul 21 03:29:04 2011 -0700
+
+    added developer install instructions
+
+commit 6e5556747a7721e9a5c958b3d3f5b64dbcceefda
+Author: Andrea Zonca <code@andreazonca.com>
+Date:   Thu Jul 21 03:28:47 2011 -0700
+
+    removed install instructions from readme
+
+commit 6d6aca4ce99529dd558a244062a97d63630c91e0
+Author: Andrea Zonca <code@andreazonca.com>
+Date:   Thu Jul 21 03:23:58 2011 -0700
+
+    added note on pshyt and cython
+
+commit 709d5f1e3d1947b978968b9e4a95f9a83a7ca100
+Author: Andrea Zonca <code@andreazonca.com>
+Date:   Thu Jul 21 03:20:12 2011 -0700
+
+    pregenerated phsyt.c from 0.10.2 added to the repo. Closes #6
+
+commit 82094b80df26e24e39d5d44cfa8872a98e6e1aec
+Author: Andrea Zonca <code@andreazonca.com>
+Date:   Thu Jul 21 03:16:10 2011 -0700
+
+    gitignore
+
+commit 084241797867a65f79cfab89356c37d5cf67b0a1
+Author: Andrea Zonca <code@andreazonca.com>
+Date:   Thu Jul 14 02:43:03 2011 -0700
+
+    notice on cython requirement for github version
+
+commit b8a8cabc43216b47bbfc71d81702c6ee4c6d9f9f
+Author: Andrea Zonca <code@andreazonca.com>
+Date:   Wed Jul 13 19:53:52 2011 +0200
+
+    Revert "Remove ang2vec and vc2ang from pixelfunc, rename dir2vec and vec2dir to ang2vec and vec2ang everywhere and import them in _init__.py ; start better documentation with some doctest examples."
+    
+    This reverts commit fa8ef404dafe917d2d4373a0e5b92a0cc06da948.
+
+commit 8fe72a7026be7eba6c70b9ccb7e01c10f480aef9
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Fri Jul 8 18:17:26 2011 +0200
+
+    update documentation
+
+commit 826ae1e6cb74bb5b43ef6e80438b5417acf5ff8a
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Fri Jul 8 18:08:40 2011 +0200
+
+    updated pixelfunc.py documentation
+
+commit 2ca1ab00658c826aec9f6223f35b89b165b45cc1
+Author: Martin Reinecke <martin@mpa-garching.mpg.de>
+Date:   Fri Jul 8 10:24:32 2011 +0200
+
+    small fixes
+
+commit fa8ef404dafe917d2d4373a0e5b92a0cc06da948
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Thu Jul 7 18:04:22 2011 +0200
+
+    Remove ang2vec and vc2ang from pixelfunc, rename dir2vec and vec2dir to ang2vec and vec2ang everywhere and import them in _init__.py ; start better documentation with some doctest examples.
+
+commit 0131f997347dd3e221d92f442e29a366b66b8c89
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Thu Jul 7 14:30:02 2011 +0200
+
+    ameliorate looking of README.rst...
+
+commit 7ff10def5a6eaa2ed91b92a2ab0302094ffc72a4
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Thu Jul 7 14:02:31 2011 +0200
+
+    ameliorate looking of README.rst...
+
+commit da5edc1f4716f9079cb9e7bece4d20d65840931d
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Thu Jul 7 13:52:12 2011 +0200
+
+    ameliorate looking of README.rst...
+
+commit c7bffdb0f583d4ced53ea334b562cbadddd39ff4
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Thu Jul 7 13:43:04 2011 +0200
+
+    ameliorate looking of README.rst...
+
+commit 6442da3a376d1af308635f3363c24c9350552c2b
+Author: Cyrille Rosset <cyrille.rosset@gmail.com>
+Date:   Thu Jul 7 13:35:12 2011 +0200
+
+    Add a README.rst file for github
+
+commit 801700a0eeabb7c4f08fbe13dc981e60a34ef151
+Author: mreineck <martin.reinecke1@gmx.de>
+Date:   Wed Jul 6 10:10:53 2011 +0000
+
+    sync with master sources
+
+commit 9a8a68a0073284919557e2cf948d86f1dadf3824
+Author: zonca <andrea.zonca@gmail.com>
+Date:   Tue Jul 5 21:46:08 2011 +0000
+
+    format keyword was not passed [Reijo Keskitalo]
+
+commit 678ed16131f5d7c2646fe8ea31d4c584c44d0b8c
+Author: zonca <andrea.zonca@gmail.com>
+Date:   Tue Jul 5 21:46:02 2011 +0000
+
+    fixed bug in fit_monopole, fixed missing keyword in docstring [Reijo Keskitalo]
+
+commit a8e8a2cfb30ce92c2cb34a357ac99a212877031d
+Author: zonca <andrea.zonca@gmail.com>
+Date:   Tue Jul 5 21:03:21 2011 +0000
+
+    UNDOING completely commit 197
+
+commit 45b26fe1b647998abc4749b0f3b09f4ce9a4c3fd
+Author: zonca <andrea.zonca@gmail.com>
+Date:   Tue Jul 5 20:56:10 2011 +0000
+
+    Merge branch 'master' of github.com:zonca/healpy
+
+commit f39cf8cbd8f345f69ca8fe97d7b89106b68d59da
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Tue Jul 5 14:23:30 2011 +0000
+
+    update ChangeLog and version number of new version 0.10.2
+
+commit 4495bd89c94232769da18765e54316d06bca54d0
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Tue Jul 5 12:54:54 2011 +0000
+
+    correct bug in _ud_grade_core (wrong masking of bad pixel). Now uses function mask_bad. Solve issue 59
+
+commit a5a9ec7c3f7a752a4d6946b91709f609ee7bdf0a
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Tue Jun 21 13:17:02 2011 +0000
+
+    Modify setup.py to allow setting option through environment variable - see INSTALL
+
+commit fffead25b030e9dcc2f2dd3619c8dbde0b569dae
+Author: mreineck <martin.reinecke1@gmx.de>
+Date:   Wed Jun 8 15:08:17 2011 +0000
+
+    try to fix issue 60 for real this time
+
+commit 9727101372000f858521a08a4fbf897168e37e35
+Author: mreineck <martin.reinecke1@gmx.de>
+Date:   Wed Jun 8 09:53:32 2011 +0000
+
+    try to fix issue 60 (by adding a flag "--without-native" to setup.py)
+    use the same mechanism for controlling OpenMP
+
+commit 14cf2dec05ce8620cad2be43e41854aba7a66cd8
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Tue Jun 7 16:36:44 2011 +0000
+
+    Forgot files for with and without openmp_support
+
+commit 6e928df52e23a8bf373b572667923e2dfbc8ba43
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Tue Jun 7 16:35:35 2011 +0000
+
+    Add option --without-openmp, as openmp seems to cause segfaults on some platforms ; also add command distclean to setup.py, which remove any build results to ensure full recompilation (both healpix_cxx and healpy)
+
+commit b85b791a7ea9039acef2bf860a034a62832c4188
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Tue May 10 15:54:09 2011 +0000
+
+    update version.py
+
+commit b0d08b563a2c16b68ce129370e3d09d11e82e83b
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Tue May 10 15:53:34 2011 +0000
+
+    remove show() call in mollzoom (avoid blocking in interactive session on some platforms)
+
+commit 4251d4f9580e11e5f00e88f194879a6e098d68e6
+Author: zonca <andrea.zonca@gmail.com>
+Date:   Tue May 10 01:09:23 2011 +0000
+
+    Merge pull request #5 from ziotom78/patch-1
+    
+    Properly take into account NaNs and INFs
+
+commit 028a73a96e6cce650e074aa64e772f586c12d45e
+Author: mreineck <martin.reinecke1@gmx.de>
+Date:   Wed Apr 27 09:50:13 2011 +0000
+
+    sync with master sources
+
+commit e6084a30ad5d768e8dd750c2bcca98d2489cb76f
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Thu Apr 21 12:25:06 2011 +0000
+
+    correct issue 52 (undefined variable i in smoothalm)
+
+commit c94629ffe82ef3c32c40df0a9136f2c05d73c284
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Fri Apr 15 09:01:29 2011 +0000
+
+    correction in setup.py
+
+commit c317817aa9984e3d7cf410013d463260d7c1962e
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Thu Apr 14 16:44:06 2011 +0000
+
+    update ChangeLog
+
+commit 15ea2dd207c38103fcfb683565520714394de386
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Thu Apr 14 16:42:48 2011 +0000
+
+    update ChangeLog
+
+commit c1066b2ee24bc33fb3977b5845cc390e5df962c9
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Thu Apr 14 16:32:18 2011 +0000
+
+    Solve issue 51 ; add support for explicit pixellization through dict (keys are pixel numbers, 'nside' key define the nside)
+
+commit b7be3c8fb6c555bf3ebb89cb73c26b29a9233a48
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Wed Apr 13 15:08:16 2011 +0000
+
+    Change setting to UNSEEN in read_map ; position of unit ; remove 'on' in gnomonic position text
+
+commit e28e2237fbff020becd77bed2cc946507be3dcd7
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Wed Apr 13 13:38:18 2011 +0000
+
+    force use of libcfitsio.a instead of the shared library through extra_link_args
+
+commit e99d9d4976db608abd628dccca73e897a02ec980
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Wed Apr 13 10:05:22 2011 +0000
+
+    remove unnecessary compilation options
+
+commit aca68b7e29ddc8a59de7a6bf3931fe271b8f8caa
+Author: mreineck <martin.reinecke1@gmx.de>
+Date:   Tue Apr 5 11:13:56 2011 +0000
+
+    sync with master sources
+
+commit a659938b9228f66a977ba2a77a7b7996a26e5542
+Author: mreineck <martin.reinecke1@gmx.de>
+Date:   Mon Mar 7 09:49:30 2011 +0000
+
+    sync with master sources
+
+commit e456e02f8f90f93bfb0d43176621ce8ee142e522
+Author: mreineck <martin.reinecke1@gmx.de>
+Date:   Mon Mar 7 09:19:58 2011 +0000
+
+    add "-fpermissive" flag to allow cfitsio compilation on some platforms
+
+commit d10d805e7e608d74248ecefb1fbdeb6642267668
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Tue Mar 1 16:02:44 2011 +0000
+
+    Change documentation of anafast to match real output of code (consistent with order of alm2cl output)
+
+commit d87459c4322e8a87c936f60fb4382a8052d2e365
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Tue Mar 1 12:40:25 2011 +0000
+
+    update version.py
+
+commit 6522a537eceb6470a15cbd3e055c943b096ec20e
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Tue Mar 1 12:19:13 2011 +0000
+
+    remove cython-generated pshyt.c
+
+commit e9dc89c483db8caeec83676f5fcfdf97183b064d
+Author: mreineck <martin.reinecke1@gmx.de>
+Date:   Mon Jan 31 12:07:51 2011 +0000
+
+    warning fixes and cleanups
+
+commit 6defbe0a007963b8704cb18b3aff948b1cbf547e
+Author: mreineck <martin.reinecke1@gmx.de>
+Date:   Wed Jan 26 15:34:52 2011 +0000
+
+    hopefully fix a sign error
+
+commit 2bab8454f312eafc8dcf09dd8d917878154947bc
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Wed Jan 26 13:38:16 2011 +0000
+
+    remove the pylab.show() call in visufunc (blocking for some backend and unnecessary)
+
+commit 8ada4a4cb4a95a18685909d2e5c5df837b84ec1c
+Author: mreineck <martin.reinecke1@gmx.de>
+Date:   Wed Jan 26 12:22:30 2011 +0000
+
+    remove more unused C++ sources
+
+commit 0211d9a03dc925396ac6bdac83532de9c3191023
+Author: mreineck <martin.reinecke1@gmx.de>
+Date:   Tue Jan 25 16:12:12 2011 +0000
+
+    more rearranging and usage of assertions
+
+commit f3e055a1c36ca2c3c2de3738577beef1826c0484
+Author: mreineck <martin.reinecke1@gmx.de>
+Date:   Tue Jan 25 13:29:04 2011 +0000
+
+    get rid of unused C++ code
+
+commit 3da1e3327c6180e8c0d38b29a50089974ee92039
+Author: mreineck <martin.reinecke1@gmx.de>
+Date:   Tue Jan 25 13:16:08 2011 +0000
+
+    - restructure _healpy_pixel_lib.cc
+      * re-order functions to avoid the need for prototypes
+      * only call setNside() if really needed; this should save time
+    - avoid compiler warnings
+
+commit a6847b65c675cc96db66f42b12f7ba7bddf6dd17
+Author: mreineck <martin.reinecke1@gmx.de>
+Date:   Tue Jan 25 10:34:18 2011 +0000
+
+    apply patch provided with issue #39 to avoid code duplication
+
+commit a42eb35211ebaf7c55386ccc1444643e023009f5
+Author: mreineck <martin.reinecke1@gmx.de>
+Date:   Tue Jan 25 10:16:46 2011 +0000
+
+    - whitespace cleanup
+    - make use of assert() macros to shorten code
+
+commit c75a925c8ab24d9353826f6793e3fd8c1dec0b87
+Author: zonca <andrea.zonca@gmail.com>
+Date:   Mon Jan 24 17:28:17 2011 +0000
+
+    added write_alm to __init__
+
+commit 2ae09769b3d30d68345ad6074997571797519405
+Author: mreineck <martin.reinecke1@gmx.de>
+Date:   Mon Jan 17 14:52:15 2011 +0000
+
+    synchronize with master sources
+
+commit f4d4ec9ea73fa16c01025eabddd919883dcfcc1a
+Author: mreineck <martin.reinecke1@gmx.de>
+Date:   Mon Jan 17 14:51:52 2011 +0000
+
+    update testing instructions
+
+commit b8ab5f518d8f36b89a20f45eb6b7d6fa6a14260f
+Author: zonca <andrea.zonca@gmail.com>
+Date:   Thu Dec 30 11:33:46 2010 +0000
+
+    Use the new return_mmax mechanism
+
+commit d9b19f0ebf87f1990c20593ae6454b92539e80c9
+Author: zonca <andrea.zonca@gmail.com>
+Date:   Thu Dec 30 11:33:40 2010 +0000
+
+    Added more detailed documentation for read_alm
+
+commit 7277e4cb3aea513f2e9118b6361cfde73c78c995
+Author: zonca <andrea.zonca@gmail.com>
+Date:   Thu Dec 30 11:33:34 2010 +0000
+
+    Added support for optionally returning mmax in read_alm
+
+commit cc30fd3c68e3df5408c6dbd59c1f2b4822dd6fda
+Author: zonca <andrea.zonca@gmail.com>
+Date:   Mon Dec 27 17:06:33 2010 +0000
+
+    fixed bug in write_alm and test case
+
+commit f2401ecf384c4723398a6cd929c887545b9ffff3
+Author: zonca <andrea.zonca@gmail.com>
+Date:   Mon Dec 27 17:06:25 2010 +0000
+
+    merged patch and test case, NEEDS VERIFICATION
+
+commit 75336fb635121c66938fe04aab0eb64689dfc5aa
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Mon Dec 6 16:54:39 2010 +0000
+
+    Add cfitsio library dir (from CFITSIO_EXT_LIB etc.) to setup call
+
+commit deeed1bbc2cd828771f432ff610e6eba1e28e4e2
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Mon Dec 6 14:22:10 2010 +0000
+
+    Update ChangeLog
+
+commit 2be96600ab27743822b5d51a4713425e96a4ccdd
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Mon Dec 6 14:20:04 2010 +0000
+
+    Add doc to pshyt module ; move pshyt into healpy for installation ; add alias for numpy (nm=np=npy=numpy in healpy and pshyt)
+
+commit d4e5a5b7fa1ff25b82389812289e9144e46f0e9f
+Author: mlejeune <lejeune@apc.univ-paris7.fr>
+Date:   Mon Dec 6 13:08:05 2010 +0000
+
+    include Karim's pshyt module
+
+commit 30184d4f1c97d50d969a5013dd07a5652dfc60ed
+Author: mlejeune <lejeune@apc.univ-paris7.fr>
+Date:   Mon Dec 6 11:22:16 2010 +0000
+
+    add numpy to init
+
+commit 5dd88a2413f70710a1f3ae66e6283f44c06f7fc8
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Fri Dec 3 14:04:43 2010 +0000
+
+    Change default PREFIX to /usr instead of /usr/local, update MANIFEST.in
+
+commit 300308e108ea597e0888abf39cec83df880da521
+Author: mlejeune <lejeune@apc.univ-paris7.fr>
+Date:   Wed Dec 1 10:12:11 2010 +0000
+
+    from now, no need to compile twice
+
+commit c15bdae4182ff6fd1f8bd70f36759b741cf9b00e
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Thu Nov 25 17:20:00 2010 +0000
+
+    remove pylab.show() at the end of plotting commands
+
+commit cb63b603363a84154cbac389131f26bb6d945a6f
+Author: mreineck <martin.reinecke1@gmx.de>
+Date:   Thu Nov 25 14:04:12 2010 +0000
+
+    merge revision 132 to 139 on the cxx_integration_nov_2010 branch to trunk
+
+commit 4bb90d8c6826e2c22d4bbb265b82a9a48b449e17
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Fri Nov 5 13:54:13 2010 +0000
+
+    correct get_version()
+
+commit 40baf6ffaea0b348d682f9cf7b1ce514e6e51566
+Author: mreineck <martin.reinecke1@gmx.de>
+Date:   Thu Nov 4 12:33:02 2010 +0000
+
+    fix a bug in sky_signal_direct()
+
+commit a9d011ec272d3dd660a1f78f63e5efa76ef4b126
+Author: zonca <andrea.zonca@gmail.com>
+Date:   Tue Oct 12 00:57:12 2010 +0000
+
+    get_neighbours bug issue 45 fixed
+
+commit 8e1d623b8e3b325f0d2cec50b5386f8500c34f74
+Author: zonca <andrea.zonca@gmail.com>
+Date:   Tue Oct 12 00:40:15 2010 +0000
+
+    fixed issue 24, added test case
+
+commit db2ee27a62697990e5c7f93082f8ee3a9e72970f
+Author: zonca <andrea.zonca@gmail.com>
+Date:   Mon Oct 11 18:15:43 2010 +0000
+
+    docstring for resol fixed
+
+commit 28b9141710a1b6787e63a9cb48487fb9609b23c5
+Author: zonca <andrea.zonca@gmail.com>
+Date:   Mon Oct 11 18:00:40 2010 +0000
+
+    nside2resol and nside2pixarea exported
+
+commit db103cfc96d6937f1f85469ea58c6416f617d741
+Author: zonca <andrea.zonca@gmail.com>
+Date:   Mon Oct 11 18:00:32 2010 +0000
+
+    pixel area and resolution from nside, with test case
+
+commit fca56321ca2bd09851179fd524acac1b76d14686
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Mon Oct 11 14:38:25 2010 +0000
+
+    update version.py
+
+commit 996bdccda930c784cec770354433f6b7c922041e
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Mon Oct 11 14:29:36 2010 +0000
+
+    correct bug in zoomtool - redisplays scatter plot when changing the gnomview
+
+commit bc7eefd3582f62a851ae03a60d463fc463279947
+Author: zonca <andrea.zonca@gmail.com>
+Date:   Sat Oct 2 02:12:27 2010 +0000
+
+    Merge branch 'devel'
+
+commit 61ef63f438b59e5c5615454a902fbb6973e39d53
+Author: zonca <andrea.zonca@gmail.com>
+Date:   Sat Oct 2 01:53:47 2010 +0000
+
+    fixed version number also for github repo
+
+commit 2a028f6989ab63e381349687d713fe7d5fdf32d9
+Author: zonca <andrea.zonca@gmail.com>
+Date:   Tue Sep 7 20:07:34 2010 +0000
+
+    first implementation of read cl and write cl for T only, needs testing with IDL
+
+commit 0c24a8f58f902c05e68f2be767151c10b9ac9e36
+Author: zonca <andrea.zonca@gmail.com>
+Date:   Mon Aug 30 20:21:21 2010 +0000
+
+    bug fixed in theta check
+
+commit 66f23883ee6656874b440b2b583c99fcc7440003
+Author: zonca <andrea.zonca@gmail.com>
+Date:   Fri Aug 20 07:51:07 2010 +0000
+
+    fixed bug in vec2ang in case of monodimensional arrays
+
+commit c7364e528ce6d33727658b8972a5ab697b7dd1ab
+Author: zonca <andrea.zonca@gmail.com>
+Date:   Fri Aug 20 00:02:14 2010 +0000
+
+    implemented vec2ang
+
+commit 4d4cb6fafaea674fba950568662bdf823c19cbf8
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Fri Jul 30 09:36:52 2010 +0000
+
+    update ChangeLog
+
+commit 65afadf0b647f26c38a6186b03f1329e8db11b11
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Fri Jul 30 09:28:42 2010 +0000
+
+    update ChangeLog
+
+commit 28ff87debc7fad3eff9efd88dfb1208d79132554
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Thu Jul 29 16:37:33 2010 +0000
+
+    Add an option to map2alm and anafast not to subtract map average before computing alm (issue 40)
+
+commit 87314c7aae7f98a01a8c9624b6b1b79fe6e6eccd
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Thu Jul 29 16:28:44 2010 +0000
+
+    UNSEEN is now taken into account properly (was broken for float32 maps)
+
+commit 95a5d98d8b94c623add0e28bae4062dcd5925410
+Author: zonca <andrea.zonca@gmail.com>
+Date:   Wed Jul 14 18:30:57 2010 +0000
+
+    nest=None for reading a map in the same ordering whichever it is
+
+commit 390abae4a9104daeca30ec3dafb92ab7865d3fed
+Author: zonca <andrea.zonca@gmail.com>
+Date:   Tue Jun 22 20:54:04 2010 +0000
+
+    fix if the UNSEEN value read from fits file is not exaclty -1.6375e30
+
+commit 2b1d45e86b591d41687593afcf52d1ae4ba29ace
+Author: zonca <andrea.zonca@gmail.com>
+Date:   Tue Jun 22 20:08:59 2010 +0000
+
+    create a masked array for map, useful for summing, averaging and making histograms (using .compressed())
+
+commit 1de24bfdeec5e4fbbc7e84bda6502579609268b0
+Author: zonca <andrea.zonca@gmail.com>
+Date:   Tue Jun 22 19:48:06 2010 +0000
+
+    fix in case the NSIDE is stored as string in the header
+
+commit d0b51a02ea2d41bfa69bb44fe13b8b35edef5daf
+Author: zonca <andrea.zonca@gmail.com>
+Date:   Thu Jun 17 22:46:18 2010 +0000
+
+    removed import math, not used anymore
+
+commit f645242d5cb451cbb5a271bbe0dc141da78bb895
+Author: zonca <andrea.zonca@gmail.com>
+Date:   Thu Jun 17 22:44:57 2010 +0000
+
+    implementation of ang2vec (in python, with support for vectors
+
+commit e2b746f8315d4eb3cd491395126a4b9272a55398
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Thu Jun 10 15:12:51 2010 +0000
+
+    query_disc now returns int64 array
+
+commit eab6045d1024c1dd9a5fa9a17204be37b13655b6
+Author: mlejeune <lejeune@apc.univ-paris7.fr>
+Date:   Mon Jun 7 12:54:46 2010 +0000
+
+    omp compilation affects spht_lib only
+
+commit da4531815f41291f3299ba9949347288ae3e12bd
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Thu Jun 3 10:00:11 2010 +0000
+
+    use pyfits to get pixwin function (segfault with c++ version)
+
+commit 683b443a9f04446798c11a333653e2ab82d033c6
+Author: zonca <andrea.zonca@gmail.com>
+Date:   Fri May 28 23:27:42 2010 +0000
+
+    ignore pyc and so files
+
+commit b796ee8a3d64a1d7fc76ab411f149ba19a723b61
+Author: zonca <andrea.zonca@gmail.com>
+Date:   Fri May 28 23:11:59 2010 +0000
+
+    added norm documentation to mollview
+
+commit 89c5189e64603fa817e18f0a72dd488d116cdaa1
+Author: zonca <andrea.zonca@gmail.com>
+Date:   Fri May 28 23:05:08 2010 +0000
+
+    added documentation to read_map for reading polarization
+
+commit fec74cc539cfdb28dfc3c5c4c3429d30dfa617b8
+Author: mlejeune <lejeune@apc.univ-paris7.fr>
+Date:   Thu May 27 10:31:44 2010 +0000
+
+    license option restored
+
+commit 38acc126a460f15b638a51947e82f5509f8fd953
+Author: mlejeune <lejeune@apc.univ-paris7.fr>
+Date:   Thu May 27 10:27:52 2010 +0000
+
+    + openmp
+
+commit 24a5058791524a321360f54585e13180d1a8cd4a
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Mon May 3 10:33:17 2010 +0000
+
+    change version.py
+
+commit 29b380054717f1dfb7645a6325166b26b655c55a
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Mon May 3 10:30:18 2010 +0000
+
+    Correct doc typos
+
+commit 8c0152a9444abb31c513140397bbe2a0fa125454
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Mon May 3 10:11:02 2010 +0000
+
+    correct error message for bad npix/nside values
+
+commit 2cf0fb0cace83262d9500f9851689ab0226803ef
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Mon Apr 19 17:00:44 2010 +0000
+
+    Correct bug in query_disc (error when no pixel in disc). Solve issue 31.
+
+commit 8ee46080e00585171022d9da38ba92a6081a583b
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Mon Apr 19 16:33:47 2010 +0000
+
+    Correct bug in ud_grade for bool maps
+
+commit b6643cd5b1f959de74a8ef0a6c28fcb295a3d2be
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Thu Sep 24 05:41:38 2009 +0000
+
+    adjust position of help text
+
+commit 5101891ddcc699fda93e655efa5c7be0a260e992
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Wed Sep 23 17:51:36 2009 +0000
+
+    add info display to mollzoom; correct bug for graticule near south pole
+
+commit 835afdf785a9a9900da85d22a61e77d843733d73
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Tue Aug 11 20:14:27 2009 +0000
+
+    remove const qualifier to solve issue 19 (in python 2.4
+
+commit 673589ad0f7447cb220b30e82384d76f33b5c195
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Tue Aug 11 13:52:21 2009 +0000
+
+    add npy. in sphtfunc.py/alm2cl. Solve issue 22.
+
+commit 75893ba4a854fa941822e6e050811d079371f80b
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Tue Aug 11 13:50:22 2009 +0000
+
+    correct bug in rotator (missing npy) and in projaxes (missing verbose keyword)
+
+commit 0a23021901e1bc40c463b5a8d6c5567cefb5fee1
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Wed Jul 22 16:21:20 2009 +0000
+
+    correctionf for issue 20
+
+commit e481767729bf465e930b530332ce7206001137cc
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Tue Jul 21 15:41:40 2009 +0000
+
+    new tag 0.9.8
+
+commit 8c189714e1e4e0bade0be2e3f913e702318d36db
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Tue Jul 21 15:14:43 2009 +0000
+
+    correct bug in __init__; add cstdio in some files of hpbeta
+
+commit 45208281129ff5b5385d8631910b35f280aba88c
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Thu Jul 16 15:22:57 2009 +0000
+
+    update zoomtool
+
+commit 85f80cd44dbcb078b258738675738972bcdb4bad
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Thu Jul 16 15:05:19 2009 +0000
+
+    add zoomtool capabilities
+
+commit 128792ee25e1032b83427a0d95c2d4a40810d924
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Wed Jul 15 13:16:18 2009 +0000
+
+    addinformation for graticule, to easily rebuild it if needed (for mollzoom)
+
+commit b240cbdeaf67d4a48bbfd32117cf01f78823ef21
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Wed Jul 15 13:14:50 2009 +0000
+
+    addinformation for graticule, to easily rebuild it if needed (for mollzoom)
+
+commit 32989e3177460eaee9845b7d15803ab28f688461
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Fri Jul 10 00:31:08 2009 +0000
+
+    set version number and modify ChangeLog
+
+commit 23099ca4d4377032c7c216dc4ecdd0c6c8c64d92
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Fri Jul 10 00:23:40 2009 +0000
+
+    svn cleaning
+
+commit 48bd30d4d682e18c46e07af589ff91cb2becf052
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Fri Jul 10 00:11:43 2009 +0000
+
+    correct error in gnomview (was indicating wrong latitude/map value in the status bar). Cartview is available as healpy.cartview
+
+commit a76f9b3148f42301200d3c527751eeb6a4f801dc
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Wed Jun 17 07:21:26 2009 +0000
+
+    Update Changelog
+
+commit 5a84cf5973da525508b27bf5723f13fae633bd4f
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Wed Jun 17 07:18:30 2009 +0000
+
+    Add version 0.9.6.2, correcting MANIFEST.in file to add COPYING in tarball
+
+commit 552255fe32e87c8e50c7e8cf4af1a4bc87622e2d
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Tue Jun 16 21:46:04 2009 +0000
+
+    add license information at top of test_fit_dipole.py
+
+commit ee4af3025eaa9b871c0963e49020487b1b64aab9
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Tue Jun 9 13:55:43 2009 +0000
+
+    Update ChangeLog
+
+commit fee6e1e904246a6f614a4a4fb5ffe2225498be29
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Tue Jun 9 13:47:01 2009 +0000
+
+    Add COPYING file at top. Also add missing Py_INCREF(Py_None).
+
+commit 0be858325b65ec79d40adbccc6febc744c98cf95
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Tue Jun 9 13:43:40 2009 +0000
+
+    Add license information in files and in COPYING file at the top of directory tree
+
+commit fe977c00dcb7f3a730576068e9498c57bc2aa77e
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Fri Apr 17 02:45:14 2009 +0000
+
+    Update ChangeLog
+
+commit 524c75fa3f0026b7334523991ae19d88fc91be44
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Fri Apr 17 02:40:24 2009 +0000
+
+    Update ChangeLog; tag version 0.9.6
+
+commit 2dd3f76d2d0ee8530e706e740f3ead49b5957d41
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Sun Mar 29 17:46:17 2009 +0000
+
+    Add get_all_neighbours function (contribution from Sergey E. Koposov). Solve issue 17.
+
+commit 365a49ddb66b6bd4a35eb8551f1561249761b392
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Sun Mar 29 16:24:34 2009 +0000
+
+    add ring2nest import in query_disc_func, so it works with nest=True; solve issue 18.
+
+commit caa830b1d0c0b458e3cd8d404fdf48d5e47ae554
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Wed Mar 25 16:10:58 2009 +0000
+
+    change warnings.ImportWarning to ImportWarning, and define ImportWarning if it does not exist (solve issue 16)
+
+commit 31bc90c80b430871ff8cb4f40954c093a659c95f
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Thu Mar 12 16:51:26 2009 +0000
+
+    Update ChangeLog
+
+commit b70993bee4d81ed149f743f0da6d4c2de89962b4
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Thu Mar 12 14:55:09 2009 +0000
+
+    Add #include <cstring> for compatibility with some new compilers
+
+commit ef02775ca033937d39fd8ec6c0cdf279c45d7a5e
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Sun Feb 22 22:41:07 2009 +0000
+
+    Correct missing npy. in _ud_grade_core
+
+commit ea029d35127ebf6522c8e46861bb2f337bbe71c0
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Sat Jan 24 16:19:51 2009 +0000
+
+    Update version.py
+
+commit 9b183c316fefbdf7ead625c159d2e2d0cd1d8384
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Sat Jan 24 16:19:09 2009 +0000
+
+    Add cartwiew, CartesianAxes, CartesianProj; tweak _segment_threshold, add _segment_step_rad, some new keywords to graticule...
+
+commit d774db555d009cb28127c1388d5dcc673839df34
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Sun Jan 18 20:51:13 2009 +0000
+
+    update documentation for ang2pix, etc to precise dimension of theta,phi [rad]
+
+commit d1e3110327d257d9dd25663128420a9b914d9e2d
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Mon Jan 12 18:09:46 2009 +0000
+
+    Add tag version 0.9.4
+
+commit 32f27020187878207f8dd80c08680960250818d7
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Sun Jan 11 03:04:22 2009 +0000
+
+    correct bug in Rotator.angle_ref
+
+commit 5651bff9eaafbca10696feb4d62e92f7852fd1e3
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Thu Jan 8 19:24:14 2009 +0000
+
+    update the INSTALL, TODO files; remove obsolete do_inst script
+
+commit 1662bfb0f386931287d8f04dafa91a435b42fa09
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Thu Jan 8 18:47:01 2009 +0000
+
+    Add svn:ignore properties ; update version
+
+commit b285fb4e7bf9f489d745159b3c0ab5d103c5975b
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Thu Jan 8 18:14:04 2009 +0000
+
+    Add documentation to the Rotator class; makes it available as healpy.Rotator
+
+commit e0cf776e2998439132d83f0eacd7b58b87b05fb5
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Tue Jan 6 13:35:01 2009 +0000
+
+    update version number
+
+commit ae8e0e34959c66e375009ac0f4f00f48c0021838
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Tue Jan 6 13:19:12 2009 +0000
+
+    update ChangeLog
+
+commit add6f4c67eeec11e945f6b506330499789ed5093
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Tue Jan 6 13:04:36 2009 +0000
+
+    Add flip keyword to mollview/gnomview (solve issue 13); correct graticule paramters (solve issue 12); extend xlim/ylim for mollview (solve issue 14)
+
+commit 7ffece9799782af961d49ae57ed63beab2ddf147
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Mon Dec 29 14:02:59 2008 +0000
+
+    Update ChangeLog
+
+commit 6e6ea590d04f6526aed0de8e11e9bdf2ce7826ca
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Mon Dec 29 13:48:15 2008 +0000
+
+    Add margins keyword to mollview; invert cols and rows for sub= in mollview and gnomview
+
+commit 9e77792b8caa1b551218f88781bcaf59bc7100d0
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Mon Dec 29 13:38:54 2008 +0000
+
+    Add margins keyword to mollview; invert cols and rows for sub= in mollview and gnomview
+
+commit b5ba556e3c7ac3a02510d821fea4a1cc370a03d6
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Wed Dec 17 17:01:19 2008 +0000
+
+    Add ChangeLog file
+
+commit 545aae68b080ba8b3025308145e46fa59636f1d4
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Fri Dec 12 14:00:44 2008 +0000
+
+    add property on version.py
+
+commit b4e1c41f2df59fc1a257824b15f8f7017ad0fc0d
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Fri Dec 12 13:48:31 2008 +0000
+
+    minor bug corrected (ud_grade: order_out=order_in if not given ; reorder imported in __init__.py); no compilation of healpy for setup.py sdist
+
+commit 76dae76db99a2583f58b9c9717baae564c4f6d6b
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Fri Dec 12 13:27:17 2008 +0000
+
+    order_out=order_in if not given in ud_grade ; import reorder in __init__.py
+
+commit 1dd0ff4f13af4df0401524acd7a66fb77beb480b
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Fri Dec 12 08:03:59 2008 +0000
+
+    Adapt HistEqNorm to numpy 1.2 (change in histogram bins format)
+
+commit e4ac0007f4b253c9c4aa2079fa4613087f50d008
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Thu Dec 11 22:45:03 2008 +0000
+
+    Correct bug in LinNorm2 giving incorrect color scale with some version of numpy (masked array problem?)
+
+commit 0e0ecb65ac7caa59ed4ea0a4e2037f283d3aeb34
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Mon Dec 8 18:54:39 2008 +0000
+
+    Add test directory and doc directory
+
+commit 4a237f187d7962369e7d41aec5fa5ca2c5c4c5c4
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Mon Dec 8 18:33:30 2008 +0000
+
+    Add reference direction rotation in rotator (for polarisation). Not yet tested.
+
+commit b56befc5e9ce0796d8c0c661e3567c4c119a5f8f
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Tue Dec 2 18:25:39 2008 +0000
+
+    modify gnomview and mollview to make blank maps (for overplotting), to replace current axes (option hold), or to make subplots on the current figure (option sub)
+
+commit b260db36354904a0137a8787e1407db48202ac54
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Wed Nov 26 12:04:52 2008 +0000
+
+    Add -fPIC into compiler option
+
+commit e277f6b137a1b6e08ad41f1972354f7b8af4aced
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Mon Nov 17 13:40:48 2008 +0000
+
+    default for number of iteration set to 1 instead of 3
+
+commit b154046ab6d9128b09f62b885bea2113ab4f70d4
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Fri Nov 7 09:24:39 2008 +0000
+
+    correct issue 4: lonlat keyword not taken into account for output
+
+commit 4531f5fb98643dfe68409de7e22972ebc826d61f
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Wed Nov 5 11:58:37 2008 +0000
+
+    add query_disc function and related functions
+
+commit 2f429321240097ae7bb8c5ed303d28b17c1f5f84
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Mon Nov 3 13:45:33 2008 +0000
+
+    - correct bug in healpy.alm2map_der1 : was setting almI(0,0) to zero (same bug as in alm2map)
+
+commit ea4e8ecb77a64e2f498b5a83de14e7ceea7f515b
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Mon Nov 3 13:43:35 2008 +0000
+
+    - correct bug in alm_map_tools.cc for alm2map_der1\n- correct bug in healpy.alm2map : was setting almI(0,0) to zero
+
+commit a5df892b50bbed7d2c11f6725945959e2e24a628
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Tue Oct 28 09:21:23 2008 +0000
+
+    add alm2map_der1
+
+commit 461ba700a99402ed6cbbc08a29bb15c162a329d7
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Tue Oct 28 09:20:00 2008 +0000
+
+    Update to Healpix_2.10 version
+
+commit fde9b327e573d963f1991646d87f445e001d9c6a
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Fri Oct 3 12:24:49 2008 +0000
+
+    Add fit/remove_dipole/monopole
+
+commit 32a16a3dc2e0ec23a68b5faa6eaae1a2ce72d9d0
+Author: crosset <cyrille.rosset@gmail.com>
+Date:   Sun Aug 31 16:56:34 2008 +0000
+
+    First import of current trunk.
