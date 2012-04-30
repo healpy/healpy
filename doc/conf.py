@@ -44,7 +44,8 @@ except exceptions.ImportError:
     MOCK_MODULES = ['matplotlib', 'pylab', 'matplotlib.colors',
                     'matplotlib.cbook', 'pyfits',
                     'numpy', '_healpy_pixel_lib',
-                    '_healpy_sph_transform_lib', '_healpy_fitsio_lib', '_sphtools']
+                    '_healpy_sph_transform_lib', '_healpy_fitsio_lib', '_sphtools',
+                    'healpy._sphtools']
 
     for mod_name in MOCK_MODULES:
         sys.modules[mod_name] = Mock()
