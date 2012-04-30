@@ -60,9 +60,9 @@ separately.
 Download
 --------
 
-The latest released version is 1.0 and is available as a source
+The latest released version is 1.1 and is available as a source
 package at
-https://github.com/healpy/healpy/tarball/1.0
+https://github.com/healpy/healpy/tags
 
 Collaboration
 -------------
