@@ -118,7 +118,7 @@ try:
   assert version[1]>=14
   ext = "pyx"
   extcpp = "pyx"
-except AssertionError:
+except:
   from distutils.command.build_ext import build_ext
   ext = "c"
   extcpp = "cpp"
