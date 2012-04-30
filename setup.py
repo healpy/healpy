@@ -112,12 +112,16 @@ from os.path import join,isdir
 import sys
 
 try:
-  from Cython.Distutils import build_ext
-  import Cython.Compiler.Version
-  version = [int(v) for v in Cython.Compiler.Version.version.split(".")]
-  assert version[1]>=14
-  ext = "pyx"
-  extcpp = "pyx"
+    if sys.argv[1] in ['sdist']: #we need to distribute also c and cpp sources
+        raise
+    if not os.path.exists('healpy/src/_query_disc.pyx'): #pypi source package does contain the pyx files
+        raise
+    from Cython.Distutils import build_ext
+    import Cython.Compiler.Version
+    version = [int(v) for v in Cython.Compiler.Version.version.split(".")]
+    assert version[1]>=14
+    ext = "pyx"
+    extcpp = "pyx"
 except:
   from distutils.command.build_ext import build_ext
   ext = "c"
@@ -253,13 +257,13 @@ else:
                                 libraries = healpix_pshyt_libs,
                                 library_dirs = library_dirs),
                       Extension("healpy._query_disc", 
-                                ['healpy/src/_query_disc.'+ext.replace('c','cpp')],
+                                ['healpy/src/_query_disc.'+extcpp],
                                 include_dirs = [numpy_inc, healpix_cxx_inc],
                                 libraries = healpix_libs,
                                 library_dirs = library_dirs,
                                 language='c++'),
                       Extension("healpy._sphtools", 
-                                ['healpy/src/_sphtools.'+ext],
+                                ['healpy/src/_sphtools.'+extcpp],
                                 include_dirs = [numpy_inc, healpix_cxx_inc],
                                 libraries = healpix_libs,
                                 library_dirs = library_dirs,

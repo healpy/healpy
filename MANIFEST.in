@@ -8,4 +8,5 @@ prune hpbeta/healpy_osx
 prune hpbeta/build.healpy_osx
 include COPYING INSTALL MANIFEST.in ChangeLog
 include healpy/src/_healpy_utils.h
+include healpy/src/hack.h
 include pshyt/pshyt.pyx pshyt/pshyt.c
