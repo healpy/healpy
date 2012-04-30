@@ -24,7 +24,7 @@ pi = np.pi
 
 import _healpy_sph_transform_lib as sphtlib
 import _healpy_fitsio_lib as hfitslib
-import healpy._sphtools as _sphtools
+import _sphtools as _sphtools
 import healpy.cookbook as cb
 
 import os.path
