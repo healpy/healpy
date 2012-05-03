@@ -70,10 +70,10 @@ class rotmatrix
     void Transpose ();
 
     /*! Extracts a unit-length rotation axis \a axis and a rotation angle
-        \a angle from the matrix. */
+        \a angle (in radian) from the matrix. */
     void toAxisAngle (vec3 &axis, double &angle) const;
 
-    /*! Constructs a matrix which causes a rotation by \a angle around
+    /*! Constructs a matrix which causes a rotation by \a angle radians around
         \a axis. \a axis must have unit length. */
     void Make_Axis_Rotation_Transform (const vec3 &axis, double angle);
 

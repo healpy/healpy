@@ -27,7 +27,7 @@
 /*! \file alm.h
  *  Class for storing spherical harmonic coefficients.
  *
- *  Copyright (C) 2003-2011 Max-Planck-Society
+ *  Copyright (C) 2003-2012 Max-Planck-Society
  *  \author Martin Reinecke
  */
 
@@ -126,6 +126,15 @@ template<typename T> class Alm: public Alm_Base
       for (int m=0; m<=mmax; ++m)
         for (int l=m; l<=lmax; ++l)
           operator()(l,m)*=factor[l];
+      }
+    /*! \a a(l,m) *= \a factor[m] for all \a l,m. */
+    template<typename T2> void ScaleM (const arr<T2> &factor)
+      {
+      planck_assert(factor.size()>tsize(mmax),
+        "alm.ScaleM: factor array too short");
+      for (int m=0; m<=mmax; ++m)
+        for (int l=m; l<=lmax; ++l)
+          operator()(l,m)*=factor[m];
       }
     /*! Adds \a num to a_00. */
     template<typename T2> void Add (const T2 &num)

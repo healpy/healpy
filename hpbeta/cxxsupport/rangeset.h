@@ -25,7 +25,7 @@
 /*! \file rangeset.h
  *  Class for storing sets of ranges of integer numbers
  *
- *  Copyright (C) 2011 Max-Planck-Society
+ *  Copyright (C) 2011, 2012 Max-Planck-Society
  *  \author Martin Reinecke
  */
 
@@ -39,6 +39,7 @@
 #include "datatypes.h"
 #include "error_handling.h"
 
+/*! Class for holding a single interval of integer numbers. */
 template<typename T> class interval
   {
   private:
@@ -47,20 +48,32 @@ template<typename T> class interval
       { planck_assert(A<=B, "inconsistent interval"); }
 
   public:
+    /*! Constructs the interval \a [v;v+1[. */
     explicit interval (const T &v) : A(v), B(v) { ++B; }
+    /*! Constructs the interval \a [a_;b_[. */
     interval (const T &a_, const T &b_) : A(a_), B(b_) { check(); }
+    /*! Copy constructor. */
     interval (const interval &other) : A(other.A), B(other.B) {}
+    /*! Assignment operator. */
     const interval &operator= (const interval &other)
       { A=other.A; B=other.B; return *this; }
 
+    /*! Returns the number of elements in the interval. */
     tsize size() const { return B-A; }
+    /*! Returns \a true if the interval is empty, else \a false. */
     bool empty() const { return A==B; }
 
+    /*! Returns \a true if \a v lies inside the interval, else \a false. */
     bool contains (const T &v) const { return (A<=v) && (v<B); }
+    /*! Returns \a true if \a i lies completely inside the interval,
+        else \a false. */
     bool contains (const interval &i) const { return (A<=i.A) && (i.B<=B); }
+    /*! Returns \a true if \a i lies completely inside the interval and does
+        not contain the limits of the interval, else \a false. */
     bool strictContains (const interval &i) const
       { return (A<i.A) && (i.B<B); }
 
+    /*! Equality check. */
     bool operator== (const interval &i) const { return (A==i.A) && (B==i.B); }
 //    bool operator< (const T &v) const { return B<v; }
     bool operator< (const interval &i) const { return B<i.A; }
@@ -95,13 +108,54 @@ template<typename T> class rangeset
     typedef typename rtype::const_iterator c_iterator;
     rtype r;
 
-  public:
-    void clear() { r.clear(); }
-    void reserve(tsize n) { r.reserve(n); }
-    tsize size() const { return r.size(); }
+    static void generalUnion (const rtype &a, const rtype &b,
+      bool flip_a, bool flip_b, rtype &c)
+      {
+      planck_assert((&c!=&a)&&(&c!=&b), "cannot overwrite the rangeset");
+      c.clear();
+      tsize out=0;
+      T vsave;
+      bool state_a=flip_a, state_b=flip_b,
+           state_res=state_a||state_b;
+      tsize ia=0, ea=2*a.size(), ib=0, eb=2*b.size();
+      bool runa = ia!=ea, runb = ib!=eb;
+      while(runa||runb)
+        {
+        bool adv_a=false, adv_b=false;
+        T val,va,vb;
+        if (runa) va = (ia&1) ? a[ia>>1].b() : a[ia>>1].a();
+        if (runb) vb = (ib&1) ? b[ib>>1].b() : b[ib>>1].a();
+        if (runa && (!runb || (va<=vb))) { adv_a=true; val=va; }
+        if (runb && (!runa || (vb<=va))) { adv_b=true; val=vb; }
+        if (adv_a) { state_a=!state_a; ++ia; runa = ia!=ea; }
+        if (adv_b) { state_b=!state_b; ++ib; runb = ib!=eb; }
+        bool tmp=state_a||state_b;
+        if (tmp!=state_res)
+          {
+          if ((++out)&1)
+            vsave=val;
+          else
+            c.push_back(interval<T>(vsave,val));
+          state_res = tmp;
+          }
+        }
+      }
 
+  public:
+    /*! Removes all rangeset entries. */
+    void clear() { r.clear(); }
+    /*! Reserves space for \a n ranges. */
+    void reserve(tsize n) { r.reserve(n); }
+    /*! Returns the current number of ranges. */
+    tsize size() const { return r.size(); }
+    /*! Returns the current vector of ranges. */
+    const rtype &data() const { return r; }
+
+    /*! Returns the \a ith range. */
     const interval<T> &operator[] (tsize i) const { return r[i]; }
 
+    /*! Appends \a iv to the rangeset. All values in \a iv must be larger
+        than all values in the rangeset. */
     void append(const interval<T> &iv)
       {
       if (iv.empty()) return;
@@ -113,9 +167,15 @@ template<typename T> class rangeset
       else
         r.push_back(iv);
       }
+    /*! Appends \a [v1;v2[ to the rangeset. \a v1 must be larger
+        than all values in the rangeset. */
     void append(const T &v1, const T &v2) { append(interval<T>(v1,v2)); }
+    /*! Appends \a [v;v+1[ to the rangeset. \a v must be larger
+        than all values in the rangeset. */
     void append(const T &v) { append(interval<T>(v)); }
 
+    /*! Appends \a iv to the rangeset. All values in \a iv must be larger
+        than the minimum of the last range in the rangeset. */
     void appendRelaxed(const interval<T> &iv)
       {
       if (iv.empty()) return;
@@ -127,11 +187,17 @@ template<typename T> class rangeset
       else
         r.push_back(iv);
       }
+    /*! Appends \a [v1;v2[ to the rangeset. \a v1 must be larger
+        than the minimum of the last range in the rangeset. */
     void appendRelaxed(const T &v1, const T &v2)
       { appendRelaxed(interval<T>(v1,v2)); }
+    /*! Appends \a [v;v+1[ to the rangeset. \a v must be larger
+        than the minimum of the last range in the rangeset. */
     void appendRelaxed(const T &v)
       { appendRelaxed(interval<T>(v)); }
 
+    /*! After this operation, the rangeset contains the union of itself
+        with \a iv. */
     void add(const interval<T> &iv)
       {
       if (iv.empty()) return;
@@ -148,9 +214,14 @@ template<typename T> class rangeset
         r.erase(++i,++j);
         }
       }
+    /*! After this operation, the rangeset contains the union of itself
+        with \a [v1;v2[. */
     void add(const T &v1, const T &v2) { add(interval<T>(v1,v2)); }
+    /*! After this operation, the rangeset contains the union of itself
+        with \a [v;v+1[. */
     void add(const T &v) { add(interval<T>(v)); }
 
+    /*! Removes all values within \a iv from the rangeset. */
     void remove(const interval<T> &iv)
       {
       if (iv.empty()) return;
@@ -180,9 +251,12 @@ template<typename T> class rangeset
         r.erase(i,j);
         }
       }
+    /*! Removes all values within \a [v1;v2] from the rangeset. */
     void remove(const T &v1, const T &v2) { remove(interval<T>(v1,v2)); }
+    /*! Removes the value \a v from the rangeset. */
     void remove(const T &v) { remove(interval<T>(v)); }
 
+    /*! Returns the total number of elements in the rangeset. */
     T nval() const
       {
       T result=T(0);
@@ -191,6 +265,8 @@ template<typename T> class rangeset
       return result;
       }
 
+    /*! After this opration, \a res contains all elements of the rangeset
+        in ascending order. */
     void toVector (std::vector<T> &res) const
       {
       res.clear();
@@ -200,40 +276,45 @@ template<typename T> class rangeset
           res.push_back(m);
       }
 
-    void setToUnion (const rangeset &r1, const rangeset &r2)
+    /*! After this operation, the rangeset contains the union of itself
+        and \a other. */
+    void unite (const rangeset &other)
       {
-      c_iterator i1 = r1.r.begin(), e1 = r1.r.end(),
-                 i2 = r2.r.begin(), e2 = r2.r.end();
-
-      clear();
-
-      bool run1 = i1!=e1, run2 = i2!=e2;
-
-      while(run1 || run2)
-        {
-        if (run1 && (!run2 || i1->b()<i2->a()))
-          {
-          appendRelaxed(*i1);
-          run1 = (++i1)!=e1;
-          }
-        else if (run2 && (!run1 || i2->b()<i1->a()))
-          {
-          appendRelaxed(*i2);
-          run2 = (++i2)!=e2;
-          }
-        else if(run1 && run2)
-          {
-          appendRelaxed(min(i1->a(),i2->a()),max(i1->b(),i2->b()));
-          run1 = (++i1)!=e1;
-          run2 = (++i2)!=e2;
-          }
-        else
-          {
-          planck_fail("internal error");
-          }
-        }
+      rtype tmp;
+      generalUnion (r,other.r,false,false,tmp);
+      std::swap(r,tmp);
       }
+    /*! After this operation, the rangeset contains the intersection of itself
+        and \a other. */
+    void intersect (const rangeset &other)
+      {
+      rtype tmp;
+      generalUnion (r,other.r,true,true,tmp);
+      std::swap(r,tmp);
+      }
+    /*! After this operation, the rangeset contains the union of itself
+        with the inverse of \a other. */
+    void subtract (const rangeset &other)
+      {
+      rtype tmp;
+      generalUnion (r,other.r,true,false,tmp);
+      std::swap(r,tmp);
+      }
+    /*! After this operation, the rangeset contains the union of \a r1
+        and \a r2. */
+    void setToUnion (const rangeset &a, const rangeset &b)
+      { generalUnion (a.r,b.r,false,false,r); }
+    /*! After this operation, the rangeset contains the intersection of \a r1
+        and \a r2. */
+    void setToIntersection (const rangeset &a, const rangeset &b)
+      { generalUnion (a.r,b.r,true,true,r); }
+    /*! After this operation, the rangeset contains the union of \a r1
+        with the inverse of \a r2. */
+    void setToDifference (const rangeset &a, const rangeset &b)
+      { generalUnion (a.r,b.r,true,false,r); }
 
+    /*! Returns the index of the interval containing \a v; if no such interval
+        exists, -1 is returned. */
     tdiff findInterval (const T &v) const
       {
       interval<T> iv(v);
@@ -241,6 +322,25 @@ template<typename T> class rangeset
       if (i==r.end() || !i->contains(v))
         return -1;
       return i-r.begin();
+      }
+
+    /*! Returns \a true if the rangeset is identical to \a other, else \a false.
+        */
+    bool equals (const rangeset &other) const
+      { return r==other.data(); }
+    /*! Returns \a true if the rangeset contains all values stored in \a other,
+        else \a false. */
+    bool contains (const rangeset &other) const
+      {
+      c_iterator im=r.begin(), em=r.end();
+      for (tsize i=0; i<other.size(); ++i)
+        {
+        T a=other[i].a(), b=other[i].b();
+        while ((im!=em) && (im->b() < a)) ++im;
+        if (im==em) return false;
+        if ((im->a()>a) || (im->b()<b)) return false;
+        }
+      return true;
       }
   };
 
