@@ -25,7 +25,7 @@
  */
 
 /*
- *  Copyright (C) 2003-2011 Max-Planck-Society
+ *  Copyright (C) 2003-2012 Max-Planck-Society
  *  Author: Martin Reinecke
  */
 
@@ -34,8 +34,6 @@
 #include "lsconstants.h"
 
 using namespace std;
-
-const int OPLUS=2, FACT=1<<OPLUS;
 
 template<> const int T_Healpix_Base<int  >::order_max=13;
 template<> const int T_Healpix_Base<int64>::order_max=29;
@@ -69,8 +67,8 @@ namespace {
           2: pixel center is inside the shape, but maybe not the complete pixel
           3: pixel lies completely inside the shape */
 
-template<typename I> inline void check_pixel (int o, int order_, int omax,
-  int zone, rangeset<I> &pixset, I pix, vector<pair<I,int> > &stk,
+template<typename I, typename I2> inline void check_pixel (int o, int order_,
+  int omax, int zone, rangeset<I2> &pixset, I pix, vector<pair<I,int> > &stk,
   bool inclusive, int &stacktop)
   {
   if (zone==0) return;
@@ -155,15 +153,23 @@ template<typename I> bool check_pixel_ring (const T_Healpix_Base<I> &b1,
 
 } // unnamed namespace
 
-template<typename I> void T_Healpix_Base<I>::query_disc (pointing ptg,
-  double radius, bool inclusive, rangeset<I> &pixset) const
+template<typename I> template<typename I2>
+  void T_Healpix_Base<I>::query_disc_internal
+  (pointing ptg, double radius, int fact, rangeset<I2> &pixset) const
   {
+  bool inclusive = (fact!=0);
   pixset.clear();
   ptg.normalize();
 
   if (scheme_==RING)
     {
-    I fct = inclusive ? min(I(FACT),(I(1)<<order_max)/nside_) : 1;
+    I fct=1;
+    if (inclusive)
+      {
+      planck_assert (((I(1)<<order_max)/nside_)>=fact,
+        "invalid oversampling factor");
+      fct = fact;
+      }
     T_Healpix_Base b2;
     double rsmall, rbig;
     if (fct>1)
@@ -258,8 +264,16 @@ template<typename I> void T_Healpix_Base<I>::query_disc (pointing ptg,
     if (radius>=pi) // disk covers the whole sphere
       { pixset.append(0,npix_); return; }
 
-    int oplus=inclusive ? OPLUS : 0;
-    int omax=min(int(order_max),order_+oplus); // the order up to which we test
+    int oplus = 0;
+    if (inclusive)
+      {
+      planck_assert ((I(1)<<(order_max-order_))>=fact,
+        "invalid oversampling factor");
+      planck_assert ((fact&(fact-1))==0,
+        "oversampling factor must be a power of 2");
+      oplus=ilog2(fact);
+      }
+    int omax=order_+oplus; // the order up to which we test
 
     vec3 vptg(ptg);
     arr<T_Healpix_Base<I> > base(omax+1);
@@ -302,17 +316,43 @@ template<typename I> void T_Healpix_Base<I>::query_disc (pointing ptg,
     }
   }
 
-template<typename I> void T_Healpix_Base<I>::query_multidisc
-  (const arr<vec3> &norm, const arr<double> &rad, bool inclusive,
-  rangeset<I> &pixset) const
+template<typename I> void T_Healpix_Base<I>::query_disc
+  (pointing ptg, double radius, rangeset<I> &pixset) const
   {
+  query_disc_internal (ptg, radius, 0, pixset);
+  }
+
+template<typename I> void T_Healpix_Base<I>::query_disc_inclusive
+  (pointing ptg, double radius, rangeset<I> &pixset, int fact) const
+  {
+  planck_assert(fact>0,"fact must be a positive integer");
+  if ((sizeof(I)<8) && (((I(1)<<order_max)/nside_)<fact))
+    {
+    T_Healpix_Base<int64> base2(nside_,scheme_,SET_NSIDE);
+    base2.query_disc_internal(ptg,radius,fact,pixset);
+    return;
+    }
+  query_disc_internal (ptg, radius, fact, pixset);
+  }
+
+template<typename I> template<typename I2>
+  void T_Healpix_Base<I>::query_multidisc (const arr<vec3> &norm,
+  const arr<double> &rad, int fact, rangeset<I2> &pixset) const
+  {
+  bool inclusive = (fact!=0);
   tsize nv=norm.size();
   planck_assert(nv==rad.size(),"inconsistent input arrays");
   pixset.clear();
 
   if (scheme_==RING)
     {
-    I fct = inclusive ? min(I(FACT),(I(1)<<order_max)/nside_) : 1;
+    I fct=1;
+    if (inclusive)
+      {
+      planck_assert (((I(1)<<order_max)/nside_)>=fact,
+        "invalid oversampling factor");
+      fct = fact;
+      }
     T_Healpix_Base b2;
     double rpsmall, rpbig;
     if (fct>1)
@@ -367,8 +407,7 @@ template<typename I> void T_Healpix_Base<I>::query_multidisc
       bool shifted;
       get_ring_info_small(iz,ipix1,nr,shifted);
       double shift = shifted ? 0.5 : 0.;
-      I ipix2 = ipix1 + nr - 1; // highest pixel number in the ring
-      rangeset<I> tr;
+      rangeset<I2> tr;
       tr.append(ipix1,ipix1+nr);
       for (tsize j=0; j<z0.size(); ++j)
         {
@@ -391,19 +430,23 @@ template<typename I> void T_Healpix_Base<I>::query_multidisc
         if (ip_lo<0)
           tr.remove(ipix1+ip_hi+1,ipix1+ip_lo+nr);
         else
-          {
-          tr.remove(ipix1,ipix1+ip_lo);
-          tr.remove(ipix1+ip_hi+1,ipix2+1);
-          }
+          tr.intersect(ipix1+ip_lo,ipix1+ip_hi+1);
         }
-      for (tsize j=0; j<tr.size(); ++j)
-        pixset.append(tr[j]);
+      pixset.append(tr);
       }
     }
   else // scheme_ == NEST
     {
-    int oplus=inclusive ? OPLUS : 0;
-    int omax=min(order_max,order_+oplus); // the order up to which we test
+    int oplus = 0;
+    if (inclusive)
+      {
+      planck_assert ((I(1)<<(order_max-order_))>=fact,
+        "invalid oversampling factor");
+      planck_assert ((fact&(fact-1))==0,
+        "oversampling factor must be a power of 2");
+      oplus=ilog2(fact);
+      }
+    int omax=order_+oplus; // the order up to which we test
 
     // TODO: ignore all disks with radius>=pi
 
@@ -900,9 +943,11 @@ template<typename I> void T_Healpix_Base<I>::pix2loc (I pix, double &z,
     }
   }
 
-template<typename I> void T_Healpix_Base<I>::query_polygon
-  (const vector<pointing> &vertex, bool inclusive, rangeset<I> &pixset) const
+template<typename I> template<typename I2>
+  void T_Healpix_Base<I>::query_polygon_internal
+  (const vector<pointing> &vertex, int fact, rangeset<I2> &pixset) const
   {
+  bool inclusive = (fact!=0);
   tsize nv=vertex.size();
   tsize ncirc = inclusive ? nv+1 : nv;
   planck_assert(nv>=3,"not enough vertices in polygon");
@@ -929,7 +974,26 @@ template<typename I> void T_Healpix_Base<I>::query_polygon
     find_enclosing_circle (vv, normal[nv], cosrad);
     rad[nv]=acos(cosrad);
     }
-  query_multidisc(normal,rad,inclusive,pixset);
+  query_multidisc(normal,rad,fact,pixset);
+  }
+
+template<typename I> void T_Healpix_Base<I>::query_polygon
+  (const vector<pointing> &vertex, rangeset<I> &pixset) const
+  {
+  query_polygon_internal(vertex, 0, pixset);
+  }
+
+template<typename I> void T_Healpix_Base<I>::query_polygon_inclusive
+  (const vector<pointing> &vertex, rangeset<I> &pixset, int fact) const
+  {
+  planck_assert(fact>0,"fact must be a positive integer");
+  if ((sizeof(I)<8) && (((I(1)<<order_max)/nside_)<fact))
+    {
+    T_Healpix_Base<int64> base2(nside_,scheme_,SET_NSIDE);
+    base2.query_polygon_internal(vertex,fact,pixset);
+    return;
+    }
+  query_polygon_internal(vertex, fact, pixset);
   }
 
 template<typename I> void T_Healpix_Base<I>::query_strip_internal
@@ -969,8 +1033,7 @@ template<typename I> void T_Healpix_Base<I>::query_strip (double theta1,
     query_strip_internal(0.,theta2,inclusive,pixset);
     rangeset<I> ps2;
     query_strip_internal(theta1,pi,inclusive,ps2);
-    for (tsize i=0; i<ps2.size(); ++i)
-      pixset.appendRelaxed(ps2[i]);
+    pixset.append(ps2);
     }
   }
 
