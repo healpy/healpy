@@ -65,6 +65,22 @@ cdef extern from "psht.h":
  void  psht_make_triangular_alm_info (int lmax, int mmax, int stride, psht_alm_info **alm_info)
  void 	psht_destroy_alm_info (psht_alm_info *info)
 
+cdef extern from "ylmgen_c.h":
+ ctypedef double ylmgen_dbl2[2]
+ ctypedef struct Ylmgen_C:
+   int lmax, mmax, smax, nth, ith
+   double *ylm
+   ylmgen_dbl2 **lambda_wx
+ 
+ void Ylmgen_init (Ylmgen_C *gen, int l_max, int m_max, int s_max, int spinrec,
+                   double epsilon)
+ void Ylmgen_set_theta (Ylmgen_C *gen, double *theta, int nth)
+ void Ylmgen_destroy (Ylmgen_C *gen)
+ void Ylmgen_prepare (Ylmgen_C *gen, int ith, int m)
+ void Ylmgen_recalc_Ylm (Ylmgen_C *gen)
+ void Ylmgen_recalc_lambda_wx (Ylmgen_C *gen, int spin) 
+ 
+
 class pshtError(Exception):
  pass
 
@@ -568,6 +584,53 @@ def __getlmax_from_hp(s,mmax=-1):
        return -1
    else:
        return int(x)
+
+cdef class Ylmgen:
+ """Class wrapping the Ylmgen_C structure and functions
+ to compute Ylm(theta, phi=0)
+ """
+ cdef Ylmgen_C * _ylmgen
+ def __init__(self, l_max, m_max = None, s_max = 0, spinrec = 0, epsilon = 1.e-15):
+   if m_max is None:
+     m_max = l_max
+   self._ylmgen = <Ylmgen_C*>malloc(sizeof(Ylmgen_C))
+   Ylmgen_init(self._ylmgen, l_max, m_max, s_max, spinrec, epsilon)
+
+ def set_theta(self, theta):
+   cdef c_numpy.ndarray[c_numpy.float64_t, ndim = 1] theta_ = np.asarray(theta, dtype = np.float64)
+   nth = theta_.size
+   Ylmgen_set_theta(self._ylmgen, <double*>theta_.data, nth)
+
+ def prepare(self, int ith, int m):
+   Ylmgen_prepare(self._ylmgen, ith, m)
+
+ def recalc_Ylm(self):
+   Ylmgen_recalc_Ylm(self._ylmgen)
+
+ def recalc_lambda_wx(self, spin):
+   Ylmgen_recalc_lambda_wx(self._ylmgen, spin)
+ 
+ def get_ylm(self):
+   cdef int i, lmax
+   lmax = self._ylmgen.lmax
+   cdef c_numpy.ndarray[c_numpy.float64_t, ndim=1] ylm = np.empty(self._ylmgen.lmax + 1, dtype = np.float64)
+   for i in range(lmax + 1):
+     ylm[i] = self._ylmgen.ylm[i]
+   return ylm
+     
+ def get_lambda_wx(self, int spin):
+   cdef int i, lmax
+   lmax = self._ylmgen.lmax
+   cdef c_numpy.ndarray[c_numpy.float64_t, ndim=2] lambda_wx = np.empty((2, self._ylmgen.lmax + 1), dtype = np.float64)
+   for i in range(lmax + 1):
+     lambda_wx[i, 0] = (<double*>self._ylmgen.lambda_wx[spin][i])[0]
+     lambda_wx[i, 1] = (<double*>self._ylmgen.lambda_wx[spin][i])[1]
+   return lambda_wx
+     
+ def __dealloc__(self):
+   Ylmgen_destroy(self._ylmgen)
+   free(self._ylmgen)
+
 
 try:
  import healpy as _hp
