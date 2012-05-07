@@ -666,6 +666,9 @@ void fitshandle::read_column_raw_void
         "read_column(): array too large");
       arr2b<char> tdata(safe_cast<tsize>(num),
                         safe_cast<tsize>(columns_[colnum-1].repcount()+1));
+      int dispwidth;
+      fits_get_col_display_width(FPTR, colnum, &dispwidth, &status);
+      planck_assert(dispwidth<=columns_[colnum-1].repcount(),"column too wide");
       fits_read_col (FPTR, TSTRING, colnum, offset+1, 1, num,
         0, tdata.p0(), 0, &status);
       check_errors();

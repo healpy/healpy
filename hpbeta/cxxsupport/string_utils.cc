@@ -26,7 +26,7 @@
  *  This file contains the implementation of various convenience functions
  *  used by the Planck LevelS package.
  *
- *  Copyright (C) 2002-2011 Max-Planck-Society
+ *  Copyright (C) 2002-2012 Max-Planck-Society
  *  Author: Martin Reinecke
  */
 
@@ -320,4 +320,18 @@ void tokenize (const string &inp, char delim, vector<string> &list)
   list.clear();
   while (getline(stream,token,delim))
     list.push_back(token);
+  }
+
+void parse_words_from_file (const string &filename, vector<string> &words)
+  {
+  words.clear();
+  ifstream inp(filename.c_str());
+  planck_assert (inp,"Could not open file '"+filename+"'.");
+  while (inp)
+    {
+    string word;
+    inp>>word;
+    word=trim(word);
+    if (word!="") words.push_back(word);
+    }
   }

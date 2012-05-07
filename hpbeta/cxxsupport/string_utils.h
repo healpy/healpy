@@ -25,7 +25,7 @@
 /*! \file string_utils.h
  *  Various functions for manipulating strings.
  *
- *  Copyright (C) 2002-2011 Max-Planck-Society
+ *  Copyright (C) 2002-2012 Max-Planck-Society
  *  \author Martin Reinecke
  */
 
@@ -98,6 +98,11 @@ template<typename T> void split (const std::string &inp, std::vector<T> &list);
     in \a list. */
 void tokenize (const std::string &inp, char delim,
   std::vector<std::string> &list);
+
+/*! Reads all white-space separated strings from \a filename, and returns
+    them in \a words. */
+void parse_words_from_file (const std::string &filename,
+  std::vector<std::string> &words);
 
 /*! \} */
 

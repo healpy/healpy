@@ -9,14 +9,18 @@ cimport cython
 cdef extern from "healpix_base.h":
     ctypedef long int64
 
+cdef extern from "stddef.h":
+    ctypedef long ptrdiff_t
+
+ctypedef size_t tsize
+ctypedef ptrdiff_t tdiff
+
 cdef extern from "rangeset.h":
-    cdef cppclass interval[T]:
-        T a()
-        T b()
     cdef cppclass rangeset[T]:
-        int64 size()
+        tsize size()
         int64 nval()
-        interval[T] operator[](int i)
+        T ivbegin(tdiff i)
+        T ivend(tdiff i)
 
 cdef extern from "arr.h":
     cdef cppclass arr[T]:
@@ -53,10 +57,13 @@ cdef extern from "healpix_base.h":
        T_Healpix_Base(int order, Healpix_Ordering_Scheme scheme)
        T_Healpix_Base(I nside, Healpix_Ordering_Scheme scheme,
                      nside_dummy)
-       void query_disc (pointing ptg, double radius, bool inclusive,
-                        rangeset[I]& pixset)
-       void query_polygon(vector[pointing] vert, bool inclusive, 
-                          rangeset[I]& pixset)
+       void query_disc (pointing ptg, double radius,
+                        rangeset[I]& pixset) 
+       void query_disc_inclusive (pointing ptg, double radius,
+                                  rangeset[I]& pixset, int fact)
+       void query_polygon(vector[pointing] vert, rangeset[I]& pixset)
+       void query_polygon_inclusive(vector[pointing] vert,
+                                    rangeset[I]& pixset, int fact)
        void query_strip(double theta1, double theta2, bool inclusive,
                         rangeset[I]& pixset)
        void Set(int order, Healpix_Ordering_Scheme scheme)
@@ -99,7 +106,7 @@ cdef extern from "healpix_base.h":
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-def query_disc(nside, vec, radius, inclusive = False, nest = False):
+def query_disc(nside, vec, radius, inclusive = False, fact = 4, nest = False):
     """Returns pixels whose centers lie within the disk defined by
     *vec* and *radius* (in radians) (if *inclusive* is False), or which
     overlap with this disk (if *inclusive* is True).
@@ -112,10 +119,14 @@ def query_disc(nside, vec, radius, inclusive = False, nest = False):
       The coordinates of unit vector defining the disk center.
     radius : float
       The radius (in radians) of the disk
-    inclusive : bool
+    inclusive : bool, optional
       If False, return the exact set of pixels whose pixel centers lie 
       within the disk; if True, return all pixels that overlap with the disk,
-      and maybe a few more.
+      and maybe a few more. Default: False
+    fact : int, optional
+      Only used when inclusive=True. The overlapping test will be done at
+      the resolution fact*nside. For NESTED ordering, fact must be a power of 2,
+      else it can be any positive integer. Default: 4.
     nest: bool, optional
       if True, assume NESTED pixel ordering, otherwise, RING pixel ordering
 
@@ -126,8 +137,10 @@ def query_disc(nside, vec, radius, inclusive = False, nest = False):
 
     Note
     ----
-    This method is more efficient in the RING scheme, but the algorithm
-    used for inclusive==True returns fewer false positives in the NEST scheme.
+    This method is more efficient in the RING scheme.
+    For inclusive=True, the algorithm may return some pixels which don't overlap
+    with the disk at all. The higher fact is chosen, the fewer false positives
+    are returned, at the cost of increased run time.
     """
     # Check Nside value
     if not isnsideok(nside):
@@ -140,13 +153,20 @@ def query_disc(nside, vec, radius, inclusive = False, nest = False):
         scheme = RING
     cdef T_Healpix_Base[int64] hb = T_Healpix_Base[int64](nside, scheme, SET_NSIDE)
     cdef rangeset[int64] pixset
-    cdef bool inc = inclusive
-    hb.query_disc(pointing(v), radius, inc, pixset)
+    cdef int factor = fact
+    if inclusive:
+        factor = abs(fact)
+        if nest and (factor == 0 or (factor & (factor - 1) != 0)):
+            raise ValueError('fact must be a power of 2 when '
+                             'nest is True (fact=%d)' % (fact))
+        hb.query_disc_inclusive(pointing(v), radius, pixset, factor)
+    else:
+        hb.query_disc(pointing(v), radius, pixset)
 
     return pixset_to_array(pixset)
 
 
-def query_polygon(nside, vertices, inclusive = False, nest = False):
+def query_polygon(nside, vertices, inclusive = False, fact = 4, nest = False):
     """ Returns the pixels whose centers lie within the convex polygon 
     defined by the *vertices* array (if *inclusive* is False), or which 
     overlap with this polygon (if *inclusive* is True).
@@ -157,10 +177,14 @@ def query_polygon(nside, vertices, inclusive = False, nest = False):
       The nside of the Healpix map.
     vertices : float, array-like
       Vertex array containing the vertices of the polygon, shape (N, 3).
-    inclusive : bool
+    inclusive : bool, optional
       If False, return the exact set of pixels whose pixel centers lie
       within the polygon; if True, return all pixels that overlap with the
-      polygon, and maybe a few more.
+      polygon, and maybe a few more. Default: False.
+    fact : int, optional
+      Only used when inclusive=True. The overlapping test will be done at
+      the resolution fact*nside. For NESTED ordering, fact must be a power of 2,
+      else it can be any positive integer. Default: 4.
     nest: bool, optional
       if True, assume NESTED pixel ordering, otherwise, RING pixel ordering
     
@@ -171,8 +195,10 @@ def query_polygon(nside, vertices, inclusive = False, nest = False):
 
     Note
     ----
-    This method is more efficient in the RING scheme, but the algorithm used
-    for inclusive==True returns fewer false positives in the NEST scheme.
+    This method is more efficient in the RING scheme.
+    For inclusive=True, the algorithm may return some pixels which don't overlap
+    with the disk at all. The higher fact is chosen, the fewer false positives
+    are returned, at the cost of increased run time.
     """
     # Check Nside value
     if not isnsideok(nside):
@@ -190,7 +216,15 @@ def query_polygon(nside, vertices, inclusive = False, nest = False):
     cdef T_Healpix_Base[int64] hb = T_Healpix_Base[int64](nside, scheme, SET_NSIDE)
     # Call query_polygon
     cdef rangeset[int64] pixset
-    hb.query_polygon(vert, inclusive, pixset)
+    cdef int factor
+    if inclusive:
+        factor = abs(fact)
+        if nest and (factor == 0 or (factor & (factor - 1) != 0)):
+            raise ValueError('fact must be a power of 2 when '
+                             'nest is True (fact=%d)' % (fact))
+        hb.query_polygon_inclusive(vert, pixset, factor)
+    else:
+        hb.query_polygon(vert, pixset)
 
     return pixset_to_array(pixset)
 
@@ -276,8 +310,8 @@ cdef pixset_to_array(rangeset[int64] &pixset):
     cdef int64 a, b, ii, ip
     ii = 0
     for i in range(n):
-        a = pixset[i].a()
-        b = pixset[i].b()
+        a = pixset.ivbegin(i)
+        b = pixset.ivend(i)
         for ip in range(a, b):
             ipix[ii] = ip
             ii += 1

@@ -56,8 +56,8 @@ template<typename I> class T_Healpix_Base: public Healpix_Tables
     inline I ring_above (double z) const;
     void in_ring (I iz, double phi0, double dphi, rangeset<I> &pixset) const;
 
-    void query_multidisc (const arr<vec3> &norm, const arr<double> &rad,
-      bool inclusive, rangeset<I> &pixset) const;
+    template<typename I2> void query_multidisc (const arr<vec3> &norm,
+      const arr<double> &rad, int fact, rangeset<I2> &pixset) const;
 
     void query_multidisc_general (const arr<vec3> &norm, const arr<double> &rad,
       bool inclusive, const std::vector<int> &cmds, rangeset<I> &pixset) const;
@@ -196,51 +196,77 @@ template<typename I> class T_Healpix_Base: public Healpix_Tables
         }
       }
 
-    /*! Returns a range set of pixels whose centers lie within the disk
-        defined by \a dir and \a radius (if \a inclusive==false), or which
-        overlap with this disk (if \a inclusive==true).
+    template<typename I2> void query_disc_internal (pointing ptg, double radius,
+      int fact, rangeset<I2> &pixset) const;
+
+    /*! Returns the range set of all pixels whose centers lie within the disk
+        defined by \a dir and \a radius.
         \param dir the angular coordinates of the disk center
         \param radius the radius (in radians) of the disk
-        \param inclusive if \a false, return the exact set of pixels whose
-           pixel centers lie within the disk; if \a true, return all pixels
-           that overlap with the disk, and maybe a few more.
         \param pixset a \a rangeset object containing the indices of all pixels
-           within the disk
-        \note This method is more efficient in the RING scheme, but the
-           algorithm used for \a inclusive==true returns fewer false positives
-           in the NEST scheme. */
-    void query_disc (pointing ptg, double radius, bool inclusive,
-      rangeset<I> &pixset) const;
+           whose centers lie inside the disk
+        \note This method is more efficient in the RING scheme. */
+    void query_disc (pointing ptg, double radius, rangeset<I> &pixset) const;
+    /*! Returns the range set of all pixels which overlap with the disk
+        defined by \a dir and \a radius.
+        \param dir the angular coordinates of the disk center
+        \param radius the radius (in radians) of the disk
+        \param pixset a \a rangeset object containing the indices of all pixels
+           overlapping with the disk.
+        \param fact The overlapping test will be done at the resolution
+           \a fact*nside. For NESTED ordering, \a fact must be a power of 2,
+           else it can be any positive integer. A typical choice would be 4.
+        \note This method may return some pixels which don't overlap with
+           the disk at all. The higher \a fact is chosen, the fewer false
+           positives are returned, at the cost of increased run time.
+        \note This method is more efficient in the RING scheme. */
+    void query_disc_inclusive (pointing ptg, double radius, rangeset<I> &pixset,
+      int fact=1) const;
 
     /*! \deprecated Please use the version based on \a rangeset */
     void query_disc (const pointing &dir, double radius,
       std::vector<I> &listpix) const
       {
       rangeset<I> pixset;
-      query_disc(dir,radius,false,pixset);
+      query_disc(dir,radius,pixset);
       pixset.toVector(listpix);
       }
     /*! \deprecated Please use the version based on \a rangeset */
     void query_disc_inclusive (const pointing &dir, double radius,
-      std::vector<I> &listpix) const
+      std::vector<I> &listpix, int fact=1) const
       {
       rangeset<I> pixset;
-      query_disc(dir,radius,true,pixset);
+      query_disc_inclusive(dir,radius,pixset,fact);
       pixset.toVector(listpix);
       }
 
+    template<typename I2> void query_polygon_internal
+      (const std::vector<pointing> &vertex, int fact,
+      rangeset<I2> &pixset) const;
+
     /*! Returns a range set of pixels whose centers lie within the convex
-        polygon defined by the \a vertex array (if \a inclusive==false), or
-        which overlap with this polygon (if \a inclusive==true).
+        polygon defined by the \a vertex array.
         \param vertex array containing the vertices of the polygon.
-        \param inclusive if \a false, return the exact set of pixels whose
-           pixel centers lie within the polygon; if \a true, return all pixels
-           that overlap with the polygon, and maybe a few more.
-        \note This method is more efficient in the RING scheme, but the
-           algorithm used for \a inclusive==true returns fewer false positives
-           in the NEST scheme. */
-    void query_polygon (const std::vector<pointing> &vertex, bool inclusive,
+        \param pixset a \a rangeset object containing the indices of all pixels
+           whose centers lie inside the polygon
+        \note This method is more efficient in the RING scheme. */
+    void query_polygon (const std::vector<pointing> &vertex,
       rangeset<I> &pixset) const;
+
+    /*! Returns a range set of pixels which overlap with the convex
+        polygon defined by the \a vertex array.
+        \param vertex array containing the vertices of the polygon.
+        \param pixset a \a rangeset object containing the indices of all pixels
+           overlapping with the polygon.
+        \param fact The overlapping test will be done at the resolution
+           \a fact*nside. For NESTED ordering, \a fact must be a power of 2,
+           else it can be any positive integer. A typical choice would be 4.
+        \note This method may return some pixels which don't overlap with
+           the polygon at all. The higher \a fact is chosen, the fewer false
+           positives are returned, at the cost of increased run time.
+        \note This method is more efficient in the RING scheme. */
+    void query_polygon_inclusive (const std::vector<pointing> &vertex,
+      rangeset<I> &pixset, int fact=1) const;
 
     /*! Returns a range set of pixels whose centers lie within the colatitude
         range defined by \a theta1 and \a theta2 (if \a inclusive==false), or

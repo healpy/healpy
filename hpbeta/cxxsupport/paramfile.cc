@@ -151,3 +151,13 @@ void paramfile::setParamString (const string &key, const string &value)
     params[key]=value;
     }
   }
+
+paramfile getParamsFromCmdline (int argc, const char **argv, bool verbose)
+  {
+  planck_assert(argc>=2,"incorrect command line format");
+  if ((argc==2) && (string(argv[1]).find("=")==string::npos))
+    return paramfile(argv[1],verbose);
+  map<string,string> pmap;
+  parse_cmdline_equalsign(argc,argv,pmap);
+  return paramfile(pmap,verbose);
+  }
