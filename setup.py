@@ -54,14 +54,17 @@ try:
 except:
     print ("Cannot check if compiler is clang")
 
+# Define the build directory
+hpx_cxx_dir = os.environ.get('HEALPIXCXXDIR', 'hpbeta')
+
 # Command distclean to remove the build directory (both healpy and in hpbeta)
 # 
 if 'distclean' in sys.argv:
     # Remove build directory of healpy and hpbeta
-    build_hpx = os.path.join('hpbeta', 'build.' + HEALPIX_TARGET)
+    build_hpx = os.path.join(hpx_cxx_dir, 'build.' + HEALPIX_TARGET)
     print 'Removing ', build_hpx, ' directory...'
     shutil.rmtree(build_hpx, True)
-    hpx = os.path.join('hpbeta', HEALPIX_TARGET)
+    hpx = os.path.join(hpx_cxx_dir, HEALPIX_TARGET)
     print 'Removing ', hpx, 'directory...'
     shutil.rmtree(hpx, True)
     hpy = 'build'
@@ -141,7 +144,7 @@ def compile_healpix_cxx(target):
     os.environ['HEALPIX_TARGET'] = target
     os.environ['HEALPIX_EXTRAFLAGS'] = HEALPIX_EXTRAFLAGS
     # launch compilation
-    compil_result = os.system('cd hpbeta && make ')
+    compil_result = os.system('cd %s && make ' % (hpx_cxx_dir))
     if compil_result != 0:
         raise Exception('Error while compiling healpix_cxx')
 
@@ -163,9 +166,9 @@ healpy_fitsio_src = ['_healpy_fitsio_lib.cc']
 ################################################
 #
 #    Healpix data (pixel window and ring files
-healpix_cxx_dir='hpbeta/%s'%HEALPIX_TARGET
-healpix_cxx_inc = healpix_cxx_dir+'/include'
-healpix_cxx_lib = healpix_cxx_dir+'/lib'
+healpix_cxx_dir = os.path.join(hpx_cxx_dir, HEALPIX_TARGET)
+healpix_cxx_inc = os.path.join(healpix_cxx_dir, 'include')
+healpix_cxx_lib = os.path.join(healpix_cxx_dir, 'lib')
 
 # Do we need to compile healpix_cxx ?
 do_compile = (sys.argv[1] in ['build', 'build_ext', 'build_clib',
@@ -177,8 +180,8 @@ do_compile = (sys.argv[1] in ['build', 'build_ext', 'build_clib',
 
 if do_compile:
     compile_healpix_cxx(HEALPIX_TARGET)
-    if not ( isdir(healpix_cxx_dir+'/include') and
-             isdir(healpix_cxx_dir+'/lib') ):
+    if not ( isdir(healpix_cxx_inc) and
+             isdir(healpix_cxx_lib) ):
         raise IOError("No include and lib directory : needed for healpy !")
 
 ###############################################
