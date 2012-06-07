@@ -49,7 +49,6 @@ void util_fail_ (const char *file, int line, const char *func, const char *msg)
 void util_warn_ (const char *file, int line, const char *func, const char *msg)
   {
   fprintf(stderr,"%s, %i (%s):\n%s\n",file,line,func,msg);
-  exit(1);
   }
 
 /* This function tries to avoid allocations with a total size close to a high

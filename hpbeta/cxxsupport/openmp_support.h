@@ -22,7 +22,9 @@
  *  (DLR).
  */
 
-/*
+/*! \file openmp_support.h
+ *  Various OpenMP-related convenience functions
+ *
  *  Copyright (C) 2005-2011 Max-Planck-Society
  *  \author Martin Reinecke
  */

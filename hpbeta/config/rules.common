@@ -21,5 +21,10 @@ $(BLDROOT)/%.o : $(SRCROOT)/%.cc
 %_mkdir:
 	@if [ ! -d $* ]; then mkdir -p $* ; fi
 
-distclean: docsrc_clean
-	rm -rf $(BLDROOT) $(PREFIX) $(DOCDIR)
+configclean:
+	rm -rf config.log config.status autom4te.cache config/config.auto
+
+clean:
+	rm -rf $(BLDROOT) $(PREFIX) $(DOCDIR) $(SRCROOT)/test/test*
+
+distclean: docsrc_clean configclean clean

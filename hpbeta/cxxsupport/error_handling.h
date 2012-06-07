@@ -22,7 +22,7 @@
  *  (DLR).
  */
 
-/*
+/*! \file error_handling.h
  *  Utilities for error reporting
  *
  *  Copyright (C) 2003-2011 Max-Planck-Society
