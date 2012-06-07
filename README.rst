@@ -60,8 +60,8 @@ separately.
 Download
 --------
 
-The latest released version is 1.1 and is available as a source
-package at
+The latest released version is 1.2 and is available as a source
+package at:
 https://github.com/healpy/healpy/tags
 
 Collaboration
