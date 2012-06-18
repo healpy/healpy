@@ -7,7 +7,7 @@ FULL_INCLUDE+= -I$(CFITSIO_EXT_INC)
 
 else
 
-PACKAGE:=$(SRCROOT)/libcfitsio/cfitsio3260.tar.gz
+PACKAGE:=$(SRCROOT)/libcfitsio/cfitsio3300.tar.gz
 
 SD:=$(SRCROOT)/$(PKG)
 OD:=$(BLDROOT)/$(PKG)

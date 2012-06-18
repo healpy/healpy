@@ -101,7 +101,7 @@ for option in FLAGS_DICT:
     if opt_val:
         options.append(option)
 
-HEALPIX_EXTRAFLAGS = ' '.join([FLAGS_DICT[opt] for opt in options])
+HEALPIX_EXTRAFLAGS = ' '.join([FLAGS_DICT[opt] for opt in options] + ['-g -O0'])
 
 print 'Using Healpix configuration %s for system "%s"' % (HEALPIX_TARGET,
                                                           SYSTEM_STRING)
