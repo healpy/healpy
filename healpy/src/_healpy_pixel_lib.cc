@@ -46,7 +46,7 @@ template<Healpix_Ordering_Scheme scheme>static void
   intp is1=steps[0],is2=steps[1],is3=steps[2], os=steps[3];
   char *ip1=args[0], *ip2=args[1], *ip3=args[2], *op=args[3];
 
-  Healpix_Base hb;
+  Healpix_Base2 hb;
   long oldnside=-1;
 
   for(intp i=0; i<n; i++, ip1+=is1, ip2+=is2, ip3+=is3, op+=os)
@@ -68,7 +68,7 @@ template<Healpix_Ordering_Scheme scheme> static void
   register intp is1=steps[0],is2=steps[1],os1=steps[2],os2=steps[3];
   char *ip1=args[0], *ip2=args[1], *op1=args[2], *op2=args[3];
 
-  Healpix_Base hb;
+  Healpix_Base2 hb;
   long oldnside=-1;
 
   for(i=0; i<n; i++, ip1+=is1, ip2+=is2, op1+=os1, op2+=os2)
@@ -92,7 +92,7 @@ ufunc_ring2nest(char **args, intp *dimensions, intp *steps, void *func)
   register intp is1=steps[0],is2=steps[1],os=steps[2];
   char *ip1=args[0], *ip2=args[1], *op=args[2];
 
-  Healpix_Base hb;
+  Healpix_Base2 hb;
   long oldnside=-1;
 
   for(i=0; i<n; i++, ip1+=is1, ip2+=is2, op+=os)
@@ -114,7 +114,7 @@ static void
   register intp is1=steps[0],is2=steps[1],os=steps[2];
   char *ip1=args[0], *ip2=args[1], *op=args[2];
 
-  Healpix_Base hb;
+  Healpix_Base2 hb;
   long oldnside=-1;
 
   for(i=0; i<n; i++, ip1+=is1, ip2+=is2, op+=os)
@@ -137,7 +137,7 @@ template<Healpix_Ordering_Scheme scheme> static void
   register intp is1=steps[0],is2=steps[1],os1=steps[2],os2=steps[3],os3=steps[4];
   char *ip1=args[0], *ip2=args[1], *op1=args[2], *op2=args[3], *op3=args[4];
 
-  Healpix_Base hb;
+  Healpix_Base2 hb;
   long oldnside=-1;
 
   for(i=0; i<n; i++, ip1+=is1, ip2+=is2, op1+=os1, op2+=os2, op3+=os3)
@@ -162,7 +162,7 @@ template<Healpix_Ordering_Scheme scheme> static void
   register intp is1=steps[0],is2=steps[1],is3=steps[2],is4=steps[3],os1=steps[4];
   char *ip1=args[0], *ip2=args[1], *ip3=args[2], *ip4=args[3], *op1=args[4];
 
-  Healpix_Base hb;
+  Healpix_Base2 hb;
   long oldnside=-1;
 
   for(i=0; i<n; i++, ip1+=is1, ip2+=is2, ip3+=is3, ip4+=is4, op1+=os1)
@@ -191,14 +191,14 @@ template<Healpix_Ordering_Scheme scheme> static void
     *op1=args[3],*op2=args[4],*op3=args[5],*op4=args[6],
     *op5=args[7],*op6=args[8],*op7=args[9],*op8=args[10];
 
-  Healpix_Base hb;
+  Healpix_Base2 hb;
   long oldnside=-1;
 
   for(i=0; i<n; i++, ip1+=is1, ip2+=is2, ip3+=is3,
         op1+=os1,op2+=os2,op3+=os3,op4+=os4,
         op5+=os5,op6+=os6,op7+=os7,op8+=os8 )
     {
-      fix_arr<int,4> pix;
+      fix_arr<long,4> pix;
       fix_arr<double,4> wgt;
       long nside = *(long*)ip1;
       if (nside!=oldnside)
@@ -230,12 +230,12 @@ template<Healpix_Ordering_Scheme scheme> static void
     *op1=args[2],*op2=args[3],*op3=args[4],*op4=args[5],
     *op5=args[6],*op6=args[7],*op7=args[8],*op8=args[9];
 
-  Healpix_Base hb;
+  Healpix_Base2 hb;
   for(i=0; i<n; i++, ip1+=is1, ip2+=is2,
         op1+=os1,op2+=os2,op3+=os3,op4+=os4,
         op5+=os5,op6+=os6,op7+=os7,op8+=os8 )
     {
-      fix_arr<int,8> pix;
+      fix_arr<long,8> pix;
       hb.SetNside(*(long*)ip1, scheme);
       hb.neighbors(*(long*)ip2, pix);
       *(long*)op1 = (long)pix[0];
