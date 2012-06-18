@@ -597,10 +597,14 @@ class CartesianProj(SphericalProj):
         flip = self._flip
         theta = pi/2.-y*dtor # convert in radian
         phi = flip*x*dtor # convert in radian
-        if not direct:
-            return self.rotator.I(R.dir2vec(theta,phi))
+        # dir2vec does not support 2d arrays, so first use flatten and then
+        # reshape back to previous shape
+        if not direct: 
+            vec = self.rotator.I(R.dir2vec(theta.flatten(),phi.flatten()))
         else:
-            return R.dir2vec(theta,phi)
+            vec = R.dir2vec(theta.flatten(),phi.flatten())
+        vec = [v.reshape(theta.shape) for v in vec]
+        return vec
     xy2vec.__doc__ = SphericalProj.xy2vec.__doc__ % (name,name)
 
     def ang2xy(self, theta, phi=None, lonlat=False, direct=False):
