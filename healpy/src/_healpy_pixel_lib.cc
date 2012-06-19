@@ -54,8 +54,12 @@ template<Healpix_Ordering_Scheme scheme>static void
       long nside = *(long*)ip1;
       if (nside!=oldnside)
         { oldnside=nside; hb.SetNside(nside, scheme); }
-      *(long *)op = hb.ang2pix(pointing(*(double *)ip2,*(double *)ip3));
-    }
+      try {
+        *(long *)op = hb.ang2pix(pointing(*(double *)ip2,*(double *)ip3));
+      } catch(PlanckError &e) {
+        *(long *)op = -1;
+      }
+  }
 }
 
 /*
@@ -76,9 +80,14 @@ template<Healpix_Ordering_Scheme scheme> static void
       long nside = *(long*)ip1;
       if (nside!=oldnside)
         { oldnside=nside; hb.SetNside(nside, scheme); }
-      pointing ptg = hb.pix2ang(*(long *)ip2);
-      *(double *)op1 = ptg.theta;
-      *(double *)op2 = ptg.phi;
+      try {
+        pointing ptg = hb.pix2ang(*(long *)ip2);
+        *(double *)op1 = ptg.theta;
+        *(double *)op2 = ptg.phi;
+      } catch (PlanckError & e) {
+        *(double *)op1 = NAN;
+        *(double *)op2 = NAN;
+      }
     }
 }
 
@@ -100,7 +109,11 @@ ufunc_ring2nest(char **args, intp *dimensions, intp *steps, void *func)
       long nside = *(long*)ip1;
       if (nside!=oldnside)
         { oldnside=nside; hb.SetNside(nside, RING); }
-      *(long *)op = hb.ring2nest(*(long *)ip2);
+      try {
+        *(long *)op = hb.ring2nest(*(long *)ip2);
+      } catch(PlanckError & e) {
+        *(long *)op = -1;
+      }
     }
 }
 
@@ -122,7 +135,11 @@ static void
       long nside = *(long*)ip1;
       if (nside!=oldnside)
         { oldnside=nside; hb.SetNside(nside, NEST); }
-      *(long *)op = hb.nest2ring(*(long *)ip2);
+      try {
+        *(long *)op = hb.nest2ring(*(long *)ip2);
+      } catch(PlanckError & e) {
+        *(long *)op = -1;
+      }
     }
 }
 
@@ -145,10 +162,16 @@ template<Healpix_Ordering_Scheme scheme> static void
       long nside = *(long*)ip1;
       if (nside!=oldnside)
         { oldnside=nside; hb.SetNside(nside, scheme); }
-      vec3 v = hb.pix2vec(*(long *)ip2);
-      *(double *)op1 = v.x;
-      *(double *)op2 = v.y;
-      *(double *)op3 = v.z;
+      try {
+        vec3 v = hb.pix2vec(*(long *)ip2);
+        *(double *)op1 = v.x;
+        *(double *)op2 = v.y;
+        *(double *)op3 = v.z;
+      } catch (PlanckError & e) {
+        *(double *)op1 = NAN;
+        *(double *)op2 = NAN;
+        *(double *)op3 = NAN;
+      }
     }
 }
 
@@ -171,8 +194,12 @@ template<Healpix_Ordering_Scheme scheme> static void
       if (nside!=oldnside)
         { oldnside=nside; hb.SetNside(nside, scheme); }
       vec3 v (*(double *)ip2,*(double *)ip3,*(double *)ip4);
-      long ipix = hb.vec2pix(v);
-      *(long *)op1 = ipix;
+      try {
+        long ipix = hb.vec2pix(v);
+        *(long *)op1 = ipix;
+      } catch (PlanckError &e) {
+        *(long *)op1 = -1;
+      }
     }
 }
 
@@ -203,15 +230,26 @@ template<Healpix_Ordering_Scheme scheme> static void
       long nside = *(long*)ip1;
       if (nside!=oldnside)
         { oldnside=nside; hb.SetNside(nside, scheme); }
-      hb.get_interpol(pointing(*(double*)ip2, *(double*)ip3), pix, wgt);
-      *(long*)op1 = (long)pix[0];
-      *(long*)op2 = (long)pix[1];
-      *(long*)op3 = (long)pix[2];
-      *(long*)op4 = (long)pix[3];
-      *(double*)op5 = wgt[0];
-      *(double*)op6 = wgt[1];
-      *(double*)op7 = wgt[2];
-      *(double*)op8 = wgt[3];
+      try {
+        hb.get_interpol(pointing(*(double*)ip2, *(double*)ip3), pix, wgt);
+        *(long*)op1 = (long)pix[0];
+        *(long*)op2 = (long)pix[1];
+        *(long*)op3 = (long)pix[2];
+        *(long*)op4 = (long)pix[3];
+        *(double*)op5 = wgt[0];
+        *(double*)op6 = wgt[1];
+        *(double*)op7 = wgt[2];
+        *(double*)op8 = wgt[3];
+      } catch (PlanckError &e) {
+        *(long*)op1 = -1;
+        *(long*)op2 = -1;
+        *(long*)op3 = -1;
+        *(long*)op4 = -1;
+        *(double*)op5 = NAN;
+        *(double*)op6 = NAN;
+        *(double*)op7 = NAN;
+        *(double*)op8 = NAN;
+      }
     }
 }
 
@@ -237,15 +275,26 @@ template<Healpix_Ordering_Scheme scheme> static void
     {
       fix_arr<long,8> pix;
       hb.SetNside(*(long*)ip1, scheme);
-      hb.neighbors(*(long*)ip2, pix);
-      *(long*)op1 = (long)pix[0];
-      *(long*)op2 = (long)pix[1];
-      *(long*)op3 = (long)pix[2];
-      *(long*)op4 = (long)pix[3];
-      *(long*)op5 = (long)pix[4];
-      *(long*)op6 = (long)pix[5];
-      *(long*)op7 = (long)pix[6];
-      *(long*)op8 = (long)pix[7];
+      try {
+        hb.neighbors(*(long*)ip2, pix);
+        *(long*)op1 = (long)pix[0];
+        *(long*)op2 = (long)pix[1];
+        *(long*)op3 = (long)pix[2];
+        *(long*)op4 = (long)pix[3];
+        *(long*)op5 = (long)pix[4];
+        *(long*)op6 = (long)pix[5];
+        *(long*)op7 = (long)pix[6];
+        *(long*)op8 = (long)pix[7];
+      } catch (PlanckError & e) {
+        *(long*)op1 = -1;
+        *(long*)op2 = -1;
+        *(long*)op3 = -1;
+        *(long*)op4 = -1;
+        *(long*)op5 = -1;
+        *(long*)op6 = -1;
+        *(long*)op7 = -1;
+        *(long*)op8 = -1;
+      }
     }
 }
 
