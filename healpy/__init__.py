@@ -22,6 +22,7 @@ compute spherical harmonics tranforms on them.
 """
 
 import warnings
+import os
 
 try:
     ImportWarning
@@ -54,7 +55,6 @@ try:
 except ImportError:
     warnings.warn('Warning: cannot import query disc module')
 
-from zoomtool import mollzoom,set_g_clim
 
 from rotator import Rotator, vec2dir, dir2vec
 
@@ -70,20 +70,24 @@ except ImportError:
     warnings.warn("Warning: Cannot import pshyt module)",
                   category=ImportWarning)
 
-try:
-    from visufunc import (mollview,graticule,delgraticules,gnomview,
-                          projplot,projscatter, projtext, cartview)
-    if visufunc.matplotlib.__version__ == '0.98,3':
-        warnings.warn("Bug in matplotlib 0.98.3 prevents mollview from working\n"+
-                      "You should upgrade to matplotlib 0.98.4 or above",
-                      category=ImportWarning)
-except ImportError:
-    warnings.warn("Warning: Cannot import visualisation tools (needs matplotlib)",
-                  category=ImportWarning)
 
 try:
     from fitsfunc import write_map,read_map,mrdfits,mwrfits,read_alm,write_alm,write_cl,read_cl
 except:
     warnings.warn("Warning: Cannot import fits i/o tools (needs pyfits)",
                   category=ImportWarning)
+
+if int(os.environ.get("HEALPY_MPL", 1)) != 0:
+    from zoomtool import mollzoom,set_g_clim
+
+    try:
+        from visufunc import (mollview,graticule,delgraticules,gnomview,
+                              projplot,projscatter, projtext, cartview)
+        if visufunc.matplotlib.__version__ == '0.98,3':
+            warnings.warn("Bug in matplotlib 0.98.3 prevents mollview from working\n"+
+                          "You should upgrade to matplotlib 0.98.4 or above",
+                          category=ImportWarning)
+    except ImportError:
+        warnings.warn("Warning: Cannot import visualisation tools (needs matplotlib)",
+                      category=ImportWarning)
 
