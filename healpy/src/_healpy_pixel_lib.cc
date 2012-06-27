@@ -198,7 +198,7 @@ template<Healpix_Ordering_Scheme scheme> static void
         op1+=os1,op2+=os2,op3+=os3,op4+=os4,
         op5+=os5,op6+=os6,op7+=os7,op8+=os8 )
     {
-      fix_arr<long,4> pix;
+      fix_arr<int64,4> pix;
       fix_arr<double,4> wgt;
       long nside = *(long*)ip1;
       if (nside!=oldnside)
@@ -235,7 +235,7 @@ template<Healpix_Ordering_Scheme scheme> static void
         op1+=os1,op2+=os2,op3+=os3,op4+=os4,
         op5+=os5,op6+=os6,op7+=os7,op8+=os8 )
     {
-      fix_arr<long,8> pix;
+      fix_arr<int64,8> pix;
       hb.SetNside(*(long*)ip1, scheme);
       hb.neighbors(*(long*)ip2, pix);
       *(long*)op1 = (long)pix[0];
