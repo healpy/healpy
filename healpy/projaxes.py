@@ -671,9 +671,7 @@ class HpxCartesianAxes(CartesianAxes):
 #   Table color for mollview and gnomview, ...
 
 def get_color_table(vmin,vmax,val,cmap=None,norm=None):
-    # Create color table for gnomonic view
-    if cmap is None:
-        cmap = cm.jet
+    # Create color table
     newjet = create_colormap(cmap)
     if type(norm) is str:
         if norm.lower().startswith('log'):
@@ -692,11 +690,11 @@ def get_color_table(vmin,vmax,val,cmap=None,norm=None):
     return newjet,norm
 
 def create_colormap(cmap):
-    if isinstance(cmap,colors.LinearSegmentedColormap):
-        newcm = colors.LinearSegmentedColormap('newcm',cmap._segmentdata,
-                                               cmap.N)
-    else:
-        newcm = cmap
+    if cmap is not None:
+        return cmap 
+    cmap0 = cm.jet
+    newcm = colors.LinearSegmentedColormap('newcm',cmap0._segmentdata,
+                                               cmap0.N)
     newcm.set_over(newcm(1.0))
     newcm.set_under('w')
     newcm.set_bad('gray')
