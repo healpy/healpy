@@ -56,6 +56,8 @@ The Healpix C++ library (from HEALPix 2.11 or HEALPix 2.20 for healpy >=
 0.10) is included in the healpy package, so you don't need to get it
 separately.
 
+It is possible to run healpy without matplotlib by setting the environment
+variable HEALPY_MPL to 0.
 
 Download
 --------
@@ -76,12 +78,6 @@ Installation
 ------------
 
 see INSTALL
-
-Documentation
--------------
-
-Use the online documentation, accessible with help() or using the
-``?`` in ipython.
 
 Acknowledgements
 ----------------
