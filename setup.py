@@ -9,7 +9,6 @@ def is_clang_the_default_cc():
     """Check if the cc command runs clang or not. Return true if it does.
     """
     import subprocess
-    import re
     from distutils import sysconfig
     cc = sysconfig.get_config_var('CC')
 
@@ -20,7 +19,7 @@ def is_clang_the_default_cc():
     except subprocess.CalledProcessError:
         return False
 
-    return re.search('clang', cc_output) is not None
+    return ('clang' in cc_output)
 
 TARGET_DICT = {
     'linux': 'healpy',
