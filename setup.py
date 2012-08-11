@@ -4,11 +4,11 @@ import platform
 import os
 import sys
 import shutil
+import subprocess
 
 def is_clang_or_llvm_the_default_cc():
     """Check if the cc command runs clang or not. Return true if it does.
     """
-    import subprocess
     from distutils import sysconfig
     cc = sysconfig.get_config_var('CC')
 
@@ -134,15 +134,11 @@ else:
     numpy_inc = get_include()
 
 def compile_healpix_cxx(target):
-    import os
     print "Compiling healpix_cxx (this may take a while)"
-    # Export necessary environment variables
-    os.environ['HEALPIX_TARGET'] = target
-    os.environ['HEALPIX_EXTRAFLAGS'] = HEALPIX_EXTRAFLAGS
-    # launch compilation
-    compil_result = os.system('cd hpbeta && make ')
-    if compil_result != 0:
-        raise Exception('Error while compiling healpix_cxx')
+    subprocess.check_call(['make', '-C', 'hpbeta',
+        'HEALPIX_TARGET=%s' % target,
+        'HEALPIX_EXTRAFLAGS="%s"' % HEALPIX_EXTRAFLAGS
+    ])
 
 def get_version():
     try:
