@@ -16,10 +16,13 @@ def is_clang_or_llvm_the_default_cc():
     cc = compiler.compiler
 
     try:
-        cc_output = subprocess.check_output(cc + ['--version'])
+        p = subprocess.Popen(cc + ['--version'], stdout=subprocess.PIPE)
     except OSError:
         return False
-    except subprocess.CalledProcessError:
+
+    cc_output, _ = p.communicate()
+
+    if p.returncode:
         return False
 
     return ('clang' in cc_output or 'llvm' in cc_output)
