@@ -10,10 +10,13 @@ def is_clang_or_llvm_the_default_cc():
     """Check if the cc command runs clang or not. Return true if it does.
     """
     from distutils import sysconfig
-    cc = sysconfig.get_config_var('CC')
+    from distutils import ccompiler
+    compiler = ccompiler.new_compiler()
+    sysconfig.customize_compiler(compiler)
+    cc = compiler.compiler
 
     try:
-        cc_output = subprocess.check_output([cc, '--version'])
+        cc_output = subprocess.check_output(cc + ['--version'])
     except OSError:
         return False
     except subprocess.CalledProcessError:
