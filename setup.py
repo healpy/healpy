@@ -15,7 +15,9 @@ def is_clang_the_default_cc():
 
     try:
         cc_output = subprocess.check_output([cc, '--version'])
-    except:
+    except OSError:
+        return False
+    except subprocess.CalledProcessError:
         return False
 
     return re.search('clang', cc_output) is not None
