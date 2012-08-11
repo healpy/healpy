@@ -49,12 +49,9 @@ try:
 except KeyError:
     raise AssertionError ('Unsupported platform: %s' % SYSTEM_STRING)
 
-try:
-    if is_clang_or_llvm_the_default_cc():
-        print ("Detected clang/llvm compiler, disabling openMP, as it is currently unsupported")
-        default_options['openmp'] = False
-except:
-    print ("Cannot check if compiler is clang")
+if is_clang_or_llvm_the_default_cc():
+    print ("Detected clang/llvm compiler, disabling openMP, as it is currently unsupported")
+    default_options['openmp'] = False
 
 # Command distclean to remove the build directory (both healpy and in hpbeta)
 # 
