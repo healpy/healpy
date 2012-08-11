@@ -10,9 +10,11 @@ def is_clang_the_default_cc():
     """
     import subprocess
     import re
+    from distutils import sysconfig
+    cc = sysconfig.get_config_var('CC')
 
     try:
-        cc_output = subprocess.check_output(['cc', '--version'],
+        cc_output = subprocess.check_output([cc, '--version'],
                                             stderr = subprocess.STDOUT)
     except:
         return False
