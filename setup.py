@@ -14,8 +14,7 @@ def is_clang_the_default_cc():
     cc = sysconfig.get_config_var('CC')
 
     try:
-        cc_output = subprocess.check_output([cc, '--version'],
-                                            stderr = subprocess.STDOUT)
+        cc_output = subprocess.check_output([cc, '--version'])
     except:
         return False
 
