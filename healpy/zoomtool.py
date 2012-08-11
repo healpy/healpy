@@ -20,7 +20,6 @@
 
 import projaxes as PA
 import rotator as R
-import pylab
 import numpy as np
 import matplotlib
 import matplotlib.colors as colors
@@ -81,6 +80,7 @@ def mollzoom(map=None,fig=None,rot=None,coord=None,unit='',
     format : str, optional
       The format of the scale label. Default: '%g'
     """
+    import pylab
     # create the figure (if interactive, it will open the window now)
     f=pylab.figure(fig,figsize=(10.5,5.4))
     extent = (0.02,0.25,0.56,0.72)
@@ -188,6 +188,7 @@ def mollzoom(map=None,fig=None,rot=None,coord=None,unit='',
 def set_g_clim(vmin,vmax):
     """Set min/max value of the gnomview part of a mollzoom.
     """
+    import pylab
     f=pylab.gcf()
     if not hasattr(f,'zoomtool'):
         raise TypeError('The current figure has no zoomtool')
@@ -205,6 +206,7 @@ class ZoomTool(object):
         """m: the map to be zoomed (already plotted in Mollweide view)
         fig: the figure to instrument (None->gcf())
         """
+        import pylab
         self.reso_list = [0.05,0.1,0.2,0.3,0.5,0.75,1.,1.5,3.,5.,10.,15.,
                           30.,45.,60.]
         self._map = m
@@ -256,6 +258,7 @@ class ZoomTool(object):
         self.connect_callbacks()
         
     def _zoom_on_click(self, ev):
+        import pylab
         try:
             ax = ev.inaxes
             lon,lat = ax.get_lonlat(ev.xdata,ev.ydata)
@@ -373,6 +376,7 @@ class ZoomTool(object):
             self.zoomcenter2.set_visible(visible)
 
     def draw_gnom(self,lon=None,lat=None):
+        import pylab
         wasinteractive = pylab.isinteractive()
         pylab.ioff()
         try:
