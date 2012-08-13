@@ -51,7 +51,6 @@ __all__ = ['mollview', 'gnomview', 'cartview',
            'projplot', 'projscatter', 'projtext']
 
 import projaxes as PA
-import pylab
 import numpy as np
 import matplotlib
 import matplotlib.colors as colors
@@ -138,6 +137,7 @@ def mollview(map=None,fig=None,rot=None,coord=None,unit='',
     gnomview, cartview
     """
     # Create the figure
+    import pylab
     if not (hold or sub):
         f=pylab.figure(fig,figsize=(8.5,5.4))
         extent = (0.02,0.05,0.96,0.9)
@@ -295,6 +295,7 @@ def gnomview(map=None,fig=None,rot=None,coord=None,unit='',
     --------
     mollview, cartview
     """
+    import pylab
     if not (hold or sub):
         f=pylab.figure(fig,figsize=(5.8,6.4))
         if not margins:
@@ -464,6 +465,7 @@ def cartview(map=None,fig=None,rot=None,zat=None,coord=None,unit='',
     --------
     mollview, gnomview
     """
+    import pylab
     if not (hold or sub):
         f=pylab.figure(fig,figsize=(8.5,5.4))
         if not margins:
@@ -573,6 +575,7 @@ def graticule(dpar=None,dmer=None,coord=None,local=None,**kwds):
     --------
     delgraticules
     """
+    import pylab
     f = pylab.gcf()
     wasinteractive = pylab.isinteractive()
     pylab.ioff()
@@ -599,6 +602,7 @@ def delgraticules():
     --------
     graticule
     """
+    import pylab
     f = pylab.gcf()
     wasinteractive = pylab.isinteractive()
     pylab.ioff()
@@ -613,6 +617,7 @@ def delgraticules():
             #pylab.show()
 
 def projplot(*args,**kwds):
+    import pylab
     f = pylab.gcf()
     wasinteractive = pylab.isinteractive()
     pylab.ioff()
@@ -630,6 +635,7 @@ def projplot(*args,**kwds):
 projplot.__doc__ = PA.SphericalProjAxes.projplot.__doc__
     
 def projscatter(*args,**kwds):
+    import pylab
     f = pylab.gcf()
     wasinteractive = pylab.isinteractive()
     pylab.ioff()
@@ -647,6 +653,7 @@ def projscatter(*args,**kwds):
 projscatter.__doc__ = PA.SphericalProjAxes.projscatter.__doc__
 
 def projtext(*args,**kwds):
+    import pylab
     f = pylab.gcf()
     wasinteractive = pylab.isinteractive()
     pylab.ioff()
