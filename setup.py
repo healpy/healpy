@@ -127,24 +127,27 @@ else:
 
 class build_healpix(build_clib):
     def build_libraries(self, libraries):
-        cc = self.compiler.compiler[0]
-        cxx = self.compiler.compiler_cxx[0]
-        build_temp = os.path.realpath(self.build_temp)
-        build_clib = os.path.realpath(self.build_clib)
-        cmdline = ['make', '-w', '-C', 'hpbeta',
-            'HEALPIX_TARGET=%s' % HEALPIX_TARGET,
-            'HEALPIX_EXTRAFLAGS=%s' % HEALPIX_EXTRAFLAGS,
-            'CC=%s' % cc,
-            'CXX=%s' % cxx,
-            'CL=%s' % cc,
-            'CXXL=%s' % cxx,
-            'BLDROOT=%s' % build_temp,
-            'LIBDIR=%s' % build_clib,
-            'INCDIR=%s' % build_clib,
-            'BINDIR=%s' % build_clib,
-        ]
-        print " ".join(cmdline)
-        subprocess.check_call(cmdline)
+        if 'HEALPIX_EXT_PREFIX' in os.environ or 'HEALPIX_EXT_LIB' in os.environ or 'HEALPIX_EXT_INC' in os.environ:
+            print "not building HEALPix; will use an external HEALPix build"
+        else:
+            cc = self.compiler.compiler[0]
+            cxx = self.compiler.compiler_cxx[0]
+            build_temp = os.path.realpath(self.build_temp)
+            build_clib = os.path.realpath(self.build_clib)
+            cmdline = ['make', '-w', '-C', 'hpbeta',
+                'HEALPIX_TARGET=%s' % HEALPIX_TARGET,
+                'HEALPIX_EXTRAFLAGS=%s' % HEALPIX_EXTRAFLAGS,
+                'CC=%s' % cc,
+                'CXX=%s' % cxx,
+                'CL=%s' % cc,
+                'CXXL=%s' % cxx,
+                'BLDROOT=%s' % build_temp,
+                'LIBDIR=%s' % build_clib,
+                'INCDIR=%s' % build_clib,
+                'BINDIR=%s' % build_clib,
+            ]
+            print " ".join(cmdline)
+            subprocess.check_call(cmdline)
 
 class custom_build_ext(build_ext):
     def run(self):
@@ -189,6 +192,19 @@ if 'CFITSIO_EXT_INC' in os.environ:
 if 'CFITSIO_EXT_LIB' in os.environ:
     cfitsio_lib_dir = os.environ['CFITSIO_EXT_LIB']
     extra_link.append(os.path.join(cfitsio_lib_dir, 'libcfitsio.a'))
+
+if 'HEALPIX_EXT_PREFIX' in os.environ:
+    healpix_inc_dir = os.path.join(os.environ['HEALPIX_EXT_PREFIX'], 'include')
+    healpix_lib_dir = os.path.join(os.environ['HEALPIX_EXT_PREFIX'], 'lib')
+    include_dirs.append(healpix_inc_dir)
+    library_dirs.append(healpix_lib_dir)
+if 'HEALPIX_EXT_INC' in os.environ:
+    healpix_inc_dir = os.environ['HEALPIX_EXT_INC']
+    include_dirs.append(healpix_inc_dir)
+if 'HEALPIX_EXT_LIB' in os.environ:
+    healpix_lib_dir = os.environ['HEALPIX_EXT_LIB']
+    library_dirs.append(healpix_lib_dir)
+
 
 healpix_libs =[]
 healpix_pshyt_libs = []
@@ -240,20 +256,20 @@ if on_rtd:
 else:
     extension_list = [pixel_lib, spht_lib, hfits_lib,
                       Extension("healpy.pshyt", ["pshyt/pshyt."+ext],
-                                include_dirs = [numpy_inc],
+                                include_dirs = [numpy_inc] + include_dirs,
                                 libraries = healpix_pshyt_libs,
                                 library_dirs = library_dirs,
                                 extra_link_args = extra_link),
                       Extension("healpy._query_disc",
                                 ['healpy/src/_query_disc.'+extcpp],
-                                include_dirs = [numpy_inc],
+                                include_dirs = [numpy_inc] + include_dirs,
                                 libraries = healpix_libs,
                                 library_dirs = library_dirs,
                                 extra_link_args = extra_link,
                                 language='c++'),
                       Extension("healpy._sphtools", 
                                 ['healpy/src/_sphtools.'+extcpp],
-                                include_dirs = [numpy_inc],
+                                include_dirs = [numpy_inc] + include_dirs,
                                 libraries = healpix_libs,
                                 library_dirs = library_dirs,
                                 extra_compile_args = healpix_args,
