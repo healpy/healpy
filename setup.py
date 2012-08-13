@@ -4,20 +4,28 @@ import platform
 import os
 import sys
 import shutil
+import subprocess
 
-def is_clang_the_default_cc():
+def is_clang_or_llvm_the_default_cc():
     """Check if the cc command runs clang or not. Return true if it does.
     """
-    import subprocess
-    import re
+    from distutils import sysconfig
+    from distutils import ccompiler
+    compiler = ccompiler.new_compiler()
+    sysconfig.customize_compiler(compiler)
+    cc = compiler.compiler
 
     try:
-        cc_output = subprocess.check_output(['cc', '--version'],
-                                            stderr = subprocess.STDOUT)
-    except:
+        p = subprocess.Popen(cc + ['--version'], stdout=subprocess.PIPE)
+    except OSError:
         return False
 
-    return re.search('clang', cc_output) is not None
+    cc_output, _ = p.communicate()
+
+    if p.returncode:
+        return False
+
+    return ('clang' in cc_output or 'llvm' in cc_output)
 
 TARGET_DICT = {
     'linux': 'healpy',
@@ -47,23 +55,14 @@ try:
 except KeyError:
     raise AssertionError ('Unsupported platform: %s' % SYSTEM_STRING)
 
-try:
-    if is_clang_the_default_cc():
-        print ("Detected clang compiler, disabling openMP, as it is currently unsupported")
-        default_options['openmp'] = False
-except:
-    print ("Cannot check if compiler is clang")
+if is_clang_or_llvm_the_default_cc():
+    print ("Detected clang/llvm compiler, disabling openMP, as it is currently unsupported")
+    default_options['openmp'] = False
 
 # Command distclean to remove the build directory (both healpy and in hpbeta)
 # 
 if 'distclean' in sys.argv:
     # Remove build directory of healpy and hpbeta
-    build_hpx = os.path.join('hpbeta', 'build.' + HEALPIX_TARGET)
-    print 'Removing ', build_hpx, ' directory...'
-    shutil.rmtree(build_hpx, True)
-    hpx = os.path.join('hpbeta', HEALPIX_TARGET)
-    print 'Removing ', hpx, 'directory...'
-    shutil.rmtree(hpx, True)
     hpy = 'build'
     print 'Removing ', hpy, ' directory...'
     shutil.rmtree(hpy, True)
@@ -108,6 +107,7 @@ print 'Using Healpix configuration %s for system "%s"' % (HEALPIX_TARGET,
 print 'Extra flags used: "%s"' % (HEALPIX_EXTRAFLAGS)
 
 from distutils.core import setup, Extension
+from distutils.command.build_clib import build_clib
 from os.path import join,isdir
 import sys
 
@@ -134,16 +134,36 @@ else:
     from numpy import get_include
     numpy_inc = get_include()
 
-def compile_healpix_cxx(target):
-    import os
-    print "Compiling healpix_cxx (this may take a while)"
-    # Export necessary environment variables
-    os.environ['HEALPIX_TARGET'] = target
-    os.environ['HEALPIX_EXTRAFLAGS'] = HEALPIX_EXTRAFLAGS
-    # launch compilation
-    compil_result = os.system('cd hpbeta && make ')
-    if compil_result != 0:
-        raise Exception('Error while compiling healpix_cxx')
+class build_healpix(build_clib):
+    def build_libraries(self, libraries):
+        cc = self.compiler.compiler[0]
+        cxx = self.compiler.compiler_cxx[0]
+        build_temp = os.path.realpath(self.build_temp)
+        build_clib = os.path.realpath(self.build_clib)
+        cmdline = ['make', '-w', '-C', 'hpbeta',
+            'HEALPIX_TARGET=%s' % HEALPIX_TARGET,
+            'HEALPIX_EXTRAFLAGS=%s' % HEALPIX_EXTRAFLAGS,
+            'CC=%s' % cc,
+            'CXX=%s' % cxx,
+            'CL=%s' % cc,
+            'CXXL=%s' % cxx,
+            'BLDROOT=%s' % build_temp,
+            'LIBDIR=%s' % build_clib,
+            'INCDIR=%s' % build_clib,
+            'BINDIR=%s' % build_clib,
+        ]
+        print " ".join(cmdline)
+        subprocess.check_call(cmdline)
+
+class custom_build_ext(build_ext):
+    def run(self):
+        # If we were asked to build any C/C++ libraries, add the directory
+        # where we built them to the include path. (It's already on the library
+        # path.)
+        if self.distribution.has_c_libraries():
+            build_clib = self.get_finalized_command('build_clib')
+            self.include_dirs.append(build_clib.build_clib)
+        build_ext.run(self)
 
 def get_version():
     try:
@@ -160,34 +180,11 @@ healpy_spht_src = ['_healpy_sph_transform_lib.cc']
 healpy_fitsio_src = ['_healpy_fitsio_lib.cc']
 
 
-################################################
-#
-#    Healpix data (pixel window and ring files
-healpix_cxx_dir='hpbeta/%s'%HEALPIX_TARGET
-healpix_cxx_inc = healpix_cxx_dir+'/include'
-healpix_cxx_lib = healpix_cxx_dir+'/lib'
-
-# Do we need to compile healpix_cxx ?
-do_compile = (sys.argv[1] in ['build', 'build_ext', 'build_clib',
-                              'bdist', 'bdist_dumb', 'bdist_rpm',
-                              'bdist_wininst',
-                              'install', 'install_lib', 'upload']
-              and 'help' not in [x.strip(' -') for x in sys.argv]
-              and not on_rtd)
-
-if do_compile:
-    compile_healpix_cxx(HEALPIX_TARGET)
-    if not ( isdir(healpix_cxx_dir+'/include') and
-             isdir(healpix_cxx_dir+'/lib') ):
-        raise IOError("No include and lib directory : needed for healpy !")
-
-###############################################
-
 # Standard system libraries in /usr are included, as in most linux distribution
 # the cfitsio package installed via package manager is located there;
 # this way install should work often without specifying CFITSIO_EXT_PREFIX
-library_dirs = ['/usr/lib', healpix_cxx_lib]
-include_dirs = ['/usr/include', numpy_inc, healpix_cxx_inc]
+library_dirs = []
+include_dirs = [numpy_inc]
 extra_link = []
 
 if 'CFITSIO_EXT_PREFIX' in os.environ:
@@ -202,8 +199,8 @@ if 'CFITSIO_EXT_LIB' in os.environ:
     cfitsio_lib_dir = os.environ['CFITSIO_EXT_LIB']
     extra_link.append(os.path.join(cfitsio_lib_dir, 'libcfitsio.a'))
 
-healpix_libs =['healpix_cxx','cxxsupport','psht','fftpack','c_utils']
-healpix_pshyt_libs = ['psht','fftpack','c_utils']
+healpix_libs =[]
+healpix_pshyt_libs = []
 
 if 'openmp' in options:
     healpix_libs += ['gomp']
@@ -253,18 +250,18 @@ if on_rtd:
 else:
     extension_list = [pixel_lib, spht_lib, hfits_lib,
                       Extension("healpy.pshyt", ["pshyt/pshyt."+ext],
-                                include_dirs = [numpy_inc,healpix_cxx_inc],
+                                include_dirs = [numpy_inc],
                                 libraries = healpix_pshyt_libs,
                                 library_dirs = library_dirs),
                       Extension("healpy._query_disc", 
                                 ['healpy/src/_query_disc.'+extcpp],
-                                include_dirs = [numpy_inc, healpix_cxx_inc],
+                                include_dirs = [numpy_inc],
                                 libraries = healpix_libs,
                                 library_dirs = library_dirs,
                                 language='c++'),
                       Extension("healpy._sphtools", 
                                 ['healpy/src/_sphtools.'+extcpp],
-                                include_dirs = [numpy_inc, healpix_cxx_inc],
+                                include_dirs = [numpy_inc],
                                 libraries = healpix_libs,
                                 library_dirs = library_dirs,
                                 extra_compile_args = healpix_args,
@@ -281,11 +278,16 @@ setup(name='healpy',
       author_email='cyrille.rosset@apc.univ-paris-diderot.fr',
       url='http://github.com/healpy',
       packages=['healpy','healpy.test'],
+      libraries=[('healpix_cxx', {}),
+                 ('cxxsupport', {}),
+                 ('psht', {}),
+                 ('fftpack', {}),
+                 ('c_utils', {})],
       py_modules=['healpy.pixelfunc','healpy.sphtfunc',
                   'healpy.visufunc','healpy.fitsfunc',
                   'healpy.projector','healpy.rotator',
                   'healpy.projaxes','healpy.version'],
-      cmdclass = {'build_ext': build_ext},
+      cmdclass = {'build_ext': custom_build_ext, 'build_clib': build_healpix},
       ext_modules = extension_list,
       package_data = {'healpy': ['data/*.fits', 'data/totcls.dat']},
       license='GPLv2'
