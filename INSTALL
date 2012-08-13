@@ -6,6 +6,16 @@ Installation procedure for Healpy
 Requirements
 ------------
 
+* Healpy needs HEALPix. You can either:
+ - let Healpy build its own HEALPix library from the source code included in
+   this package (the default behavior) or
+ - use an existing installation :
+   Either define the environment variable HEALPIX_EXT_PREFIX where to find the
+   healpix libraries and include files (eg /usr/local, so that
+   /usr/local/include/healpix_base.h and /usr/local/lib/libhealpix_cxx.a
+   exist), or define HEALPIX_EXT_INC (with the healpix include
+   directory) and HEALPIX_EXT_LIB (with the healpix library directory)
+
 * Healpix needs cfitsio. You can either:
  - use an existing installation :
    Either define the environment variable CFITSIO_EXT_PREFIX where to find the

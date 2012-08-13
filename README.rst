@@ -46,7 +46,8 @@ Requirements
 
 The Healpix C++ library (from HEALPix 2.11 or HEALPix 2.20 for healpy >=
 0.10) is included in the healpy package, so you don't need to get it
-separately.
+separately. If you do want to use your own build of HEALPix instead of
+having Healpy build its bundled source, see INSTALL for further instructions.
 
 Download
 --------
