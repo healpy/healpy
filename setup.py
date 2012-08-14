@@ -193,12 +193,11 @@ if 'CFITSIO_EXT_LIB' in os.environ:
 healpix_libs =[]
 healpix_pshyt_libs = []
 
-if 'openmp' in options:
-    healpix_libs += ['gomp']
-    healpix_pshyt_libs += ['gomp']
-
 if not extra_link:
     healpix_libs += ['cfitsio']
+
+if 'openmp' in options:
+    extra_link += ['-lgomp']
 
 healpix_args =['-fpermissive']
 if 'openmp' in options:
@@ -243,12 +242,14 @@ else:
                       Extension("healpy.pshyt", ["pshyt/pshyt."+ext],
                                 include_dirs = [numpy_inc],
                                 libraries = healpix_pshyt_libs,
-                                library_dirs = library_dirs),
-                      Extension("healpy._query_disc", 
+                                library_dirs = library_dirs,
+                                extra_link_args = extra_link),
+                      Extension("healpy._query_disc",
                                 ['healpy/src/_query_disc.'+extcpp],
                                 include_dirs = [numpy_inc],
                                 libraries = healpix_libs,
                                 library_dirs = library_dirs,
+                                extra_link_args = extra_link,
                                 language='c++'),
                       Extension("healpy._sphtools", 
                                 ['healpy/src/_sphtools.'+extcpp],
