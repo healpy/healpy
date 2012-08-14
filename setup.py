@@ -59,15 +59,6 @@ if is_clang_or_llvm_the_default_cc():
     print ("Detected clang/llvm compiler, disabling openMP, as it is currently unsupported")
     default_options['openmp'] = False
 
-# Command distclean to remove the build directory (both healpy and in hpbeta)
-# 
-if 'distclean' in sys.argv:
-    # Remove build directory of healpy and hpbeta
-    hpy = 'build'
-    print 'Removing ', hpy, ' directory...'
-    shutil.rmtree(hpy, True)
-    sys.exit(0)
-
 
 options = []
 for option in FLAGS_DICT:

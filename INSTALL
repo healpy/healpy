@@ -67,3 +67,12 @@ the best way to install healpy if you plan to develop is to build the C++ extens
 python setup.py build_ext --inplace
 
 the add the healpy/healpy folder to your PYTHONPATH
+
+Clean
+-----
+
+When you run "python setup.py", temporary build products are placed in the
+"build" directory. If you want to clean out and remove the "build" directory,
+then run:
+
+python setup.py clean --all
