@@ -768,12 +768,12 @@ def isnsideok(nside):
     >>> hp.isnsideok([1, 2, 3, 4, 8, 16])
     array([ True,  True, False,  True,  True,  True], dtype=bool)
     """
+    # we use standard bithacks from http://graphics.stanford.edu/~seander/bithacks.html#DetermineIfPowerOf2
     if hasattr(nside, '__len__'):
-        return nside == 2**np.int32(np.around(np.ma.log2(nside).filled(0)))
-    elif nside <= 0:
-        return False
+        return (nside != 0) & (np.bitwise_and(nside, nside - 1) == 0)
     else:
-        return nside == 2**int(round(np.log2(nside)))
+        return ( ( nside == int(nside) ) and ( nside != 0 ) and 
+        			( ( int(nside) & (int(nside) - 1) ) == 0) )
 
 def isnpixok(npix):
     """Return :const:`True` if npix is a valid value for healpix map size, :const:`False` otherwise.
