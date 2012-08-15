@@ -770,10 +770,14 @@ def isnsideok(nside):
     """
     # we use standard bithacks from http://graphics.stanford.edu/~seander/bithacks.html#DetermineIfPowerOf2
     if hasattr(nside, '__len__'):
-        return (nside != 0) & (np.bitwise_and(nside, nside - 1) == 0)
+        if not isinstance(nside, np.ndarray):
+            nside = np.asarray(nside)
+        return ( (nside == nside.astype(np.int)) & (nside != 0) & 
+	            (np.bitwise_and(nside.astype(np.int), nside.astype(np.int) - 1) == 0)
+	           )
     else:
         return ( ( nside == int(nside) ) and ( nside != 0 ) and 
-        			( ( int(nside) & (int(nside) - 1) ) == 0) )
+               ( ( int(nside) & (int(nside) - 1) ) == 0) )
 
 def isnpixok(npix):
     """Return :const:`True` if npix is a valid value for healpix map size, :const:`False` otherwise.
