@@ -249,6 +249,32 @@ template<Healpix_Ordering_Scheme scheme> static void
     }
 }
 
+/*
+  max_pixrad
+*/
+static void
+  ufunc_max_pixrad(char **args, intp *dimensions, intp *steps, void *func)
+{
+  register intp i, n=dimensions[0];
+  register intp is1=steps[0],os1=steps[1];
+  char *ip1=args[0], *op1=args[1];
+
+  Healpix_Base2 hb;
+  long oldnside=-1;
+
+  for(i=0; i<n; i++, ip1+=is1, op1+=os1)
+    {
+      long nside = *(long*)ip1;
+      if (nside!=oldnside)
+        { oldnside=nside; hb.SetNside(nside, NEST);
+        	/* ring and nest should give the same result */ 
+        }
+      double max_pixrad = hb.max_pixrad();
+      *(double *)op1 = max_pixrad;
+    }
+}
+
+
 static char *docstring = CP_(
   "This module contains basic ufunc related to healpix pixelisation\n"
   "scheme, such as ang2pix, ring<->nest swapping, etc.\n"
@@ -300,6 +326,9 @@ static PyUFuncGenericFunction get_neighbors_ring_functions[] = {
 static PyUFuncGenericFunction get_neighbors_nest_functions[] = {
   ufunc_get_neighbors<NEST>
 };
+static PyUFuncGenericFunction max_pixrad_functions[] = {
+  ufunc_max_pixrad
+};
 
 
 static void * blank_data[] = { (void *)NULL };
@@ -333,6 +362,9 @@ static char get_neighbors_nest_signatures[] = {
   PyArray_LONG, PyArray_LONG, // input
   PyArray_LONG, PyArray_LONG, PyArray_LONG, PyArray_LONG, // output
   PyArray_LONG, PyArray_LONG, PyArray_LONG, PyArray_LONG // output
+};
+static char max_pixrad_signatures[] = {
+  PyArray_LONG, PyArray_DOUBLE  
 };
 
 PyMODINIT_FUNC
@@ -462,6 +494,15 @@ init_healpy_pixel_lib(void)
 
   PyDict_SetItemString(d, "_get_neighbors_nest", f);
   Py_DECREF(f);
+
+
+  f = PyUFunc_FromFuncAndData(max_pixrad_functions, blank_data,
+                              max_pixrad_signatures, 1,
+                              1, 1, PyUFunc_None, CP_("max_pixrad"),
+                              CP_("nside -> max_distance to pixel corners from center)"),0);
+  PyDict_SetItemString(d, "_max_pixrad", f);
+  Py_DECREF(f);
+
 
   f = PyFloat_FromDouble(Healpix_undef);
 

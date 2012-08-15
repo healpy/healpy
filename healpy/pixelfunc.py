@@ -93,6 +93,7 @@ UNSEEN = pixlib.UNSEEN
 __all__ = ['pix2ang', 'pix2vec', 'ang2pix', 'vec2pix',
            'ang2vec', 'vec2ang',
            'get_neighbours', 'get_interp_val', 'get_all_neighbours',
+           'max_pixrad',
            'nest2ring', 'ring2nest', 'reorder', 'ud_grade',
            'UNSEEN', 'mask_good', 'mask_bad', 'ma',
            'fit_dipole', 'remove_dipole', 'fit_monopole', 'remove_monopole',
@@ -944,6 +945,19 @@ def get_all_neighbours(nside, theta, phi=None, nest=False):
         r=pixlib._get_neighbors_ring(nside,theta)
     res=np.array(r[0:8])
     return res
+
+
+def max_pixrad(nside):
+    """Parameters
+    ----------
+    nside : int
+      the nside to work with
+    Returns
+    -------
+    rads: double
+      the maximum angular distance (in radian) between any pixel center and its corners
+    """
+    return pixlib._max_pixrad(nside)
 
 def fit_dipole(m, nest=False, bad=UNSEEN, gal_cut=0):
     """Fit a dipole and a monopole to the map, excluding bad pixels.
