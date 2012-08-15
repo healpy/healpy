@@ -956,6 +956,13 @@ def max_pixrad(nside):
     -------
     rads: double
       the maximum angular distance (in radian) between any pixel center and its corners
+    Examples
+    --------
+    >>> '%.15f' % max_pixrad(1)
+    '0.841068670567930'
+    >>> '%.15f' % max_pixrad(16)
+    '0.066014761432513'
+
     """
     return pixlib._max_pixrad(nside)
 
