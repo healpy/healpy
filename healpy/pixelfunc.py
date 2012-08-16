@@ -93,6 +93,7 @@ UNSEEN = pixlib.UNSEEN
 __all__ = ['pix2ang', 'pix2vec', 'ang2pix', 'vec2pix',
            'ang2vec', 'vec2ang',
            'get_neighbours', 'get_interp_val', 'get_all_neighbours',
+           'max_pixrad',
            'nest2ring', 'ring2nest', 'reorder', 'ud_grade',
            'UNSEEN', 'mask_good', 'mask_bad', 'ma',
            'fit_dipole', 'remove_dipole', 'fit_monopole', 'remove_monopole',
@@ -767,12 +768,16 @@ def isnsideok(nside):
     >>> hp.isnsideok([1, 2, 3, 4, 8, 16])
     array([ True,  True, False,  True,  True,  True], dtype=bool)
     """
+    # we use standard bithacks from http://graphics.stanford.edu/~seander/bithacks.html#DetermineIfPowerOf2
     if hasattr(nside, '__len__'):
-        return nside == 2**np.int32(np.around(np.ma.log2(nside).filled(0)))
-    elif nside <= 0:
-        return False
+        if not isinstance(nside, np.ndarray):
+            nside = np.asarray(nside)
+        return ( (nside == nside.astype(np.int)) & (nside != 0) & 
+	            (np.bitwise_and(nside.astype(np.int), nside.astype(np.int) - 1) == 0)
+	           )
     else:
-        return nside == 2**int(round(np.log2(nside)))
+        return ( ( nside == int(nside) ) and ( nside != 0 ) and 
+               ( ( int(nside) & (int(nside) - 1) ) == 0) )
 
 def isnpixok(npix):
     """Return :const:`True` if npix is a valid value for healpix map size, :const:`False` otherwise.
@@ -944,6 +949,26 @@ def get_all_neighbours(nside, theta, phi=None, nest=False):
         r=pixlib._get_neighbors_ring(nside,theta)
     res=np.array(r[0:8])
     return res
+
+
+def max_pixrad(nside):
+    """Parameters
+    ----------
+    nside : int
+      the nside to work with
+    Returns
+    -------
+    rads: double
+      the maximum angular distance (in radian) between any pixel center and its corners
+    Examples
+    --------
+    >>> '%.15f' % max_pixrad(1)
+    '0.841068670567930'
+    >>> '%.15f' % max_pixrad(16)
+    '0.066014761432513'
+
+    """
+    return pixlib._max_pixrad(nside)
 
 def fit_dipole(m, nest=False, bad=UNSEEN, gal_cut=0):
     """Fit a dipole and a monopole to the map, excluding bad pixels.
