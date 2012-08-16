@@ -178,10 +178,12 @@ def read_map(filename,field=0,dtype=np.float64,nest=False,hdu=1,h=False,
       If None, no conversion is performed.
     hdu : int, optional
       the header number to look at (start at 0)
-    h : boo, optional
+    h : bool, optional
       If True, return also the header. Default: False.
     verbose : bool, optional
       If True, print a number of diagnostic messages
+    as_ma : bool, optional
+      If True, return also the header. Default: False.
 
     Returns
     -------

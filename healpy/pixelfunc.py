@@ -84,7 +84,6 @@ Map data manipulation
 
 import numpy as np
 import exceptions
-import warnings
 import _healpy_pixel_lib as pixlib
 
 #: Special value used for masked pixels
@@ -101,6 +100,32 @@ __all__ = ['pix2ang', 'pix2vec', 'ang2pix', 'vec2pix',
            'nside2pixarea', 'isnsideok', 'isnpixok',
            'get_map_size', 'get_min_valid_nside',
            'get_nside', 'maptype']
+
+def ma_to_array(m):
+    """Converts a masked array or a list of masked arrays to filled numpy arrays
+
+    Parameters
+    ----------
+    m : a map (may be a sequence of maps)
+
+    Returns
+    -------
+    m : filled map or tuple of filled maps
+
+    Examples
+    --------
+    >>> import healpy as hp
+    >>> m = hp.ma(np.array([2., hp.UNSEEN, 3, 4, 5]))
+    >>> m[1] = 0
+    >>> print ma_to_array(m)[1]
+    """
+    try:
+        if maptype(m) == 0:
+            return m.filled()
+        else:
+            return tuple([mm.filled() for mm in m])
+    except exceptions.AttributeError:
+        return m
 
 def mask_bad(m, badval = UNSEEN, rtol = 1.e-5, atol = 1.e-8):
     """Returns a bool array with ``True`` where m is close to badval.
@@ -128,6 +153,7 @@ def mask_bad(m, badval = UNSEEN, rtol = 1.e-5, atol = 1.e-8):
     Examples
     --------
     >>> import healpy as hp
+    >>> import numpy as np
     >>> m = np.arange(12.)
     >>> m[3] = hp.UNSEEN
     >>> hp.mask_bad(m)
