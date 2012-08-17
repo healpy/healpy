@@ -31,5 +31,17 @@ class TestPixelFunc(unittest.TestCase):
         np.testing.assert_array_almost_equal(theta1, theta0)
         np.testing.assert_array_almost_equal(phi1, phi0)
       
+    def test_fit_dipole(self):
+        nside = 32
+        npix = nside2npix(nside)
+        d = [0.3, 0.5, 0.2]
+        vec = np.transpose(pix2vec(nside, np.arange(npix)))
+        signal = vec.dot(d)
+        mono, dipole = fit_dipole(signal)
+        self.assertAlmostEqual(mono, 0.)
+        self.assertAlmostEqual(d[0], dipole[0])
+        self.assertAlmostEqual(d[1], dipole[1])
+        self.assertAlmostEqual(d[2], dipole[2])
+
 if __name__ == '__main__':
     unittest.main()
