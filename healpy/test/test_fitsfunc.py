@@ -68,5 +68,30 @@ class TestReadWriteAlm(unittest.TestCase):
         idx = idx[idx_mmax]
         np.testing.assert_array_almost_equal(self.alms[idx], a0)
 
+class TestReadWriteCl(unittest.TestCase):
+
+    def tearDown(self):
+        os.remove("test_cl.fits")
+
+    def test_write_read_cl_II(self):
+        cl = np.arange(1025, dtype=np.double)
+        write_cl("test_cl.fits", cl)
+        cl_read = read_cl("test_cl.fits")
+        np.testing.assert_array_almost_equal(cl, cl_read)
+
+    def test_write_read_cl_4comp(self):
+        cl = [np.arange(1025, dtype=np.double) for n in range(4)]
+        write_cl("test_cl.fits", cl)
+        cl_read = read_cl("test_cl.fits")
+        for cl_column, cl_read_column in zip(cl, cl_read):
+            np.testing.assert_array_almost_equal(cl_column, cl_read_column)
+
+    def test_write_read_cl_6comp(self):
+        cl = [np.arange(1025, dtype=np.double) for n in range(6)]
+        write_cl("test_cl.fits", cl)
+        cl_read = read_cl("test_cl.fits")
+        for cl_column, cl_read_column in zip(cl, cl_read):
+            np.testing.assert_array_almost_equal(cl_column, cl_read_column)
+
 if __name__ == '__main__':
     unittest.main()

@@ -31,7 +31,7 @@ from exceptions import NotImplementedError
 class HealpixFitsWarning(Warning):
     pass
 
-def read_cl(filename,dtype=np.float64,h=False):
+def read_cl(filename, dtype=np.float64, h=False):
     """Reads Cl from an healpix file, as IDL fits2cl.
 
     Parameters
@@ -44,12 +44,16 @@ def read_cl(filename,dtype=np.float64,h=False):
     Returns
     -------
     cl : array
-      the cl array, currently TT only
+      the cl array
     """
     hdulist=pf.open(filename)
-    return hdulist[1].data.field(0)
+    cl = [hdulist[1].data.field(n) for n in range(len(hdulist[1].data.columns))]
+    if len(cl) == 1:
+        return cl[0]
+    else:
+        return cl
 
-def write_cl(filename,cl,dtype=np.float32):
+def write_cl(filename, cl, dtype=np.float64):
     """Writes Cl into an healpix file, as IDL cl2fits.
 
     Parameters
@@ -61,8 +65,11 @@ def write_cl(filename,cl,dtype=np.float32):
     """
     # check the dtype and convert it
     fitsformat = getformat(dtype)
+    column_names = ['TEMPERATURE','GRADIENT','CURL','G-T','C-T','C-G']
     if isinstance(cl, list):
-        raise NotImplementedError('Currently it supports only temperature-only cls')
+        cols = [pf.Column(name=column_name,
+                               format='%s'%fitsformat,
+                               array=column_cl) for column_name, column_cl in zip(column_names[:len(cl)], cl)]
     else: # we write only one TT
         cols = [pf.Column(name='TEMPERATURE',
                                format='%s'%fitsformat,
