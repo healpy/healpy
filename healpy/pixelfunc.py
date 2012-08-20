@@ -645,8 +645,6 @@ def reorder(map_in, inp=None, out=None, r2n=None, n2r=None):
     )
     """
     typ = maptype(map_in)
-    if typ < 0:
-        raise TypeError('map_in is not a map nor a sequence of maps')
     if typ == 0:
         npix = len(map_in)
     else:
