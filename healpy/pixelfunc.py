@@ -234,6 +234,7 @@ def mask_bad(m, badval = UNSEEN, rtol = 1.e-5, atol = 1.e-8):
     array([False, False, False,  True, False, False, False, False, False,
            False, False, False], dtype=bool)
     """
+    m = np.asarray(m)
     atol = np.absolute(atol)
     rtol = np.absolute(rtol)
     return np.absolute(m - badval) <= atol + rtol * np.absolute(badval)
@@ -269,6 +270,7 @@ def mask_good(m, badval = UNSEEN, rtol = 1.e-5, atol = 1.e-8):
     array([ True,  True,  True, False,  True,  True,  True,  True,  True,
             True,  True,  True], dtype=bool)
     """
+    m = np.asarray(m)
     atol = np.absolute(atol)
     rtol = np.absolute(rtol)
     return np.absolute(m - badval) > atol + rtol * np.absolute(badval)

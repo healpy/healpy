@@ -733,7 +733,7 @@ def smoothing(maps, fwhm = 0.0, sigma = None, invert = False, pol = True,
         smoothalm(alms, fwhm = fwhm, sigma = sigma, invert = invert,
                   inplace = True)
         output_map = alm2map(alms, nside, pixwin = False)
-        output_map[masks] = UNSEEN
+        output_map[masks.flatten()] = UNSEEN
     else:
         # Treat each map independently (any number)
         output_map = []
