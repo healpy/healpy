@@ -183,6 +183,9 @@ def ma_to_array(m, return_is_ma=False):
         return out
 
 def accept_ma(f):
+    """Wraps a function in order to convert the input map from
+    a masked to a regular numpy array, and convert back the
+    output from a regular array to a masked array"""
     @wraps(f)
     def wrapper(*args, **kwds):
         m, is_ma = ma_to_array(args[0], True)
@@ -282,8 +285,8 @@ def ma(m, badval = UNSEEN, rtol = 1e-5, atol = 1e-8, copy = True):
 
     Returns
     -------
-    a masked array with the same shape as the input map, masked where input map is
-    close to badval.
+    a masked array with the same shape as the input map, 
+    masked where input map is close to badval.
 
     See Also
     --------
@@ -588,7 +591,7 @@ def reorder(map_in, inp=None, out=None, r2n=None, n2r=None):
     Parameters
     ----------
     map_in : array-like
-      the input map to reorder
+      the input map to reorder, accepts masked arrays
     inp, out : ``'RING'`` or ``'NESTED'``
       define the input and output ordering
     r2n : bool
@@ -599,7 +602,8 @@ def reorder(map_in, inp=None, out=None, r2n=None, n2r=None):
     Returns
     -------
     map_out : array-like
-      the reordered map
+      the reordered map, as masked array if the input was a 
+      masked array
 
     Notes
     -----
@@ -928,14 +932,13 @@ def isnpixok(npix):
         nside = np.sqrt(npix/12.)
         return isnsideok(nside)
 
-@accept_ma
 def get_interp_val(m,theta,phi,nest=False):
     """Return the bi-linear interpolation value of a map using 4 nearest neighbours.
 
     Parameters
     ----------
     m : array-like
-      an healpix map
+      an healpix map, accepts masked arrays
     theta, phi : float, scalar or array-like
       angular coordinates of point at which to interpolate the map
     nest : bool
@@ -1068,7 +1071,6 @@ def get_all_neighbours(nside, theta, phi=None, nest=False):
     res=np.array(r[0:8])
     return res
 
-
 def max_pixrad(nside):
     """Parameters
     ----------
@@ -1094,7 +1096,7 @@ def fit_dipole(m, nest=False, bad=UNSEEN, gal_cut=0):
     Parameters
     ----------
     m : float, array-like
-      the map to which a dipole is fitted and subtracted
+      the map to which a dipole is fitted and subtracted, accepts masked maps
     nest : bool
       if ``False`` m is assumed in RING scheme, otherwise map is NESTED
     bad : float
@@ -1165,7 +1167,7 @@ def remove_dipole(m,nest=False,bad=UNSEEN,gal_cut=0,fitval=False,
     Parameters
     ----------
     m : float, array-like
-      the map to which a dipole is fitted and subtracted
+      the map to which a dipole is fitted and subtracted, accepts masked arrays
     nest : bool
       if ``False`` m is assumed in RING scheme, otherwise map is NESTED
     bad : float
@@ -1190,7 +1192,7 @@ def remove_dipole(m,nest=False,bad=UNSEEN,gal_cut=0,fitval=False,
     --------
     fit_dipole, fit_monopole, remove_monopole
     """
-    m=ma_to_array(m)
+    m, is_ma=ma_to_array(m, return_is_ma=True)
     m=np.array(m,copy=copy)
     npix = m.size
     nside = npix2nside(npix)
@@ -1216,6 +1218,8 @@ def remove_dipole(m,nest=False,bad=UNSEEN,gal_cut=0,fitval=False,
                                                                  lon,
                                                                  lat,
                                                                  amp)
+    if is_ma:
+        m = ma(m)
     if fitval:
         return m,mono,dipole
     else:
@@ -1227,7 +1231,7 @@ def fit_monopole(m,nest=False,bad=pixlib.UNSEEN,gal_cut=0):
     Parameters
     ----------
     m : float, array-like
-      the map to which a dipole is fitted and subtracted
+      the map to which a dipole is fitted and subtracted, accepts masked arrays
     nest : bool
       if ``False`` m is assumed in RING scheme, otherwise map is NESTED
     bad : float
@@ -1301,6 +1305,7 @@ def remove_monopole(m,nest=False,bad=pixlib.UNSEEN,gal_cut=0,fitval=False,
     --------
     fit_dipole, fit_monopole, remove_dipole
     """
+    m, is_ma = ma_to_array(m, return_is_ma=True)
     m=np.array(m,copy=copy)
     npix = m.size
     nside = npix2nside(npix)
@@ -1317,6 +1322,8 @@ def remove_monopole(m,nest=False,bad=pixlib.UNSEEN,gal_cut=0,fitval=False,
         m.flat[ipix] -= mono
     if verbose:
         print 'monopole: %g'%mono
+    if is_ma:
+        m = ma(m)
     if fitval:
         return m,mono
     else:

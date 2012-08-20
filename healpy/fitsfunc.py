@@ -26,7 +26,6 @@ import pixelfunc
 from sphtfunc import Alm
 import warnings
 from pixelfunc import UNSEEN
-from exceptions import NotImplementedError
 
 class HealpixFitsWarning(Warning):
     pass
@@ -196,8 +195,7 @@ def read_map(filename,field=0,dtype=np.float64,nest=False,hdu=1,h=False,
     #print hdulist[1].header
     nside = hdulist[hdu].header.get('NSIDE')
     if nside is None:
-        warnings.warn("No NSIDE in the header file : will use length of array",
-                      HealpixFitsWarning)
+        warnings.warn("No NSIDE in the header file : will use length of array", HealpixFitsWarning)
     else:
         nside = int(nside)
     if verbose: print 'NSIDE = %d'%nside
@@ -232,7 +230,7 @@ def read_map(filename,field=0,dtype=np.float64,nest=False,hdu=1,h=False,
                 if verbose: print 'Ordering converted to RING'
         try:
             m[pixelfunc.mask_bad(m)] = UNSEEN
-        except OverflowError, e:
+        except OverflowError:
             pass
         ret.append(m)
     
@@ -475,4 +473,3 @@ def getformat(t):
             return 'A%d'%(l)
     except:
         pass
-        
