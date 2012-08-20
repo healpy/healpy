@@ -4,3 +4,4 @@ Release 1.3, 21th August 2012:
 * rewrote setup.py using distutils, by Leo Singer
 * all functions accept and return masked arrays created with `hp.ma`
 * `read_cl` and `write_cl` support polarization
+* matplotlib imported only after first plotting function is called
