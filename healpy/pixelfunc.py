@@ -100,7 +100,7 @@ __all__ = ['pix2ang', 'pix2vec', 'ang2pix', 'vec2pix',
            'nside2npix', 'npix2nside', 'nside2resol',
            'nside2pixarea', 'isnsideok', 'isnpixok',
            'get_map_size', 'get_min_valid_nside',
-           'get_nside', 'maptype']
+           'get_nside', 'maptype', 'ma_to_array']
 
 def maptype(m):
     """Describe the type of the map (valid, single, sequence of maps).
@@ -152,11 +152,13 @@ def ma_to_array(m, return_is_ma=False):
     Parameters
     ----------
     m : a map (may be a sequence of maps)
+    return_is_ma : bool
+        if True, is_ma is returned
 
     Returns
     -------
     m : filled map or tuple of filled maps
-    is_ma : bool
+    is_ma : bool, optional
         whether the input map was a ma or not
 
     Examples
