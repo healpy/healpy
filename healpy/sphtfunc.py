@@ -677,7 +677,7 @@ def smoothing(maps, fwhm = 0.0, sigma = None, invert = False, pol = True,
     ----------
     maps : array or sequence of 3 arrays
       Either an array representing one map, or a sequence of
-      3 arrays representing 3 maps
+      3 arrays representing 3 maps, accepts masked arrays
     fwhm : float, optional
       The full width half max parameter of the Gaussian. Default:0.0
     sigma : float, optional
@@ -808,7 +808,6 @@ def alm2map_der1(alm, nside, lmax = None, mmax = None):
    if mmax is None:
        mmax = -1
    return sphtlib._alm2map_der1(alm,nside,lmax=lmax,mmax=mmax)
-
 
 def new_to_old_spectra_order(cls_new_order):
     """Reorder the cls from new order (by diagonal) to old order (by row).

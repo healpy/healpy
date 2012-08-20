@@ -60,6 +60,12 @@ class TestSphtFunc(unittest.TestCase):
                              fwhm=np.radians(fwhm_deg), new=False, pol=False)
         np.testing.assert_array_almost_equal(sim_map, map_pregen,
                                              decimal=8)
+
+    def test_smoothing(self):
+        smoothed = hp.ud_grade(hp.smoothing(self.map1[0].data, fwhm=np.radians(1), lmax=1024), 32)
+        smoothed_f90 = hp.read_map(os.path.join(self.path, 'data',
+                  'wmap_band_imap_r9_7yr_W_v4_1deg_nside32.fits'))
+        np.testing.assert_array_almost_equal(smoothed, smoothed_f90)
         
 if __name__ == '__main__':
     unittest.main()
