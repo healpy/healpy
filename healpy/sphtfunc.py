@@ -711,8 +711,12 @@ def smoothing(maps, fwhm = 0.0, sigma = None, invert = False, pol = True,
     maps : array or list of 3 arrays
       The smoothed map(s)
     """
+
     if not cb.is_seq(maps):
         raise TypeError("maps must be a sequence")
+
+    # save the masks of inputs
+    masks = pixelfunc.mask_bad(maps) 
 
     if cb.is_seq_of_seq(maps):
         nside = pixelfunc.npix2nside(len(maps[0]))
@@ -728,19 +732,20 @@ def smoothing(maps, fwhm = 0.0, sigma = None, invert = False, pol = True,
                        regression = regression, datapath = datapath)
         smoothalm(alms, fwhm = fwhm, sigma = sigma, invert = invert,
                   inplace = True)
-        return alm2map(alms, nside, pixwin = False)
+        output_map = alm2map(alms, nside, pixwin = False)
+        output_map[masks] = UNSEEN
     else:
         # Treat each map independently (any number)
-        retmaps = []
-        for m in maps:
+        output_map = []
+        for m, mask in zip(maps, masks):
             alm = map2alm(maps, iter = iter, pol = pol,
                           use_weights = use_weights,
                        regression = regression, datapath = datapath)
             smoothalm(alm, fwhm = fwhm, sigma = sigma, invert = invert,
                       inplace = True)
-            retmaps.append(alm2map(alm, nside, pixwin = False))
-        return retmaps
-
+            output_map.append(alm2map(alm, nside, pixwin = False))
+            output_map[-1][mask] = UNSEEN
+    return output_map
 
 def pixwin(nside, pol = False):
     """Return the pixel window function for the given nside.
