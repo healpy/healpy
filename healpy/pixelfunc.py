@@ -164,9 +164,12 @@ def ma_to_array(m, return_is_ma=False):
     >>> import healpy as hp
     >>> m = hp.ma(np.array([2., 2., 3, 4, 5, 0, 0, 0, 0, 0, 0, 0]))
     >>> m.mask = np.array([0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], dtype=np.bool)
-    >>> print m.data[1]
+    >>> print m.data[1] # data is not affected by mask
     2.0
-    >>> print ma_to_array(m)[1]
+    >>> print m[1] # shows that the value is masked
+    --
+    >>> print ma_to_array(m)[1] # filled array, masked values replace by UNSEEN
+    -1.6375e+30
     """
     try:
         if maptype(m) == 0:
