@@ -22,8 +22,6 @@ import projaxes as PA
 import rotator as R
 import numpy as np
 import matplotlib
-import matplotlib.colors as colors
-import matplotlib.cbook as cbook
 from _healpy_pixel_lib import UNSEEN
 import pixelfunc
 
@@ -42,6 +40,8 @@ def mollzoom(map=None,fig=None,rot=None,coord=None,unit='',
     Parameters:
     -----------
     map : float, array-like shape (Npix,)
+      An array containing the map, 
+      supports masked maps, see the `ma` function.
       if None, use map with inf value (white map), useful for
       overplotting
     fig : a figure number. 
@@ -90,6 +90,7 @@ def mollzoom(map=None,fig=None,rot=None,coord=None,unit='',
     try:
         if map is None:
             map = np.zeros(12)+np.inf
+        map = pixelfunc.ma_to_array(map)
         ax=PA.HpxMollweideAxes(f,extent,coord=coord,rot=rot,
                                format=format,flipconv=flip)
         f.add_axes(ax)

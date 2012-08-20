@@ -18,7 +18,6 @@
 #  For more information about Healpy, see http://code.google.com/p/healpy
 # 
 import warnings
-import exceptions
 import numpy as np
 pi = np.pi
 
@@ -30,7 +29,7 @@ import healpy.cookbook as cb
 import os.path
 import healpy.pixelfunc as pixelfunc
 
-from healpy.pixelfunc import mask_bad, maptype, UNSEEN
+from healpy.pixelfunc import maptype, UNSEEN, ma_to_array, accept_ma
 
 class FutureChangeWarning(UserWarning):
     pass
@@ -83,10 +82,12 @@ def anafast(map1, map2 = None, nspec = None, lmax = None, mmax = None,
       alm is the spherical harmonic transform or a list of almT, almE, almB
       for polarized input
     """
+    map1 = ma_to_array(map1)
     alms1 = map2alm(map1, lmax = lmax, mmax = mmax, pol = pol, iter = iter, 
                     use_weights = use_weights, regression = regression, 
                     datapath = datapath)
     if map2 is not None:
+        map2 = ma_to_array(map2)
         alms2 = map2alm(map2, lmax = lmax, mmax = mmax, pol = pol,
                         iter = iter, use_weights = use_weights, 
                         regression = regression, datapath = datapath)
@@ -143,9 +144,8 @@ def map2alm(maps, lmax = None, mmax = None, iter = 3, pol = True,
     value, so that the input maps are not modified. Each map have its own, 
     independent mask.
     """
+    maps = ma_to_array(maps)
     info = maptype(maps)
-    if info < 0:
-        raise TypeError("Input must be a map or a sequence of maps")
     if pol or info in (0, 1):
         alms = _sphtools.map2alm(maps, niter = iter, regression = regression, 
                                  datapath = datapath, use_weights = use_weights,
@@ -155,7 +155,7 @@ def map2alm(maps, lmax = None, mmax = None, iter = 3, pol = True,
         alms = [_sphtools.map2alm(mm, niter = iter, regression = regression,
                                   datapath = datapath, use_weights = use_weights,
                                   lmax = lmax, mmax = mmax)
-               for mm in m]
+               for mm in maps]
     return alms
 
 def alm2map(alms, nside, lmax = None, mmax = None, pixwin = False,
@@ -668,6 +668,7 @@ def smoothalm(alms, fwhm = 0.0, sigma = None, invert = False, pol = True,
     # return the input alms
     return alms
 
+@accept_ma
 def smoothing(maps, fwhm = 0.0, sigma = None, invert = False, pol = True,
               iter = 3, lmax = None, mmax = None, use_weights = False,
               regression = True, datapath = None):
@@ -841,4 +842,3 @@ def load_sample_spectra():
     f = ell * (ell + 1) / 2 / np.pi
     cls[1:, 1:] /= f[1:]
     return ell, f, cls[1:]
-

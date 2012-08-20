@@ -85,6 +85,7 @@ Map data manipulation
 import numpy as np
 import exceptions
 import _healpy_pixel_lib as pixlib
+from functools import wraps
 
 #: Special value used for masked pixels
 UNSEEN = pixlib.UNSEEN
@@ -101,7 +102,51 @@ __all__ = ['pix2ang', 'pix2vec', 'ang2pix', 'vec2pix',
            'get_map_size', 'get_min_valid_nside',
            'get_nside', 'maptype']
 
-def ma_to_array(m):
+def maptype(m):
+    """Describe the type of the map (valid, single, sequence of maps).
+    Checks : the number of maps, that all maps have same length and that this
+    length is a valid map size (using :func:`isnpixok`).
+
+    Parameters
+    ----------
+    m : sequence
+      the map to get info from
+
+    Returns
+    -------
+    info : int
+      -1 if the given object is not a valid map, 0 if it is a single map,
+      *info* > 0 if it is a sequence of maps (*info* is then the number of
+      maps)
+
+    Examples
+    --------
+    >>> import healpy as hp
+    >>> hp.pixelfunc.maptype(np.arange(12))
+    0
+    >>> hp.pixelfunc.maptype([np.arange(12), np.arange(12)])
+    2
+    """
+    if not hasattr(m, '__len__'):
+        raise TypeError('input map is a scalar')
+    if len(m) == 0:
+        raise TypeError('input map has length zero')
+    if hasattr(m[0], '__len__'):
+        npix=len(m[0])
+        for mm in m[1:]:
+            if len(mm) != npix:
+                raise TypeError('input maps have different npix')
+        if isnpixok(len(m[0])):
+            return len(m)
+        else:
+            raise TypeError('bad number of pixels')
+    else:
+        if isnpixok(len(m)):
+            return 0
+        else:
+            raise TypeError('bad number of pixels')
+
+def ma_to_array(m, return_is_ma=False):
     """Converts a masked array or a list of masked arrays to filled numpy arrays
 
     Parameters
@@ -111,21 +156,42 @@ def ma_to_array(m):
     Returns
     -------
     m : filled map or tuple of filled maps
+    is_ma : bool
+        whether the input map was a ma or not
 
     Examples
     --------
     >>> import healpy as hp
-    >>> m = hp.ma(np.array([2., hp.UNSEEN, 3, 4, 5]))
-    >>> m[1] = 0
+    >>> m = hp.ma(np.array([2., 2., 3, 4, 5, 0, 0, 0, 0, 0, 0, 0]))
+    >>> m.mask = np.array([0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], dtype=np.bool)
+    >>> print m.data[1]
+    2.0
     >>> print ma_to_array(m)[1]
     """
     try:
         if maptype(m) == 0:
-            return m.filled()
+            out = m.filled()
         else:
-            return tuple([mm.filled() for mm in m])
+            out = tuple([mm.filled() for mm in m])
+        is_ma = True
     except exceptions.AttributeError:
-        return m
+        is_ma = False
+        out = m
+    if return_is_ma:
+        return out, is_ma
+    else:
+        return out
+
+def accept_ma(f):
+    @wraps(f)
+    def wrapper(*args, **kwds):
+        m, is_ma = ma_to_array(args[0], True)
+        out = f(m, *args[1:], **kwds)
+        if is_ma:
+            return ma(out)
+        else:
+            return out
+    return wrapper
 
 def mask_bad(m, badval = UNSEEN, rtol = 1.e-5, atol = 1.e-8):
     """Returns a bool array with ``True`` where m is close to badval.
@@ -234,7 +300,10 @@ def ma(m, badval = UNSEEN, rtol = 1e-5, atol = 1e-8, copy = True):
            fill_value = -1.6375e+30)
     <BLANKLINE>
     """
-    return np.ma.masked_values(m, badval, rtol = rtol, atol = atol, copy = copy)
+    if maptype(m) == 0:
+        return np.ma.masked_values(m, badval, rtol = rtol, atol = atol, copy = copy)
+    else:
+        return tuple([ma(mm) for mm in m])
 
 def ang2pix(nside,theta,phi,nest=False):
     """ang2pix : nside,theta[rad],phi[rad],nest=False -> ipix (default:RING)
@@ -512,6 +581,7 @@ def nest2ring(nside, ipix):
     """
     return pixlib._nest2ring(nside, ipix)
 
+@accept_ma
 def reorder(map_in, inp=None, out=None, r2n=None, n2r=None):
     """Reorder an healpix map from RING/NESTED ordering to NESTED/RING
 
@@ -546,8 +616,29 @@ def reorder(map_in, inp=None, out=None, r2n=None, n2r=None):
     array([13,  5,  4,  0, 15,  7,  6,  1, 17,  9,  8,  2, 19, 11, 10,  3, 28,
            20, 27, 12, 30, 22, 21, 14, 32, 24, 23, 16, 34, 26, 25, 18, 44, 37,
            36, 29, 45, 39, 38, 31, 46, 41, 40, 33, 47, 43, 42, 35])
-    >>> hp.reorder(range(12), n2r = True)
+    >>> hp.reorder(np.arange(12), n2r = True)
     array([ 0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11])
+    >>> hp.reorder(hp.ma(np.arange(12)), n2r = True)
+    masked_array(data = [ 0  1  2  3  4  5  6  7  8  9 10 11],
+                 mask = False,
+           fill_value = 999999)
+    <BLANKLINE>
+    >>> m = [range(12), range(12), range(12)]
+    >>> m[0][2] = hp.UNSEEN
+    >>> m[1][2] = hp.UNSEEN
+    >>> m[2][2] = hp.UNSEEN
+    >>> m = hp.ma(m)
+    >>> hp.reorder(m, n2r = True)
+    (masked_array(data = [0.0 1.0 -- 3.0 4.0 5.0 6.0 7.0 8.0 9.0 10.0 11.0],
+                 mask = [False False  True False False False False False False False False False],
+           fill_value = -1.6375e+30)
+    , masked_array(data = [0.0 1.0 -- 3.0 4.0 5.0 6.0 7.0 8.0 9.0 10.0 11.0],
+                 mask = [False False  True False False False False False False False False False],
+           fill_value = -1.6375e+30)
+    , masked_array(data = [0.0 1.0 -- 3.0 4.0 5.0 6.0 7.0 8.0 9.0 10.0 11.0],
+                 mask = [False False  True False False False False False False False False False],
+           fill_value = -1.6375e+30)
+    )
     """
     typ = maptype(map_in)
     if typ < 0:
@@ -837,6 +928,7 @@ def isnpixok(npix):
         nside = np.sqrt(npix/12.)
         return isnsideok(nside)
 
+@accept_ma
 def get_interp_val(m,theta,phi,nest=False):
     """Return the bi-linear interpolation value of a map using 4 nearest neighbours.
 
@@ -1019,6 +1111,7 @@ def fit_dipole(m, nest=False, bad=UNSEEN, gal_cut=0):
     --------
     remove_dipole, fit_monopole, remove_monopole
     """
+    m=ma_to_array(m)
     m=np.asarray(m)
     npix = m.size
     nside = npix2nside(npix)
@@ -1097,6 +1190,7 @@ def remove_dipole(m,nest=False,bad=UNSEEN,gal_cut=0,fitval=False,
     --------
     fit_dipole, fit_monopole, remove_monopole
     """
+    m=ma_to_array(m)
     m=np.array(m,copy=copy)
     npix = m.size
     nside = npix2nside(npix)
@@ -1150,6 +1244,7 @@ def fit_monopole(m,nest=False,bad=pixlib.UNSEEN,gal_cut=0):
     --------
     fit_dipole, remove_monopole, remove_monopole
     """
+    m=ma_to_array(m)
     m=np.asarray(m)
     npix=m.size
     nside = npix2nside(npix)
@@ -1301,53 +1396,6 @@ def get_min_valid_nside(npix):
     order = 0.5 * np.log2(npix / 12.)
     return 2**int(np.ceil(order))
 
-def maptype(m):
-    """Describe the type of the map (valid, single, sequence of maps).
-    Checks : the number of maps, that all maps have same length and that this
-    length is a valid map size (using :func:`isnpixok`).
-
-    Parameters
-    ----------
-    m : sequence
-      the map to get info from
-
-    Returns
-    -------
-    info : int
-      -1 if the given object is not a valid map, 0 if it is a single map,
-      *info* > 0 if it is a sequence of maps (*info* is then the number of
-      maps)
-
-    Examples
-    --------
-    >>> import healpy as hp
-    >>> hp.pixelfunc.maptype(np.arange(12))
-    0
-    >>> hp.pixelfunc.maptype(2)
-    -1
-    >>> hp.pixelfunc.maptype([np.arange(12), np.arange(12)])
-    2
-    >>> hp.pixelfunc.maptype([np.arange(12), np.arange(768)])
-    -1
-    """
-    if not hasattr(m, '__len__'):
-        return -1
-    if len(m) == 0:
-        return -1
-    if hasattr(m[0], '__len__'):
-        npix=len(m[0])
-        for mm in m[1:]:
-            if len(mm) != npix:
-                return -1
-        if isnpixok(len(m[0])):
-            return len(m)
-        else:
-            return -1
-    else:
-        if isnpixok(len(m)):
-            return 0
-        else:
-            return -1
 
 def get_nside(m):
     """Return the nside of the given map.
@@ -1369,13 +1417,12 @@ def get_nside(m):
     a TypeError exception is raised.
     """
     typ = maptype(m)
-    if typ < 0:
-        raise TypeError('m is not a map nor a sequence of maps of same size')
     if typ == 0:
         return npix2nside(len(m))
     else:
         return npix2nside(len(m[0]))
 
+@accept_ma
 def ud_grade(map_in,nside_out,pess=False,order_in='RING',order_out=None,
              power=None, dtype=None):
     """Upgrade or degrade resolution of a map (or list of maps).
@@ -1481,4 +1528,3 @@ def _ud_grade_core(m,nside_out,pess=False,power=None, dtype=None):
     else:
         map_out = m
     return map_out.astype(type_out)
-

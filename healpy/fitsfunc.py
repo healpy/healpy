@@ -89,7 +89,8 @@ def write_map(filename,m,nest=False,dtype=np.float32,fits_IDL=True,coord=None):
       the fits file name
     m : array or sequence of 3 arrays
       the map to write. Possibly a sequence of 3 maps of same size.
-      They will be considered as I, Q, U maps
+      They will be considered as I, Q, U maps. 
+      Supports masked maps, see the `ma` function.
     nest : bool, optional
       If False, ordering scheme is NESTED, otherwise, it is RING. Default: RING.
     fits_IDL : bool, optional
@@ -111,6 +112,7 @@ def write_map(filename,m,nest=False,dtype=np.float32,fits_IDL=True,coord=None):
         nside = pixelfunc.npix2nside(len(m[0]))
         if nside < 0:
             raise ValueError('Invalid healpix map : wrong number of pixel')
+        m = pixelfunc.ma_to_array(m)
         cols=[]
         colnames=['I_STOKES','Q_STOKES','U_STOKES']
         for cn,mm in zip(colnames,m):
@@ -298,9 +300,10 @@ def write_alm(filename,alms,out_dtype=None,lmax=-1,mmax=-1,mmax_in=-1):
     
     index = l**2 + l + m + 1
 
-    out_data = np.empty(len(index),\
-                             dtype=[('index','i'),\
-                                        ('real',out_dtype),('imag',out_dtype)])
+    out_data = np.empty(len(index),
+               dtype=[('index','i'),
+                      ('real',out_dtype),
+                      ('imag',out_dtype)])
     out_data['index'] = index
     out_data['real'] = alms.real[idx_in_original]
     out_data['imag'] = alms.imag[idx_in_original]

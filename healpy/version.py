@@ -29,4 +29,3 @@ else:
     __version__='github-devel'
 
 date = "$Date$"
-
