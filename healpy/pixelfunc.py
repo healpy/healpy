@@ -146,20 +146,16 @@ def maptype(m):
         else:
             raise TypeError('bad number of pixels')
 
-def ma_to_array(m, return_is_ma=False):
+def ma_to_array(m):
     """Converts a masked array or a list of masked arrays to filled numpy arrays
 
     Parameters
     ----------
     m : a map (may be a sequence of maps)
-    return_is_ma : bool
-        if True, is_ma is returned
 
     Returns
     -------
     m : filled map or tuple of filled maps
-    is_ma : bool, optional
-        whether the input map was a ma or not
 
     Examples
     --------
@@ -173,19 +169,29 @@ def ma_to_array(m, return_is_ma=False):
     >>> print ma_to_array(m)[1] # filled array, masked values replace by UNSEEN
     -1.6375e+30
     """
+
     try:
-        if maptype(m) == 0:
-            out = m.filled()
-        else:
-            out = tuple([mm.filled() for mm in m])
-        is_ma = True
+        return m.filled()
     except exceptions.AttributeError:
-        is_ma = False
-        out = m
-    if return_is_ma:
-        return out, is_ma
-    else:
-        return out
+        try:
+            return tuple([mm.filled() for mm in m])
+        except exceptions.AttributeError:
+            pass
+    return m
+
+def is_ma(m):
+    """Converts a masked array or a list of masked arrays to filled numpy arrays
+
+    Parameters
+    ----------
+    m : a map (may be a sequence of maps)
+
+    Returns
+    -------
+    is_ma : bool
+        whether the input map was a ma or not
+    """
+    return hasattr(m, 'filled') or hasattr(m[0], 'filled')
 
 def accept_ma(f):
     """Wraps a function in order to convert the input map from
@@ -193,12 +199,11 @@ def accept_ma(f):
     output from a regular array to a masked array"""
     @wraps(f)
     def wrapper(*args, **kwds):
-        m, is_ma = ma_to_array(args[0], True)
+        return_ma = is_ma(args[0])
+        m = ma_to_array(args[0])
         out = f(m, *args[1:], **kwds)
-        if is_ma:
-            return ma(out)
-        else:
-            return out
+        return ma(out) if return_ma else out
+
     return wrapper
 
 def mask_bad(m, badval = UNSEEN, rtol = 1.e-5, atol = 1.e-8):
