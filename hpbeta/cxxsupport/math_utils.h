@@ -25,7 +25,7 @@
 /*! \file math_utils.h
  *  Various convenience mathematical functions.
  *
- *  Copyright (C) 2002-2011 Max-Planck-Society
+ *  Copyright (C) 2002-2012 Max-Planck-Society
  *  \author Martin Reinecke
  */
 
@@ -69,7 +69,11 @@ template<typename I, typename F> inline I nearest (F arg)
 inline double fmodulo (double v1, double v2)
   {
   using namespace std;
-  return (v1>=0) ? ((v1<v2) ? v1 : fmod(v1,v2)) : (fmod(v1,v2)+v2);
+  if (v1>=0)
+    return (v1<v2) ? v1 : fmod(v1,v2);
+  double tmp=fmod(v1,v2)+v2;
+  return (tmp==v2) ? 0. : tmp;
+//  return (v1>=0) ? ((v1<v2) ? v1 : fmod(v1,v2)) : (fmod(v1,v2)+v2);
   }
 
 /*! Returns the remainder of the division \a v1/v2.
