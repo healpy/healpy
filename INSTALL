@@ -56,6 +56,10 @@ $ ipython -pylab
 >>> H.mollview(arange(12))
 >>> pylab.show()
 
+or run the test suite with nose:
+
+nosetests -v
+
 If the plot looks good, you can install:
 $ sudo python setup.py install  # install in default location, need root rights
 or
