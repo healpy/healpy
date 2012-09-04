@@ -252,8 +252,16 @@ hfits_lib = Extension('healpy._healpy_fitsio_lib',
 # 
 
 if on_rtd:
+    libraries = []
+    cmdclass = {}
     extension_list = []
 else:
+    libraries = [('healpix_cxx', {}),
+                 ('cxxsupport', {}),
+                 ('psht', {}),
+                 ('fftpack', {}),
+                 ('c_utils', {})]
+    cmdclass = {'build_ext': custom_build_ext, 'build_clib': build_healpix},
     extension_list = [pixel_lib, spht_lib, hfits_lib,
                       Extension("healpy.pshyt", ["pshyt/pshyt."+ext],
                                 include_dirs = [numpy_inc] + include_dirs,
@@ -278,7 +286,6 @@ else:
                       ]
     for e in extension_list[-3:]: #extra setup for Cython extensions
         e.pyrex_directives = {"embedsignature": True}
-
 setup(name='healpy',
       version=get_version(),
       description='Healpix tools package for Python',
@@ -286,16 +293,12 @@ setup(name='healpy',
       author_email='cyrille.rosset@apc.univ-paris-diderot.fr',
       url='http://github.com/healpy',
       packages=['healpy','healpy.test'],
-      libraries=[('healpix_cxx', {}),
-                 ('cxxsupport', {}),
-                 ('psht', {}),
-                 ('fftpack', {}),
-                 ('c_utils', {})],
+      libraries=libraries,
       py_modules=['healpy.pixelfunc','healpy.sphtfunc',
                   'healpy.visufunc','healpy.fitsfunc',
                   'healpy.projector','healpy.rotator',
                   'healpy.projaxes','healpy.version'],
-      cmdclass = {'build_ext': custom_build_ext, 'build_clib': build_healpix},
+      cmdclass = cmdclass,
       ext_modules = extension_list,
       package_data = {'healpy': ['data/*.fits', 'data/totcls.dat']},
       license='GPLv2'
