@@ -1202,7 +1202,8 @@ def remove_dipole(m,nest=False,bad=UNSEEN,gal_cut=0,fitval=False,
     --------
     fit_dipole, fit_monopole, remove_monopole
     """
-    m, is_ma=ma_to_array(m, return_is_ma=True)
+    input_ma = is_ma(m)
+    m=ma_to_array(m)
     m=np.array(m,copy=copy)
     npix = m.size
     nside = npix2nside(npix)
@@ -1315,7 +1316,8 @@ def remove_monopole(m,nest=False,bad=pixlib.UNSEEN,gal_cut=0,fitval=False,
     --------
     fit_dipole, fit_monopole, remove_dipole
     """
-    m, is_ma = ma_to_array(m, return_is_ma=True)
+    input_ma = is_ma(m)
+    m= ma_to_array(m)
     m=np.array(m,copy=copy)
     npix = m.size
     nside = npix2nside(npix)
@@ -1332,7 +1334,7 @@ def remove_monopole(m,nest=False,bad=pixlib.UNSEEN,gal_cut=0,fitval=False,
         m.flat[ipix] -= mono
     if verbose:
         print 'monopole: %g'%mono
-    if is_ma:
+    if input_ma:
         m = ma(m)
     if fitval:
         return m,mono
