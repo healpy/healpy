@@ -261,7 +261,7 @@ else:
                  ('psht', {}),
                  ('fftpack', {}),
                  ('c_utils', {})]
-    cmdclass = {'build_ext': custom_build_ext, 'build_clib': build_healpix},
+    cmdclass = {'build_ext': custom_build_ext, 'build_clib': build_healpix}
     extension_list = [pixel_lib, spht_lib, hfits_lib,
                       Extension("healpy.pshyt", ["pshyt/pshyt."+ext],
                                 include_dirs = [numpy_inc] + include_dirs,
