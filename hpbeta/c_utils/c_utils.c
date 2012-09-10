@@ -25,7 +25,7 @@
 /*
  *  Convenience functions
  *
- *  Copyright (C) 2008, 2009, 2010, 2011 Max-Planck-Society
+ *  Copyright (C) 2008, 2009, 2010, 2011, 2012 Max-Planck-Society
  *  Author: Martin Reinecke
  */
 
@@ -33,7 +33,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include "c_utils.h"
-#include "sse_utils.h"
 #ifdef _OPENMP
 #include <omp.h>
 #endif
@@ -116,12 +115,14 @@ static void MPI_status(void)
 #endif
   }
 
-static void SSE_status(void)
+static void vec_status(void)
   {
   printf("Vector math: ");
-#if(defined(PLANCK_HAVE_SSE)&&defined(PLANCK_HAVE_SSE2))
-  printf("SSE, SSE2\n");
-#elif(defined(PLANCK_HAVE_SSE))
+#if(defined(__AVX__))
+  printf("AVX\n");
+#elif(defined(__SSE2__))
+  printf("SSE2\n");
+#elif(defined(__SSE__))
   printf("SSE\n");
 #else
   printf("not supported by this binary\n");
@@ -138,7 +139,7 @@ void announce_c (const char *name)
   printf("+-");
   for (m=0; m<nlen; ++m) printf("-");
   printf("-+\n\n");
-  SSE_status();
+  vec_status();
   OpenMP_status();
   MPI_status();
   printf("\n");

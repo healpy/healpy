@@ -25,7 +25,7 @@
 /*! \file arr.h
  *  Various high-performance array classes used by the Planck LevelS package.
  *
- *  Copyright (C) 2002-2011 Max-Planck-Society
+ *  Copyright (C) 2002-2012 Max-Planck-Society
  *  \author Martin Reinecke
  */
 
@@ -33,6 +33,7 @@
 #define PLANCK_ARR_H
 
 #include <algorithm>
+#include <vector>
 #include <cstdlib>
 #include "alloc_utils.h"
 #include "datatypes.h"
@@ -255,6 +256,19 @@ template <typename T, typename storageManager> class arrT: public arr_ref<T>
       return *this;
       }
 
+    /*! Changes the array to be a copy of the std::vector \a orig. */
+    template<typename T2> void copyFrom (const std::vector<T2> &orig)
+      {
+      alloc (orig.size());
+      for (tsize m=0; m<this->s; ++m) this->d[m] = orig[m];
+      }
+    /*! Changes the std::vector \a vec to be a copy of the object. */
+    template<typename T2> void copyTo (std::vector<T2> &vec) const
+      {
+      vec.clear(); vec.reserve(this->s);
+      for (tsize m=0; m<this->s; ++m) vec.push_back(this->d[m]);
+      }
+
     /*! Reserves space for \a sz elements, then copies \a sz elements
         from \a ptr into the array. */
     template<typename T2> void copyFromPtr (const T2 *ptr, tsize sz)
@@ -306,6 +320,9 @@ template <typename T>
           </ul>
         Other restrictions may apply. You have been warned. */
     arr (T *ptr, tsize sz): arrT<T,normalAlloc__<T> >(ptr,sz) {}
+    /*! Creates an array which is a copy of \a orig. The data in \a orig
+        is duplicated. */
+    arr (const arr &orig): arrT<T,normalAlloc__<T> >(orig) {}
   };
 
 /*! One-dimensional array type, with selectable storage alignment. */

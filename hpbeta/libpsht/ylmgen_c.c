@@ -242,7 +242,7 @@ static void sylmgen_recalc (sylmgen_d *gen, const Ylmgen_C *ygen, int ith,
     }
   }
 
-#ifdef PLANCK_HAVE_SSE2
+#ifdef __SSE2__
 
 #define ADVANCE(L,ap,am,bp,bm) \
   { \
@@ -473,7 +473,7 @@ void Ylmgen_init (Ylmgen_C *gen, int l_max, int m_max, int s_max, int spinrec,
 
   gen->th = gen->cth = gen->sth = gen->logsth = NULL;
 
-#ifdef PLANCK_HAVE_SSE2
+#ifdef __SSE2__
   gen->ith1 = gen->ith2 = -1;
   gen->ylm_sse2 = RALLOC(v2df,gen->lmax+1);
   ALLOC(gen->lambda_wx_sse2,v2df2 *,gen->smax+1);
@@ -536,7 +536,7 @@ void Ylmgen_destroy (Ylmgen_C *gen)
   DEALLOC(gen->flm1);
   DEALLOC(gen->flm2);
   DEALLOC(gen->xl);
-#ifdef PLANCK_HAVE_SSE2
+#ifdef __SSE2__
   DEALLOC(gen->ylm_sse2);
   for (m=0; m<=gen->smax; ++m)
     DEALLOC(gen->lambda_wx_sse2[m]);
@@ -579,7 +579,7 @@ void Ylmgen_set_theta (Ylmgen_C *gen, const double *theta, int nth)
 
   gen->nth = nth;
   gen->ith = -1;
-#ifdef PLANCK_HAVE_SSE2
+#ifdef __SSE2__
   gen->ith1 = gen->ith2 = -1;
 #endif
   }
@@ -819,7 +819,7 @@ void Ylmgen_recalc_lambda_wx (Ylmgen_C *gen, int spin)
   gen->lwx_uptodate[spin] = 1;
   }
 
-#ifdef PLANCK_HAVE_SSE2
+#ifdef __SSE2__
 
 void Ylmgen_prepare_sse2 (Ylmgen_C *gen, int ith1, int ith2, int m)
   {
@@ -1100,7 +1100,7 @@ void Ylmgen_recalc_lambda_wx_sse2 (Ylmgen_C *gen, int spin)
   gen->lwx_uptodate_sse2[spin] = 1;
   }
 
-#endif /* PLANCK_HAVE_SSE2 */
+#endif /* __SSE2__ */
 
 double *Ylmgen_get_norm (int lmax, int spin, int spinrec)
   {

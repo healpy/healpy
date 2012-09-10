@@ -96,7 +96,7 @@ typedef struct
   pshtd_cmplx *phas1[3], *phas2[3];
   double *norm_l;
   union {
-#ifdef PLANCK_HAVE_SSE2
+#ifdef __SSE2__
     v2df *v[3];
     v2df2 *v2[3];
 #else
@@ -128,7 +128,7 @@ typedef struct
   pshtd_cmplx *phas1[3], *phas2[3];
   double *norm_l;
   union {
-#ifdef PLANCK_HAVE_SSE2
+#ifdef __SSE2__
     v2df *v[3];
     v2df2 *v2[3];
 #else
@@ -257,17 +257,15 @@ void pshts_add_job_map2alm_pol (pshts_joblist *joblist,
   pshts_cmplx *almT, pshts_cmplx *almG, pshts_cmplx *almC, int add_output);
 /*! Adds a new spin alm2map job to \a joblist, which reads data from
     \a alm1 and \a alm2 and writes data to \a map1 and map2.
-    \a spin must be 1, 2, or 3. If \a add_output is 0,
-    the output maps will be overwritten, else the result will be
-    added to the output maps. */
+    If \a add_output is 0, the output maps will be overwritten, else the result
+    will be added to the output maps. */
 void pshts_add_job_alm2map_spin (pshts_joblist *joblist,
   const pshts_cmplx *alm1, const pshts_cmplx *alm2, float *map1, float *map2,
   int spin, int add_output);
 /*! Adds a new spin map2alm job to \a joblist, which reads data from
     \a map1 and \a map2 and writes data to \a alm1 and \a alm2.
-    \a spin must be 1, 2, or 3. If \a add_output is 0,
-    the output a_lm will be overwritten, else the result will be added
-    to the output a_lm. */
+    If \a add_output is 0, the output a_lm will be overwritten, else the result
+    will be added to the output a_lm. */
 void pshts_add_job_map2alm_spin (pshts_joblist *joblist, const float *map1,
   const float *map2, pshts_cmplx *alm1, pshts_cmplx *alm2, int spin,
   int add_output);
@@ -334,17 +332,15 @@ void pshtd_add_job_map2alm_pol (pshtd_joblist *joblist,
   pshtd_cmplx *almT, pshtd_cmplx *almG, pshtd_cmplx *almC, int add_output);
 /*! Adds a new spin alm2map job to \a joblist, which reads data from
     \a alm1 and \a alm2 and writes data to \a map1 and map2.
-    \a spin must be 1, 2, or 3. If \a add_output is 0,
-    the output maps will be overwritten, else the result will be
-    added to the output maps. */
+    If \a add_output is 0, the output maps will be overwritten, else the result
+    will be added to the output maps. */
 void pshtd_add_job_alm2map_spin (pshtd_joblist *joblist,
   const pshtd_cmplx *alm1, const pshtd_cmplx *alm2, double *map1, double *map2,
   int spin, int add_output);
 /*! Adds a new spin map2alm job to \a joblist, which reads data from
     \a map1 and \a map2 and writes data to \a alm1 and \a alm2.
-    \a spin must be 1, 2, or 3. If \a add_output is 0,
-    the output a_lm will be overwritten, else the result will be added
-    to the output a_lm. */
+    If \a add_output is 0, the output a_lm will be overwritten, else the result
+    will be added to the output a_lm. */
 void pshtd_add_job_map2alm_spin (pshtd_joblist *joblist, const double *map1,
   const double *map2, pshtd_cmplx *alm1, pshtd_cmplx *alm2, int spin,
   int add_output);

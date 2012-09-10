@@ -74,7 +74,7 @@ typedef struct
   int *lwx_uptodate;
   int ylm_uptodate;
 
-#ifdef PLANCK_HAVE_SSE2
+#ifdef __SSE2__
   int ith1, ith2;
   /*! Points to an array of size [0..lmax] containing the Y_lm values. */
   v2df *ylm_sse2;
@@ -114,7 +114,7 @@ void Ylmgen_recalc_Ylm (Ylmgen_C *gen);
     transforms. */
 void Ylmgen_recalc_lambda_wx (Ylmgen_C *gen, int spin);
 
-#ifdef PLANCK_HAVE_SSE2
+#ifdef __SSE2__
 /*! Prepares the object for the calculation at \a theta, \a theta2 and \a m. */
 void Ylmgen_prepare_sse2 (Ylmgen_C *gen, int ith1, int ith2, int m);
 
