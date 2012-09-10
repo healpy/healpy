@@ -680,9 +680,10 @@ def smoothing(maps, fwhm = 0.0, sigma = None, invert = False, pol = True,
       Either an array representing one map, or a sequence of
       3 arrays representing 3 maps, accepts masked arrays
     fwhm : float, optional
-      The full width half max parameter of the Gaussian. Default:0.0
+      The full width half max parameter of the Gaussian [in 
+      radians]. Default:0.0
     sigma : float, optional
-      The sigma of the Gaussian. Override fwhm.
+      The sigma of the Gaussian [in radians]. Override fwhm.
     invert : bool, optional
       If True, alms are divided by Gaussian beam function (un-smooth).
       Otherwise, alms are multiplied by Gaussian beam function (smooth).
