@@ -32,13 +32,9 @@
 #ifndef PLANCK_SSE_UTILS_H
 #define PLANCK_SSE_UTILS_H
 
-#ifndef PLANCK_DISABLE_SSE
-
 #if (defined(__SSE__))
 
 #include <xmmintrin.h>
-
-#define PLANCK_HAVE_SSE
 
 #ifdef __cplusplus
 extern "C" {
@@ -72,8 +68,6 @@ static inline void read_v4sf (v4sf v, float *a, float *b, float *c, float *d)
 #if (defined(__SSE2__))
 
 #include <emmintrin.h>
-
-#define PLANCK_HAVE_SSE2
 
 #ifdef __cplusplus
 extern "C" {
@@ -126,10 +120,6 @@ static inline v2df2 zero_v2df2(void)
 #if (defined(__SSE3__))
 
 #include <pmmintrin.h>
-
-#define PLANCK_HAVE_SSE3
-
-#endif
 
 #endif
 

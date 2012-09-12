@@ -261,7 +261,7 @@ static void X(alloc_almtmp) (X(joblist) *jobs, int lmax)
     {
     X(job) *curjob = &jobs->job[ijob];
     for (i=0; i<curjob->nalm; ++i)
-#ifdef PLANCK_HAVE_SSE2
+#ifdef __SSE2__
       if (curjob->spin==0)
         curjob->alm_tmp.v[i]=RALLOC(v2df,lmax+1);
       else
@@ -279,7 +279,7 @@ static void X(dealloc_almtmp) (X(joblist) *jobs)
     {
     X(job) *curjob = &jobs->job[ijob];
     for (i=0; i<curjob->nalm; ++i)
-#ifdef PLANCK_HAVE_SSE2
+#ifdef __SSE2__
       if (curjob->spin==0)
         DEALLOC(curjob->alm_tmp.v[i]);
       else
@@ -308,7 +308,7 @@ static void X(alm2almtmp) (X(joblist) *jobs, int lmax, int mi,
           ptrdiff_t aidx = psht_alm_index(alm,l,mi);
           double fct = (curjob->type==ALM2MAP) ? norm_l[l] :
                         -fabs(norm_l[l])*sqrt(l*(l+1.));
-#ifdef PLANCK_HAVE_SSE2
+#ifdef __SSE2__
           if (curjob->spin==0)
             curjob->alm_tmp.v[i][l] = build_v2df(curalm[aidx].re*fct,
                                                  curalm[aidx].im*fct);
@@ -329,7 +329,7 @@ static void X(alm2almtmp) (X(joblist) *jobs, int lmax, int mi,
       for (i=0; i<curjob->nalm; ++i)
         {
         int m=alm->mval[mi];
-#ifdef PLANCK_HAVE_SSE2
+#ifdef __SSE2__
         if (curjob->spin==0)
           SET_ARRAY(curjob->alm_tmp.v[i],m,lmax+1,_mm_setzero_pd());
         else
@@ -343,7 +343,7 @@ static void X(alm2almtmp) (X(joblist) *jobs, int lmax, int mi,
   }
 
 
-#ifdef PLANCK_HAVE_SSE2
+#ifdef __SSE2__
 
 #define ALM2MAP_MACRO(px) \
   { \
@@ -378,7 +378,7 @@ static void X(alm2almtmp) (X(joblist) *jobs, int lmax, int mi,
   ++l; \
   }
 
-#ifdef PLANCK_HAVE_SSE3
+#ifdef __SSE3__
 #define MAP2ALM_MACRO(px) \
   { \
   const v2df t1_ = _mm_mul_pd(px.a,Ylm[l]), t2_ = _mm_mul_pd(px.b,Ylm[l]); \
@@ -866,7 +866,7 @@ static void X(almtmp2alm) (X(joblist) *jobs, int lmax, int mi,
         for (l=alm->mval[mi]; l<=lmax; ++l)
           {
           ptrdiff_t aidx = psht_alm_index(alm,l,mi);
-#ifdef PLANCK_HAVE_SSE2
+#ifdef __SSE2__
           if (curjob->spin==0)
             {
             V2DF t; t.v = curjob->alm_tmp.v[i][l];

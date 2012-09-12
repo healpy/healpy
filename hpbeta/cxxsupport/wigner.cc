@@ -360,10 +360,16 @@ void wignergen_scalar::prepare (int m1_, int m2_)
 
 const arr<double> &wignergen_scalar::calc (int nth, int &firstl)
   {
+  calc(nth, firstl, result);
+  return result;
+  }
+
+void wignergen_scalar::calc (int nth, int &firstl, arr<double> &resx) const
+  {
   int l=mhi;
   const dbl3 *fy = &fx[0];
   const double cth = costh[nth];
-  double *res = &result[0];
+  double *res = &resx[0];
   long double logval = prefactor + lc05[nth]*cosPow + ls05[nth]*sinPow;
   logval *= inv_ln2;
   int scale = int (logval/large_exponent2)-minscale;
@@ -386,7 +392,7 @@ const arr<double> &wignergen_scalar::calc (int nth, int &firstl)
       }
     }
 
-  if (scale<0) { firstl=lmax+1; return result; }
+  if (scale<0) { firstl=lmax+1; return; }
   rec1 *= cf[scale];
   rec2 *= cf[scale];
 
@@ -404,7 +410,7 @@ const arr<double> &wignergen_scalar::calc (int nth, int &firstl)
     }
 
   firstl = l;
-  if (l>lmax) return result;
+  if (l>lmax) return;
 
   res[l]=rec2;
 
@@ -420,11 +426,9 @@ const arr<double> &wignergen_scalar::calc (int nth, int &firstl)
     if (++l>lmax) break;
     res[l] = rec2 = (cth - fy[l][1])*fy[l][0]*rec1 - fy[l][2]*rec2;
     }
-
-  return result;
   }
 
-#ifdef PLANCK_HAVE_SSE2
+#ifdef __SSE2__
 
 #define RENORMALIZE \
   do \
@@ -465,10 +469,17 @@ const arr<double> &wignergen_scalar::calc (int nth, int &firstl)
 
 const arr_align<V2df,16> &wignergen::calc (int nth1, int nth2, int &firstl)
   {
+  calc(nth1, nth2, firstl, result2);
+  return result2;
+  }
+
+void wignergen::calc (int nth1, int nth2, int &firstl,
+  arr_align<V2df,16> &resx) const
+  {
   int l=mhi;
   const dbl3 *fy = &fx[0];
   const V2df cth(costh[nth1],costh[nth2]);
-  V2df *res = &result2[0];
+  V2df *res = &resx[0];
   long double logval1 = prefactor + lc05[nth1]*cosPow + ls05[nth1]*sinPow,
               logval2 = prefactor + lc05[nth2]*cosPow + ls05[nth2]*sinPow;
   logval1 *= inv_ln2;
@@ -530,7 +541,7 @@ const arr_align<V2df,16> &wignergen::calc (int nth1, int nth2, int &firstl)
       }
     }
   firstl=l;
-  if (l>lmax) return result2;
+  if (l>lmax) return;
 
   GETPRE(pre0,pre1,l+1)
   while (true)
@@ -554,7 +565,7 @@ const arr_align<V2df,16> &wignergen::calc (int nth1, int nth2, int &firstl)
       RENORMALIZE;
     }
 
-  if (l>lmax) return result2;
+  if (l>lmax) return;
   rec1*=corfac;
   rec2*=corfac;
 
@@ -573,11 +584,9 @@ const arr_align<V2df,16> &wignergen::calc (int nth1, int nth2, int &firstl)
     NEXTSTEP(pre0,pre1,pre2,pre3,rec1,rec2,l+1)
     res[l] = rec1;
     }
-
-  return result2;
   }
 
-#endif /* PLANCK_HAVE_SSE2 */
+#endif /* __SSE2__ */
 
 wigner_estimator::wigner_estimator (int lmax_, double epsPow_)
   : lmax(lmax_), xlmax(1./lmax_), epsPow(epsPow_) {}

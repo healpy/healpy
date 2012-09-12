@@ -25,7 +25,7 @@
  */
 
 /*
- *  Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008 Max-Planck-Society
+ *  Copyright (C) 2003-2012 Max-Planck-Society
  *  Author: Martin Reinecke
  */
 
@@ -41,7 +41,7 @@ template<typename T> void Healpix_Map<T>::Import_degrade
   planck_assert (orig.nside_==nside_*fact,
     "the larger Nside must be a multiple of the smaller one");
 
-  int minhits = pessimistic ? fact : 1;
+  int minhits = pessimistic ? fact*fact : 1;
 #pragma omp parallel
 {
   int m;

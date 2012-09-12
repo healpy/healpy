@@ -157,11 +157,12 @@ class wignergen_scalar
         matrix element larger than \a epsilon; all values with smaller indices
         in the result array are undefined. */
     const arr<double> &calc (int nth, int &firstl);
+    void calc (int nth, int &firstl, arr<double> &resx) const;
   };
 
 class wignergen: public wignergen_scalar
   {
-#ifdef PLANCK_HAVE_SSE2
+#ifdef __SSE2__
   private:
     arr_align<V2df,16> result2;
 
@@ -171,6 +172,7 @@ class wignergen: public wignergen_scalar
 
     using wignergen_scalar::calc;
     const arr_align<V2df,16> &calc (int nth1, int nth2, int &firstl);
+    void calc (int nth1, int nth2, int &firstl, arr_align<V2df,16> &resx) const;
 #else
   public:
     wignergen (int lmax_, const arr<double> &thetas, double epsilon)
