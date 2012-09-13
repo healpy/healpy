@@ -26,12 +26,11 @@ import pixelfunc
 from sphtfunc import Alm
 import warnings
 from pixelfunc import UNSEEN
-from exceptions import NotImplementedError
 
 class HealpixFitsWarning(Warning):
     pass
 
-def read_cl(filename,dtype=np.float64,h=False):
+def read_cl(filename, dtype=np.float64, h=False):
     """Reads Cl from an healpix file, as IDL fits2cl.
 
     Parameters
@@ -44,12 +43,16 @@ def read_cl(filename,dtype=np.float64,h=False):
     Returns
     -------
     cl : array
-      the cl array, currently TT only
+      the cl array
     """
     hdulist=pf.open(filename)
-    return hdulist[1].data.field(0)
+    cl = [hdulist[1].data.field(n) for n in range(len(hdulist[1].data.columns))]
+    if len(cl) == 1:
+        return cl[0]
+    else:
+        return cl
 
-def write_cl(filename,cl,dtype=np.float32):
+def write_cl(filename, cl, dtype=np.float64):
     """Writes Cl into an healpix file, as IDL cl2fits.
 
     Parameters
@@ -61,8 +64,11 @@ def write_cl(filename,cl,dtype=np.float32):
     """
     # check the dtype and convert it
     fitsformat = getformat(dtype)
+    column_names = ['TEMPERATURE','GRADIENT','CURL','G-T','C-T','C-G']
     if isinstance(cl, list):
-        raise NotImplementedError('Currently it supports only temperature-only cls')
+        cols = [pf.Column(name=column_name,
+                               format='%s'%fitsformat,
+                               array=column_cl) for column_name, column_cl in zip(column_names[:len(cl)], cl)]
     else: # we write only one TT
         cols = [pf.Column(name='TEMPERATURE',
                                format='%s'%fitsformat,
@@ -82,7 +88,8 @@ def write_map(filename,m,nest=False,dtype=np.float32,fits_IDL=True,coord=None):
       the fits file name
     m : array or sequence of 3 arrays
       the map to write. Possibly a sequence of 3 maps of same size.
-      They will be considered as I, Q, U maps
+      They will be considered as I, Q, U maps. 
+      Supports masked maps, see the `ma` function.
     nest : bool, optional
       If False, ordering scheme is NESTED, otherwise, it is RING. Default: RING.
     fits_IDL : bool, optional
@@ -104,6 +111,7 @@ def write_map(filename,m,nest=False,dtype=np.float32,fits_IDL=True,coord=None):
         nside = pixelfunc.npix2nside(len(m[0]))
         if nside < 0:
             raise ValueError('Invalid healpix map : wrong number of pixel')
+        m = pixelfunc.ma_to_array(m)
         cols=[]
         colnames=['I_STOKES','Q_STOKES','U_STOKES']
         for cn,mm in zip(colnames,m):
@@ -171,10 +179,12 @@ def read_map(filename,field=0,dtype=np.float64,nest=False,hdu=1,h=False,
       If None, no conversion is performed.
     hdu : int, optional
       the header number to look at (start at 0)
-    h : boo, optional
+    h : bool, optional
       If True, return also the header. Default: False.
     verbose : bool, optional
       If True, print a number of diagnostic messages
+    as_ma : bool, optional
+      If True, return also the header. Default: False.
 
     Returns
     -------
@@ -185,8 +195,7 @@ def read_map(filename,field=0,dtype=np.float64,nest=False,hdu=1,h=False,
     #print hdulist[1].header
     nside = hdulist[hdu].header.get('NSIDE')
     if nside is None:
-        warnings.warn("No NSIDE in the header file : will use length of array",
-                      HealpixFitsWarning)
+        warnings.warn("No NSIDE in the header file : will use length of array", HealpixFitsWarning)
     else:
         nside = int(nside)
     if verbose: print 'NSIDE = %d'%nside
@@ -221,7 +230,7 @@ def read_map(filename,field=0,dtype=np.float64,nest=False,hdu=1,h=False,
                 if verbose: print 'Ordering converted to RING'
         try:
             m[pixelfunc.mask_bad(m)] = UNSEEN
-        except OverflowError, e:
+        except OverflowError:
             pass
         ret.append(m)
     
@@ -289,9 +298,10 @@ def write_alm(filename,alms,out_dtype=None,lmax=-1,mmax=-1,mmax_in=-1):
     
     index = l**2 + l + m + 1
 
-    out_data = np.empty(len(index),\
-                             dtype=[('index','i'),\
-                                        ('real',out_dtype),('imag',out_dtype)])
+    out_data = np.empty(len(index),
+               dtype=[('index','i'),
+                      ('real',out_dtype),
+                      ('imag',out_dtype)])
     out_data['index'] = index
     out_data['real'] = alms.real[idx_in_original]
     out_data['imag'] = alms.imag[idx_in_original]
@@ -463,4 +473,3 @@ def getformat(t):
             return 'A%d'%(l)
     except:
         pass
-        

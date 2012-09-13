@@ -32,17 +32,12 @@
 #ifndef PLANCK_SSE_UTILS_CXX_H
 #define PLANCK_SSE_UTILS_CXX_H
 
-#ifndef PLANCK_DISABLE_SSE
-
 template<typename T, int sz> class svec;
 
 #if (defined(__SSE2__))
 
 #include <xmmintrin.h>
 #include <emmintrin.h>
-
-#define PLANCK_HAVE_SSE
-#define PLANCK_HAVE_SSE2
 
 template<> class svec<int, 4>
   {
@@ -391,8 +386,6 @@ template<> inline V4sf vcast (const V4si &a)
   { return V4sf (_mm_castsi128_ps(a.v)); }
 template<> inline V2df vcast (const V4si &a)
   { return V2df (_mm_castsi128_pd(a.v)); }
-
-#endif
 
 #endif
 

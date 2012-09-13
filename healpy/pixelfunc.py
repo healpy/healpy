@@ -84,8 +84,8 @@ Map data manipulation
 
 import numpy as np
 import exceptions
-import warnings
 import _healpy_pixel_lib as pixlib
+from functools import wraps
 
 #: Special value used for masked pixels
 UNSEEN = pixlib.UNSEEN
@@ -100,7 +100,111 @@ __all__ = ['pix2ang', 'pix2vec', 'ang2pix', 'vec2pix',
            'nside2npix', 'npix2nside', 'nside2resol',
            'nside2pixarea', 'isnsideok', 'isnpixok',
            'get_map_size', 'get_min_valid_nside',
-           'get_nside', 'maptype']
+           'get_nside', 'maptype', 'ma_to_array']
+
+def maptype(m):
+    """Describe the type of the map (valid, single, sequence of maps).
+    Checks : the number of maps, that all maps have same length and that this
+    length is a valid map size (using :func:`isnpixok`).
+
+    Parameters
+    ----------
+    m : sequence
+      the map to get info from
+
+    Returns
+    -------
+    info : int
+      -1 if the given object is not a valid map, 0 if it is a single map,
+      *info* > 0 if it is a sequence of maps (*info* is then the number of
+      maps)
+
+    Examples
+    --------
+    >>> import healpy as hp
+    >>> hp.pixelfunc.maptype(np.arange(12))
+    0
+    >>> hp.pixelfunc.maptype([np.arange(12), np.arange(12)])
+    2
+    """
+    if not hasattr(m, '__len__'):
+        raise TypeError('input map is a scalar')
+    if len(m) == 0:
+        raise TypeError('input map has length zero')
+    if hasattr(m[0], '__len__'):
+        npix=len(m[0])
+        for mm in m[1:]:
+            if len(mm) != npix:
+                raise TypeError('input maps have different npix')
+        if isnpixok(len(m[0])):
+            return len(m)
+        else:
+            raise TypeError('bad number of pixels')
+    else:
+        if isnpixok(len(m)):
+            return 0
+        else:
+            raise TypeError('bad number of pixels')
+
+def ma_to_array(m):
+    """Converts a masked array or a list of masked arrays to filled numpy arrays
+
+    Parameters
+    ----------
+    m : a map (may be a sequence of maps)
+
+    Returns
+    -------
+    m : filled map or tuple of filled maps
+
+    Examples
+    --------
+    >>> import healpy as hp
+    >>> m = hp.ma(np.array([2., 2., 3, 4, 5, 0, 0, 0, 0, 0, 0, 0]))
+    >>> m.mask = np.array([0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], dtype=np.bool)
+    >>> print m.data[1] # data is not affected by mask
+    2.0
+    >>> print m[1] # shows that the value is masked
+    --
+    >>> print ma_to_array(m)[1] # filled array, masked values replace by UNSEEN
+    -1.6375e+30
+    """
+
+    try:
+        return m.filled()
+    except exceptions.AttributeError:
+        try:
+            return tuple([mm.filled() for mm in m])
+        except exceptions.AttributeError:
+            pass
+    return m
+
+def is_ma(m):
+    """Converts a masked array or a list of masked arrays to filled numpy arrays
+
+    Parameters
+    ----------
+    m : a map (may be a sequence of maps)
+
+    Returns
+    -------
+    is_ma : bool
+        whether the input map was a ma or not
+    """
+    return hasattr(m, 'filled') or hasattr(m[0], 'filled')
+
+def accept_ma(f):
+    """Wraps a function in order to convert the input map from
+    a masked to a regular numpy array, and convert back the
+    output from a regular array to a masked array"""
+    @wraps(f)
+    def wrapper(*args, **kwds):
+        return_ma = is_ma(args[0])
+        m = ma_to_array(args[0])
+        out = f(m, *args[1:], **kwds)
+        return ma(out) if return_ma else out
+
+    return wrapper
 
 def mask_bad(m, badval = UNSEEN, rtol = 1.e-5, atol = 1.e-8):
     """Returns a bool array with ``True`` where m is close to badval.
@@ -128,12 +232,14 @@ def mask_bad(m, badval = UNSEEN, rtol = 1.e-5, atol = 1.e-8):
     Examples
     --------
     >>> import healpy as hp
+    >>> import numpy as np
     >>> m = np.arange(12.)
     >>> m[3] = hp.UNSEEN
     >>> hp.mask_bad(m)
     array([False, False, False,  True, False, False, False, False, False,
            False, False, False], dtype=bool)
     """
+    m = np.asarray(m)
     atol = np.absolute(atol)
     rtol = np.absolute(rtol)
     return np.absolute(m - badval) <= atol + rtol * np.absolute(badval)
@@ -169,6 +275,7 @@ def mask_good(m, badval = UNSEEN, rtol = 1.e-5, atol = 1.e-8):
     array([ True,  True,  True, False,  True,  True,  True,  True,  True,
             True,  True,  True], dtype=bool)
     """
+    m = np.asarray(m)
     atol = np.absolute(atol)
     rtol = np.absolute(rtol)
     return np.absolute(m - badval) > atol + rtol * np.absolute(badval)
@@ -190,8 +297,8 @@ def ma(m, badval = UNSEEN, rtol = 1e-5, atol = 1e-8, copy = True):
 
     Returns
     -------
-    a masked array with the same shape as the input map, masked where input map is
-    close to badval.
+    a masked array with the same shape as the input map, 
+    masked where input map is close to badval.
 
     See Also
     --------
@@ -208,7 +315,10 @@ def ma(m, badval = UNSEEN, rtol = 1e-5, atol = 1e-8, copy = True):
            fill_value = -1.6375e+30)
     <BLANKLINE>
     """
-    return np.ma.masked_values(m, badval, rtol = rtol, atol = atol, copy = copy)
+    if maptype(m) == 0:
+        return np.ma.masked_values(m, badval, rtol = rtol, atol = atol, copy = copy)
+    else:
+        return tuple([ma(mm) for mm in m])
 
 def ang2pix(nside,theta,phi,nest=False):
     """ang2pix : nside,theta[rad],phi[rad],nest=False -> ipix (default:RING)
@@ -486,13 +596,14 @@ def nest2ring(nside, ipix):
     """
     return pixlib._nest2ring(nside, ipix)
 
+@accept_ma
 def reorder(map_in, inp=None, out=None, r2n=None, n2r=None):
     """Reorder an healpix map from RING/NESTED ordering to NESTED/RING
 
     Parameters
     ----------
     map_in : array-like
-      the input map to reorder
+      the input map to reorder, accepts masked arrays
     inp, out : ``'RING'`` or ``'NESTED'``
       define the input and output ordering
     r2n : bool
@@ -503,7 +614,8 @@ def reorder(map_in, inp=None, out=None, r2n=None, n2r=None):
     Returns
     -------
     map_out : array-like
-      the reordered map
+      the reordered map, as masked array if the input was a 
+      masked array
 
     Notes
     -----
@@ -520,12 +632,31 @@ def reorder(map_in, inp=None, out=None, r2n=None, n2r=None):
     array([13,  5,  4,  0, 15,  7,  6,  1, 17,  9,  8,  2, 19, 11, 10,  3, 28,
            20, 27, 12, 30, 22, 21, 14, 32, 24, 23, 16, 34, 26, 25, 18, 44, 37,
            36, 29, 45, 39, 38, 31, 46, 41, 40, 33, 47, 43, 42, 35])
-    >>> hp.reorder(range(12), n2r = True)
+    >>> hp.reorder(np.arange(12), n2r = True)
     array([ 0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11])
+    >>> hp.reorder(hp.ma(np.arange(12)), n2r = True)
+    masked_array(data = [ 0  1  2  3  4  5  6  7  8  9 10 11],
+                 mask = False,
+           fill_value = 999999)
+    <BLANKLINE>
+    >>> m = [range(12), range(12), range(12)]
+    >>> m[0][2] = hp.UNSEEN
+    >>> m[1][2] = hp.UNSEEN
+    >>> m[2][2] = hp.UNSEEN
+    >>> m = hp.ma(m)
+    >>> hp.reorder(m, n2r = True)
+    (masked_array(data = [0.0 1.0 -- 3.0 4.0 5.0 6.0 7.0 8.0 9.0 10.0 11.0],
+                 mask = [False False  True False False False False False False False False False],
+           fill_value = -1.6375e+30)
+    , masked_array(data = [0.0 1.0 -- 3.0 4.0 5.0 6.0 7.0 8.0 9.0 10.0 11.0],
+                 mask = [False False  True False False False False False False False False False],
+           fill_value = -1.6375e+30)
+    , masked_array(data = [0.0 1.0 -- 3.0 4.0 5.0 6.0 7.0 8.0 9.0 10.0 11.0],
+                 mask = [False False  True False False False False False False False False False],
+           fill_value = -1.6375e+30)
+    )
     """
     typ = maptype(map_in)
-    if typ < 0:
-        raise TypeError('map_in is not a map nor a sequence of maps')
     if typ == 0:
         npix = len(map_in)
     else:
@@ -817,7 +948,7 @@ def get_interp_val(m,theta,phi,nest=False):
     Parameters
     ----------
     m : array-like
-      an healpix map
+      an healpix map, accepts masked arrays
     theta, phi : float, scalar or array-like
       angular coordinates of point at which to interpolate the map
     nest : bool
@@ -950,7 +1081,6 @@ def get_all_neighbours(nside, theta, phi=None, nest=False):
     res=np.array(r[0:8])
     return res
 
-
 def max_pixrad(nside):
     """Parameters
     ----------
@@ -976,7 +1106,7 @@ def fit_dipole(m, nest=False, bad=UNSEEN, gal_cut=0):
     Parameters
     ----------
     m : float, array-like
-      the map to which a dipole is fitted and subtracted
+      the map to which a dipole is fitted and subtracted, accepts masked maps
     nest : bool
       if ``False`` m is assumed in RING scheme, otherwise map is NESTED
     bad : float
@@ -993,6 +1123,7 @@ def fit_dipole(m, nest=False, bad=UNSEEN, gal_cut=0):
     --------
     remove_dipole, fit_monopole, remove_monopole
     """
+    m=ma_to_array(m)
     m=np.asarray(m)
     npix = m.size
     nside = npix2nside(npix)
@@ -1046,7 +1177,7 @@ def remove_dipole(m,nest=False,bad=UNSEEN,gal_cut=0,fitval=False,
     Parameters
     ----------
     m : float, array-like
-      the map to which a dipole is fitted and subtracted
+      the map to which a dipole is fitted and subtracted, accepts masked arrays
     nest : bool
       if ``False`` m is assumed in RING scheme, otherwise map is NESTED
     bad : float
@@ -1071,6 +1202,8 @@ def remove_dipole(m,nest=False,bad=UNSEEN,gal_cut=0,fitval=False,
     --------
     fit_dipole, fit_monopole, remove_monopole
     """
+    input_ma = is_ma(m)
+    m=ma_to_array(m)
     m=np.array(m,copy=copy)
     npix = m.size
     nside = npix2nside(npix)
@@ -1096,6 +1229,8 @@ def remove_dipole(m,nest=False,bad=UNSEEN,gal_cut=0,fitval=False,
                                                                  lon,
                                                                  lat,
                                                                  amp)
+    if is_ma:
+        m = ma(m)
     if fitval:
         return m,mono,dipole
     else:
@@ -1107,7 +1242,7 @@ def fit_monopole(m,nest=False,bad=pixlib.UNSEEN,gal_cut=0):
     Parameters
     ----------
     m : float, array-like
-      the map to which a dipole is fitted and subtracted
+      the map to which a dipole is fitted and subtracted, accepts masked arrays
     nest : bool
       if ``False`` m is assumed in RING scheme, otherwise map is NESTED
     bad : float
@@ -1124,6 +1259,7 @@ def fit_monopole(m,nest=False,bad=pixlib.UNSEEN,gal_cut=0):
     --------
     fit_dipole, remove_monopole, remove_monopole
     """
+    m=ma_to_array(m)
     m=np.asarray(m)
     npix=m.size
     nside = npix2nside(npix)
@@ -1180,6 +1316,8 @@ def remove_monopole(m,nest=False,bad=pixlib.UNSEEN,gal_cut=0,fitval=False,
     --------
     fit_dipole, fit_monopole, remove_dipole
     """
+    input_ma = is_ma(m)
+    m= ma_to_array(m)
     m=np.array(m,copy=copy)
     npix = m.size
     nside = npix2nside(npix)
@@ -1196,6 +1334,8 @@ def remove_monopole(m,nest=False,bad=pixlib.UNSEEN,gal_cut=0,fitval=False,
         m.flat[ipix] -= mono
     if verbose:
         print 'monopole: %g'%mono
+    if input_ma:
+        m = ma(m)
     if fitval:
         return m,mono
     else:
@@ -1275,53 +1415,6 @@ def get_min_valid_nside(npix):
     order = 0.5 * np.log2(npix / 12.)
     return 2**int(np.ceil(order))
 
-def maptype(m):
-    """Describe the type of the map (valid, single, sequence of maps).
-    Checks : the number of maps, that all maps have same length and that this
-    length is a valid map size (using :func:`isnpixok`).
-
-    Parameters
-    ----------
-    m : sequence
-      the map to get info from
-
-    Returns
-    -------
-    info : int
-      -1 if the given object is not a valid map, 0 if it is a single map,
-      *info* > 0 if it is a sequence of maps (*info* is then the number of
-      maps)
-
-    Examples
-    --------
-    >>> import healpy as hp
-    >>> hp.pixelfunc.maptype(np.arange(12))
-    0
-    >>> hp.pixelfunc.maptype(2)
-    -1
-    >>> hp.pixelfunc.maptype([np.arange(12), np.arange(12)])
-    2
-    >>> hp.pixelfunc.maptype([np.arange(12), np.arange(768)])
-    -1
-    """
-    if not hasattr(m, '__len__'):
-        return -1
-    if len(m) == 0:
-        return -1
-    if hasattr(m[0], '__len__'):
-        npix=len(m[0])
-        for mm in m[1:]:
-            if len(mm) != npix:
-                return -1
-        if isnpixok(len(m[0])):
-            return len(m)
-        else:
-            return -1
-    else:
-        if isnpixok(len(m)):
-            return 0
-        else:
-            return -1
 
 def get_nside(m):
     """Return the nside of the given map.
@@ -1343,13 +1436,12 @@ def get_nside(m):
     a TypeError exception is raised.
     """
     typ = maptype(m)
-    if typ < 0:
-        raise TypeError('m is not a map nor a sequence of maps of same size')
     if typ == 0:
         return npix2nside(len(m))
     else:
         return npix2nside(len(m[0]))
 
+@accept_ma
 def ud_grade(map_in,nside_out,pess=False,order_in='RING',order_out=None,
              power=None, dtype=None):
     """Upgrade or degrade resolution of a map (or list of maps).
@@ -1455,4 +1547,3 @@ def _ud_grade_core(m,nside_out,pess=False,power=None, dtype=None):
     else:
         map_out = m
     return map_out.astype(type_out)
-

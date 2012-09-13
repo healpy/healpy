@@ -39,7 +39,7 @@ class Mock(object):
         return str(Mock())
 
 try:
-    import matplotlib
+    import healpy
 except exceptions.ImportError:
     MOCK_MODULES = ['matplotlib', 'pylab', 'matplotlib.colors',
                     'matplotlib.cbook', 'pyfits',

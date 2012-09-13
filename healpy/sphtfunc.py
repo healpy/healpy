@@ -18,7 +18,6 @@
 #  For more information about Healpy, see http://code.google.com/p/healpy
 # 
 import warnings
-import exceptions
 import numpy as np
 pi = np.pi
 
@@ -30,7 +29,7 @@ import healpy.cookbook as cb
 import os.path
 import healpy.pixelfunc as pixelfunc
 
-from healpy.pixelfunc import mask_bad, maptype, UNSEEN
+from healpy.pixelfunc import maptype, UNSEEN, ma_to_array, accept_ma
 
 class FutureChangeWarning(UserWarning):
     pass
@@ -83,10 +82,12 @@ def anafast(map1, map2 = None, nspec = None, lmax = None, mmax = None,
       alm is the spherical harmonic transform or a list of almT, almE, almB
       for polarized input
     """
+    map1 = ma_to_array(map1)
     alms1 = map2alm(map1, lmax = lmax, mmax = mmax, pol = pol, iter = iter, 
                     use_weights = use_weights, regression = regression, 
                     datapath = datapath)
     if map2 is not None:
+        map2 = ma_to_array(map2)
         alms2 = map2alm(map2, lmax = lmax, mmax = mmax, pol = pol,
                         iter = iter, use_weights = use_weights, 
                         regression = regression, datapath = datapath)
@@ -143,9 +144,8 @@ def map2alm(maps, lmax = None, mmax = None, iter = 3, pol = True,
     value, so that the input maps are not modified. Each map have its own, 
     independent mask.
     """
+    maps = ma_to_array(maps)
     info = maptype(maps)
-    if info < 0:
-        raise TypeError("Input must be a map or a sequence of maps")
     if pol or info in (0, 1):
         alms = _sphtools.map2alm(maps, niter = iter, regression = regression, 
                                  datapath = datapath, use_weights = use_weights,
@@ -155,7 +155,7 @@ def map2alm(maps, lmax = None, mmax = None, iter = 3, pol = True,
         alms = [_sphtools.map2alm(mm, niter = iter, regression = regression,
                                   datapath = datapath, use_weights = use_weights,
                                   lmax = lmax, mmax = mmax)
-               for mm in m]
+               for mm in maps]
     return alms
 
 def alm2map(alms, nside, lmax = None, mmax = None, pixwin = False,
@@ -668,6 +668,7 @@ def smoothalm(alms, fwhm = 0.0, sigma = None, invert = False, pol = True,
     # return the input alms
     return alms
 
+@accept_ma
 def smoothing(maps, fwhm = 0.0, sigma = None, invert = False, pol = True,
               iter = 3, lmax = None, mmax = None, use_weights = False,
               regression = True, datapath = None):
@@ -677,11 +678,12 @@ def smoothing(maps, fwhm = 0.0, sigma = None, invert = False, pol = True,
     ----------
     maps : array or sequence of 3 arrays
       Either an array representing one map, or a sequence of
-      3 arrays representing 3 maps
+      3 arrays representing 3 maps, accepts masked arrays
     fwhm : float, optional
-      The full width half max parameter of the Gaussian. Default:0.0
+      The full width half max parameter of the Gaussian [in 
+      radians]. Default:0.0
     sigma : float, optional
-      The sigma of the Gaussian. Override fwhm.
+      The sigma of the Gaussian [in radians]. Override fwhm.
     invert : bool, optional
       If True, alms are divided by Gaussian beam function (un-smooth).
       Otherwise, alms are multiplied by Gaussian beam function (smooth).
@@ -710,8 +712,12 @@ def smoothing(maps, fwhm = 0.0, sigma = None, invert = False, pol = True,
     maps : array or list of 3 arrays
       The smoothed map(s)
     """
+
     if not cb.is_seq(maps):
         raise TypeError("maps must be a sequence")
+
+    # save the masks of inputs
+    masks = pixelfunc.mask_bad(maps) 
 
     if cb.is_seq_of_seq(maps):
         nside = pixelfunc.npix2nside(len(maps[0]))
@@ -727,19 +733,24 @@ def smoothing(maps, fwhm = 0.0, sigma = None, invert = False, pol = True,
                        regression = regression, datapath = datapath)
         smoothalm(alms, fwhm = fwhm, sigma = sigma, invert = invert,
                   inplace = True)
-        return alm2map(alms, nside, pixwin = False)
+        output_map = alm2map(alms, nside, pixwin = False)
     else:
         # Treat each map independently (any number)
-        retmaps = []
-        for m in maps:
+        output_map = []
+        for m, mask in zip(maps, masks):
             alm = map2alm(maps, iter = iter, pol = pol,
                           use_weights = use_weights,
                        regression = regression, datapath = datapath)
             smoothalm(alm, fwhm = fwhm, sigma = sigma, invert = invert,
                       inplace = True)
-            retmaps.append(alm2map(alm, nside, pixwin = False))
-        return retmaps
-
+            output_map.append(alm2map(alm, nside, pixwin = False))
+    if pixelfunc.maptype(output_map) == 0:
+        output_map[masks.flatten()] = UNSEEN
+    else:
+        for m, mask in zip(output_map, masks):
+            m[mask] = UNSEEN
+        
+    return output_map
 
 def pixwin(nside, pol = False):
     """Return the pixel window function for the given nside.
@@ -809,7 +820,6 @@ def alm2map_der1(alm, nside, lmax = None, mmax = None):
        mmax = -1
    return sphtlib._alm2map_der1(alm,nside,lmax=lmax,mmax=mmax)
 
-
 def new_to_old_spectra_order(cls_new_order):
     """Reorder the cls from new order (by diagonal) to old order (by row).
     For example : TT, EE, BB, TE, EB, BB => TT, TE, TB, EE, EB, BB
@@ -842,4 +852,3 @@ def load_sample_spectra():
     f = ell * (ell + 1) / 2 / np.pi
     cls[1:, 1:] /= f[1:]
     return ell, f, cls[1:]
-

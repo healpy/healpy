@@ -61,4 +61,3 @@ def is_like2d(o):
         if len(s) != size:
             return False
     return True
-    

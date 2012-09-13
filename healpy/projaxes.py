@@ -643,7 +643,6 @@ class HpxMollweideAxes(MollweideAxes):
         f = lambda x,y,z: pixelfunc.vec2pix(nside,x,y,z,nest=nest)
         super(HpxMollweideAxes,self).projmap(map,f,**kwds)
 
-
 class CartesianAxes(SphericalProjAxes):
     """Define a cylindrical Axes to handle cylindrical projection.
     """
@@ -982,5 +981,3 @@ class LinNorm2(colors.Normalize):
             return vmin + (vmax-vmin) * val
         else:
             return vmin + (vmax-vmin) * value
-
-

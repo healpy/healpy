@@ -53,8 +53,6 @@ __all__ = ['mollview', 'gnomview', 'cartview',
 import projaxes as PA
 import numpy as np
 import matplotlib
-import matplotlib.colors as colors
-import matplotlib.cbook as cbook
 import pixelfunc
 
 pi = np.pi
@@ -73,7 +71,7 @@ def mollview(map=None,fig=None,rot=None,coord=None,unit='',
     Parameters
     ----------
     map : float, array-like or None
-      An array containing the map.
+      An array containing the map, supports masked maps, see the `ma` function.
       If None, will display a blank map, useful for overplotting.
     fig : int or None, optional
       The figure number to use. Default: create a new figure
@@ -177,6 +175,7 @@ def mollview(map=None,fig=None,rot=None,coord=None,unit='',
         if map is None:
             map = np.zeros(12)+np.inf
             cbar=False
+        map = pixelfunc.ma_to_array(map)
         ax=PA.HpxMollweideAxes(f,extent,coord=coord,rot=rot,
                                format=format2,flipconv=flip)
         f.add_axes(ax)
@@ -233,7 +232,8 @@ def gnomview(map=None,fig=None,rot=None,coord=None,unit='',
     Parameters
     ----------
     map : array-like
-      The map to project. If None, use a blank map, useful for
+      The map to project, supports masked maps, see the `ma` function.
+      If None, use a blank map, useful for
       overplotting.
     fig : None or int, optional
       A figure number. Default: None= create a new figure
@@ -338,6 +338,7 @@ def gnomview(map=None,fig=None,rot=None,coord=None,unit='',
         if map is None:
             map = np.zeros(12)+np.inf
             cbar=False
+        map = pixelfunc.ma_to_array(map)
         ax=PA.HpxGnomonicAxes(f,extent,coord=coord,rot=rot,
                               format=format,flipconv=flip)
         f.add_axes(ax)
@@ -400,7 +401,8 @@ def cartview(map=None,fig=None,rot=None,zat=None,coord=None,unit='',
     Parameters
     ----------
     map : float, array-like or None
-      An array containing the map.
+      An array containing the map, 
+      supports masked maps, see the `ma` function.
       If None, will display a blank map, useful for overplotting.
     fig : int or None, optional
       The figure number to use. Default: create a new figure
@@ -508,6 +510,7 @@ def cartview(map=None,fig=None,rot=None,zat=None,coord=None,unit='',
         if map is None:
             map = np.zeros(12)+np.inf
             cbar=False
+        map = pixelfunc.ma_to_array(map)
         if zat and rot:
             raise ValueError('Only give rot or zat, not both')
         if zat:
@@ -593,7 +596,6 @@ def graticule(dpar=None,dmer=None,coord=None,local=None,**kwds):
         pylab.draw()
         if wasinteractive:
             pylab.ion()
-            #pylab.show()
     
 def delgraticules():
     """Delete all graticules previously created on the Axes.
@@ -669,5 +671,3 @@ def projtext(*args,**kwds):
             #pylab.show()
     return ret
 projtext.__doc__ = PA.SphericalProjAxes.projtext.__doc__
-
-

@@ -39,28 +39,20 @@ Requirements
 * `Matplotlib <http://matplotlib.sourceforge.net/>`_ (tested with
   version >= 0.91.2 up to 1.0.1, please use latest version)
 
-  - **Note:** Matplotlib 0.98.3 has a bug preventing mollview to work.
-    Either correct the bug as indicated `there <http://sourceforge.net/mailarchive/message.php?msg_id=E1Kjmcj-0001UI-Ey%40dn4whf1.ch3.sourceforge.com>`_
-    or update to more recent version (>= 0.98.4).
-
 * Python development package is required for some distribution (e.g.,
   python-dev package for Ubuntu)
 
 * `PyFITS <http://www.stsci.edu/resources/software_hardware/pyfits>`_
 
-  - **Note:** For healpix map Nside=8192, there is a bug in Numpy
-    preventing pyfits to work. You should upgrade to latest pyfits
-    version (>= 2.1) which provide a workaround.
-
 The Healpix C++ library (from HEALPix 2.11 or HEALPix 2.20 for healpy >=
 0.10) is included in the healpy package, so you don't need to get it
-separately.
-
+separately. If you do want to use your own build of HEALPix instead of
+having Healpy build its bundled source, see INSTALL for further instructions.
 
 Download
 --------
 
-The latest released version is 1.2 and is available as a source
+The latest released version is 1.4 and is available as a source
 package at:
 https://github.com/healpy/healpy/tags
 
@@ -77,11 +69,22 @@ Installation
 
 see INSTALL
 
-Documentation
--------------
+Developers
+----------
+Core developers:
 
-Use the online documentation, accessible with help() or using the
-``?`` in ipython.
+* Cyrille Rosset
+* Andrea Zonca
+* Martin Reinecke
+
+Contributors:
+
+* Yu Feng
+* Duncan Hanson
+* Sergey Koposov
+* Maude Martin Lejeune
+* Leo Singer 
+* Maurizio Tomasi
 
 Acknowledgements
 ----------------
