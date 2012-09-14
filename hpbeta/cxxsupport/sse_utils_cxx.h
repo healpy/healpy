@@ -25,7 +25,7 @@
 /*! \file sse_utils_cxx.h
  *  SSE/SSE2/SSE3-related functionality for C++
  *
- *  Copyright (C) 2011 Max-Planck-Society
+ *  Copyright (C) 2011, 2012 Max-Planck-Society
  *  \author Martin Reinecke
  */
 
@@ -106,10 +106,6 @@ template<> class svec<int, 4>
   };
 
 typedef svec<int,4> V4si;
-
-inline V4si shuffle(const V4si &a, const V4si &b, int sh)
-  { return V4si(_mm_castps_si128(_mm_shuffle_ps
-    (_mm_castsi128_ps(a.v), _mm_castsi128_ps(b.v), sh))); }
 
 #if 0
 template<> class svec<long long , 2>
