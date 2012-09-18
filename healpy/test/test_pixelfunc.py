@@ -1,4 +1,5 @@
 from healpy.pixelfunc import *
+import exceptions
 import numpy as np
 import unittest
 
@@ -30,6 +31,9 @@ class TestPixelFunc(unittest.TestCase):
         theta1, phi1 = pix2ang(1048576 * 8, id, nest=True)
         np.testing.assert_array_almost_equal(theta1, theta0)
         np.testing.assert_array_almost_equal(phi1, phi0)
+
+    def test_ang2pix_negative_theta(self):
+        self.assertRaises(exceptions.AssertionError, ang2pix, 32, -1, 0)
       
     def test_fit_dipole(self):
         nside = 32

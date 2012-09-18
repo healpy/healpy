@@ -102,6 +102,10 @@ __all__ = ['pix2ang', 'pix2vec', 'ang2pix', 'vec2pix',
            'get_map_size', 'get_min_valid_nside',
            'get_nside', 'maptype', 'ma_to_array']
 
+def check_theta_valid(theta):
+    """Raises exception if theta is not within 0 and pi"""
+    assert (np.asarray(theta) >= 0).all() & (np.asarray(theta) <= np.pi + 1e-5).all(), "Theta is defined between 0 and pi"
+
 def maptype(m):
     """Describe the type of the map (valid, single, sequence of maps).
     Checks : the number of maps, that all maps have same length and that this
@@ -357,6 +361,7 @@ def ang2pix(nside,theta,phi,nest=False):
     >>> hp.ang2pix([1, 2, 4, 8, 16], np.pi/2, 0)
     array([   4,   12,   72,  336, 1440])
     """
+    check_theta_valid(theta)
     if nest:
         return pixlib._ang2pix_nest(nside,theta,phi)
     else:
@@ -499,6 +504,7 @@ def ang2vec(theta, phi):
     --------
     vec2ang, rotator.dir2vec, rotator.vec2dir
     """
+    check_theta_valid(theta)
     if np.any(theta < 0) or np.any(theta > np.pi):
         raise exceptions.ValueError('THETA is out of range [0,pi]')
     sintheta = np.sin(theta)
