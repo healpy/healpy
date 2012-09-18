@@ -174,9 +174,6 @@ healpy_spht_src = ['_healpy_sph_transform_lib.cc']
 healpy_fitsio_src = ['_healpy_fitsio_lib.cc']
 
 
-# Standard system libraries in /usr are included, as in most linux distribution
-# the cfitsio package installed via package manager is located there;
-# this way install should work often without specifying CFITSIO_EXT_PREFIX
 library_dirs = []
 include_dirs = [numpy_inc]
 extra_link = []
@@ -192,6 +189,16 @@ if 'CFITSIO_EXT_INC' in os.environ:
 if 'CFITSIO_EXT_LIB' in os.environ:
     cfitsio_lib_dir = os.environ['CFITSIO_EXT_LIB']
     extra_link.append(os.path.join(cfitsio_lib_dir, 'libcfitsio.a'))
+
+# Standard system libraries in /usr are included, as in most linux distribution
+# the cfitsio package installed via package manager is located there;
+# this way install should work often without specifying CFITSIO_EXT_PREFIX
+if not extra_link:
+    print ("""CFITSIO_EXT_PREFIX environment variable not set,
+    trying with the default /usr/,
+    if healpy fails at runtime, please see INSTALL""")
+    include_dirs.append("/usr/include/")
+    extra_link.append("/usr/lib/libcfitsio.a")
 
 if 'HEALPIX_EXT_PREFIX' in os.environ:
     healpix_inc_dir = os.path.join(os.environ['HEALPIX_EXT_PREFIX'], 'include')
