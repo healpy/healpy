@@ -809,7 +809,7 @@ def nside2pixarea(nside, degrees=False):
     Returns
     -------
     pixarea : float
-      pixel area in suqare radian or square degree
+      pixel area in square radian or square degree
 
     Notes
     -----
