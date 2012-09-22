@@ -1544,7 +1544,7 @@ def _ud_grade_core(m,nside_out,pess=False,power=None, dtype=None):
             badout = np.where(nhit == 0)
         if power:
             nhit /= ratio
-        map_out /= nhit
+        map_out[nhit!=0] /= nhit[nhit!=0] 
         try:
             map_out[badout] = UNSEEN
             m[bads] = UNSEEN
