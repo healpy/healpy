@@ -22,7 +22,8 @@ Requirements
    cfitsio library and include file (eg /usr/local, so that
    /usr/local/include/fitsio.h and /usr/local/lib/libcfitsio.a exists),
    or define CFITSIO_EXT_INC (with the cfitsio include
-   directory) and CFITSIO_EXT_LIB (with the cfitsio library file name)
+   directory) and CFITSIO_EXT_LIB (with the cfitsio library file name, for
+   example: /opt/cfitsio/lib/libcfitsio.a),
    Please do not define all three of these environment variables simultaneously.
  - compile a specific cfitsio lib:
    Define EXTERNAL_CFITSIO=no, place the  cfitsioXXXX.tar.gz in
