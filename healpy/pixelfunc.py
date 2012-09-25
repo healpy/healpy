@@ -1452,6 +1452,9 @@ def ud_grade(map_in,nside_out,pess=False,order_in='RING',order_out=None,
              power=None, dtype=None):
     """Upgrade or degrade resolution of a map (or list of maps).
 
+    in degrading the resolution, ud_grade sets the value of the superpixel
+    as the mean of the children pixels.
+
     Parameters
     ----------
     map_in : array-like or sequence of array-like
@@ -1465,7 +1468,10 @@ def ud_grade(map_in,nside_out,pess=False,order_in='RING',order_out=None,
       pixel ordering of input and output ('RING' or 'NESTED')
     power : float
       if non-zero, multiply the result by (nside_in/nside_out)**power
-      For example, power=-2 keep the sum of the map invariant
+      Examples:
+      power=-2 keeps the sum of the map invariant (useful for hitmaps),
+      power=2 divides the mean by another factor of (nside_in/nside_out)**2
+      (useful for variance maps)
     dtype : type
       the type of the output map
 
