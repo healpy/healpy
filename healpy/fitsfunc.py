@@ -146,7 +146,7 @@ def write_map(filename,m,nest=False,dtype=np.float32,fits_IDL=True,coord=None):
     tbhdu.header.update('ORDERING',ordering,
                         'Pixel ordering scheme, either RING or NESTED')
     if coord:
-        tbhdu.header.update('COORD',coord,
+        tbhdu.header.update('COORDSYS',coord,
                             'Ecliptic, Galactic or eQuatorial')
     tbhdu.header.update('EXTNAME','xtension',
                         'name of this binary table extension')
