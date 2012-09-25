@@ -1,3 +1,9 @@
+Release 1.5, in progress:
+
+* changed CFITSIO_EXT_LIB
+* updated HealPix to SVN version
+* fix "divide by zero" warning in ud_grade
+
 Release 1.4, 4th September 2012:
 
 * Support for building using an external HealPix library, by Leo Singer

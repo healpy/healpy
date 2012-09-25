@@ -187,8 +187,13 @@ if 'CFITSIO_EXT_INC' in os.environ:
     cfitsio_inc_dir = os.environ['CFITSIO_EXT_INC']
     include_dirs.append(cfitsio_inc_dir)
 if 'CFITSIO_EXT_LIB' in os.environ:
-    cfitsio_lib_dir = os.environ['CFITSIO_EXT_LIB']
-    extra_link.append(os.path.join(cfitsio_lib_dir, 'libcfitsio.a'))
+    cfitsio_lib = os.environ['CFITSIO_EXT_LIB']
+    if os.path.isdir(cfitsio_lib):
+        raise ValueError(
+    """The environment variable CFITSIO_EXT_LIB should be set to the full
+    path to the libcfitsio library, not only the folder, 
+    e.g. /opt/cfitsio/lib/libcfitsio.a""")
+    extra_link.append(cfitsio_lib)
 
 # Standard system libraries in /usr are included, as in most linux distribution
 # the cfitsio package installed via package manager is located there;
