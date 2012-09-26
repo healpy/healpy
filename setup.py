@@ -3,7 +3,6 @@
 import platform
 import os
 import sys
-import shutil
 import subprocess
 
 def is_clang_or_llvm_the_default_cc():
@@ -99,7 +98,7 @@ print 'Extra flags used: "%s"' % (HEALPIX_EXTRAFLAGS)
 
 from distutils.core import setup, Extension
 from distutils.command.build_clib import build_clib
-from os.path import join,isdir
+from os.path import join
 import sys
 
 try:
@@ -127,7 +126,7 @@ else:
 
 class build_healpix(build_clib):
     def build_libraries(self, libraries):
-        if 'HEALPIX_EXT_PREFIX' in os.environ or 'HEALPIX_EXT_LIB' in os.environ or 'HEALPIX_EXT_INC' in os.environ:
+        if 'HEALPIX_EXT_PREFIX' in os.environ:
             print "not building HEALPix; will use an external HEALPix build"
         else:
             cc = self.compiler.compiler[0]
@@ -176,19 +175,14 @@ healpy_fitsio_src = ['_healpy_fitsio_lib.cc']
 
 library_dirs = []
 include_dirs = [numpy_inc]
-extra_link = []
+extra_link = ['-lcfitsio']
+healpix_libs = []
 
 if 'CFITSIO_EXT_PREFIX' in os.environ:
     cfitsio_inc_dir = os.path.join(os.environ['CFITSIO_EXT_PREFIX'], 'include')
     cfitsio_lib_dir = os.path.join(os.environ['CFITSIO_EXT_PREFIX'], 'lib')
     include_dirs.append(cfitsio_inc_dir)
-    extra_link.append(os.path.join(cfitsio_lib_dir, 'libcfitsio.a'))
-if 'CFITSIO_EXT_INC' in os.environ:
-    cfitsio_inc_dir = os.environ['CFITSIO_EXT_INC']
-    include_dirs.append(cfitsio_inc_dir)
-if 'CFITSIO_EXT_LIB' in os.environ:
-    cfitsio_lib_dir = os.environ['CFITSIO_EXT_LIB']
-    extra_link.append(os.path.join(cfitsio_lib_dir, 'libcfitsio.a'))
+    library_dirs.append(cfitsio_lib_dir)
 
 # Standard system libraries in /usr are included, as in most linux distribution
 # the cfitsio package installed via package manager is located there;
@@ -198,26 +192,15 @@ if not extra_link:
     trying with the default /usr/,
     if healpy fails at runtime, please see INSTALL""")
     include_dirs.append("/usr/include/")
-    extra_link.append("/usr/lib/libcfitsio.a")
+    library_dirs.append("/usr/lib/")
 
 if 'HEALPIX_EXT_PREFIX' in os.environ:
     healpix_inc_dir = os.path.join(os.environ['HEALPIX_EXT_PREFIX'], 'include')
     healpix_lib_dir = os.path.join(os.environ['HEALPIX_EXT_PREFIX'], 'lib')
     include_dirs.append(healpix_inc_dir)
     library_dirs.append(healpix_lib_dir)
-if 'HEALPIX_EXT_INC' in os.environ:
-    healpix_inc_dir = os.environ['HEALPIX_EXT_INC']
-    include_dirs.append(healpix_inc_dir)
-if 'HEALPIX_EXT_LIB' in os.environ:
-    healpix_lib_dir = os.environ['HEALPIX_EXT_LIB']
-    library_dirs.append(healpix_lib_dir)
 
-
-healpix_libs =[]
 healpix_pshyt_libs = []
-
-if not extra_link:
-    healpix_libs += ['cfitsio']
 
 if 'openmp' in options:
     extra_link += ['-lgomp']
