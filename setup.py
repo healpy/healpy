@@ -174,6 +174,8 @@ healpy_fitsio_src = ['_healpy_fitsio_lib.cc']
 
 library_dirs = []
 include_dirs = [numpy_inc]
+# cfitsio needs to be last in order to correctly link the healpix libraries
+# so needs to go in extra_link instead of libraries
 extra_link = ['-lcfitsio']
 healpix_libs = []
 
@@ -186,7 +188,7 @@ if 'CFITSIO_EXT_PREFIX' in os.environ:
 # Standard system libraries in /usr are included, as in most linux distribution
 # the cfitsio package installed via package manager is located there;
 # this way install should work often without specifying CFITSIO_EXT_PREFIX
-if not extra_link:
+if not library_dirs:
     print ("""CFITSIO_EXT_PREFIX environment variable not set,
     trying with the default /usr/,
     if healpy fails at runtime, please see INSTALL""")
@@ -198,8 +200,6 @@ if 'HEALPIX_EXT_PREFIX' in os.environ:
     healpix_lib_dir = os.path.join(os.environ['HEALPIX_EXT_PREFIX'], 'lib')
     include_dirs.append(healpix_inc_dir)
     library_dirs.append(healpix_lib_dir)
-
-healpix_pshyt_libs = []
 
 if 'openmp' in options:
     extra_link += ['-lgomp']
@@ -254,7 +254,6 @@ else:
     extension_list = [pixel_lib, spht_lib, hfits_lib,
                       Extension("healpy.pshyt", ["pshyt/pshyt."+ext],
                                 include_dirs = [numpy_inc] + include_dirs,
-                                libraries = healpix_pshyt_libs,
                                 library_dirs = library_dirs,
                                 extra_link_args = extra_link),
                       Extension("healpy._query_disc",
