@@ -13,17 +13,14 @@ Requirements
    Either define the environment variable HEALPIX_EXT_PREFIX where to find the
    healpix libraries and include files (eg /usr/local, so that
    /usr/local/include/healpix_base.h and /usr/local/lib/libhealpix_cxx.a
-   exist), or define HEALPIX_EXT_INC (with the healpix include
-   directory) and HEALPIX_EXT_LIB (with the healpix library directory)
+   exist)
 
 * Healpix needs cfitsio. You can either:
  - use an existing installation :
    Either define the environment variable CFITSIO_EXT_PREFIX where to find the
    cfitsio library and include file (eg /usr/local, so that
    /usr/local/include/fitsio.h and /usr/local/lib/libcfitsio.a exists),
-   or define CFITSIO_EXT_INC (with the cfitsio include
-   directory) and CFITSIO_EXT_LIB (with the cfitsio library file name)
-   Please do not define all three of these environment variables simultaneously.
+   CFITSIO_EXT_INC and CFITSIO_EXT_LIB are not supported since healpy 1.4.1
  - compile a specific cfitsio lib:
    Define EXTERNAL_CFITSIO=no, place the  cfitsioXXXX.tar.gz in
    hpbeta/libcfitsio before installing. The cfitsio version XXXX must

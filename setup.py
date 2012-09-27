@@ -172,7 +172,6 @@ healpy_pixel_lib_src = ['_healpy_pixel_lib.cc']
 healpy_spht_src = ['_healpy_sph_transform_lib.cc']
 healpy_fitsio_src = ['_healpy_fitsio_lib.cc']
 
-
 library_dirs = []
 include_dirs = [numpy_inc]
 extra_link = ['-lcfitsio']
