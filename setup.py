@@ -168,9 +168,9 @@ def get_version():
     return __version__
 
 
-healpy_pixel_lib_src = ['_healpy_pixel_lib.cc']
-healpy_spht_src = ['_healpy_sph_transform_lib.cc']
-healpy_fitsio_src = ['_healpy_fitsio_lib.cc']
+healpy_pixel_lib_src = '_healpy_pixel_lib.cc'
+healpy_spht_src = '_healpy_sph_transform_lib.cc'
+healpy_fitsio_src = '_healpy_fitsio_lib.cc'
 
 library_dirs = []
 include_dirs = [numpy_inc]
@@ -202,16 +202,15 @@ if 'HEALPIX_EXT_PREFIX' in os.environ:
     library_dirs.append(healpix_lib_dir)
 
 if 'openmp' in options:
-    extra_link += ['-lgomp']
+    extra_link.append('-lgomp')
 
 healpix_args =['-fpermissive']
 if 'openmp' in options:
-    healpix_args += ['-fopenmp']
+    healpix_args.append('-fopenmp')
 
 #start with base extension
 pixel_lib = Extension('healpy._healpy_pixel_lib',
-                      sources=[join('healpy','src',s)
-                               for s in healpy_pixel_lib_src],
+                      sources=[join('healpy','src', healpy_pixel_lib_src)],
                       include_dirs=include_dirs,
                       library_dirs=library_dirs,
                       libraries=healpix_libs,
@@ -220,7 +219,7 @@ pixel_lib = Extension('healpy._healpy_pixel_lib',
                       )
 
 spht_lib = Extension('healpy._healpy_sph_transform_lib',
-                     sources=[join('healpy','src',s) for s in healpy_spht_src],
+                     sources=[join('healpy','src', healpy_spht_src)],
                      include_dirs=include_dirs,
                      library_dirs=library_dirs,
                      libraries=healpix_libs,
@@ -229,8 +228,7 @@ spht_lib = Extension('healpy._healpy_sph_transform_lib',
                      )
 
 hfits_lib = Extension('healpy._healpy_fitsio_lib',
-                      sources=[join('healpy','src',s)
-                               for s in healpy_fitsio_src],
+                      sources=[join('healpy','src', healpy_fitsio_src)],
                       include_dirs=include_dirs,
                       library_dirs=library_dirs,
                       libraries=healpix_libs,
