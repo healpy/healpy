@@ -243,11 +243,11 @@ if on_rtd:
     cmdclass = {}
     extension_list = []
 else:
-    libraries = [('healpix_cxx', {}),
-                 ('cxxsupport', {}),
-                 ('psht', {}),
-                 ('fftpack', {}),
-                 ('c_utils', {})]
+    libraries = [('healpix_cxx', {'sources':[]}),
+                 ('cxxsupport', {'sources':[]}),
+                 ('psht', {'sources':[]}),
+                 ('fftpack', {'sources':[]}),
+                 ('c_utils', {'sources':[]})]
     cmdclass = {'build_ext': custom_build_ext, 'build_clib': build_healpix}
     extension_list = [pixel_lib, spht_lib, hfits_lib,
                       Extension("healpy.pshyt", ["pshyt/pshyt."+ext],
