@@ -70,6 +70,11 @@ Compile on OSX
 Suggested compilation on OSX Lion is installing pyfits, cython and cfitsio using mac ports and run:
 >>> python setup.py --without-openmp
 
+Known issues
+------------
+
+ * Incompatibility with cfitisio from HEASOFT: due to a conflict of header file names it is currently not possible to use the cfitsio library provided with the HEASOFT package for compilation of Healpix C++. HEASOFT's include directory contains a file called "rotmatrix.h" which clashes with Healpix's own rotmatrix.h.
+
 Development install
 -------------------
 
