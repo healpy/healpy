@@ -210,7 +210,7 @@ def read_map(filename,field=0,dtype=np.float64,nest=False,hdu=1,h=False,
     if verbose: print 'ORDERING = %s in fits file'%ordering
 
     sz=pixelfunc.nside2npix(nside)
-    if not hasattr(field, '__len__'):
+    if not (hasattr(field, '__len__') or isinstance(field, str)):
         field = (field,)
     ret = []
 
