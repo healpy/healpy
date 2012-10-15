@@ -215,7 +215,14 @@ def read_map(filename,field=0,dtype=np.float64,nest=False,hdu=1,h=False,
     ret = []
 
     for ff in field:
-        m=hdulist[hdu].data.field(ff).astype(dtype).ravel()
+        try:
+            m=hdulist[hdu].data.field(ff).astype(dtype).ravel()
+        except pf.VerifyError as e:
+            print(e)
+            print("Trying to fix a badly formatted header")
+            m=hdulist[hdu].verify("fix")
+            m=hdulist[hdu].data.field(ff).astype(dtype).ravel()
+            
         if (not pixelfunc.isnpixok(m.size) or (sz>0 and sz != m.size)) and verbose:
             print 'nside=%d, sz=%d, m.size=%d'%(nside,sz,m.size)
             raise ValueError('Wrong nside parameter.')
