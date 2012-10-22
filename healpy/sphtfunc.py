@@ -812,7 +812,7 @@ def alm2map_der1(alm, nside, lmax = None, mmax = None):
    -------
    m, d_theta, d_phi : tuple of arrays
      The maps correponding to alm, and its derivatives with respect to
-     theta and phi.
+     theta and phi. d_phi is already divided by sin(theta)
    """
    if lmax is None:
        lmax = -1
