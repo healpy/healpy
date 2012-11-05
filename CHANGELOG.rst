@@ -1,4 +1,5 @@
-Release 1.4.1
+Release 1.4.1, 5th November 2012:
+
 * Removed support for CFITSIO_EXT_INC and CFITSIO_EXT_LIB
 * Support for linking with libcfitsio.so or libcfitsio.dyn
 
