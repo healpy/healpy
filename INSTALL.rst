@@ -6,49 +6,55 @@ Installation procedure for Healpy
 Requirements
 ------------
 
-* Healpy needs HEALPix. You can either:
- - let Healpy build its own HEALPix library from the source code included in
-   this package (the default behavior) or
- - use an existing installation :
-   Either define the environment variable HEALPIX_EXT_PREFIX where to find the
-   healpix libraries and include files (eg /usr/local, so that
-   /usr/local/include/healpix_base.h and /usr/local/lib/libhealpix_cxx.a
-   exist)
+Healpy needs HEALPix. You can either:
+* let Healpy build its own HEALPix library from the source code included in
+this package (the default behavior)
+* use an existing installation :
+Define the environment variable HEALPIX_EXT_PREFIX where to find the
+healpix libraries and include files (eg /usr/local, so that
+/usr/local/include/healpix_base.h and /usr/local/lib/libhealpix_cxx.a
+exist)
 
-* Healpix needs cfitsio. You can either:
- - use an existing installation :
-   Either define the environment variable CFITSIO_EXT_PREFIX where to find the
-   cfitsio library and include file (eg /usr/local, so that
-   /usr/local/include/fitsio.h and /usr/local/lib/libcfitsio.a exists),
-   CFITSIO_EXT_INC and CFITSIO_EXT_LIB are not supported since healpy 1.4.1
- - compile a specific cfitsio lib:
-   Define EXTERNAL_CFITSIO=no, place the  cfitsioXXXX.tar.gz in
-   hpbeta/libcfitsio before installing. The cfitsio version XXXX must
-   match the version in hpbeta/planck.make (or you need to modify it there).
+Healpix needs cfitsio. You can either:
+* use an existing installation :
+Either define the environment variable CFITSIO_EXT_PREFIX where to find the
+cfitsio library and include file (eg /usr/local, so that
+/usr/local/include/fitsio.h and /usr/local/lib/libcfitsio.a exists),
+or CFITSIO_EXT_INC with the include folder, e.g. /usr/local/include and 
+CFITSIO_EXT_LIB with full path to the libcfitsio.* library with full filename
+e.g. /usr/local/lib/libcfitsio.a or .so
+* compile a specific cfitsio lib:
+Define EXTERNAL_CFITSIO=no, place the  cfitsioXXXX.tar.gz in
+hpbeta/libcfitsio before installing. The cfitsio version XXXX must
+match the version in hpbeta/planck.make (or you need to modify it there).
 
-* the psht spherical transform library is integrated into healpy with the
+the psht spherical transform library is integrated into healpy with the
 pshyt cython wrapper. a pregenerated c code is included in the repository, but
 if you have cython installed it will be run in the build phase.
 
 Installation
 ------------
 
-$ cd healpy
-$ python setup.py build
+    cd healpy
+    python setup.py build
 
 OR, if you do not want OpenMP support (sometimes, it causes SegFault)
 
-$ python setup.py build --without-openmp
+    python setup.py build --without-openmp
+
 (alternatively, you can define the environment variable HEALPY_WITHOUT_OPENMP)
 
 If you do not want the "-march=native" flag (if your g++ is too old)
 
-$ python setup.py build --without-native
+    python setup.py build --without-native
+
 (alternatively, you can define the environment variable HEALPY_WITHOUT_NATIVE)
 
 If everything goes fine, you can give a test:
-$ cd build/lib*
-$ ipython -pylab
+
+    cd build/lib*
+    ipython -pylab
+
 >>> import healpy as H
 >>> H.mollview(arange(12))
 >>> pylab.show()
@@ -73,7 +79,7 @@ Suggested compilation on OSX Lion is installing pyfits, cython and cfitsio using
 Known issues
 ------------
 
- * Incompatibility with cfitisio from HEASOFT: due to a conflict of header file names it is currently not possible to use the cfitsio library provided with the HEASOFT package for compilation of Healpix C++. HEASOFT's include directory contains a file called "rotmatrix.h" which clashes with Healpix's own rotmatrix.h.
+* Incompatibility with cfitisio from HEASOFT: due to a conflict of header file names it is currently not possible to use the cfitsio library provided with the HEASOFT package for compilation of Healpix C++. HEASOFT's include directory contains a file called "rotmatrix.h" which clashes with Healpix's own rotmatrix.h.
 
 Development install
 -------------------
