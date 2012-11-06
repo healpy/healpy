@@ -41,8 +41,8 @@ class TestSphtFunc(unittest.TestCase):
         self.assertEqual(len(cl), 6)
         for comp in range(6):
             comphealpix = comp
-            if comp in [4,5]:
-                comphealpix = {4:5, 5:4}[comp]
+            if comp in [4,5]: # order of HEALPIX is TB, EB while in healpy is EB, TB
+                comphealpix = {4:5, 5:4}[comp] 
             np.testing.assert_array_almost_equal(cl[comp], cliqu.field(comphealpix), decimal=8)
 
     def test_anafast_xspectra(self):
