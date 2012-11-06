@@ -36,11 +36,14 @@ class TestSphtFunc(unittest.TestCase):
 
     def test_anafast_iqu(self):
         cl = hp.anafast([m.filled() for m in self.map1], lmax = 1024)
-        cliqu = np.array(pyfits.open(os.path.join(self.path, 'data', 'cl_iqu_wmap_fortran.fits'))[1].data)
+        cliqu = pyfits.open(os.path.join(self.path, 'data', 'cl_iqu_wmap_fortran.fits'))[1].data
         self.assertEqual(len(cl[0]), 1025)
         self.assertEqual(len(cl), 6)
         for comp in range(6):
-            np.testing.assert_array_almost_equal(cl[comp], np.double(cliqu[cliqu.dtype.names[comp]]), decimal=4)
+            comphealpix = comp
+            if comp in [4,5]:
+                comphealpix = {4:5, 5:4}[comp]
+            np.testing.assert_array_almost_equal(cl[comp], cliqu.field(comphealpix), decimal=8)
 
     def test_anafast_xspectra(self):
         cl = hp.anafast(self.map1[0].filled(), self.map2[0].filled(), lmax = 1024)
