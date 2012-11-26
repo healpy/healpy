@@ -47,6 +47,7 @@ def read_cl(filename, dtype=np.float64, h=False):
     """
     hdulist=pf.open(filename)
     cl = [hdulist[1].data.field(n) for n in range(len(hdulist[1].data.columns))]
+    hdulist.close()
     if len(cl) == 1:
         return cl[0]
     else:
