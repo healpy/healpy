@@ -56,8 +56,20 @@ The latest released version is 1.4.1 and is available as a source
 package at:
 https://github.com/healpy/healpy/tags
 
-Collaboration
--------------
+Support
+-------
+
+For specific *HOWTO* questions please create a question on StackOverflow_ and tag it with the `healpy` tag, so that answers will be easily searchable on google.
+
+If you think you found a bug or you have install issues, open an issue on github:
+https://github.com/healpy/healpy/issues?state=open
+
+For more general discussion, you can write to the healpy mailing list: https://groups.google.com/d/forum/healpy
+
+.. _StackOverflow: http://stackoverflow.com/questions/ask
+
+Contribute
+----------
 
 Project development takes place on github, http://github.com/healpy,
 please open an issue over there for reporting bugs or suggest improvements.
