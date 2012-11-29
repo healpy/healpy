@@ -1,1 +1,1 @@
-.. include:: ../INSTALL
+.. include:: ../INSTALL.rst
