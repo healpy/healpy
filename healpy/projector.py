@@ -506,8 +506,8 @@ class MollweideProj(SphericalProj):
             Y = MollweideProj.__findRoot(MollweideProj.__fmoll,
                                          MollweideProj.__dfmoll,
                                          X.copy(),X,niter=10)
-            X = np.concatenate([-pi/2,X,pi/2],None)
-            Y = np.concatenate([-pi/2,Y,pi/2],None)
+            X = np.concatenate([[-pi/2],X,[pi/2]])
+            Y = np.concatenate([[-pi/2],Y,[pi/2]])
             MollweideProj.__molldata.append( X )
             MollweideProj.__molldata.append( Y )
         return
