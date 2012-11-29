@@ -179,27 +179,31 @@ if not 'HEALPIX_EXT_PREFIX' in os.environ and not (
     ('CFITSIO_EXT_PREFIX' in os.environ) or 
     ('CFITSIO_EXT_LIB' in os.environ and 'CFITSIO_EXT_INC' in os.environ)
     ):
-    print """ERROR: In order to build HEALPIX C++ it is necessary either
+    print """WARNING: In order to build HEALPIX C++ it is necessary either
 to create the environment variable:
+
 * CFITSIO_EXT_PREFIX with the path to the location of cfitsio as
 CFITSIO_EXT_PREFIX/include/fitsio.h and CFITSIO_EXT_PREFIX/lib/libcfitsio.* 
-or:
-* CFITSIO_EXT_INC with the include folder and CFITSIO_EXT_LIB with full path 
-to the libcfitsio.* library with full filename"""
-    sys.exit(1)
 
-if 'CFITSIO_EXT_PREFIX' in os.environ:
-    cfitsio_inc_dir = os.path.join(os.environ['CFITSIO_EXT_PREFIX'], 'include')
-    cfitsio_lib_dir = os.path.join(os.environ['CFITSIO_EXT_PREFIX'], 'lib')
-    include_dirs.append(cfitsio_inc_dir)
-    library_dirs.append(cfitsio_lib_dir)
-    # cfitsio needs to be last in order to correctly link the healpix libraries
-    # so needs to go in extra_link instead of libraries
-    extra_link.append('-lcfitsio')
+or:
+
+* CFITSIO_EXT_INC with the include folder and CFITSIO_EXT_LIB with full path 
+to the libcfitsio.* library with full filename
+
+"""
 else:
-    include_dirs.append(os.environ['CFITSIO_EXT_INC'])
-    # works both in the form -Lfolder -lcfitsio and full path to library
-    extra_link.append(os.environ['CFITSIO_EXT_LIB'].strip())
+    if 'CFITSIO_EXT_PREFIX' in os.environ:
+        cfitsio_inc_dir = os.path.join(os.environ['CFITSIO_EXT_PREFIX'], 'include')
+        cfitsio_lib_dir = os.path.join(os.environ['CFITSIO_EXT_PREFIX'], 'lib')
+        include_dirs.append(cfitsio_inc_dir)
+        library_dirs.append(cfitsio_lib_dir)
+        # cfitsio needs to be last in order to correctly link the healpix libraries
+        # so needs to go in extra_link instead of libraries
+        extra_link.append('-lcfitsio')
+    else:
+        include_dirs.append(os.environ['CFITSIO_EXT_INC'])
+        # works both in the form -Lfolder -lcfitsio and full path to library
+        extra_link.append(os.environ['CFITSIO_EXT_LIB'].strip())
 
 if 'HEALPIX_EXT_PREFIX' in os.environ:
     healpix_inc_dir = os.path.join(os.environ['HEALPIX_EXT_PREFIX'], 'include')
