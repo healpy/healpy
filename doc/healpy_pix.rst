@@ -38,6 +38,7 @@ nside/npix/resolution
    npix2nside
    nside2resol
    nside2pixarea
+   max_pixrad
    isnsideok
    isnpixok
    get_map_size
