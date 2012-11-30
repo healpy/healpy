@@ -1088,21 +1088,24 @@ def get_all_neighbours(nside, theta, phi=None, nest=False):
     return res
 
 def max_pixrad(nside):
-    """Parameters
+    """Maximum angular distance between any pixel center and its corners
+
+    Parameters
     ----------
     nside : int
       the nside to work with
+
     Returns
     -------
     rads: double
-      the maximum angular distance (in radian) between any pixel center and its corners
+       angular distance (in radians)
+
     Examples
     --------
     >>> '%.15f' % max_pixrad(1)
     '0.841068670567930'
     >>> '%.15f' % max_pixrad(16)
     '0.066014761432513'
-
     """
     return pixlib._max_pixrad(nside)
 
