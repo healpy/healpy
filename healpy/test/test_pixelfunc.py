@@ -50,22 +50,18 @@ class TestPixelFunc(unittest.TestCase):
 
     def test_boundary(self):
         """Test whether the boundary shapes look sane"""
-        distance = lambda xyz1, xyz2: np.sqrt(sum((x1 - x2)**2 for x1,x2 in zip(xyz1, xyz2)))
-        for lgNside in range(1, 4):
+        for lgNside in range(1, 5):
             nside = 1<<lgNside
             for pix in range(nside2npix(nside)):
-                for res in range(1, 6):
+                for res in range(1, 50, 7):
                     num = 4*res # Expected number of points
                     for nest in (True, False):
                         points = boundary(nside, pix, res, nest=nest)
-                        self.assertTrue(len(points) == 3)
-                        for dim in range(3):
-                            self.assertTrue(len(points[dim]) == num)
-                        dist = [distance((points[j][i] for j in range(3)),
-                                         (points[j][(i+1)%num] for j in range(3))) for i in range(num)]
-                        self.assertTrue(min(abs(d) for d in dist) != 0.0)
-                        dmin = min(dist)
-                        dmax = max(dist)
+                        self.assertTrue(points.shape == (3,num))
+                        dist = np.linalg.norm(points[:,:num-1] - points[:,1:]) # distance between points
+                        self.assertTrue((dist != 0).all())
+                        dmin = np.min(dist)
+                        dmax = np.max(dist)
                         self.assertTrue(dmax/dmin <= 2.0)
 
 

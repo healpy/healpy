@@ -286,14 +286,12 @@ def boundary(nside, pix, step=1, nest=False):
     cdef vector[vec3] bounds
     hb.boundary(pix, step, bounds)
     cdef size_t n = bounds.size()
-    cdef np.ndarray[double, ndim = 1] x = np.empty(n, dtype=np.float)
-    cdef np.ndarray[double, ndim = 1] y = np.empty(n, dtype=np.float)
-    cdef np.ndarray[double, ndim = 1] z = np.empty(n, dtype=np.float)
+    cdef np.ndarray[double, ndim = 2] out = np.empty((3, n), dtype=np.float)
     for i in range(n):
-        x[i] = bounds[i].x
-        y[i] = bounds[i].y
-        z[i] = bounds[i].z
-    return x,y,z
+        out[0,i] = bounds[i].x
+        out[1,i] = bounds[i].y
+        out[2,i] = bounds[i].z
+    return out
 
 
 # Try to implement pix2ang
