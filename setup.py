@@ -271,7 +271,14 @@ else:
                                 library_dirs = library_dirs,
                                 extra_compile_args = healpix_args,
                                 extra_link_args = extra_link,
-                                language='c++')
+                                language='c++'),
+                      Extension("healpy._pixelfunc", 
+                                ['healpy/src/_pixelfunc.'+extcpp],
+                                include_dirs = [numpy_inc] + include_dirs,
+                                library_dirs = library_dirs,
+                                extra_compile_args = healpix_args,
+                                extra_link_args = extra_link,
+                                language='c++'),
                       ]
     for e in extension_list[-3:]: #extra setup for Cython extensions
         e.pyrex_directives = {"embedsignature": True}
