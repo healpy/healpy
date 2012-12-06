@@ -53,6 +53,10 @@ try:
     from _query_disc import query_disc, query_strip, query_polygon
 except ImportError:
     warnings.warn('Warning: cannot import query disc module')
+try:
+    from _pixelfunc import ringinfo, pix2ring
+except ImportError:
+    warnings.warn('Warning: cannot import pixelfunc module')
 
 from zoomtool import mollzoom,set_g_clim
 

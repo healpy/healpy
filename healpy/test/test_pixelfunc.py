@@ -1,4 +1,5 @@
 from healpy.pixelfunc import *
+from healpy._pixelfunc import ringinfo, pix2ring
 import exceptions
 import numpy as np
 import unittest
@@ -46,6 +47,22 @@ class TestPixelFunc(unittest.TestCase):
         self.assertAlmostEqual(d[0], dipole[0])
         self.assertAlmostEqual(d[1], dipole[1])
         self.assertAlmostEqual(d[2], dipole[2])
+
+    def test_ring(self):
+        for lgNside in range(1, 5):
+            nside = 1<<lgNside
+            numPix = nside2npix(nside)
+            numRings = 4*nside - 1 # Expected number of rings
+            for nest in (True, False):
+                pix = np.arange(numPix)
+                ring = pix2ring(nside, pix, nest=nest)
+                self.assertTrue(pix.shape == ring.shape)
+                self.assertTrue(len(set(ring)) == numRings)
+                if not nest:
+                    first = ring[:numPix-1]
+                    second = ring[1:]
+                    self.assertTrue(np.logical_or(first == second, first == second-1).all())
+
 
 if __name__ == '__main__':
     unittest.main()
