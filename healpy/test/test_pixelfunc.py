@@ -1,4 +1,5 @@
 from healpy.pixelfunc import *
+from healpy._query_disc import boundary
 import exceptions
 import numpy as np
 import unittest
@@ -46,6 +47,23 @@ class TestPixelFunc(unittest.TestCase):
         self.assertAlmostEqual(d[0], dipole[0])
         self.assertAlmostEqual(d[1], dipole[1])
         self.assertAlmostEqual(d[2], dipole[2])
+
+    def test_boundary(self):
+        """Test whether the boundary shapes look sane"""
+        for lgNside in range(1, 5):
+            nside = 1<<lgNside
+            for pix in range(nside2npix(nside)):
+                for res in range(1, 50, 7):
+                    num = 4*res # Expected number of points
+                    for nest in (True, False):
+                        points = boundary(nside, pix, res, nest=nest)
+                        self.assertTrue(points.shape == (3,num))
+                        dist = np.linalg.norm(points[:,:num-1] - points[:,1:]) # distance between points
+                        self.assertTrue((dist != 0).all())
+                        dmin = np.min(dist)
+                        dmax = np.max(dist)
+                        self.assertTrue(dmax/dmin <= 2.0)
+
 
 if __name__ == '__main__':
     unittest.main()
