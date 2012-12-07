@@ -101,6 +101,8 @@ cdef extern from "healpix_base.h":
        void swap (T_Healpix_Base &other)
        double max_pixrad()
        double max_pixrad(I ring)
+       void boundary(I pix, size_t step, vector[vec3] &out)
+
        arr[int] swap_cycles()
 
 
@@ -270,6 +272,26 @@ def query_strip(nside, theta1, theta2, inclusive = False, nest = False):
     hb.query_strip(theta1, theta2, inclusive, pixset)
 
     return pixset_to_array(pixset)
+
+
+def boundary(nside, pix, step=1, nest=False):
+    if not isnsideok(nside):
+        raise ValueError('Wrong nside value, must be a power of 2')
+    cdef Healpix_Ordering_Scheme scheme
+    if nest:
+        scheme = NEST
+    else:
+        scheme = RING
+    cdef T_Healpix_Base[int64] hb = T_Healpix_Base[int64](nside, scheme, SET_NSIDE)
+    cdef vector[vec3] bounds
+    hb.boundary(pix, step, bounds)
+    cdef size_t n = bounds.size()
+    cdef np.ndarray[double, ndim = 2] out = np.empty((3, n), dtype=np.float)
+    for i in range(n):
+        out[0,i] = bounds[i].x
+        out[1,i] = bounds[i].y
+        out[2,i] = bounds[i].z
+    return out
 
 
 # Try to implement pix2ang

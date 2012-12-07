@@ -77,6 +77,8 @@ template<typename I> class T_Healpix_Base: public Healpix_Tables
     void pix2loc (I pix, double &z, double &phi, double &sth, bool &have_sth)
       const;
 
+    void xyf2loc(double x, double y, int face, double &z, double &ph, double &sth, bool &have_sth) const;
+
     I nest_peano_helper (I pix, int dir) const;
 
     typedef I (T_Healpix_Base::*swapfunc)(I pix) const;
@@ -352,6 +354,14 @@ template<typename I> class T_Healpix_Base: public Healpix_Tables
     /*! Returns the maximum angular distance (in radian) between any pixel
         center and its corners in a given ring. */
     double max_pixrad(I ring) const;
+
+
+    /*! Generates the boundary of a pixel, with the number of points per
+      side given by the step parameter.  To get just the corners, use
+      step=1.
+    */
+    void boundary(I pix, std::size_t step, std::vector<vec3> &out) const;
+
 
     arr<int> swap_cycles() const;
   };

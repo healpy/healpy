@@ -55,6 +55,16 @@ template<typename T>class vec3_t
     template<typename T2> explicit vec3_t (const vec3_t<T2> &orig)
       : x(orig.x), y(orig.y), z(orig.z) {}
 
+    /*! Creates a vector from the provided location (z, phi) */
+    static vec3_t fromLoc(T _z, T phi) {
+        T sinTheta = std::sqrt((1.0-_z)*(1.0+_z));
+        return fromLoc(_z, phi, sinTheta, true);
+    }
+    /*! Creates a vector from the provided location (z, phi, sin(theta)) */
+    static vec3_t fromLoc(T _z, T phi, T sinTheta, bool haveSinTheta=true) {
+        return haveSinTheta ? vec3_t(sinTheta*std::cos(phi), sinTheta*std::sin(phi), _z) : fromLoc(_z, phi);
+    }
+
     /*! Sets the vector components to \a xc, \a yc, and \a zc. */
     void Set (T xc, T yc, T zc)
       { x=xc; y=yc; z=zc; }
