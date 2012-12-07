@@ -275,6 +275,50 @@ def query_strip(nside, theta1, theta2, inclusive = False, nest = False):
 
 
 def boundary(nside, pix, step=1, nest=False):
+    """Returns an array containing vectors to the boundary of
+    the nominated pixel.
+
+    The returned array has shape (3, 4*step), the elements of
+    which are the x,y,z positions on the unit sphere of the
+    pixel boundary.  In order to get vector positions for just
+    the corners, specify step=1.
+
+    Parameters
+    ----------
+    nside : int
+      The nside of the Healpix map.
+    pix : int
+      Pixel identifier
+    step : int, optional
+      Number of elements for each side of the pixel.
+    nest : bool, optional
+      if True, assume NESTED pixel ordering, otherwise, RING pixel ordering
+
+    Returns
+    -------
+    boundary : float, array
+      x,y,z for positions on the boundary of the pixel
+
+    Example
+    -------
+    # Get corners of HEALPixel 5 in nside=2, RINGS ordering.
+
+    >>> import healpy as hp
+    >>> import numpy as np
+    >>> nside = 2
+    >>> corners = hp.boundary(nside, 5)
+    >>> print corners
+    [[  2.44716655e-17   5.27046277e-01   3.60797400e-01   4.56398915e-17]
+     [  3.99652627e-01   5.27046277e-01   8.71041977e-01   7.45355992e-01]
+     [  9.16666667e-01   6.66666667e-01   3.33333333e-01   6.66666667e-01]]
+
+    # Now convert to phi,theta representation:
+
+    >>> hp.vec2ang(np.transpose(corners))
+    (array([ 0.41113786,  0.84106867,  1.23095942,  0.84106867]), array([ 1.57079633,  0.78539816,  1.17809725,  1.57079633]))
+    """
+
+
     if not isnsideok(nside):
         raise ValueError('Wrong nside value, must be a power of 2')
     cdef Healpix_Ordering_Scheme scheme
