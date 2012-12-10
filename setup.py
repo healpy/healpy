@@ -107,9 +107,9 @@ try:
     if not os.path.exists('healpy/src/_query_disc.pyx'): #pypi source package does contain the pyx files
         raise
     from Cython.Distutils import build_ext
-    import Cython.Compiler.Version
-    version = [int(v) for v in Cython.Compiler.Version.version.split(".")]
-    assert version[1]>=14
+    import Cython.Compiler.Version as CythonVersion
+    from distutils.version import LooseVersion
+    assert LooseVersion(CythonVersion.version) >= LooseVersion("0.14")
     ext = "pyx"
     extcpp = "pyx"
 except:
