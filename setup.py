@@ -5,7 +5,7 @@ import os
 import sys
 import subprocess
 
-def is_clang_or_llvm_the_default_cc():
+def is_clang_the_default_cc():
     """Check if the cc command runs clang or not. Return true if it does.
     """
     from distutils import sysconfig
@@ -24,7 +24,7 @@ def is_clang_or_llvm_the_default_cc():
     if p.returncode:
         return False
 
-    return ('clang' in cc_output or 'llvm' in cc_output)
+    return ('clang' in cc_output)
 
 TARGET_DICT = {
     'linux': 'healpy',
@@ -54,8 +54,8 @@ try:
 except KeyError:
     raise AssertionError ('Unsupported platform: %s' % SYSTEM_STRING)
 
-if is_clang_or_llvm_the_default_cc():
-    print ("Detected clang/llvm compiler, disabling openMP, as it is currently unsupported")
+if is_clang_the_default_cc():
+    print ("Detected clang compiler, disabling openMP, as it is currently unsupported")
     default_options['openmp'] = False
 
 
