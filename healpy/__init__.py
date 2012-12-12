@@ -47,7 +47,7 @@ from pixelfunc import (ma, mask_good, mask_bad,
 from sphtfunc import (anafast, map2alm,
                       alm2map, Alm, synalm, synfast,
                       smoothing, smoothalm, almxfl, alm2cl,
-                      pixwin, alm2map_der1)
+                      pixwin, alm2map_der1, gauss_beam)
 
 try:
     from _query_disc import query_disc, query_strip, query_polygon, boundary

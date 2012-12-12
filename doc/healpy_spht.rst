@@ -35,3 +35,10 @@ Spherical harmonic transform tools
    almxfl
    pixwin
    Alm
+
+Other tools
+-----------
+.. autosummary::
+   :toctree: generated/
+   
+   gauss_beam

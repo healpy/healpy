@@ -24,7 +24,6 @@ class TestSphtFunc(unittest.TestCase):
             http://lambda.gsfc.nasa.gov/data/map/dr4/ancillary/masks/wmap_temperature_analysis_mask_r9_7yr_v4.fits
             on Mac or Linux you can run the bash script get_wmap_maps.sh from the same folder
             """)
-            raise
         for m in chain(self.map1, self.map2):
             m.mask = np.logical_not(self.mask)
         self.cla = hp.read_cl(os.path.join(self.path, 'data', 'cl_wmap_fortran.fits'))
@@ -77,5 +76,10 @@ class TestSphtFunc(unittest.TestCase):
         np.testing.assert_array_almost_equal(smoothed.filled(), smoothed_f90.filled())
         np.testing.assert_array_almost_equal(smoothed, smoothed_f90)
         
+    def test_gauss_beam(self):
+        idl_gauss_beam = np.array(pyfits.open(os.path.join(self.path, 'data', 'gaussbeam_10arcmin_lmax512_pol.fits'))[0].data).T
+        gauss_beam = hp.gauss_beam(np.radians(10./60.), lmax=512, pol=True)
+        np.testing.assert_allclose(idl_gauss_beam, gauss_beam)
+
 if __name__ == '__main__':
     unittest.main()

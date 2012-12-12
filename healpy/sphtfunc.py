@@ -852,3 +852,41 @@ def load_sample_spectra():
     f = ell * (ell + 1) / 2 / np.pi
     cls[1:, 1:] /= f[1:]
     return ell, f, cls[1:]
+
+def gauss_beam(fwhm, lmax=512, pol=False):
+    """Gaussian beam window function
+
+    Computes the spherical transform of an axisimmetric gaussian beam
+
+    Parameters
+    ----------
+    fwhm : float
+        full width half max in radians
+    lmax : integer
+        ell max
+    pol : bool
+        if False, output has size (lmax+1) and is temperature beam
+        if True output has size (lmax+1, 4) with components:
+        * temperature beam
+        * grad/electric polarization beam
+        * curl/magnetic polarization beam
+        * temperature * grad beam
+
+    Returns
+    -------
+    beam : array
+        beam window function [0, lmax] if dim not specified
+        otherwise (lmax+1, 4) contains polarized beam
+    """
+
+    sigma = fwhm / np.sqrt(8. * np.log(2.))
+    ell = np.arange(lmax + 1)
+    sigma2 = sigma ** 2
+    g = np.exp(-.5 * ell * (ell + 1) * sigma2)
+
+    if not pol: # temperature-only beam
+        return g
+    else: # polarization beam
+        # polarization factors [1, 2 sigma^2, 2 sigma^2, sigma^2]
+        pol_factor = np.exp([0., 2*sigma2, 2*sigma2, sigma2])
+        return g[:, np.newaxis] * pol_factor 
