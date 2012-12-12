@@ -858,6 +858,14 @@ def gauss_beam(fwhm, lmax=512, pol=False):
 
     Computes the spherical transform of an axisimmetric gaussian beam
 
+    For a sky of underlying power spectrum C(l) observed with beam of  
+    given FWHM, the measured power spectrum will be 
+    C(l)_meas = C(l) B(l)^2
+    where B(l) is given by gaussbeam(Fwhm,Lmax). 
+    The polarization beam is also provided (when pol = True ) assuming 
+    a perfectly co-polarized beam 
+    (e.g., Challinor et al 2000, astro-ph/0008228)
+
     Parameters
     ----------
     fwhm : float
