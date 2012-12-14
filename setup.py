@@ -117,7 +117,7 @@ except:
   ext = "c"
   extcpp = "cpp"
   print "No Cython >= 0.14 found, defaulting to pregenerated c version."
-  
+
 if on_rtd:
     numpy_inc = ''
 else:
@@ -176,18 +176,18 @@ include_dirs = [numpy_inc]
 extra_link = []
 
 if not 'HEALPIX_EXT_PREFIX' in os.environ and not (
-    ('CFITSIO_EXT_PREFIX' in os.environ) or 
+    ('CFITSIO_EXT_PREFIX' in os.environ) or
     ('CFITSIO_EXT_LIB' in os.environ and 'CFITSIO_EXT_INC' in os.environ)
     ):
     print """WARNING: In order to build HEALPIX C++ it is necessary either
 to create the environment variable:
 
 * CFITSIO_EXT_PREFIX with the path to the location of cfitsio as
-CFITSIO_EXT_PREFIX/include/fitsio.h and CFITSIO_EXT_PREFIX/lib/libcfitsio.* 
+CFITSIO_EXT_PREFIX/include/fitsio.h and CFITSIO_EXT_PREFIX/lib/libcfitsio.*
 
 or:
 
-* CFITSIO_EXT_INC with the include folder and CFITSIO_EXT_LIB with full path 
+* CFITSIO_EXT_INC with the include folder and CFITSIO_EXT_LIB with full path
 to the libcfitsio.* library with full filename
 
 """
@@ -250,29 +250,25 @@ if on_rtd:
 else:
     libraries = [('healpix_cxx', {'sources':[]}),
                  ('cxxsupport', {'sources':[]}),
-                 ('psht', {'sources':[]}),
+                 ('sharp', {'sources':[]}),
                  ('fftpack', {'sources':[]}),
                  ('c_utils', {'sources':[]})]
     cmdclass = {'build_ext': custom_build_ext, 'build_clib': build_healpix}
     extension_list = [pixel_lib, spht_lib, hfits_lib,
-                      Extension("healpy.pshyt", ["pshyt/pshyt."+ext],
-                                include_dirs = [numpy_inc] + include_dirs,
-                                library_dirs = library_dirs,
-                                extra_link_args = extra_link),
                       Extension("healpy._query_disc",
                                 ['healpy/src/_query_disc.'+extcpp],
                                 include_dirs = [numpy_inc] + include_dirs,
                                 library_dirs = library_dirs,
                                 extra_link_args = extra_link,
                                 language='c++'),
-                      Extension("healpy._sphtools", 
+                      Extension("healpy._sphtools",
                                 ['healpy/src/_sphtools.'+extcpp],
                                 include_dirs = [numpy_inc] + include_dirs,
                                 library_dirs = library_dirs,
                                 extra_compile_args = healpix_args,
                                 extra_link_args = extra_link,
                                 language='c++'),
-                      Extension("healpy._pixelfunc", 
+                      Extension("healpy._pixelfunc",
                                 ['healpy/src/_pixelfunc.'+extcpp],
                                 include_dirs = [numpy_inc] + include_dirs,
                                 library_dirs = library_dirs,

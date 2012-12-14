@@ -58,7 +58,7 @@ cdef extern from "healpix_base.h":
        T_Healpix_Base(I nside, Healpix_Ordering_Scheme scheme,
                      nside_dummy)
        void query_disc (pointing ptg, double radius,
-                        rangeset[I]& pixset) 
+                        rangeset[I]& pixset)
        void query_disc_inclusive (pointing ptg, double radius,
                                   rangeset[I]& pixset, int fact)
        void query_polygon(vector[pointing] vert, rangeset[I]& pixset)
@@ -101,7 +101,7 @@ cdef extern from "healpix_base.h":
        void swap (T_Healpix_Base &other)
        double max_pixrad()
        double max_pixrad(I ring)
-       void boundary(I pix, size_t step, vector[vec3] &out)
+       void boundaries(I pix, size_t step, vector[vec3] &out)
 
        arr[int] swap_cycles()
 
@@ -122,7 +122,7 @@ def query_disc(nside, vec, radius, inclusive = False, fact = 4, nest = False):
     radius : float
       The radius (in radians) of the disk
     inclusive : bool, optional
-      If False, return the exact set of pixels whose pixel centers lie 
+      If False, return the exact set of pixels whose pixel centers lie
       within the disk; if True, return all pixels that overlap with the disk,
       and maybe a few more. Default: False
     fact : int, optional
@@ -169,8 +169,8 @@ def query_disc(nside, vec, radius, inclusive = False, fact = 4, nest = False):
 
 
 def query_polygon(nside, vertices, inclusive = False, fact = 4, nest = False):
-    """ Returns the pixels whose centers lie within the convex polygon 
-    defined by the *vertices* array (if *inclusive* is False), or which 
+    """ Returns the pixels whose centers lie within the convex polygon
+    defined by the *vertices* array (if *inclusive* is False), or which
     overlap with this polygon (if *inclusive* is True).
 
     Parameters
@@ -189,7 +189,7 @@ def query_polygon(nside, vertices, inclusive = False, fact = 4, nest = False):
       else it can be any positive integer. Default: 4.
     nest: bool, optional
       if True, assume NESTED pixel ordering, otherwise, RING pixel ordering
-    
+
     Returns
     -------
     ipix : int, array
@@ -232,11 +232,11 @@ def query_polygon(nside, vertices, inclusive = False, fact = 4, nest = False):
 
 def query_strip(nside, theta1, theta2, inclusive = False, nest = False):
     """Returns pixels whose centers lie within the colatitude range
-    defined by *theta1* and *theta2* (if inclusive is False), or which 
+    defined by *theta1* and *theta2* (if inclusive is False), or which
     overlap with this region (if *inclusive* is True). If theta1<theta2, the
-    region between both angles is considered, otherwise the regions 
+    region between both angles is considered, otherwise the regions
     0<theta<theta2 and theta1<theta<pi.
-    
+
     Parameters
     ----------
     nside : int
@@ -246,7 +246,7 @@ def query_strip(nside, theta1, theta2, inclusive = False, nest = False):
     theta2 : float
       Second colatitude
     inclusive ; bool
-      If False, return the exact set of pixels whose pixels centers lie 
+      If False, return the exact set of pixels whose pixels centers lie
       within the region; if True, return all pixels that overlap with the
       region.
     nest: bool, optional
@@ -328,7 +328,7 @@ def boundary(nside, pix, step=1, nest=False):
         scheme = RING
     cdef T_Healpix_Base[int64] hb = T_Healpix_Base[int64](nside, scheme, SET_NSIDE)
     cdef vector[vec3] bounds
-    hb.boundary(pix, step, bounds)
+    hb.boundaries(pix, step, bounds)
     cdef size_t n = bounds.size()
     cdef np.ndarray[double, ndim = 2] out = np.empty((3, n), dtype=np.float)
     for i in range(n):
@@ -366,7 +366,7 @@ def boundary(nside, pix, step=1, nest=False):
 ###         out_r[1, i] = p.phi
 ###     del out_r, ipix_r, ipix_
 ###     return out
-    
+
 
 cdef pixset_to_array(rangeset[int64] &pixset):
     cdef int64 i, n
