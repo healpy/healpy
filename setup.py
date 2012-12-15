@@ -250,15 +250,10 @@ if on_rtd:
 else:
     libraries = [('healpix_cxx', {'sources':[]}),
                  ('cxxsupport', {'sources':[]}),
-                 ('psht', {'sources':[]}),
                  ('fftpack', {'sources':[]}),
                  ('c_utils', {'sources':[]})]
     cmdclass = {'build_ext': custom_build_ext, 'build_clib': build_healpix}
     extension_list = [pixel_lib, spht_lib, hfits_lib,
-                      Extension("healpy.pshyt", ["pshyt/pshyt."+ext],
-                                include_dirs = [numpy_inc] + include_dirs,
-                                library_dirs = library_dirs,
-                                extra_link_args = extra_link),
                       Extension("healpy._query_disc",
                                 ['healpy/src/_query_disc.'+extcpp],
                                 include_dirs = [numpy_inc] + include_dirs,
