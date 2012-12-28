@@ -124,6 +124,8 @@ else:
     from numpy import get_include
     numpy_inc = get_include()
 
+HEALPIX_FOLDER = 'healpix/trunk/src/cxx/'
+
 class build_healpix(build_clib):
     def build_libraries(self, libraries):
         if 'HEALPIX_EXT_PREFIX' in os.environ:
@@ -133,7 +135,7 @@ class build_healpix(build_clib):
             cxx = self.compiler.compiler_cxx[0]
             build_temp = os.path.realpath(self.build_temp)
             build_clib = os.path.realpath(self.build_clib)
-            cmdline = ['make', '-w', '-C', 'hpbeta',
+            cmdline = ['make', '-w', '-C', HEALPIX_FOLDER,
                 'HEALPIX_TARGET=%s' % HEALPIX_TARGET,
                 'HEALPIX_EXTRAFLAGS=%s' % HEALPIX_EXTRAFLAGS,
                 'CC=%s' % cc,
