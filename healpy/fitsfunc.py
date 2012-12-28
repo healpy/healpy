@@ -27,6 +27,12 @@ from sphtfunc import Alm
 import warnings
 from pixelfunc import UNSEEN
 
+standard_column_names = {
+    1 : "I_STOKES",
+    3 : ["%s_STOKES" % comp for comp in "IQU"],
+    6 : ["II", "IQ", "IU", "QQ", "QU", "UU"]
+}
+
 class HealpixFitsWarning(Warning):
     pass
 
@@ -80,7 +86,7 @@ def write_cl(filename, cl, dtype=np.float64):
     tbhdu.header.update('CREATOR','healpy')
     tbhdu.writeto(filename,clobber=True)
 
-def write_map(filename,m,nest=False,dtype=np.float32,fits_IDL=True,coord=None):
+def write_map(filename,m,nest=False,dtype=np.float32,fits_IDL=True,coord=None,column_names=None):
     """Writes an healpix map into an healpix file.
 
     Parameters
@@ -98,24 +104,31 @@ def write_map(filename,m,nest=False,dtype=np.float32,fits_IDL=True,coord=None):
       go in one column. Default: True
     coord : str
       The coordinate system, typically 'E' for Ecliptic, 'G' for Galactic or 'Q' for Equatorial  
+    column_names : str or list
+      Column name or list of column names, if None we use:
+      I_STOKES for 1 component,
+      I/Q/U_STOKES for 3 components,
+      II, IQ, IU, QQ, QU, UU for 6 components,
+      COLUMN_0, COLUMN_1... otherwise
     """
     if not hasattr(m, '__len__'):
         raise TypeError('The map must be a sequence')
     # check the dtype and convert it
     fitsformat = getformat(dtype)
+    if column_names is None:
+        column_names = standard_column_names.get(len(m), ["COLUMN_%d" % n for n in range(len(m))])
+    else:
+        assert len(column_names) == len(m), "Length column_names != number of maps"
     #print 'format to use: "%s"'%fitsformat
     if hasattr(m[0], '__len__'):
-        # we should have three maps
-        if len(m) != 3 or len(m[1]) != len(m[0]) or len(m[2]) != len(m[0]):
-            raise ValueError("You should give 3 maps of same size "
-                             "for polarisation...")
+        # maps must have same length
+        assert len(set(map(len, m))) == 1, "Maps must have same length"
         nside = pixelfunc.npix2nside(len(m[0]))
         if nside < 0:
             raise ValueError('Invalid healpix map : wrong number of pixel')
         m = pixelfunc.ma_to_array(m)
         cols=[]
-        colnames=['I_STOKES','Q_STOKES','U_STOKES']
-        for cn,mm in zip(colnames,m):
+        for cn,mm in zip(column_names,m):
             if len(mm) > 1024 and fits_IDL:
                 # I need an ndarray, for reshape:
                 mm2 = np.asarray(mm)
@@ -131,11 +144,11 @@ def write_map(filename,m,nest=False,dtype=np.float32,fits_IDL=True,coord=None):
         if nside < 0:
             raise ValueError('Invalid healpix map : wrong number of pixel')
         if m.size > 1024 and fits_IDL:
-            cols = [pf.Column(name='I_STOKES',
+            cols = [pf.Column(name=column_names,
                                format='1024%s'%fitsformat,
                                array=m.reshape(m.size/1024,1024))]
         else:
-            cols = [pf.Column(name='I_STOKES',
+            cols = [pf.Column(name=column_names,
                                format='%s'%fitsformat,
                                array=m)]
             
