@@ -1,0 +1,3 @@
+[submodule "healpixsubmodule"]
+	path = healpixsubmodule
+	url = git@github.com:healpy/healpixmirror.git
