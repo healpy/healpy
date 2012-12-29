@@ -124,7 +124,7 @@ else:
     from numpy import get_include
     numpy_inc = get_include()
 
-HEALPIX_FOLDER = 'healpix/trunk/src/cxx/'
+HEALPIX_FOLDER = 'healpixsubmodule/src/cxx/'
 
 class build_healpix(build_clib):
     def build_libraries(self, libraries):
