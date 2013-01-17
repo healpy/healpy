@@ -21,3 +21,5 @@ git add -f healpy/src/_pixelfunc.cpp
 git add -f healpy/src/_query_disc.cpp
 
 echo now you can check changes and commit
+git status
+git commit -am "created release$version branch"
