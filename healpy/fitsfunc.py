@@ -218,7 +218,7 @@ def read_map(filename,field=0,dtype=np.float64,nest=False,hdu=1,h=False,
     for ff in field:
         try:
             m=hdulist[hdu].data.field(ff).astype(dtype).ravel()
-        except pf.VerifyError as e:
+        except pf.VerifyError, e:
             print(e)
             print("Trying to fix a badly formatted header")
             m=hdulist[hdu].verify("fix")
