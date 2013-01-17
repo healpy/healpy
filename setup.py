@@ -124,7 +124,7 @@ else:
     from numpy import get_include
     numpy_inc = get_include()
 
-HEALPIX_FOLDER = 'healpixsubmodule'
+HEALPIX_FOLDER = 'healpixcxx'
 HEALPIX_CXX_FOLDER = os.path.join(HEALPIX_FOLDER, "src", "cxx") 
 
 class build_healpix(build_clib):
