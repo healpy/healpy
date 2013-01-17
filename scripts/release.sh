@@ -12,6 +12,7 @@ echo __version__=\'$version\' > healpy/version.py
 echo copy current version of healpix to other folder to be included in the release package
 mkdir -p healpixcxx/src
 cp -r healpixsubmodule/src/cxx healpixcxx/src/
+git add healpixcxx
 echo replace folder reference in setup.py
 sed -i '' -e's/healpixsubmodule/healpixcxx/' setup.py
 
