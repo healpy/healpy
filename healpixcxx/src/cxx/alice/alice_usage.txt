@@ -1,0 +1,66 @@
+Usage:
+  alice2 ...
+  where ... indicates any combination of the below optional parameters.
+
+  examples:
+    alice2 -in wmap_ilc_3yr_v2_r6_sim.fits -nside 512 -ell 300 -xsz 800 -out test
+    alice2 -in wmap_ilc_3yr_v2_r6_sim.fits -nside 512 -ell 300 -xsz 800 -out test_sos -sos
+    alice2 -in wmap_ilc_3yr_v2_r6_sim.fits -nside 512 -ell 300 -xsz 500 -out test_orth -orth 1.0
+
+  [-in <fits file>] fits file contains the Q and U polarization
+  components in the second and third columns.
+
+  [-temperature <fits file>] an optional fits file containing
+  temperature data, if different temperature than that in the above
+  file is desired
+
+  [-out <string>] string used as a prefix for output files
+
+  [-texture <fits file>] optional input background texture
+
+  [-nside <int>] nside of the background texture generated
+
+  [-ell <int>] ell value at which background texture has power
+
+  [-xsz <int>] x size: width of output images
+
+  [-flat] use a flat kernel for convolution, instead of a sinusoidal
+  one.
+
+  [-steps <int>] number of steps to use for each line of the convolution
+
+  [-step_arcmin <float>] arcminutes for each step in the convoloution
+
+  [-threshold]
+
+  [-orth <float>] orthogonal projection.  <float> should be between 0.0 and 1.0;
+  it determines the zoom.
+
+  [-alpha <float>] first euler angle
+
+  [-beta <float>] second euler angle
+
+  [-gamma <float>] third euler angle
+
+  [-col <int>] color table index
+
+  [-bar] plot a color bar at the bottom of the graphic
+
+  [-title <string>] title (in quotes) for the plot
+
+  [-fitsout <fits file>] output fits file that contains a texture.  No
+  graphic is plotted.
+
+  [-texture2 <fits file>] a second texture, for interpolation
+
+  [-frames <int>] number of frames used in interpolation
+
+  [-sos] Science on a Sphere projection
+
+  [-min <float>] minimum value for the temperature scale
+
+  [-max <float>] maximum value for the temperature scale
+
+  [-polmin <float>] minimum value for the polarization magnitude
+
+  [-polmax <float>] maximum value for the polarization magnitude

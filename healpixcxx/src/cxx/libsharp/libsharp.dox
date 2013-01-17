@@ -1,0 +1,85 @@
+/*! \mainpage libsharp documentation
+  <ul>
+  <li>\ref introduction "Introduction"
+  <li><a href="modules.html">Programming interface</a>
+  </ul>
+ */
+
+/*! \page introduction Introduction to libsharp
+
+  "SHARP" is an acronym for <i>Spherical HARmonic Package</i>.
+  All user-visible data types and functions in this library start with
+  the prefix "sharp_" to avoid pollution of the global C namespace.
+
+  <i>libsharp</i>'s main functionality is the conversion between <i>maps</i>
+  on the sphere and <i>spherical harmonic coefficients</i> (or <i>a_lm</i>).
+  A map is defined as a set of <i>rings</i>, which in turn consist of
+  individual pixels that
+  <ul>
+  <li>all have the same colatitude and</li>
+  <li>are uniformly spaced in azimuthal direction.</li>
+  </ul>
+  Consequently, a ring is completely defined by
+  <ul>
+  <li>its colatitute (in radians)</li>
+  <li>the number of pixels it contains</li>
+  <li>the azimuth (in radians) of the first pixel in the ring</li>
+  <li>the weight that must be multiplied to every pixel during a map
+      analysis (typically the solid angle of a pixel in the ring) </li>
+  <li>the offset of the first ring pixel in the <i>map array</i></li>
+  <li>the stride between consecutive pixels in the ring.</li>
+  </ul>
+  The map array is a one-dimensional array of type <i>float</i> or
+  <i>double</i>, which contains the values of all map pixels. It is assumed
+  that the pixels of every ring are stored inside this array in order of
+  increasing azimuth and with the specified stride. Note however that the rings
+  themselves can be stored in any order inside the array.
+
+  The a_lm array is a one-dimensional array of type <i>complex float</i> or
+  <i>complex double</i>, which contains all spherical harmonic coefficients
+  for a full or partial set of m quantum numbers with 0<=m<=mmax and m<=l<=lmax.
+  There is only one constraint on the internal structure of the array, which is:
+
+  <code>Index[a_l+1,m] = Index[a_l,m] + stride</code>
+
+  That means that coefficients with identical <i>m</i> but different <i>l</i>
+  can be interpreted as a one-dimensional array in <i>l</i> with a unique
+  stride.
+
+  Several functions are provided for efficient index computation in this array;
+  they are documented \ref almgroup "here".
+
+  Information about a pixelisation of the sphere is stored in objects of
+  type sharp_geom_info. It is possible to create such an object for any
+  supported pixelisation by using the function sharp_make_geometry_info();
+  however, several easier-to-use functions are \ref geominfogroup "supplied"
+  for generating often-used pixelisations like ECP grids, Gaussian grids,
+  and Healpix grids.
+
+  Currently, libsharp supports the following kinds of transforms:
+  <ul>
+  <li>scalar a_lm to map</li>
+  <li>scalar map to a_lm</li>
+<!--  <li>polarised a_lm to map</li>
+  <li>polarised map to a_lm</li> !-->
+  <li>spin a_lm to map</li>
+  <li>spin map to a_lm</li>
+  <li>scalar a_lm to maps of first derivatives</li>
+  </ul>
+
+  libsharp supports shared-memory parallelisation via OpenMP; this feature will
+  be automatically enabled if the compiler supports it.
+
+  Libsharp will also make use of SSE2 and AVX instructions when compiled for a
+  platform known to support them.
+
+  Support for MPI-parallel transforms is also available; in this mode,
+  every MPI task must provide a unique subset of the map and a_lm coefficients.
+
+  The spherical harmonic transforms can be executed on double-precision and
+  single-precision maps and a_lm, but for accuracy reasons the computations
+  will always be performed in double precision. As a consequence,
+  single-precision transforms will most likely not be faster than their
+  double-precision counterparts, but they will require significantly less
+  memory.
+*/

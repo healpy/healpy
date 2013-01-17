@@ -1,0 +1,30 @@
+BLDROOT = $(SRCROOT)/build.$(HEALPIX_TARGET)
+PREFIX  = $(SRCROOT)/$(HEALPIX_TARGET)
+BINDIR	= $(PREFIX)/bin
+INCDIR	= $(PREFIX)/include
+LIBDIR	= $(PREFIX)/lib
+DOCDIR	= $(SRCROOT)/doc
+
+# do not use any suffix rules
+.SUFFIXES:
+# do not use any default rules
+.DEFAULT:
+
+$(BLDROOT)/%.o : $(SRCROOT)/%.c
+	@echo "#  compiling $*.c"
+	cd $(@D) && $(CC) $(FULL_INCLUDE) -I$(BLDROOT) $(CCFLAGS) $<
+
+$(BLDROOT)/%.o : $(SRCROOT)/%.cc
+	@echo "#  compiling $*.cc"
+	cd $(@D) && $(CXX) $(FULL_INCLUDE) -I$(BLDROOT) $(CXXCFLAGS) $<
+
+%_mkdir:
+	@if [ ! -d $* ]; then mkdir -p $* ; fi
+
+configclean:
+	rm -rf config.log config.status autom4te.cache config/config.auto
+
+clean:
+	rm -rf $(BLDROOT) $(PREFIX) $(DOCDIR) $(SRCROOT)/test/test*
+
+distclean: docsrc_clean configclean clean

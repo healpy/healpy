@@ -1,0 +1,13 @@
+#!/bin/sh
+
+NAME=HealpixCxx-3.0
+URL=https://healpix.svn.sourceforge.net/svnroot/healpix/trunk/src/cxx
+REV=HEAD
+
+svn export -r ${REV} ${URL} ${NAME} &&\
+cd ${NAME} &&\
+mkdir m4 &&\
+rm -f Makefile &&\
+autoreconf --install &&\
+./configure &&\
+make distcheck

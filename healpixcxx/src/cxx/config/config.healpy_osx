@@ -1,0 +1,27 @@
+LS_OPTFLAGS:= -O2 -ffast-math -fomit-frame-pointer $(HEALPIX_EXTRAFLAGS)
+LS_DEBUGFLAGS:= #-g
+LS_OMPFLAGS:= #-fopenmp
+LS_PROFILEFLAGS:= #-pg
+LS_STATICFLAGS:= #-static
+LS_PICFLAGS:= -fPIC
+
+EXTERNAL_CFITSIO ?= yes
+CFITSIO_EXT_PREFIX ?= /opt/local
+CFITSIO_EXT_LIB ?= -L${CFITSIO_EXT_PREFIX}/lib -lcfitsio
+CFITSIO_EXT_INC ?= -I${CFITSIO_EXT_PREFIX}/include/
+
+CC= gcc
+CL= gcc
+CWARNFLAGS= -Wall -Wextra -Wno-long-long -Wno-unknown-pragmas -Wshadow -Wmissing-prototypes -Wfatal-errors
+CCFLAGS_NO_C= $(CWARNFLAGS) $(LS_PROFILEFLAGS) $(LS_DEBUGFLAGS) $(LS_OMPFLAGS) $(LS_PICFLAGS) $(LS_OPTFLAGS) -fno-strict-aliasing -std=c99 -pedantic -fdata-sections -ffunction-sections
+CCFLAGS= $(CCFLAGS_NO_C) -c
+CLFLAGS= -L. -L$(LIBDIR) $(LS_PROFILEFLAGS) $(LS_OMPFLAGS) $(LS_STATICFLAGS) $(LS_PICFLAGS) $(LS_OPTFLAGS) -lm
+
+CXX= g++
+CXXL= g++
+CXXWARNFLAGS= -Wall -Wextra -Wstrict-aliasing=2 -Wundef -Wshadow -Wwrite-strings -Wredundant-decls -Woverloaded-virtual -Wcast-qual -Wcast-align -Wpointer-arith -Wold-style-cast -Wno-unknown-pragmas -Wfatal-errors
+CXXCFLAGS_NO_C= $(CXXWARNFLAGS) $(LS_PROFILEFLAGS) $(LS_DEBUGFLAGS) $(LS_OMPFLAGS) $(LS_PICFLAGS) $(LS_OPTFLAGS) -ansi -fdata-sections -ffunction-sections
+CXXCFLAGS= $(CXXCFLAGS_NO_C) -c
+CXXLFLAGS= -L. -L$(LIBDIR) $(LS_PROFILEFLAGS) $(LS_OMPFLAGS) $(LS_STATICFLAGS) $(LS_PICFLAGS) $(LS_OPTFLAGS)
+
+ARCREATE= libtool -static -o
