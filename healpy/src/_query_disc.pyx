@@ -101,7 +101,7 @@ cdef extern from "healpix_base.h":
        void swap (T_Healpix_Base &other)
        double max_pixrad()
        double max_pixrad(I ring)
-       void boundary(I pix, size_t step, vector[vec3] &out)
+       void boundaries(I pix, size_t step, vector[vec3] &out)
 
        arr[int] swap_cycles()
 
@@ -274,7 +274,7 @@ def query_strip(nside, theta1, theta2, inclusive = False, nest = False):
     return pixset_to_array(pixset)
 
 
-def boundary(nside, pix, step=1, nest=False):
+def boundaries(nside, pix, step=1, nest=False):
     """Returns an array containing vectors to the boundary of
     the nominated pixel.
 
@@ -328,7 +328,7 @@ def boundary(nside, pix, step=1, nest=False):
         scheme = RING
     cdef T_Healpix_Base[int64] hb = T_Healpix_Base[int64](nside, scheme, SET_NSIDE)
     cdef vector[vec3] bounds
-    hb.boundary(pix, step, bounds)
+    hb.boundaries(pix, step, bounds)
     cdef size_t n = bounds.size()
     cdef np.ndarray[double, ndim = 2] out = np.empty((3, n), dtype=np.float)
     for i in range(n):

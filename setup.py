@@ -124,6 +124,9 @@ else:
     from numpy import get_include
     numpy_inc = get_include()
 
+HEALPIX_FOLDER = 'healpixsubmodule'
+HEALPIX_CXX_FOLDER = os.path.join(HEALPIX_FOLDER, "src", "cxx") 
+
 class build_healpix(build_clib):
     def build_libraries(self, libraries):
         if 'HEALPIX_EXT_PREFIX' in os.environ:
@@ -133,7 +136,15 @@ class build_healpix(build_clib):
             cxx = self.compiler.compiler_cxx[0]
             build_temp = os.path.realpath(self.build_temp)
             build_clib = os.path.realpath(self.build_clib)
-            cmdline = ['make', '-w', '-C', 'hpbeta',
+            if not os.path.exists(os.path.join(HEALPIX_CXX_FOLDER, "Makefile")):
+                print """Missing Makefile from the healpix submodule folder,
+healpy includes healpix using git submodule, you need to go in the root folder
+of the git repository and run:
+    git submodule init
+    git submodule update
+    """
+                sys.exit(1)
+            cmdline = ['make', '-w', '-C', HEALPIX_CXX_FOLDER,
                 'HEALPIX_TARGET=%s' % HEALPIX_TARGET,
                 'HEALPIX_EXTRAFLAGS=%s' % HEALPIX_EXTRAFLAGS,
                 'CC=%s' % cc,
@@ -250,15 +261,11 @@ if on_rtd:
 else:
     libraries = [('healpix_cxx', {'sources':[]}),
                  ('cxxsupport', {'sources':[]}),
-                 ('psht', {'sources':[]}),
+                 ('sharp', {'sources':[]}),
                  ('fftpack', {'sources':[]}),
                  ('c_utils', {'sources':[]})]
     cmdclass = {'build_ext': custom_build_ext, 'build_clib': build_healpix}
     extension_list = [pixel_lib, spht_lib, hfits_lib,
-                      Extension("healpy.pshyt", ["pshyt/pshyt."+ext],
-                                include_dirs = [numpy_inc] + include_dirs,
-                                library_dirs = library_dirs,
-                                extra_link_args = extra_link),
                       Extension("healpy._query_disc",
                                 ['healpy/src/_query_disc.'+extcpp],
                                 include_dirs = [numpy_inc] + include_dirs,
