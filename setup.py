@@ -124,7 +124,8 @@ else:
     from numpy import get_include
     numpy_inc = get_include()
 
-HEALPIX_FOLDER = 'healpixsubmodule/src/cxx/'
+HEALPIX_FOLDER = 'healpixsubmodule'
+HEALPIX_CXX_FOLDER = os.path.join(HEALPIX_FOLDER, "src", "cxx") 
 
 class build_healpix(build_clib):
     def build_libraries(self, libraries):
@@ -135,7 +136,15 @@ class build_healpix(build_clib):
             cxx = self.compiler.compiler_cxx[0]
             build_temp = os.path.realpath(self.build_temp)
             build_clib = os.path.realpath(self.build_clib)
-            cmdline = ['make', '-w', '-C', HEALPIX_FOLDER,
+            if not os.path.exists(os.path.join(HEALPIX_CXX_FOLDER, "Makefile")):
+                print """Missing Makefile from the healpix submodule folder,
+healpy includes healpix using git submodule, you need to go in the root folder
+of the git repository and run:
+    git submodule init
+    git submodule update
+    """
+                sys.exit(1)
+            cmdline = ['make', '-w', '-C', HEALPIX_CXX_FOLDER,
                 'HEALPIX_TARGET=%s' % HEALPIX_TARGET,
                 'HEALPIX_EXTRAFLAGS=%s' % HEALPIX_EXTRAFLAGS,
                 'CC=%s' % cc,
