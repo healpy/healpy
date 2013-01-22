@@ -34,7 +34,6 @@
 #include "numpy/arrayobject.h"
 #include "numpy/ufuncobject.h"
 #include "numpy/noprefix.h"
-#include "numpy/halffloat.h"
 
 /*
    ang2pix
@@ -59,7 +58,6 @@ template<Healpix_Ordering_Scheme scheme>static void
         *(long *)op = hb.ang2pix(pointing(*(double *)ip2,*(double *)ip3));
       } catch(PlanckError &e) {
         *(long *)op = -1;
-        npy_set_floatstatus_invalid();
       }
   }
 }
@@ -89,7 +87,6 @@ template<Healpix_Ordering_Scheme scheme> static void
       } catch (PlanckError & e) {
         *(double *)op1 = NAN;
         *(double *)op2 = NAN;
-        npy_set_floatstatus_invalid();
       }
     }
 }
@@ -116,7 +113,6 @@ ufunc_ring2nest(char **args, intp *dimensions, intp *steps, void *func)
         *(long *)op = hb.ring2nest(*(long *)ip2);
       } catch(PlanckError & e) {
         *(long *)op = -1;
-        npy_set_floatstatus_invalid();
       }
     }
 }
@@ -143,7 +139,6 @@ static void
         *(long *)op = hb.nest2ring(*(long *)ip2);
       } catch(PlanckError & e) {
         *(long *)op = -1;
-        npy_set_floatstatus_invalid();
       }
     }
 }
@@ -176,7 +171,6 @@ template<Healpix_Ordering_Scheme scheme> static void
         *(double *)op1 = NAN;
         *(double *)op2 = NAN;
         *(double *)op3 = NAN;
-        npy_set_floatstatus_invalid();
       }
     }
 }
@@ -205,7 +199,6 @@ template<Healpix_Ordering_Scheme scheme> static void
         *(long *)op1 = ipix;
       } catch (PlanckError &e) {
         *(long *)op1 = -1;
-        npy_set_floatstatus_invalid();
       }
     }
 }
@@ -256,7 +249,6 @@ template<Healpix_Ordering_Scheme scheme> static void
         *(double*)op6 = NAN;
         *(double*)op7 = NAN;
         *(double*)op8 = NAN;
-        npy_set_floatstatus_invalid();
       }
     }
 }
@@ -302,7 +294,6 @@ template<Healpix_Ordering_Scheme scheme> static void
         *(long*)op6 = -1;
         *(long*)op7 = -1;
         *(long*)op8 = -1;
-        npy_set_floatstatus_invalid();
       }
     }
 }
