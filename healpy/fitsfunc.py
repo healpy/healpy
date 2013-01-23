@@ -115,42 +115,35 @@ def write_map(filename,m,nest=False,dtype=np.float32,fits_IDL=True,coord=None,co
         raise TypeError('The map must be a sequence')
     # check the dtype and convert it
     fitsformat = getformat(dtype)
+
+    m = pixelfunc.ma_to_array(m)
+    if pixelfunc.maptype(m) == 0: # a single map is converted to a list
+        m = [m]
+
     if column_names is None:
         column_names = standard_column_names.get(len(m), ["COLUMN_%d" % n for n in range(len(m))])
     else:
         assert len(column_names) == len(m), "Length column_names != number of maps"
-    #print 'format to use: "%s"'%fitsformat
-    if hasattr(m[0], '__len__'):
-        # maps must have same length
-        assert len(set(map(len, m))) == 1, "Maps must have same length"
-        nside = pixelfunc.npix2nside(len(m[0]))
-        if nside < 0:
-            raise ValueError('Invalid healpix map : wrong number of pixel')
-        m = pixelfunc.ma_to_array(m)
-        cols=[]
-        for cn,mm in zip(column_names,m):
-            if len(mm) > 1024 and fits_IDL:
-                # I need an ndarray, for reshape:
-                mm2 = np.asarray(mm)
-                cols.append(pf.Column(name=cn,
-                                       format='1024%s'%fitsformat,
-                                       array=mm2.reshape(mm2.size/1024,1024)))
-            else:
-                cols.append(pf.Column(name=cn,
-                                       format='%s'%fitsformat,
-                                       array=mm))
-    else: # we write only one map
-        nside = pixelfunc.npix2nside(len(m))
-        if nside < 0:
-            raise ValueError('Invalid healpix map : wrong number of pixel')
-        if m.size > 1024 and fits_IDL:
-            cols = [pf.Column(name=column_names,
-                               format='1024%s'%fitsformat,
-                               array=m.reshape(m.size/1024,1024))]
+
+    # maps must have same length
+    assert len(set(map(len, m))) == 1, "Maps must have same length"
+    nside = pixelfunc.npix2nside(len(m[0]))
+
+    if nside < 0:
+        raise ValueError('Invalid healpix map : wrong number of pixel')
+
+    cols=[]
+    for cn, mm in zip(column_names, m):
+        if len(mm) > 1024 and fits_IDL:
+            # I need an ndarray, for reshape:
+            mm2 = np.asarray(mm)
+            cols.append(pf.Column(name=cn,
+                                   format='1024%s' % fitsformat,
+                                   array=mm2.reshape(mm2.size/1024,1024)))
         else:
-            cols = [pf.Column(name=column_names,
-                               format='%s'%fitsformat,
-                               array=m)]
+            cols.append(pf.Column(name=cn,
+                                   format='%s' % fitsformat,
+                                   array=mm))
             
     tbhdu = pf.new_table(cols)
     # add needed keywords
