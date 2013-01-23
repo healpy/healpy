@@ -50,7 +50,7 @@ If you do not want the "-march=native" flag (if your g++ is too old)
 
 (alternatively, you can define the environment variable HEALPY_WITHOUT_NATIVE)
 
-If everything goes fine, you can give a test:
+If everything goes fine, you can test it:
 
     cd build/lib*
     ipython -pylab
@@ -83,6 +83,10 @@ Known issues
 
 Development install
 -------------------
+
+Developers building from a snapshot of the github repository need:
+  * cython > 0.14 
+  * run `git submodule init` and `git submodule update` to get the healpix sources
 
 the best way to install healpy if you plan to develop is to build the C++ extensions in place with:
 

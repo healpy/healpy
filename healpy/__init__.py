@@ -50,7 +50,7 @@ from sphtfunc import (anafast, map2alm,
                       pixwin, alm2map_der1, gauss_beam)
 
 try:
-    from _query_disc import query_disc, query_strip, query_polygon, boundary
+    from _query_disc import query_disc, query_strip, query_polygon, boundaries
 except ImportError:
     warnings.warn('Warning: cannot import query disc module')
 try:

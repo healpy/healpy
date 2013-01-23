@@ -52,7 +52,7 @@ having Healpy build its bundled source, see INSTALL for further instructions.
 Download
 --------
 
-The latest released version is 1.4.1 and is available as a source
+The latest released version is available as a source
 package at:
 https://github.com/healpy/healpy/tags
 

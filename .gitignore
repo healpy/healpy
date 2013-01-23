@@ -2,7 +2,6 @@
 build
 *so
 pshyt.c
-_query_disc.cpp
 ipython_log*
 *fits
 doc/.build
@@ -11,3 +10,4 @@ doc/generated
 hpbeta/build.*
 hpbeta/healpy_*
 healpy/src/_ianafast.cpp
+healpy/src/_query_disc.cpp
