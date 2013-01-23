@@ -27,6 +27,12 @@ class TestFitsFunc(unittest.TestCase):
         self.assertEqual(read_m.ndim, 1)
         self.assertTrue(np.all(self.m == read_m))
 
+    def test_write_map_C_3comp(self):
+        write_map(self.filename, [self.m, self.m, self.m], fits_IDL=False)
+        read_m = pyfits.open(self.filename)[1].data
+        for comp in range(3):
+            self.assertTrue(np.all(self.m == read_m.field(comp)))
+
     def tearDown(self):
         os.remove(self.filename)
 
