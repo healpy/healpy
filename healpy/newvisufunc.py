@@ -33,7 +33,7 @@ def lonlat(theta, phi):
     latitude = np.pi/2 - np.asarray(theta)
     return longitude, latitude 
 
-def mollview(m=None, rot=None, coord=None, unit='',
+def mollview(m, rot=None, coord=None, unit='',
              xsize=1000, nest=False,
              min=None, max=None, flip='astro',
              format='%g',
