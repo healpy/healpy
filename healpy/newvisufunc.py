@@ -7,6 +7,11 @@ import exceptions
 
 from matplotlib.projections.geo import GeoAxes
 
+###### WARNING #################
+# this module is work in progress, the aim is to reimplement the healpy
+# plot functions using the new features of matplotlib and remove most
+# of the custom projection code
+
 class ThetaFormatterShiftPi(GeoAxes.ThetaFormatter):
     """Shifts labelling by pi
 
