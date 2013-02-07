@@ -2,8 +2,6 @@
 
 import numpy as np
 cimport numpy as np
-#from libcpp cimport bool
-#from libcpp.vector cimport vector
 from libcpp.string cimport string
 from libc.math cimport sqrt, floor, fabs
 cimport libc
