@@ -9,25 +9,13 @@ from libc.math cimport sqrt, floor, fabs
 cimport libc
 from healpy import npix2nside
 from healpy.pixelfunc import maptype
-ctypedef unsigned size_t
-ctypedef size_t tsize
 import os
 import cython
 
+from _common cimport tsize, arr, xcomplex, Healpix_Ordering_Scheme, RING, NEST
+
 cdef double UNSEEN = -1.6375e30
 cdef double rtol_UNSEEN = 1.e-7 * 1.6375e30
-
-cdef extern from "arr.h":    
-    cdef cppclass arr[T]:
-        arr()
-        arr(T *ptr, tsize sz)
-        void allocAndFill (tsize sz, T &inival)
-        tsize size()
-        T &operator[] (tsize n)
-
-cdef extern from "xcomplex.h":
-    cdef cppclass xcomplex[T]:
-       T re, im
 
 cdef extern from "alm.h":
     cdef cppclass Alm[T]:
@@ -37,8 +25,6 @@ cdef extern from "alm.h":
         tsize Num_Alms (int l, int m)
 
 cdef extern from "healpix_map.h":
-    cdef enum Healpix_Ordering_Scheme:
-        RING, NEST
     cdef cppclass Healpix_Map[T]:
         Healpix_Map()
         void Set(arr[T] &data, Healpix_Ordering_Scheme scheme)
