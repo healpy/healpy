@@ -1,3 +1,6 @@
+from libcpp cimport bool
+from libcpp.vector cimport vector
+
 ctypedef unsigned size_t
 ctypedef size_t tsize
 
@@ -41,9 +44,6 @@ cdef extern from "pointing.h":
         pointing(vec3 inp)
         double theta
         double phi
-
-from libcpp cimport bool
-from libcpp.vector cimport vector
 
 cdef extern from "healpix_base.h":
     ctypedef int val_4 "4"
