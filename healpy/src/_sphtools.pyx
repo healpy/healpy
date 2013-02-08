@@ -199,7 +199,7 @@ def map2alm(m, lmax = None, mmax = None, niter = 3, use_weights = False,
         MI.h.Add(-avg)
 
     # Create an ndarray object that will contain the alm for output (to be returned)
-    cdef np.ndarray almI, almQ, almC
+    cdef np.ndarray almI, almG, almC
     n_alm = Num_Alms(lmax_, mmax_)
     almI = np.empty(n_alm, dtype = np.complex128)
     if polarization:
