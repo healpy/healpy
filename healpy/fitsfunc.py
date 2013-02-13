@@ -103,7 +103,8 @@ def write_map(filename,m,nest=False,dtype=np.float32,fits_IDL=True,coord=None,co
       If True, reshapes columns in rows of 1024, otherwise all the data will 
       go in one column. Default: True
     coord : str
-      The coordinate system, typically 'E' for Ecliptic, 'G' for Galactic or 'Q' for Equatorial  
+      The coordinate system, typically 'E' for Ecliptic, 'G' for Galactic or 'C' for
+      Celestial (equatorial)
     column_names : str or list
       Column name or list of column names, if None we use:
       I_STOKES for 1 component,
@@ -154,7 +155,7 @@ def write_map(filename,m,nest=False,dtype=np.float32,fits_IDL=True,coord=None,co
                         'Pixel ordering scheme, either RING or NESTED')
     if coord:
         tbhdu.header.update('COORDSYS',coord,
-                            'Ecliptic, Galactic or eQuatorial')
+                            'Ecliptic, Galactic or Celestial (equatorial)')
     tbhdu.header.update('EXTNAME','xtension',
                         'name of this binary table extension')
     tbhdu.header.update('NSIDE',nside,'Resolution parameter of HEALPIX')
