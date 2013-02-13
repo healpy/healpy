@@ -27,6 +27,10 @@ class TestSphtFunc(unittest.TestCase):
         for m in chain(self.map1, self.map2):
             m.mask = np.logical_not(self.mask)
         self.cla = hp.read_cl(os.path.join(self.path, 'data', 'cl_wmap_fortran.fits'))
+        cls = pyfits.open(os.path.join(self.path, 'data',
+                                       'cl_iqu_wmap_fortran.fits'))[1].data
+        # order of HEALPIX is TB, EB while in healpy is EB, TB
+        self.cliqu = [cls.field(i) for i in (0,1,2,3,5,4)]
 
     def test_anafast(self):
         cl = hp.anafast(self.map1[0].filled(), lmax = 1024)
@@ -35,14 +39,10 @@ class TestSphtFunc(unittest.TestCase):
 
     def test_anafast_iqu(self):
         cl = hp.anafast([m.filled() for m in self.map1], lmax = 1024)
-        cliqu = pyfits.open(os.path.join(self.path, 'data', 'cl_iqu_wmap_fortran.fits'))[1].data
         self.assertEqual(len(cl[0]), 1025)
         self.assertEqual(len(cl), 6)
-        for comp in range(6):
-            comphealpix = comp
-            if comp in [4,5]: # order of HEALPIX is TB, EB while in healpy is EB, TB
-                comphealpix = {4:5, 5:4}[comp] 
-            np.testing.assert_array_almost_equal(cl[comp], cliqu.field(comphealpix), decimal=8)
+        for i in range(6):
+            np.testing.assert_array_almost_equal(cl[i], self.cliqu[i], decimal=8)
 
     def test_anafast_xspectra(self):
         cl = hp.anafast(self.map1[0].filled(), self.map2[0].filled(), lmax = 1024)
@@ -80,6 +80,43 @@ class TestSphtFunc(unittest.TestCase):
         idl_gauss_beam = np.array(pyfits.open(os.path.join(self.path, 'data', 'gaussbeam_10arcmin_lmax512_pol.fits'))[0].data).T
         gauss_beam = hp.gauss_beam(np.radians(10./60.), lmax=512, pol=True)
         np.testing.assert_allclose(idl_gauss_beam, gauss_beam)
+
+    def test_map2alm(self):
+        nside = 32
+        lmax = 64
+        fwhm_deg = 7.
+        seed = 12345
+        np.random.seed(seed)
+        orig = hp.synfast(self.cla, nside, lmax=lmax, pixwin=False,
+                          fwhm=np.radians(fwhm_deg), new=False)
+        tmp = np.empty(orig.size * 2)
+        tmp[::2] = orig
+        maps = [orig, orig.astype(np.float32), tmp[::2]]
+        for input in maps:
+            for regression in (False, True):
+                alm = hp.map2alm(input, iter=10, regression=regression)
+                output = hp.alm2map(alm, nside)
+                np.testing.assert_allclose(input, output, atol=1e-4)
+
+    def test_map2alm_pol(self):
+        nside = 32
+        lmax = 64
+        fwhm_deg = 7.
+        seed = 12345
+        np.random.seed(seed)
+        orig = hp.synfast(self.cliqu, nside, lmax=lmax, pixwin=False,
+                          fwhm=np.radians(fwhm_deg), new=False)
+        tmp = [np.empty(o.size*2) for o in orig]
+        for t, o in zip(tmp, orig):
+            t[::2] = o
+        maps = [orig, [o.astype(np.float32) for o in orig],
+                [t[::2] for t in tmp]]
+        for input in maps:
+            for regression in (False, True):
+                alm = hp.map2alm(input, iter=10, regression=regression)
+                output = hp.alm2map(alm, nside)
+                for i, o in zip(input, output):
+                    np.testing.assert_allclose(i, o, atol=1e-4)
 
 if __name__ == '__main__':
     unittest.main()

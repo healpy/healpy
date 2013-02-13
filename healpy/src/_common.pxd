@@ -1,3 +1,5 @@
+import numpy as np
+cimport numpy as np
 from libcpp cimport bool
 from libcpp.vector cimport vector
 
@@ -102,3 +104,37 @@ cdef extern from "healpix_base.h":
                                     rangeset[I]& pixset, int fact)
        void query_strip(double theta1, double theta2, bool inclusive,
                         rangeset[I]& pixset)
+
+cdef extern from "healpix_map.h":
+    cdef cppclass Healpix_Map[T]:
+        Healpix_Map()
+        void Set(arr[T] &data, Healpix_Ordering_Scheme scheme)
+        T average()
+        void Add(T x)
+
+cdef extern from "alm.h":
+    cdef cppclass Alm[T]:
+        Alm()
+        Alm(int lmax_, int mmax_)
+        void Set (int lmax_, int mmax_)
+        void Set (arr[T] &data, int lmax_, int mmax_)
+        tsize Num_Alms (int l, int m)
+
+cdef inline Healpix_Map[double]* ndarray2map(np.ndarray[np.float64_t, ndim=1, mode='c'] array, Healpix_Ordering_Scheme scheme) except *:
+    """ View a contiguous ndarray as a Healpix Map. """
+    # To ensure that the output map is a view of the input array, the latter
+    # is forced to be contiguous, of correct type and dimensions (otherwise, an
+    # exception is raised).
+    cdef arr[double] *a = new arr[double](&array[0], array.size)
+    cdef Healpix_Map[double] *map = new Healpix_Map[double]()
+    map.Set(a[0], scheme)
+    del a # a does not own its buffer, so it won't be deallocated
+    return map
+
+cdef inline Alm[xcomplex[double]]* ndarray2alm(np.ndarray[np.complex128_t, ndim=1, mode='c'] array, int lmax, int mmax) except *:
+    """ View a contiguous ndarray as an Alm. """
+    cdef arr[xcomplex[double]] *a = new arr[xcomplex[double]](<xcomplex[double]*>&array[0], array.size)
+    cdef Alm[xcomplex[double]] *alm = new Alm[xcomplex[double]]()
+    alm.Set(a[0], lmax, mmax)
+    del a
+    return alm
