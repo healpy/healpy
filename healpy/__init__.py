@@ -48,6 +48,7 @@ from sphtfunc import (anafast, map2alm,
                       alm2map, Alm, synalm, synfast,
                       smoothing, smoothalm, almxfl, alm2cl,
                       pixwin, alm2map_der1, gauss_beam)
+from _sphtools import rotate_alm
 
 try:
     from _query_disc import query_disc, query_strip, query_polygon, boundaries

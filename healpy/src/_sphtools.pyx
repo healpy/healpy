@@ -1,3 +1,4 @@
+# coding: utf-8
 # Wrapper around the query_disc method of Healpix_base class
 
 import numpy as np
@@ -28,13 +29,13 @@ cdef extern from "alm_healpix_tools.h":
                                int num_iter,
                                arr[double] &weight)
 
+cdef extern from "alm_powspec_tools.h":
+    cdef void c_rotate_alm "rotate_alm" (Alm[xcomplex[double]] &alm, double psi, double theta, double phi)
+    cdef void c_rotate_alm "rotate_alm" (Alm[xcomplex[double]] &ai, Alm[xcomplex[double]] &ag, Alm[xcomplex[double]] &ac, double psi, double theta, double phi)
+
 cdef extern from "healpix_data_io.h":
     cdef void read_weight_ring (string &dir, int nside, arr[double] &weight)
 
-cdef Num_Alms(int l, int m):
-    if not m <= l:
-        raise ValueError("mmax must be <= lmax")
-    return ((m+1)*(m+2))/2 + (m+1)*(l-m)
 
 DATAPATH = None
 
@@ -133,7 +134,7 @@ def map2alm(m, lmax = None, mmax = None, niter = 3, use_weights = False,
         MI.Add(-avg)
 
     # Create an ndarray object that will contain the alm for output (to be returned)
-    n_alm = Num_Alms(lmax_, mmax_)
+    n_alm = alm_getn(lmax_, mmax_)
     almI = np.empty(n_alm, dtype=np.complex128)
     if polarization:
         almG = np.empty(n_alm, dtype=np.complex128)
@@ -256,15 +257,7 @@ def alm2cl(alms, alms2 = None, lmax = None, mmax = None, lmax_out = None):
         if alms[i].size != almsize or alms2[i].size != almsize:
             raise ValueError('all alms must have same size')
 
-    if lmax is None:
-        if mmax is None:
-            lmax = alm_getlmax(almsize)
-            mmax = lmax
-        else:
-            lmax = alm_getlmax2(almsize, mmax)
-
-    if mmax is None:
-        mmax = lmax
+    lmax, mmax = alm_getlmmax(alms[0], lmax, mmax)
 
     if lmax_out is None:
         lmax_out = lmax
@@ -343,12 +336,7 @@ def almxfl(alm, fl, mmax = None, inplace = False):
 
     cdef int lmax_, mmax_
     cdef int l, m
-    if mmax is None:
-        lmax_ = alm_getlmax(alm_.size)
-        mmax_ = lmax_
-    else:
-        lmax_ = alm_getlmax2(alm_.size, mmax)
-        mmax_ = mmax
+    lmax_, mmax_ = alm_getlmmax(alm_, None, mmax)
     
     cdef np.complex128_t f
     cdef int maxm, i
@@ -363,9 +351,80 @@ def almxfl(alm, fl, mmax = None, inplace = False):
     return alm_
 
 
-@cython.cdivision(True)
-cdef inline int alm_getidx(int lmax, int l, int m):
-    return m*(2*lmax+1-m)/2+l
+def rotate_alm(alm not None, double psi, double theta, double phi, lmax=None,
+               mmax=None):
+    """
+    This routine transforms the scalar (and tensor) a_lm coefficients
+    to emulate the effect of an arbitrary rotation of the underlying
+    map. The rotation is done directly on the a_lm using the Wigner
+    rotation matrices, computed by recursion. To rotate the a_lm for
+    l ≤ l_max the number of operations scales like l_max^3.
+
+    Parameters
+    ----------
+    alm : array-like of shape (n,) or (k,n), or list of arrays
+        Complex a_lm values before and after rotation of the coordinate system.
+    psi : float
+        First rotation: angle ψ about the z-axis. All angles are in radians
+        and should lie in [-2pi,2pi], the rotations are active and the
+        referential system is assumed to be right handed. The routine
+        coordsys2euler zyz can be used to generate the Euler angles ψ, θ, φ
+        for rotation between standard astronomical coordinate systems.
+    theta : float
+        Second rotation: angle θ about the original (unrotated) y-axis
+    phi : float.
+        Third rotation: angle φ about the original (unrotated) z-axis.
+    lmax : int
+        Maximum multipole order l of the data set.
+    mmax : int
+        Maximum degree m of data set.
+
+    """
+    if isinstance(alm, np.ndarray) and alm.ndim == 1:
+        alm = [alm]
+
+    if not isinstance(alm, (list, tuple, np.ndarray)) or len(alm) == 0:
+        raise ValueError('Invalid input.')
+
+    # C++ rotate_alm only handles 1 or 3 maps. The function handling 3 maps
+    # is faster than running 3 times the 1-map function, but gives identical
+    # results.
+    if len(alm) not in (1, 3):
+        for a in alm:
+            rotate_alm(a, psi, theta, phi)
+        return
+
+    lmax, mmax = alm_getlmmax(alm[0], lmax, mmax)
+    ai = np.ascontiguousarray(alm[0], dtype=np.complex128)
+    AI = ndarray2alm(ai, lmax, mmax)
+    if len(alm) == 1:
+        c_rotate_alm(AI[0], psi, theta, phi)
+        del AI
+    else:
+        ag = np.ascontiguousarray(alm[1], dtype=np.complex128)
+        ac = np.ascontiguousarray(alm[2], dtype=np.complex128)
+        AG = ndarray2alm(ag, lmax, mmax)
+        AC = ndarray2alm(ac, lmax, mmax)
+        c_rotate_alm(AI[0], AG[0], AC[0], psi, theta, phi)
+        del AI, AG, AC
+
+
+cdef int alm_getn(int l, int m):
+    if not m <= l:
+        raise ValueError("mmax must be <= lmax")
+    return ((m+1)*(m+2))/2 + (m+1)*(l-m)
+
+
+def alm_getlmmax(a, lmax, mmax):
+    if lmax is None:
+        if mmax is None:
+            lmax = alm_getlmax(a.size)
+            mmax = lmax
+        else:
+            lmax = alm_getlmax2(a.size, mmax)
+    elif mmax is None:
+        mmax = lmax
+    return lmax, mmax
 
 
 @cython.cdivision(True)
@@ -377,6 +436,7 @@ cdef inline int alm_getlmax(int s):
     else:
         return <int>floor(x)
 
+
 @cython.cdivision(True)
 cdef inline int alm_getlmax2(int s, int mmax):
     cdef double x
@@ -385,6 +445,12 @@ cdef inline int alm_getlmax2(int s, int mmax):
         return -1
     else:
         return <int>floor(x)
+
+
+@cython.cdivision(True)
+cdef inline int alm_getidx(int lmax, int l, int m):
+    return m*(2*lmax+1-m)/2+l
+
 
 @cython.wraparound(False)
 @cython.boundscheck(False)
