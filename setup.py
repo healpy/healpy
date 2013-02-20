@@ -259,11 +259,7 @@ if on_rtd:
     cmdclass = {}
     extension_list = []
 else:
-    libraries = [('healpix_cxx', {'sources':[]}),
-                 ('cxxsupport', {'sources':[]}),
-                 ('sharp', {'sources':[]}),
-                 ('fftpack', {'sources':[]}),
-                 ('c_utils', {'sources':[]})]
+    libraries = [('healpix_cxx', {'sources':[]})]
     cmdclass = {'build_ext': custom_build_ext, 'build_clib': build_healpix}
     extension_list = [pixel_lib, spht_lib, hfits_lib,
                       Extension("healpy._query_disc",
