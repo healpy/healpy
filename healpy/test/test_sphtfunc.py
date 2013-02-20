@@ -3,6 +3,7 @@ import pyfits
 import os
 import numpy as np
 import exceptions
+from copy import deepcopy
 from itertools import chain
 
 import unittest
@@ -31,6 +32,13 @@ class TestSphtFunc(unittest.TestCase):
                                        'cl_iqu_wmap_fortran.fits'))[1].data
         # order of HEALPIX is TB, EB while in healpy is EB, TB
         self.cliqu = [cls.field(i) for i in (0,1,2,3,5,4)]
+        nside = 32
+        lmax = 64
+        fwhm_deg = 7.
+        seed = 12345
+        np.random.seed(seed)
+        self.mapiqu = hp.synfast(self.cliqu, nside, lmax=lmax, pixwin=False,
+                                 fwhm=np.radians(fwhm_deg), new=False)
 
     def test_anafast(self):
         cl = hp.anafast(self.map1[0].filled(), lmax = 1024)
@@ -99,24 +107,27 @@ class TestSphtFunc(unittest.TestCase):
                 np.testing.assert_allclose(input, output, atol=1e-4)
 
     def test_map2alm_pol(self):
-        nside = 32
-        lmax = 64
-        fwhm_deg = 7.
-        seed = 12345
-        np.random.seed(seed)
-        orig = hp.synfast(self.cliqu, nside, lmax=lmax, pixwin=False,
-                          fwhm=np.radians(fwhm_deg), new=False)
-        tmp = [np.empty(o.size*2) for o in orig]
-        for t, o in zip(tmp, orig):
+        tmp = [np.empty(o.size*2) for o in self.mapiqu]
+        for t, o in zip(tmp, self.mapiqu):
             t[::2] = o
-        maps = [orig, [o.astype(np.float32) for o in orig],
+        maps = [self.mapiqu, [o.astype(np.float32) for o in self.mapiqu],
                 [t[::2] for t in tmp]]
         for input in maps:
             for regression in (False, True):
                 alm = hp.map2alm(input, iter=10, regression=regression)
-                output = hp.alm2map(alm, nside)
+                output = hp.alm2map(alm, 32)
                 for i, o in zip(input, output):
                     np.testing.assert_allclose(i, o, atol=1e-4)
+
+    def test_rotate_alm(self):
+        almigc = hp.map2alm(self.mapiqu)
+        alms = [almigc[0], almigc[0:2], almigc, np.vstack(almigc)]
+        for i in alms:
+            o = deepcopy(i)
+            hp.rotate_alm(o, 0.1, 0.2, 0.3)
+            hp.rotate_alm(o, -0.3, -0.2, -0.1)
+            np.testing.assert_allclose(i, o, rtol=1e-6)
+
 
 if __name__ == '__main__':
     unittest.main()
