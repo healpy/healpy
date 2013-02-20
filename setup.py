@@ -217,7 +217,7 @@ else:
         extra_link.append(os.environ['CFITSIO_EXT_LIB'].strip())
 
 if 'HEALPIX_EXT_PREFIX' in os.environ:
-    healpix_inc_dir = os.path.join(os.environ['HEALPIX_EXT_PREFIX'], 'include')
+    healpix_inc_dir = os.path.join(os.environ['HEALPIX_EXT_PREFIX'], 'include', 'Healpix_cxx')
     healpix_lib_dir = os.path.join(os.environ['HEALPIX_EXT_PREFIX'], 'lib')
     include_dirs.append(healpix_inc_dir)
     library_dirs.append(healpix_lib_dir)
