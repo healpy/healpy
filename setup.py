@@ -109,14 +109,14 @@ try:
     from Cython.Distutils import build_ext
     import Cython.Compiler.Version as CythonVersion
     from distutils.version import LooseVersion
-    assert LooseVersion(CythonVersion.version) >= LooseVersion("0.14")
+    assert LooseVersion(CythonVersion.version) >= LooseVersion("0.16")
     ext = "pyx"
     extcpp = "pyx"
 except:
   from distutils.command.build_ext import build_ext
   ext = "c"
   extcpp = "cpp"
-  print "No Cython >= 0.14 found, defaulting to pregenerated c version."
+  print "No Cython >= 0.16 found, defaulting to pregenerated c version."
   
 if on_rtd:
     numpy_inc = ''
