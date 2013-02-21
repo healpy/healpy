@@ -1,12 +1,10 @@
-recursive-include hpbeta *
+recursive-include healpixsubmodule/src/cxx *
 recursive-include healpy/data *.fits
-prune hpbeta/generic_gcc
-prune hpbeta/build.generic_gcc
-prune hpbeta/healpy
-prune hpbeta/build.healpy
-prune hpbeta/healpy_osx
-prune hpbeta/build.healpy_osx
-include COPYING INSTALL MANIFEST.in ChangeLog
+prune healpixsubmodule/generic_gcc
+prune healpixsubmodule/src/cxx/build.generic_gcc
+prune healpixsubmodule/src/cxx/healpy
+prune healpixsubmodule/src/cxx/build.healpy
+prune healpixsubmodule/src/cxx/healpy_osx
+prune healpixsubmodule/src/cxx/build.healpy_osx
+include COPYING INSTALL.rst README.rst MANIFEST.in CHANGELOG.rst
 include healpy/src/_healpy_utils.h
-include healpy/src/hack.h
-include pshyt/pshyt.pyx pshyt/pshyt.c
