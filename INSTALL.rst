@@ -27,8 +27,9 @@ healpy needs ``HEALPix``. You can either:
   e.g. ``/usr/local/lib/libcfitsio.a`` or .so
 * compile a specific cfitsio lib:
   Define ``EXTERNAL_CFITSIO=no``, place the  ``cfitsioXXXX.tar.gz`` in
-  hpbeta/libcfitsio before installing. The cfitsio version XXXX must
-  match the version in hpbeta/planck.make (or you need to modify it there).
+  HEALPIXFOLDER/libcfitsio before installing. The cfitsio version XXXX must
+  match the version in HEALPIXFOLDER/planck.make (or you need to modify it there).
+  HEALPIXFOLDER is ``healpixsubmodule`` in the development version and ``healpixcxx`` in the release packages.
 
 Installation
 ------------
