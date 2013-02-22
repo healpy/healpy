@@ -161,6 +161,19 @@ class build_external_clib(build_clib):
         return build_args
         # Done!
 
+    # Copied from Distutils' own build_clib, but modified so that it is not
+    # an error for a build_info dictionary to lack a 'sources' key.
+    def get_source_files(self):
+        self.check_library_list(self.libraries)
+        filenames = []
+        for (lib_name, build_info) in self.libraries:
+            sources = build_info.get('sources')
+            if sources is None or not isinstance(sources, (list, tuple)):
+                continue
+
+            filenames.extend(sources)
+        return filenames
+
     def build_libraries(self, libraries):
         self.build_args = {}
 
