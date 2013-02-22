@@ -114,6 +114,18 @@ class build_external_clib(build_clib):
         """Return build arguments using pkgconfig file built from source."""
         return self.pkgconfig(os.path.join(self.build_clib, 'lib', 'pkgconfig', pkg_config_name + '.pc'))
 
+    def finalize_options(self):
+        """Run 'autoreconf -i' for any bundled libraries to generate the
+        configure script."""
+        build_clib.finalize_options(self)
+
+        for lib_name, build_info in self.libraries:
+            if 'sources' not in build_info:
+                log.info("checking if configure script for library '%s' exists", lib_name)
+                if not os.path.exists(os.path.join(build_info['local_source'], 'configure')):
+                    log.info("running 'autoreconf -i' for library '%s'", lib_name)
+                    check_call(['autoreconf', '-i'], cwd=build_info['local_source'])
+
     def build_library(self, library, pkg_config_name, local_source=None):
         log.info("checking if library '%s' is installed", library)
         try:
