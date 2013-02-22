@@ -88,6 +88,10 @@ class build_external_clib(build_clib):
     an optional fallback to build from a local configure-make-install style
     distribution."""
 
+    def __init__(self, dist):
+        build_clib.__init__(self, dist)
+        self.build_args = {}
+
     @staticmethod
     def pkgconfig(*packages):
         kw = {}
@@ -175,8 +179,6 @@ class build_external_clib(build_clib):
         return filenames
 
     def build_libraries(self, libraries):
-        self.build_args = {}
-
         # Build libraries that have no 'sources' key, accumulating the output
         # from pkg-config.
         for lib_name, build_info in libraries:
