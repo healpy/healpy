@@ -94,8 +94,18 @@ class build_external_clib(build_clib):
         build_clib.__init__(self, dist)
         self.build_args = {}
 
-    @staticmethod
-    def pkgconfig(*packages):
+    @property
+    def _environ(self):
+        """Construct an environment dictionary suitable for having pkg-config
+        pick up .pc files in the build_clib directory."""
+        pkg_config_path = os.path.join(os.path.realpath(self.build_clib), 'lib', 'pkgconfig')
+        try:
+            pkg_config_path += ':' + os.environ['PKG_CONFIG_PATH']
+        except KeyError:
+            pass
+        return dict(os.environ, PKG_CONFIG_PATH=pkg_config_path)
+
+    def pkgconfig(self, *packages):
         kw = {}
         index_key_flag = (
             (2, '--cflags-only-I', ('include_dirs',)),
@@ -106,15 +116,11 @@ class build_external_clib(build_clib):
         for index, flag, keys in index_key_flag:
             cmd = ('pkg-config', flag) + tuple(packages)
             log.debug('%s', ' '.join(cmd))
-            args = [token[index:] for token in check_output(cmd).split()]
+            args = [token[index:] for token in check_output(cmd, env=self._environ).split()]
             if args:
                 for key in keys:
                     kw.setdefault(key, []).extend(args)
         return kw
-
-    def _pkgconfig_internal(self, pkg_config_name):
-        """Return build arguments using pkgconfig file built from source."""
-        return self.pkgconfig(os.path.join(self.build_clib, 'lib', 'pkgconfig', pkg_config_name + '.pc'))
 
     def finalize_options(self):
         """Run 'autoreconf -i' for any bundled libraries to generate the
@@ -132,52 +138,48 @@ class build_external_clib(build_clib):
         log.info("checking if library '%s' is installed", library)
         try:
             build_args = self.pkgconfig(pkg_config_name)
-            log.info("found external '%s' installed, using it", library)
+            log.info("found '%s' installed, using it", library)
         except CalledProcessError:
 
             # If local_source is not specified, then immediately fail.
             if local_source is None:
                 raise DistutilsExecError("library '%s' is not installed", library)
 
-            log.info("library '%s' is not installed, checking if we have already built it", library)
-            try:
-                build_args = self._pkgconfig_internal(pkg_config_name)
-                log.info("library '%s' has already been built", library)
-            except CalledProcessError:
-                log.info("building library '%s' from source", library)
+            log.info("building library '%s' from source", library)
 
-                # Determine which compilers we are to use.
-                cc = self.compiler.compiler[0]
-                cxx = self.compiler.compiler_cxx[0]
+            # Determine which compilers we are to use.
+            cc = self.compiler.compiler[0]
+            cxx = self.compiler.compiler_cxx[0]
 
-                # Use a subdirectory of build_temp as the build directory.
-                build_temp = os.path.realpath(os.path.join(self.build_temp, library))
+            # Use a subdirectory of build_temp as the build directory.
+            build_temp = os.path.realpath(os.path.join(self.build_temp, library))
 
-                # Destination for headers and libraries is build_clib.
-                build_clib = os.path.realpath(self.build_clib)
+            # Destination for headers and libraries is build_clib.
+            build_clib = os.path.realpath(self.build_clib)
 
-                # Create build directories if they do not yet exist.
-                mkpath(build_temp)
-                mkpath(build_clib)
+            # Create build directories if they do not yet exist.
+            mkpath(build_temp)
+            mkpath(build_clib)
 
-                if not supports_non_srcdir_builds:
-                    self._stage_files_recursive(local_source, build_temp)
+            if not supports_non_srcdir_builds:
+                self._stage_files_recursive(local_source, build_temp)
 
-                # Run configure.
-                cmd = [os.path.join(os.path.realpath(local_source), 'configure'),
-                    '--prefix=' + build_clib,
-                    'CC=' + cc,
-                    'CXX=' + cxx,
-                    '--disable-shared']
-                log.info('%s', ' '.join(cmd))
-                check_call(cmd, cwd=build_temp)
+            # Run configure.
+            cmd = [os.path.join(os.path.realpath(local_source), 'configure'),
+                '--prefix=' + build_clib,
+                'CC=' + cc,
+                'CXX=' + cxx,
+                '--disable-shared']
 
-                # Run make install.
-                cmd = ['make', 'install']
-                log.info('%s', ' '.join(cmd))
-                check_call(cmd, cwd=build_temp)
+            log.info('%s', ' '.join(cmd))
+            check_call(cmd, cwd=build_temp, env=self._environ)
 
-                build_args = self._pkgconfig_internal(pkg_config_name)
+            # Run make install.
+            cmd = ['make', 'install']
+            log.info('%s', ' '.join(cmd))
+            check_call(cmd, cwd=build_temp, env=self._environ)
+
+            build_args = self.pkgconfig(pkg_config_name)
 
         return build_args
         # Done!
