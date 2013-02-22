@@ -165,15 +165,25 @@ class build_external_clib(build_clib):
         return build_args
         # Done!
 
-    # Copied from Distutils' own build_clib, but modified so that it is not
-    # an error for a build_info dictionary to lack a 'sources' key.
+    @staticmethod
+    def _list_files_recursive(path):
+        """Yield paths to all of the files contained within the given path,
+        following symlinks."""
+        for dirpath, dirnames, filenames in os.walk(path, followlinks=True):
+            for filename in filenames:
+                yield os.path.join(dirpath, filename)
+
     def get_source_files(self):
+        """Copied from Distutils' own build_clib, but modified so that it is not
+        an error for a build_info dictionary to lack a 'sources' key. If there
+        is no 'sources' key, then all files contained within the path given by
+        the 'local_sources' value are returned."""
         self.check_library_list(self.libraries)
         filenames = []
         for (lib_name, build_info) in self.libraries:
             sources = build_info.get('sources')
             if sources is None or not isinstance(sources, (list, tuple)):
-                continue
+                sources = list(self._list_files_recursive(build_info['local_source']))
 
             filenames.extend(sources)
         return filenames
