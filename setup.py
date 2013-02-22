@@ -2,9 +2,11 @@
 
 import os
 import sys
+import shutil
 import subprocess
 from distutils.errors import DistutilsExecError
 from distutils.dir_util import mkpath
+from distutils.file_util import copy_file
 from distutils import log
 
 
@@ -126,7 +128,7 @@ class build_external_clib(build_clib):
                     log.info("running 'autoreconf -i' for library '%s'", lib_name)
                     check_call(['autoreconf', '-i'], cwd=build_info['local_source'])
 
-    def build_library(self, library, pkg_config_name, local_source=None):
+    def build_library(self, library, pkg_config_name, local_source=None, supports_non_srcdir_builds=True):
         log.info("checking if library '%s' is installed", library)
         try:
             build_args = self.pkgconfig(pkg_config_name)
@@ -158,6 +160,9 @@ class build_external_clib(build_clib):
                 mkpath(build_temp)
                 mkpath(build_clib)
 
+                if not supports_non_srcdir_builds:
+                    self._stage_files_recursive(local_source, build_temp)
+
                 # Run configure.
                 cmd = [os.path.join(os.path.realpath(local_source), 'configure'),
                     '--prefix=' + build_clib,
@@ -182,8 +187,33 @@ class build_external_clib(build_clib):
         """Yield paths to all of the files contained within the given path,
         following symlinks."""
         for dirpath, dirnames, filenames in os.walk(path, followlinks=True):
-            for filename in filenames:
-                yield os.path.join(dirpath, filename)
+            if not any(p.startswith('.') for p in dirpath.split(os.sep)):
+                for filename in filenames:
+                    if not filename.startswith('.'):
+                        yield os.path.join(dirpath, filename)
+
+    @staticmethod
+    def _stage_files_recursive(src, dest):
+        """Hard link or copy all of the files in the path src into the path dest.
+        Subdirectories are created as needed, and files in dest are overwritten."""
+        # Use hard links if they are supported on this system.
+        if hasattr(os, 'link'):
+            link='hard'
+        elif hasattr(os, 'symlink'):
+            link='sym'
+        else:
+            link=None
+
+        for dirpath, dirnames, filenames in os.walk(src, followlinks=True):
+            if not any(p.startswith('.') for p in dirpath.split(os.sep)):
+                dest_dirpath = os.path.join(dest, dirpath.split(src, 1)[1].lstrip(os.sep))
+                mkpath(dest_dirpath)
+                for filename in filenames:
+                    if not filename.startswith('.'):
+                        src_path = os.path.join(dirpath, filename)
+                        dest_path = os.path.join(dest_dirpath, filename)
+                        if not os.path.exists(dest_path):
+                            copy_file(os.path.join(dirpath, filename), os.path.join(dest_dirpath, filename))
 
     def get_source_files(self):
         """Copied from Distutils' own build_clib, but modified so that it is not
@@ -266,6 +296,10 @@ if on_rtd:
 else:
     cmdclass = {'build_ext': custom_build_ext, 'build_clib': build_external_clib}
     libraries = [
+        ('cfitsio', {
+        'pkg_config_name': 'cfitsio',
+        'local_source': 'cfitsio',
+        'supports_non_srcdir_builds': False}),
         ('healpix_cxx', {
         'pkg_config_name': 'Healpix_cxx',
         'local_source': 'healpixsubmodule/src/cxx/autotools'})
