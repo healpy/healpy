@@ -46,10 +46,11 @@ Requirements
 
 * `pkg-config <http://pkg-config.freedesktop.org>`_
 
-The Healpix C++ library (from HEALPix 2.11 or HEALPix 2.20 for healpy >=
-0.10) is included in the healpy package, so you don't need to get it
-separately. If you do want to use your own build of HEALPix instead of
-having Healpy build its bundled source, see INSTALL for further instructions.
+The Healpix C++ library (from HEALPix 3.00) and cfitsio C library (from cfitsio
+3.31) are included in the healpy package, so you don't need to get them
+separately. If you do want to use your own builds of HEALPix and cfitsio
+instead of having Healpy build its bundled source, see INSTALL for further
+instructions.
 
 Download
 --------
