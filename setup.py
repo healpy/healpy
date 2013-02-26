@@ -11,7 +11,10 @@ from distutils import log
 
 
 #
-# FIXME: Copied from Python 2.7's subprocess.check_output.
+# FIXME: Copied from Python 2.7's subprocess.check_output,
+# but with the output= argument to CalledProcessError, which also
+# dates to Python 2.7, removed.
+#
 # When Python 2.6 becomes unsupported, replace this with:
 #   from subprocess import check_output, CalledProcessError, check_call
 #
@@ -45,7 +48,7 @@ def check_output(*popenargs, **kwargs):
         cmd = kwargs.get("args")
         if cmd is None:
             cmd = popenargs[0]
-        raise CalledProcessError(retcode, cmd, output=output)
+        raise CalledProcessError(retcode, cmd)
     return output
 #
 # FIXME: end section copied from Python 2.7's subprocess.check_output
