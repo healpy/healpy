@@ -1,3 +1,6 @@
 recursive-include healpy/data *.fits
 include COPYING INSTALL.rst README.rst MANIFEST.in CHANGELOG.rst
 include healpy/src/_healpy_utils.h
+include healpy/src/_query_disc.cpp
+include healpy/src/_sphtools.cpp
+include healpy/src/_pixelfunc.cpp
