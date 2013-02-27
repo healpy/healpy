@@ -6,6 +6,7 @@ use_setuptools()
 
 import os
 from os.path import join
+import errno
 import sys
 from setuptools import setup, Extension
 from distutils.command.build_clib import build_clib
@@ -87,6 +88,23 @@ else:
     numpy_inc = get_include()
 
 
+# Test if pkg-config is present. If not, fall back to pykg-config.
+try:
+    check_output(['foopkg-config', '--version'])
+    setup_requires = []
+except OSError, e:
+    if e.errno != errno.ENOENT:
+        raise ValueError
+    log.warn('pkg-config is not installed, falling back to pykg-config')
+    setup_requires = ['pykg-config']
+    pykg_config_egg_dir = os.path.join(os.path.realpath('.'), 'pykg_config-1.1.0dev-py2.7.egg')
+    os.environ['PKG_CONFIG'] = os.path.join(pykg_config_egg_dir, 'EGG-INFO/scripts/pykg-config.py')
+    PYTHONPATH = pykg_config_egg_dir
+    if 'PYTHONPATH' in os.environ:
+        PYTHONPATH += ':' + os.environ['PYTHONPATH']
+    os.environ['PYTHONPATH'] = PYTHONPATH
+
+
 class build_external_clib(build_clib):
     """Subclass of Distutils' standard build_clib subcommand. Adds support for
     libraries that are installed externally and detected with pkg-config, with
@@ -109,6 +127,10 @@ class build_external_clib(build_clib):
         return dict(os.environ, PKG_CONFIG_PATH=pkg_config_path)
 
     def pkgconfig(self, *packages):
+        try:
+            PKG_CONFIG = os.environ['PKG_CONFIG']
+        except KeyError:
+            PKG_CONFIG = 'pkg-config'
         kw = {}
         index_key_flag = (
             (2, '--cflags-only-I', ('include_dirs',)),
@@ -117,7 +139,7 @@ class build_external_clib(build_clib):
             (2, '--libs-only-l', ('libraries',)),
             (0, '--libs-only-other', ('extra_link_args',)))
         for index, flag, keys in index_key_flag:
-            cmd = ('pkg-config', flag) + tuple(packages)
+            cmd = (PKG_CONFIG, flag) + tuple(packages)
             log.debug('%s', ' '.join(cmd))
             args = [token[index:] for token in check_output(cmd, env=self._environ).split()]
             if args:
@@ -341,5 +363,7 @@ setup(name='healpy',
       cmdclass = cmdclass,
       ext_modules = extension_list,
       package_data = {'healpy': ['data/*.fits', 'data/totcls.dat']},
+      setup_requires=setup_requires,
+      dependency_links=['https://gist.github.com/lpsinger/5044148/raw/pykg_config-1.1.0dev-py2.7.egg'],
       license='GPLv2'
       )
