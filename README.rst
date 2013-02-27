@@ -2,7 +2,7 @@
 Healpy, a python wrapper for healpix
 ====================================
 
-.. image:: https://travis-ci.org/healpy/healpy.png?branch=travistest
+.. image:: https://travis-ci.org/healpy/healpy.png?branch=master
 
 Description
 -----------
