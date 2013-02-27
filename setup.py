@@ -90,7 +90,7 @@ else:
 
 # Test if pkg-config is present. If not, fall back to pykg-config.
 try:
-    check_output(['foopkg-config', '--version'])
+    check_output(['pkg-config', '--version'])
     setup_requires = []
 except OSError, e:
     if e.errno != errno.ENOENT:
