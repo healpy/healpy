@@ -4,10 +4,34 @@ Installation procedure for Healpy
 Requirements
 ------------
 
-healpy comes with source code for ``HEALPix`` and ``cfitsio``. If you already
-have these libraries installed, then healpy will detect them using
-``pkg-config`` and build and link against them. If you do not have one of them
-installed, then healpy will build them itself from the bundled sources.
+Healpy depends on the Healpix C++ and cfitsio C libraries. Source code is
+include with Healpy and you do not have to install them separately.
+
+Building against external Healpix and cfitsio
+---------------------------------------------
+
+Healpy uses pkg-config to detect the presence of the Healpix and cfitsio
+libraries. pkg-config is available on most systems. If you do not have
+pkg-config installed, then Healpy will download and use (but not install) a
+Python clone called pykg-config.
+
+If you want to provide your own external builds of Healpix and cfitsio, then
+download the following packages:
+
+* `pkg-config <http://pkg-config.freedesktop.org>`_
+
+* `HEALPix <http://sourceforge.net/projects/healpix/>`_
+
+* `cfitsio <http://heasarc.gsfc.nasa.gov/fitsio/>`_
+
+If you are going to install the packages in a nonstandard location (say,
+--prefix=/path/to/local), then you should set the environment variable
+PKG_CONFIG_PATH=/path/to/local/lib/pkgconfig when building. No other
+environment variable settings are necessary, and you do not need to set
+PKG_CONFIG_PATH to use Healpy after you have built it.
+
+Then, unpack each of the above packages and build them with the usual
+'configure; make; make install' recipe.
 
 Installation
 ------------
