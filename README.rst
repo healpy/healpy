@@ -44,10 +44,23 @@ Requirements
 
 * `PyFITS <http://www.stsci.edu/resources/software_hardware/pyfits>`_
 
-The Healpix C++ library (from HEALPix 2.11 or HEALPix 2.20 for healpy >=
-0.10) is included in the healpy package, so you don't need to get it
-separately. If you do want to use your own build of HEALPix instead of
-having Healpy build its bundled source, see INSTALL for further instructions.
+Optional
+--------
+
+Healpy depends on the Healpix C++ and cfitsio C libraries. Source code is
+include with Healpy and you do not have to install them separately.
+
+However, if you have them installed already, Healpy should detect and reuse
+them instead of building them from source. To use your own installations of
+HEALPix and cfitsio, you will also need:
+
+* `pkg-config <http://pkg-config.freedesktop.org>`_
+
+* `HEALPix <http://sourceforge.net/projects/healpix/>`_
+
+* `cfitsio <http://heasarc.gsfc.nasa.gov/fitsio/>`_
+
+See INSTALL for further instructions.
 
 Download
 --------

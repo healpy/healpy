@@ -1,35 +1,37 @@
 Installation procedure for Healpy
 =================================
 
-* Note: Healpix is included, so you don't need to get it separately
-
 Requirements
 ------------
 
-healpy needs ``HEALPix``. You can either:
+Healpy depends on the Healpix C++ and cfitsio C libraries. Source code is
+include with Healpy and you do not have to install them separately.
 
-* let ``healpy`` build its own ``HEALPix`` library from the source code included in
-  this package (the default behavior)
-* use an existing installation:
-  Define the environment variable ``HEALPIX_EXT_PREFIX`` where to find the
-  healpix libraries and include files (eg ``/usr/local``, so that
-  ``/usr/local/include/healpix_base.h`` and ``/usr/local/lib/libhealpix_cxx.a``
-  exist)
+Building against external Healpix and cfitsio
+---------------------------------------------
 
-``HEALPix`` needs ``cfitsio``. You can either:
+Healpy uses pkg-config to detect the presence of the Healpix and cfitsio
+libraries. pkg-config is available on most systems. If you do not have
+pkg-config installed, then Healpy will download and use (but not install) a
+Python clone called pykg-config.
 
-* use an existing installation :
-  Either define the environment variable ``CFITSIO_EXT_PREFIX`` where to find the
-  ``cfitsio`` library and include file (eg ``/usr/local``, so that
-  ``/usr/local/include/fitsio.h`` and ``/usr/local/lib/libcfitsio.a`` exists),
-  or ``CFITSIO_EXT_INC`` with the include folder, e.g. ``/usr/local/include`` and 
-  ``CFITSIO_EXT_LIB`` with full path to the ``libcfitsio.*`` library with full filename
-  e.g. ``/usr/local/lib/libcfitsio.a`` or .so
-* compile a specific cfitsio lib:
-  Define ``EXTERNAL_CFITSIO=no``, place the  ``cfitsioXXXX.tar.gz`` in
-  HEALPIXFOLDER/libcfitsio before installing. The cfitsio version XXXX must
-  match the version in HEALPIXFOLDER/planck.make (or you need to modify it there).
-  HEALPIXFOLDER is ``healpixsubmodule`` in the development version and ``healpixcxx`` in the release packages.
+If you want to provide your own external builds of Healpix and cfitsio, then
+download the following packages:
+
+* `pkg-config <http://pkg-config.freedesktop.org>`_
+
+* `HEALPix <http://sourceforge.net/projects/healpix/>`_
+
+* `cfitsio <http://heasarc.gsfc.nasa.gov/fitsio/>`_
+
+If you are going to install the packages in a nonstandard location (say,
+--prefix=/path/to/local), then you should set the environment variable
+PKG_CONFIG_PATH=/path/to/local/lib/pkgconfig when building. No other
+environment variable settings are necessary, and you do not need to set
+PKG_CONFIG_PATH to use Healpy after you have built it.
+
+Then, unpack each of the above packages and build them with the usual
+'configure; make; make install' recipe.
 
 Installation
 ------------
@@ -37,25 +39,7 @@ Installation
 
     cd healpy
     python setup.py build
-
-*WARNING*, do not directly run::
-
-    sudo python setup.py install # DOES NOT WORK
-
-because the environment variables required to build ``HEALPix`` are not propagated
-to the ``sudo`` shell.
-
-OR, if you do not want OpenMP support (sometimes, it causes SegFault)::
-
-    python setup.py build --without-openmp
-
-(alternatively, you can define the environment variable ``HEALPY_WITHOUT_OPENMP``)
-
-If you do not want the "-march=native" flag (if your g++ is too old)::
-
-    python setup.py build --without-native
-
-(alternatively, you can define the environment variable ``HEALPY_WITHOUT_NATIVE``)
+    sudo python setup.py install
 
 If everything goes fine, you can test it::
 
@@ -79,13 +63,6 @@ or::
 or::
 
     python setup.py install --user # will install it in your User python directory (python >= 2.6)
-
-Compile on OSX
---------------
-
-Suggested compilation on OSX Lion is installing ``pyfits``, ``cython`` and ``cfitsio`` using mac ports and run::
-
->>> python setup.py --without-openmp
 
 Known issues
 ------------

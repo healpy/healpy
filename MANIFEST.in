@@ -1,10 +1,6 @@
-recursive-include healpixsubmodule/src/cxx *
 recursive-include healpy/data *.fits
-prune healpixsubmodule/generic_gcc
-prune healpixsubmodule/src/cxx/build.generic_gcc
-prune healpixsubmodule/src/cxx/healpy
-prune healpixsubmodule/src/cxx/build.healpy
-prune healpixsubmodule/src/cxx/healpy_osx
-prune healpixsubmodule/src/cxx/build.healpy_osx
-include COPYING INSTALL.rst README.rst MANIFEST.in CHANGELOG.rst
+include COPYING INSTALL.rst README.rst MANIFEST.in CHANGELOG.rst distribute_setup.py
 include healpy/src/_healpy_utils.h
+include healpy/src/_query_disc.cpp
+include healpy/src/_sphtools.cpp
+include healpy/src/_pixelfunc.cpp
