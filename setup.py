@@ -258,10 +258,11 @@ class custom_build_ext(build_ext):
         if self.distribution.has_c_libraries():
             build_clib = self.get_finalized_command('build_clib')
             for key, value in build_clib.build_args.iteritems():
-                if not hasattr(self, key) or getattr(self, key) is None:
-                    setattr(self, key, value)
-                else:
-                    getattr(self, key).extend(value)
+                for ext in self.extensions:
+                    if not hasattr(ext, key) or getattr(ext, key) is None:
+                        setattr(ext, key, value)
+                    else:
+                        getattr(ext, key).extend(value)
         build_ext.run(self)
 
 def get_version():
