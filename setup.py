@@ -1,7 +1,14 @@
 #!/usr/bin/env python
 
+# Bootstrap distribute installation
+from distribute_setup import use_setuptools
+use_setuptools()
+
 import os
+from os.path import join
 import sys
+from setuptools import setup, Extension
+from distutils.command.build_clib import build_clib
 from distutils.errors import DistutilsExecError
 from distutils.dir_util import mkpath
 from distutils.file_util import copy_file
@@ -55,10 +62,6 @@ def check_output(*popenargs, **kwargs):
 
 # For ReadTheDocs, do not build the extensions, only install .py files
 on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
-
-from distutils.core import setup, Extension
-from distutils.command.build_clib import build_clib
-from os.path import join
 
 try:
     if sys.argv[1] in ['sdist']: #we need to distribute also c and cpp sources
