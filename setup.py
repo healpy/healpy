@@ -112,7 +112,7 @@ class build_external_clib(build_clib):
         index_key_flag = (
             (2, '--cflags-only-I', ('include_dirs',)),
             (0, '--cflags-only-other', ('extra_compile_args', 'extra_link_args')),
-            (2, '--libs-only-L', ('library_dirs',)),
+            (2, '--libs-only-L', ('library_dirs', 'runtime_library_dirs')),
             (2, '--libs-only-l', ('libraries',)),
             (0, '--libs-only-other', ('extra_link_args',)))
         for index, flag, keys in index_key_flag:
