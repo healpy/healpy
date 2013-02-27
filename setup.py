@@ -365,6 +365,7 @@ setup(name='healpy',
       ext_modules = extension_list,
       package_data = {'healpy': ['data/*.fits', 'data/totcls.dat']},
       setup_requires=setup_requires,
+      install_requires=['pyfits'],
       dependency_links=['https://gist.github.com/lpsinger/5044148/raw/pykg_config-1.1.0dev-py2.7.egg'],
       license='GPLv2'
       )
