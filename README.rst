@@ -3,6 +3,7 @@ Healpy, a python wrapper for healpix
 ====================================
 
 .. image:: https://travis-ci.org/healpy/healpy.png?branch=master
+   :target: https://travis-ci.org/healpy/healpy
 
 Description
 -----------
