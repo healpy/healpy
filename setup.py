@@ -60,7 +60,6 @@ on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
 from distutils.core import setup, Extension
 from distutils.command.build_clib import build_clib
 from os.path import join
-import sys
 
 try:
     if sys.argv[1] in ['sdist']: #we need to distribute also c and cpp sources
