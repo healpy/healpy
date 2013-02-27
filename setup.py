@@ -2,7 +2,6 @@
 
 import os
 import sys
-import shutil
 from distutils.errors import DistutilsExecError
 from distutils.dir_util import mkpath
 from distutils.file_util import copy_file
