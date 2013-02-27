@@ -12,6 +12,6 @@ install:
   - "pip install -r requirements.txt --use-mirrors"
   - "python setup.py install"
 # command to run tests
-script: nosetests
+script: bash testbuild.sh
 notifications:
   email: false
