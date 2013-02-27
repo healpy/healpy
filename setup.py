@@ -280,6 +280,7 @@ class custom_build_ext(build_ext):
         # path.)
         if self.distribution.has_c_libraries():
             build_clib = self.get_finalized_command('build_clib')
+            build_clib.run()
             for key, value in build_clib.build_args.iteritems():
                 for ext in self.extensions:
                     if not hasattr(ext, key) or getattr(ext, key) is None:
