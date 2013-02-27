@@ -1,4 +1,5 @@
 recursive-include healpy/data *.fits
+recursive-include healpy/test/data *
 include COPYING INSTALL.rst README.rst MANIFEST.in CHANGELOG.rst distribute_setup.py
 include healpy/src/_healpy_utils.h
 include healpy/src/_query_disc.cpp

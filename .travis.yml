@@ -1,3 +1,17 @@
 branches:
   only:
     - travistest
+language: python
+python:
+  - 2.7
+before_install:
+  - sudo apt-get install libcfitsio3-dev python-matplotlib python-pyfits
+# command to install dependencies
+install: 
+  - pip install -r requirements.txt --use-mirrors
+  - python setup.py install
+# command to run tests
+script:
+  - bash travistest.sh
+notifications:
+  email: false
