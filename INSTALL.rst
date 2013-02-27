@@ -15,7 +15,7 @@ Installation
 
     cd healpy
     python setup.py build
-    sudo python setup.py install # DOES NOT WORK
+    sudo python setup.py install
 
 If everything goes fine, you can test it::
 
