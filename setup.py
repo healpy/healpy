@@ -194,7 +194,8 @@ class build_external_clib(build_clib):
                 '--prefix=' + build_clib,
                 'CC=' + cc,
                 'CXX=' + cxx,
-                '--disable-shared']
+                '--disable-shared',
+                '--with-pic']
 
             log.info('%s', ' '.join(cmd))
             check_call(cmd, cwd=build_temp, env=self._environ)
