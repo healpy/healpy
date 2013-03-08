@@ -11,7 +11,7 @@ From map to spherical harmonics
 .. autosummary::
    :toctree: generated/
 
-   synfast
+   anafast
    map2alm
 
 From spherical harmonics to map
@@ -19,7 +19,7 @@ From spherical harmonics to map
 .. autosummary::
    :toctree: generated/
 
-   anafast
+   synfast
    alm2map
    alm2map_der1
 
