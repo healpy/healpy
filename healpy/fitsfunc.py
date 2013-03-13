@@ -168,7 +168,7 @@ def write_map(filename,m,nest=False,dtype=np.float32,fits_IDL=True,coord=None,co
 
 
 def read_map(filename,field=0,dtype=np.float64,nest=False,hdu=1,h=False,
-             verbose=False):
+             verbose=False,memmap=False):
     """Read an healpix map from a fits file.
 
     Parameters
@@ -193,13 +193,16 @@ def read_map(filename,field=0,dtype=np.float64,nest=False,hdu=1,h=False,
       If True, print a number of diagnostic messages
     as_ma : bool, optional
       If True, return also the header. Default: False.
+    memmap : bool, optional
+      Argument passed to pyfits.open, if True, the map is not read into memory,
+      but only the required pixels are read when needed. Default: False.
 
     Returns
     -------
     m | (m0, m1, ...) [, header] : array or a tuple of arrays, optionally with header appended
       The map(s) read from the file, and the header if *h* is True.
     """
-    hdulist=pf.open(filename)
+    hdulist=pf.open(filename, memmap=memmap)
     #print hdulist[1].header
     nside = hdulist[hdu].header.get('NSIDE')
     if nside is None:
