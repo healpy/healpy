@@ -1,0 +1,34 @@
+Parameters read by smoothing_cxx:
+
+fwhm_arcmin (double):
+  FWHM (in arcmin) of the Gaussian beam used for smoothing. If the value
+  is negative, the smoothing of a Gaussian beam with an FWHM of -fwhm_arcmin
+  will be _removed_ from the input map.
+
+nlmax (integer):
+  maximum order of l
+
+infile (string):
+  input file containing the Healpix map
+
+outfile (string, default=""):
+  output file for the smoothed Healpix map
+
+polarisation (bool):
+  if false, only an intensity map is smoothed
+  if true, an IQU map is smoothed
+
+weighted (bool, default=false):
+  if true, weighted quadrature is used
+
+if (weighted)
+  healpix_data (string):
+    directory containing the Healpix data files
+endif
+
+iter_order (integer, default=0)
+  number of iterations for the analysis (0: standard analysis)
+
+double_precision (bool, default=false):
+  if false, a_lm are read/written in single precision, otherwise in
+  double precision.

@@ -1,0 +1,46 @@
+Parameters read by mult_alm:
+
+infile (string):
+  input file containing the a_lm
+
+outfile (string):
+  output file name for the calculated a_lm
+
+fwhm_arcmin_in (real, default=0):
+  FWHM (in arcmin) of a Gaussian beam, which will be _removed_ from the
+  input a_lm
+
+fwhm_arcmin_out (real, default=0):
+  FWHM (in arcmin) of a Gaussian beam, which will be used to smoothe the
+  output a_lm
+
+nside_pixwin_in (integer, default=0):
+  If this is different from 0, the corresponding pixel window function
+  will be _removed_ from the input a_lm
+
+nside_pixwin_out (integer, default=0):
+  If this is different from 0, the corresponding pixel window function
+  will be applied to the output a_lm
+
+if ((nside_pixwin_in>0)||(nside_pixwin_out>0))
+  healpix_data (string):
+    directory containing the Healpix data files
+endif
+
+cl_in (string, default=""):
+  if supplied, the power spectrum from this file will be _removed_
+  from the input a_lm
+  NOTE: currently only supported for unpolarised a_lm
+
+cl_out (string, default=""):
+  if supplied, the power pectrum from this file will be applied
+  to the output a_lm
+  NOTE: currently only supported for unpolarised a_lm
+
+polarisation (bool):
+  if false, only the intensity a_lm are generated,
+  if true, T, G and C a_lm are generated
+
+double_precision (bool, default=false):
+  if false, the a_lm are read/written in single precision,
+  otherwise in double precision.

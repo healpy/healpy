@@ -328,11 +328,11 @@ else:
     libraries = [
         ('cfitsio', {
         'pkg_config_name': 'cfitsio',
-        'local_source': 'cfitsio',
+        'local_source': 'cfitsiocopy',
         'supports_non_srcdir_builds': False}),
         ('healpix_cxx', {
         'pkg_config_name': 'healpix_cxx',
-        'local_source': 'healpixsubmodule/src/cxx/autotools'})
+        'local_source': 'healpixcxx/src/cxx/autotools'})
     ]
     extension_list = [pixel_lib, spht_lib, hfits_lib,
                       Extension("healpy._query_disc",

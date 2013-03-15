@@ -1,0 +1,11 @@
+prefix=/usr
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+
+Name: cfitsio
+Description: FITS File Subroutine Library
+Version: 3.31
+Libs: -L${libdir} -lcfitsio 
+Libs.private: -lm
+Cflags: -I${includedir}

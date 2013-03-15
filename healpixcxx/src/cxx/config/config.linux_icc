@@ -1,0 +1,13 @@
+# Configuration file for Intel icc/icpc under Linux
+
+CC= icc
+CCFLAGS_NO_C= -O3 -ip -openmp -Wbrief -Wall -vec-report0 -openmp-report0 -wd383,981,1419,1572
+CCFLAGS= $(CCFLAGS_NO_C) -c
+
+CXX= icpc
+CXXL= icpc
+CXXCFLAGS_NO_C= -ansi -O3 -ip -ansi_alias -openmp -Wbrief -Wall -vec-report0 -openmp-report0 -wd383,444,981,1572
+CXXCFLAGS= $(CXXCFLAGS_NO_C) -c
+CXXLFLAGS= -L. -L$(LIBDIR) -O3 -ip -openmp
+
+ARCREATE= ar cr

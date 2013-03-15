@@ -1,0 +1,16 @@
+LS_OPTFLAGS:= -O2 -ffast-math
+LS_DEBUGFLAGS:= #-g
+
+CC= gcc
+CL= gcc
+CCFLAGS_NO_C= $(LS_DEBUGFLAGS) $(LS_OPTFLAGS) -fno-strict-aliasing -std=c99
+CCFLAGS= $(CCFLAGS_NO_C) -c
+CLFLAGS= -L. -L$(LIBDIR) $(LS_OPTFLAGS) -lm
+
+CXX= g++
+CXXL= g++
+CXXCFLAGS_NO_C= $(LS_DEBUGFLAGS) $(LS_OPTFLAGS) -ansi
+CXXCFLAGS= $(CXXCFLAGS_NO_C) -c
+CXXLFLAGS= -L. -L$(LIBDIR) $(LS_OPTFLAGS)
+
+ARCREATE= ar cr

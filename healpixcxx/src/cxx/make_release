@@ -1,0 +1,21 @@
+#!/bin/sh
+
+NAME=HealpixCxx-3.1_experimental
+URL=http://svn.code.sf.net/p/healpix/code/trunk/src/cxx
+REV=HEAD
+
+svn export -r ${REV} ${URL} ${NAME} &&\
+cd ${NAME} &&\
+autoconf &&\
+rm -rf autom4te.cache make_release &&\
+cd .. &&\
+tar cvzf ${NAME}-src.tar.gz ${NAME} &&\
+cd ${NAME} &&\
+./configure &&\
+make test &&\
+make doc &&\
+cd .. &&\
+mv ${NAME}/doc ./${NAME}-doc &&\
+tar cvzf ${NAME}-doc.tar.gz ${NAME}-doc &&\
+rm -rf ${NAME}-doc &&\
+rm -rf ${NAME}

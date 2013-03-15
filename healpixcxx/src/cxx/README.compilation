@@ -1,0 +1,66 @@
+Starting with release ?.??, there are two ways to compile Healpix C++:
+using the configure script (recommended) or the traditional manual approach.
+
+
+1) Using configure
+
+Simply run "./configure"; if this fails, please refer to the output of
+"./configure --help" for additional hints and, if necessary, provide
+additional flags to the configure script.
+Once the script finishes successfully, run "make" (or "gmake").
+This should install the compilation products in the subdirectory "auto/".
+
+
+2) Manual setup
+
+Starting with HEALPix 2.20, Healpix_cxx supports compilation using a
+pre-installed libcfitsio. In order to use this feature, simply set
+the following environment variables before running "make":
+
+EXTERNAL_CFITSIO=yes
+CFITSIO_EXT_LIB=<full name including path of the cfitsio library file>
+                (or "-L<path/to/library> -lcfitsio")
+CFITSIO_EXT_INC=-I<full name of a directory containing fitsio.h and longnam.h>
+
+The installed version of libcfitsio should be at least 3.23.
+
+NOTE: due to a conflict of header file names it is currently not possible
+to use the cfitsio library provided with the HEASOFT package for compilation
+of Healpix C++. HEASOFT's include directory contains a file called "rotmatrix.h"
+which clashes with Healpix's own rotmatrix.h.
+
+Alternatively, Healpix_cxx can be instructed to compile its own libcfitsio.
+For that purpose the file cfitsio3310.tar.gz needs to be present in
+the subdirectory libcfitsio/. It can be obtained from
+http://heasarc.gsfc.nasa.gov/FTP/software/fitsio/c/cfitsio3310.tar.gz
+Please simply put the .tar.gz file into the libcfitsio/ directory; it will
+be unpacked and compiled automatically.
+
+If you have a more recent version of the cfitsio package, please edit the
+line starting with "PACKAGE =" in the file libcfitsio/planck.make accordingly.
+
+GNU make is also required for compilation.
+
+To compile the package, set the environment variable
+HEALPIX_TARGET to the target for which you want to compile
+(e.g. generic_gcc, linux_icc etc.). If a fairly recent version
+(4.2 or higher) of gcc and g++ is installed on the system, the target
+"generic_gcc" should work in most cases; however, for Mac OS X, "osx" is
+recommended. For each possible target there exists a configuration file with
+the name config.$HEALPIX_TARGET in the directory config/.
+
+Afterwards, just type "gmake" or "make".
+
+If the compilers on your platform have different names or you
+want to make other changes, editing the configuration files
+should be quite straightforward.
+
+Please note that all temporary and object files are created
+separately from the source files in a directory called
+"build.$HEALPIX_TARGET". This allows simultaneous compilation
+for different platforms.
+
+Documentation can be created by the command "(g)make doc".
+However this requires the doxygen application to be installed
+on your system (for more information, see http://doxygen.org).
+The documentation will be created in the subdirectory doc/.

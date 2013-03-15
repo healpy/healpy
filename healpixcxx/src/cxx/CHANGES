@@ -1,0 +1,59 @@
+Changes since v3.0:
+- libpsht replaced by libsharp
+
+Changes since v2.20a (incomplete):
+
+Query routines:
+- query_polygon() and query_polygon_inclusive() added.
+- query routines now return lists of pixel ranges instead of lists of pixels,
+  which is much more economic.
+- inclusive query routines: tradeoff between performance and number of false
+  positives is tuneable.
+- queries now work natively in both NESTED and RING schemes. Operations on
+  the NESTED scheme are typically slower than in RING, but still much faster
+  than computing the query in RING and converting all pixel numbers to NESTED
+  afterwards.
+
+Healpix_Base:
+- Healpix_Base and Healpix_Base2 have been merged into the templated class
+  T_Healpix_Base; functionality is still available under the old names.
+- various performance improvements to T_Healpix_Base functionality
+
+Standalone codes:
+- rotalm_cxx has a new mode which allows specifying Euler angles.
+- new code "udgrade_harmonic_cxx" which performs upgrading/degrading by going
+  through spherical harmonic space.
+
+User-friendliness:
+- module parameters can now optionally be passed on the command line instead
+  of using a parameter file.
+  For example:
+    anafast_cxx nlmax=500 infile=test.fits iter_order=3 <...>
+- facilities now check input maps for undefined pixels before calling map2alm().
+  If undefined pixels are found, a warning is printed, and the pixels are set
+  to zero.
+- udgrade_cxx refuses downgrading of polarised maps (which would produce
+  unphysical results)
+
+Bug fixes:
+- accuracy of pix2ang near the poles at high resolutions has been improved.
+
+Configuration:
+- optional autoconf support
+
+Interface changes:
+- Healpix_Base::query_*(): new interface
+- cxxutils.h has been split up into
+  * announce.h (dealing with module banners)
+  * share_utils.h (dealing with subdividing tasks between multiple workers)
+  * string_utils.h (dealing with string manipulation and file parsing)
+- psht.h: interface to alm_info changed in order to add MPI support
+- ylmgen_c.h: Ylmgen_init() interface has changed
+- bluestein.h: bluestein_i() interface changed
+
+The changes below are currently deactivated but can be switched on easily.
+--------------------------------------------------------------------------
+
+Performance:
+- libpsht partially replaced by libsharp => faster SHTs, especially on
+  modern (2011+) CPUs with AVX.
