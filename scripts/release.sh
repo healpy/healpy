@@ -17,7 +17,6 @@ echo replace folder reference in setup.py
 sed -i '' -e's/healpixsubmodule/healpixcxx/' setup.py
 
 echo copy current version of healpix to other folder to be included in the release package
-mkdir -p cfitsiocopy
 cp -r cfitsio cfitsiocopy
 rm -r cfitsiocopy/.git
 git add cfitsiocopy
