@@ -34,6 +34,17 @@
 #include "numpy/arrayobject.h"
 #include "numpy/ufuncobject.h"
 #include "numpy/noprefix.h"
+#include "numpy/ndarraytypes.h"
+
+/*
+It looks like the Numpy typedef npy_intp declares Numpy's array index type. In <numpy/ndarraytypes.h>, this is declared as:
+
+  typedef Py_intptr_t npy_intp;
+
+And in <python2.7/pyport.h>, this is declared as an integer that is large enough to hold any pointer (void*). So in fact, Numpy can't store maximum-resolution 64-bit HEALPix maps on 32-bit machines. I would suggest specializing the HEALPix templates with npy_intp, as in:
+ */
+
+typedef T_Healpix_Base<npy_intp> HealpixNumpyBase;
 
 /*
    ang2pix
@@ -46,7 +57,7 @@ template<Healpix_Ordering_Scheme scheme>static void
   intp is1=steps[0],is2=steps[1],is3=steps[2], os=steps[3];
   char *ip1=args[0], *ip2=args[1], *ip3=args[2], *op=args[3];
 
-  Healpix_Base2 hb;
+  HealpixNumpyBase hb;
   long oldnside=-1;
 
   for(intp i=0; i<n; i++, ip1+=is1, ip2+=is2, ip3+=is3, op+=os)
@@ -72,7 +83,7 @@ template<Healpix_Ordering_Scheme scheme> static void
   register intp is1=steps[0],is2=steps[1],os1=steps[2],os2=steps[3];
   char *ip1=args[0], *ip2=args[1], *op1=args[2], *op2=args[3];
 
-  Healpix_Base2 hb;
+  HealpixNumpyBase hb;
   long oldnside=-1;
 
   for(i=0; i<n; i++, ip1+=is1, ip2+=is2, op1+=os1, op2+=os2)
@@ -101,7 +112,7 @@ ufunc_ring2nest(char **args, intp *dimensions, intp *steps, void *func)
   register intp is1=steps[0],is2=steps[1],os=steps[2];
   char *ip1=args[0], *ip2=args[1], *op=args[2];
 
-  Healpix_Base2 hb;
+  HealpixNumpyBase hb;
   long oldnside=-1;
 
   for(i=0; i<n; i++, ip1+=is1, ip2+=is2, op+=os)
@@ -127,7 +138,7 @@ static void
   register intp is1=steps[0],is2=steps[1],os=steps[2];
   char *ip1=args[0], *ip2=args[1], *op=args[2];
 
-  Healpix_Base2 hb;
+  HealpixNumpyBase hb;
   long oldnside=-1;
 
   for(i=0; i<n; i++, ip1+=is1, ip2+=is2, op+=os)
@@ -154,7 +165,7 @@ template<Healpix_Ordering_Scheme scheme> static void
   register intp is1=steps[0],is2=steps[1],os1=steps[2],os2=steps[3],os3=steps[4];
   char *ip1=args[0], *ip2=args[1], *op1=args[2], *op2=args[3], *op3=args[4];
 
-  Healpix_Base2 hb;
+  HealpixNumpyBase hb;
   long oldnside=-1;
 
   for(i=0; i<n; i++, ip1+=is1, ip2+=is2, op1+=os1, op2+=os2, op3+=os3)
@@ -185,7 +196,7 @@ template<Healpix_Ordering_Scheme scheme> static void
   register intp is1=steps[0],is2=steps[1],is3=steps[2],is4=steps[3],os1=steps[4];
   char *ip1=args[0], *ip2=args[1], *ip3=args[2], *ip4=args[3], *op1=args[4];
 
-  Healpix_Base2 hb;
+  HealpixNumpyBase hb;
   long oldnside=-1;
 
   for(i=0; i<n; i++, ip1+=is1, ip2+=is2, ip3+=is3, ip4+=is4, op1+=os1)
@@ -218,7 +229,7 @@ template<Healpix_Ordering_Scheme scheme> static void
     *op1=args[3],*op2=args[4],*op3=args[5],*op4=args[6],
     *op5=args[7],*op6=args[8],*op7=args[9],*op8=args[10];
 
-  Healpix_Base2 hb;
+  HealpixNumpyBase hb;
   long oldnside=-1;
 
   for(i=0; i<n; i++, ip1+=is1, ip2+=is2, ip3+=is3,
@@ -268,7 +279,7 @@ template<Healpix_Ordering_Scheme scheme> static void
     *op1=args[2],*op2=args[3],*op3=args[4],*op4=args[5],
     *op5=args[6],*op6=args[7],*op7=args[8],*op8=args[9];
 
-  Healpix_Base2 hb;
+  HealpixNumpyBase hb;
   for(i=0; i<n; i++, ip1+=is1, ip2+=is2,
         op1+=os1,op2+=os2,op3+=os3,op4+=os4,
         op5+=os5,op6+=os6,op7+=os7,op8+=os8 )
@@ -308,7 +319,7 @@ static void
   register intp is1=steps[0],os1=steps[1];
   char *ip1=args[0], *op1=args[1];
 
-  Healpix_Base2 hb;
+  HealpixNumpyBase hb;
   long oldnside=-1;
 
   for(i=0; i<n; i++, ip1+=is1, op1+=os1)
