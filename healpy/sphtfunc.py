@@ -360,9 +360,9 @@ def synfast(cls, nside, lmax = None, mmax = None, alm = False,
     nside : int, scalar
       The nside of the output map(s)
     lmax : int, scalar, optional
-      Maximum l for alm. Default: 3*nside-1
+      Maximum l for alm. Default: min of 3*nside-1 or length of the cls - 1
     mmax : int, scalar, optional
-      Maximum m for alm. Default: 3*nside-1
+      Maximum m for alm.
     alm : bool, scalar, optional
       If True, return also alm(s). Default: False.
     pol : bool, optional
@@ -401,8 +401,9 @@ def synfast(cls, nside, lmax = None, mmax = None, alm = False,
     """
     if not pixelfunc.isnsideok(nside):
         raise ValueError("Wrong nside value (must be a power of two).")
+    cls_lmax = cb.len_array_or_arrays(cls) -1
     if lmax is None or lmax < 0:
-        lmax = 3 * nside - 1
+        lmax = min(cls_lmax, 3 * nside - 1)
     alms = synalm(cls, lmax = lmax, mmax = mmax, new = new)
     maps = alm2map(alms, nside, lmax = lmax, mmax = mmax, pixwin = pixwin,
                    pol = pol, fwhm = fwhm, sigma = sigma, inplace = True)

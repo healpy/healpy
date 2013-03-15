@@ -61,3 +61,21 @@ def is_like2d(o):
         if len(s) != size:
             return False
     return True
+
+
+def len_array_or_arrays(o):
+    """Returns the length of a single array or list of arrays
+    
+    Parameters
+    ----------
+    o : either array or sequence of arrays
+
+    Returns
+    -------
+    length : length of array
+    """
+    if is_seq_of_seq(o):
+        length = len(o[0])
+    else:
+        length = len(o)
+    return length
