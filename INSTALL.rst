@@ -44,11 +44,13 @@ Installation
 If everything goes fine, you can test it::
 
     cd build/lib*
-    ipython -pylab
+    python
 
+>>> import matplotlib.pyplot as plt
+>>> import numpy as np
 >>> import healpy as H
->>> H.mollview(arange(12))
->>> pylab.show()
+>>> H.mollview(np.arange(12))
+>>> plt.show()
 
 or run the test suite with nose::
 
