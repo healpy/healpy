@@ -1,4 +1,3 @@
-import warnings
 import pyfits
 import os
 import numpy as np
@@ -9,6 +8,10 @@ from itertools import chain
 import unittest
 
 import healpy as hp
+
+import warnings
+# disable new order warnings in tests
+warnings.filterwarnings('ignore')
 
 class TestSphtFunc(unittest.TestCase):
 
