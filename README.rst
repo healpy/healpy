@@ -37,10 +37,9 @@ Requirements
   2.7; however see `bug <http://code.google.com/p/healpy/issues/detail?id=19>`_ 
   for Python 2.4.
 
-* `Numpy <http://numpy.scipy.org/>`_ (tested with version >=1.0.1)
+* `Numpy <http://numpy.scipy.org/>`_ (tested with version >=1.5.0)
 
-* `Matplotlib <http://matplotlib.sourceforge.net/>`_ (tested with
-  version >= 0.91.2 up to 1.0.1, please use latest version)
+* `Matplotlib <http://matplotlib.sourceforge.net/>`_ 
 
 * Python development package is required for some distribution (e.g.,
   python-dev package for Ubuntu)
@@ -71,6 +70,12 @@ Download
 The latest released version is available as a source
 package at:
 https://github.com/healpy/healpy/tags
+
+Known Issues
+------------
+
+healpy pixel functions, e.g. ang2pix, do not support 32bit platforms, we are working
+on fixing this issue.
 
 Support
 -------
@@ -107,10 +112,12 @@ Core developers:
 
 Contributors:
 
+* Pierre Chanial
 * Yu Feng
 * Duncan Hanson
 * Sergey Koposov
 * Maude Martin Lejeune
+* Paul Price
 * Leo Singer 
 * Maurizio Tomasi
 
@@ -118,7 +125,7 @@ Acknowledgements
 ----------------
 
 Note that, as stated `here
-<http://healpix.jpl.nasa.gov/healpixSoftwareGetHealpix.shtml>`_
+<http://healpix.sourceforge.net/downloads.php>`_
 publications based on work using the HEALPix software package should
 include both of the following:
 
@@ -133,7 +140,7 @@ include both of the following:
 
 2. at the first use of the HEALPix acronym, a footnote placed in the
    main body of the paper referring to the HEALPix web site,
-   currently http://healpix.jpl.nasa.gov
+   currently http://healpix.sf.net
 
 As healpy is based on HEALPix Software (the C++ library), the same
 condition applies to it.

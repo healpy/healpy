@@ -1,5 +1,8 @@
-Release 1.5.1, ?:
+Release 1.6.0, 15th March 2013:
 
+* support for NSIDE>8192, this broke compatibility with 32bit systems
+* using the new autotools based build system of healpix_cxx
+* pkg-config based install for cfitsio and healpix_cxx
 * common definition file for cython modules
 * test build script
 * new matplotlib based mollview in healpy.newvisufunc
