@@ -2,7 +2,7 @@
 
 # Bootstrap distribute installation
 from distribute_setup import use_setuptools
-use_setuptools()
+use_setuptools('0.6.10')
 
 import os
 from os.path import join
