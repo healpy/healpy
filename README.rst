@@ -13,7 +13,7 @@ based on the standard numeric and visualisation tools for Python,
 Numpy and matplotlib.
 
 To find find more information about Healpix, please visit its home
-page at http://healpix.jpl.nasa.gov/.
+page at http://healpix.sourceforge.net/.
 
 The documentation can be found at http://healpy.readthedocs.org, 
 tutorial at http://healpy.readthedocs.org/en/latest/tutorial.html.
