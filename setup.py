@@ -8,6 +8,7 @@ import os
 from os.path import join
 import errno
 import sys
+from distutils.sysconfig import get_config_var
 from setuptools import setup, Extension
 from distutils.command.build_clib import build_clib
 from distutils.errors import DistutilsExecError
@@ -301,6 +302,7 @@ class build_external_clib(build_clib):
                 '--prefix=' + build_clib,
                 'CC=' + cc,
                 'CXX=' + cxx,
+                'CFLAGS=' + get_config_var('OPT'),
                 '--disable-shared',
                 '--with-pic']
 
