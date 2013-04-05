@@ -69,7 +69,15 @@ Download
 
 The latest released version is available as a source
 package at:
-https://github.com/healpy/healpy/tags
+https://pypi.python.org/pypi/healpy
+
+`healpy` can also be automatically installed on most systems using:
+
+$ pip install healpy --user
+
+and upgraded with:
+
+$ pip install --upgraded healpy --user
 
 Known Issues
 ------------
