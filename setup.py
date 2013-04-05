@@ -8,6 +8,7 @@ import os
 from os.path import join
 import errno
 import sys
+from distutils.sysconfig import get_config_var
 from setuptools import setup, Extension
 from distutils.command.build_clib import build_clib
 from distutils.errors import DistutilsExecError
@@ -296,11 +297,20 @@ class build_external_clib(build_clib):
             if not supports_non_srcdir_builds:
                 self._stage_files_recursive(local_source, build_temp)
 
+            # This flag contains the architecture flags, if any.
+            # On 32-bit Python on Mac OS, this will map to something like
+            # '-arch i386  -DNDEBUG -g -O3  -arch i386'.
+            basecflags = get_config_var('BASECFLAGS')
+            cflags = get_config_var('CFLAGS')
+            cflags.partition(basecflags)[-1]
+
             # Run configure.
             cmd = [os.path.join(os.path.realpath(local_source), 'configure'),
                 '--prefix=' + build_clib,
                 'CC=' + cc,
                 'CXX=' + cxx,
+                'CFLAGS=' + cflags,
+                'CXXFLAGS=' + cflags,
                 '--disable-shared',
                 '--with-pic']
 
