@@ -77,7 +77,7 @@ $ pip install healpy --user
 
 and upgraded with:
 
-$ pip install --upgraded healpy --user
+$ pip install --upgrade healpy --user
 
 Known Issues
 ------------
