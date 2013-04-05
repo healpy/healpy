@@ -305,7 +305,7 @@ class build_external_clib(build_clib):
             cflags.partition(basecflags)[-1]
 
             # Run configure.
-            cmd = [os.path.join(os.path.realpath(local_source), 'configure'),
+            cmd = ['/bin/sh', os.path.join(os.path.realpath(local_source), 'configure'),
                 '--prefix=' + build_clib,
                 'CC=' + cc,
                 'CXX=' + cxx,
