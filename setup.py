@@ -72,7 +72,7 @@ def check_output(*popenargs, **kwargs):
 try:
     os.walk(followlinks=True)
 except TypeError, e:
-    if "got an unexpected keyword argument" in e.message:
+    if "got an unexpected keyword argument" in str(e):
         from os import path, listdir
         # Copied from Python 2.7's os.py
         def walk(top, topdown=True, onerror=None, followlinks=False):
