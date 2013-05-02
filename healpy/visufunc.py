@@ -65,7 +65,8 @@ def mollview(map=None,fig=None,rot=None,coord=None,unit='',
              gal_cut=0,
              format='%g',format2='%g',
              cbar=True,cmap=None, notext=False,
-             norm=None,hold=False,margins=None,sub=None):
+             norm=None,hold=False,margins=None,sub=None,
+             return_projected_map=False):
     """Plot an healpix map (given as an array) in Mollweide projection.
     
     Parameters
@@ -129,6 +130,8 @@ def mollview(map=None,fig=None,rot=None,coord=None,unit='',
       giving the margins on left,bottom,right and top
       of the axes. Values are relative to figure (0-1).
       Default: None
+    return_projected_map : bool
+      if True returns the projected map in a 2d numpy array
 
     See Also
     --------
@@ -186,7 +189,7 @@ def mollview(map=None,fig=None,rot=None,coord=None,unit='',
         elif remove_mono:
             map=pixelfunc.remove_monopole(map,gal_cut=gal_cut,nest=nest,
                                           copy=True,verbose=True)
-        ax.projmap(map,nest=nest,xsize=xsize,coord=coord,vmin=min,vmax=max,
+        img = ax.projmap(map,nest=nest,xsize=xsize,coord=coord,vmin=min,vmax=max,
                    cmap=cmap,norm=norm)
         if cbar:
             im = ax.get_images()[0]
@@ -217,7 +220,8 @@ def mollview(map=None,fig=None,rot=None,coord=None,unit='',
         if wasinteractive:
             pylab.ion()
             #pylab.show()
-
+    if return_projected_map:
+        return img
 
 def gnomview(map=None,fig=None,rot=None,coord=None,unit='',
              xsize=200,ysize=None,reso=1.5,degree=False,
@@ -226,7 +230,8 @@ def gnomview(map=None,fig=None,rot=None,coord=None,unit='',
              min=None,max=None,flip='astro',
              format='%.3g',cbar=True,
              cmap=None, norm=None,
-             hold=False,sub=None,margins=None,notext=False):
+             hold=False,sub=None,margins=None,notext=False,
+             return_projected_map=False):
     """Plot an healpix map (given as an array) in Gnomonic projection.
 
     Parameters
@@ -290,6 +295,8 @@ def gnomview(map=None,fig=None,rot=None,coord=None,unit='',
       Default: None
     notext: bool, optional
       If True: do not add resolution info text. Default=False
+    return_projected_map : bool
+      if True returns the projected map in a 2d numpy array
 
     See Also
     --------
@@ -346,7 +353,7 @@ def gnomview(map=None,fig=None,rot=None,coord=None,unit='',
             map=pixelfunc.remove_dipole(map,gal_cut=gal_cut,nest=nest,copy=True)
         elif remove_mono:
             map=pixelfunc.remove_monopole(map,gal_cut=gal_cut,nest=nest,copy=True)
-        ax.projmap(map,nest=nest,coord=coord,vmin=min,vmax=max,
+        img = ax.projmap(map,nest=nest,coord=coord,vmin=min,vmax=max,
                    xsize=xsize,ysize=ysize,reso=reso,cmap=cmap,norm=norm)
         if cbar:
             im = ax.get_images()[0]
@@ -386,7 +393,8 @@ def gnomview(map=None,fig=None,rot=None,coord=None,unit='',
         if wasinteractive:
             pylab.ion()
             #pylab.show()
-
+    if return_projected_map:
+        return img
 
 def cartview(map=None,fig=None,rot=None,zat=None,coord=None,unit='',
              xsize=800,ysize=None,lonra=None,latra=None,
@@ -395,7 +403,8 @@ def cartview(map=None,fig=None,rot=None,zat=None,coord=None,unit='',
              min=None,max=None,flip='astro',
              format='%.3g',cbar=True,
              cmap=None, norm=None,aspect=None,
-             hold=False,sub=None,margins=None,notext=False):
+             hold=False,sub=None,margins=None,notext=False,
+             return_projected_map=False):
     """Plot an healpix map (given as an array) in Cartesian projection.
 
     Parameters
@@ -462,6 +471,8 @@ def cartview(map=None,fig=None,rot=None,zat=None,coord=None,unit='',
       giving the margins on left,bottom,right and top
       of the axes. Values are relative to figure (0-1).
       Default: None
+    return_projected_map : bool
+      if True returns the projected map in a 2d numpy array
 
     See Also
     --------
@@ -524,7 +535,7 @@ def cartview(map=None,fig=None,rot=None,zat=None,coord=None,unit='',
             map=pixelfunc.remove_dipole(map,gal_cut=gal_cut,nest=nest,copy=True)
         elif remove_mono:
             map=pixelfunc.remove_monopole(map,gal_cut=gal_cut,nest=nest,copy=True)
-        ax.projmap(map,nest=nest,coord=coord,vmin=min,vmax=max,
+        img = ax.projmap(map,nest=nest,coord=coord,vmin=min,vmax=max,
                    xsize=xsize,ysize=ysize,lonra=lonra,latra=latra,
                    cmap=cmap,norm=norm,aspect=aspect)
         if cbar:
@@ -555,6 +566,8 @@ def cartview(map=None,fig=None,rot=None,zat=None,coord=None,unit='',
             pylab.ion()
             pylab.draw()
             #pylab.show()
+    if return_projected_map:
+        return img
 
 def graticule(dpar=None,dmer=None,coord=None,local=None,**kwds):
     """Draw a graticule on the current Axes.
