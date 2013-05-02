@@ -177,6 +177,7 @@ class SphericalProjAxes(axes.Axes):
         xmin,xmax,ymin,ymax = self.proj.get_extent()
         self.set_xlim(xmin,xmax)
         self.set_ylim(ymin,ymax)
+        return img
 
     def projplot(self,*args,**kwds):
         """projplot is a wrapper around :func:`matplotlib.Axes.plot` to take into account the
@@ -602,7 +603,7 @@ class GnomonicAxes(SphericalProjAxes):
 
     def projmap(self,map,vec2pix_func,xsize=200,ysize=None,reso=1.5,**kwds):
         self.proj.set_proj_plane_info(xsize=xsize,ysize=ysize,reso=reso)
-        super(GnomonicAxes,self).projmap(map,vec2pix_func,**kwds)
+        return super(GnomonicAxes,self).projmap(map,vec2pix_func,**kwds)
         
 class HpxGnomonicAxes(GnomonicAxes):
     def projmap(self,map,nest=False,**kwds):
@@ -611,7 +612,7 @@ class HpxGnomonicAxes(GnomonicAxes):
         xsize = kwds.pop('xsize',200)
         ysize = kwds.pop('ysize',None)
         reso = kwds.pop('reso',1.5)
-        super(HpxGnomonicAxes,self).projmap(map,f,xsize=xsize,
+        return super(HpxGnomonicAxes,self).projmap(map,f,xsize=xsize,
                                             ysize=ysize,reso=reso,**kwds)
 
 
@@ -633,15 +634,16 @@ class MollweideAxes(SphericalProjAxes):
 
     def projmap(self,map,vec2pix_func,xsize=800,**kwds):
         self.proj.set_proj_plane_info(xsize=xsize)
-        super(MollweideAxes,self).projmap(map,vec2pix_func,**kwds)
+        img = super(MollweideAxes,self).projmap(map,vec2pix_func,**kwds)
         self.set_xlim(-2.01,2.01)
         self.set_ylim(-1.01,1.01)
+        return img
         
 class HpxMollweideAxes(MollweideAxes):
     def projmap(self,map,nest=False,**kwds):
         nside = pixelfunc.npix2nside(pixelfunc.get_map_size(map))
         f = lambda x,y,z: pixelfunc.vec2pix(nside,x,y,z,nest=nest)
-        super(HpxMollweideAxes,self).projmap(map,f,**kwds)
+        return super(HpxMollweideAxes,self).projmap(map,f,**kwds)
 
 class CartesianAxes(SphericalProjAxes):
     """Define a cylindrical Axes to handle cylindrical projection.
@@ -655,13 +657,13 @@ class CartesianAxes(SphericalProjAxes):
         
     def projmap(self,map,vec2pix_func,xsize=800,ysize=None,lonra=None,latra=None,**kwds):
         self.proj.set_proj_plane_info(xsize=xsize,ysize=ysize,lonra=lonra,latra=latra)
-        super(CartesianAxes,self).projmap(map,vec2pix_func,**kwds)
+        return super(CartesianAxes,self).projmap(map,vec2pix_func,**kwds)
         
 class HpxCartesianAxes(CartesianAxes):
     def projmap(self,map,nest=False,**kwds):
         nside = pixelfunc.npix2nside(pixelfunc.get_map_size(map))
         f = lambda x,y,z: pixelfunc.vec2pix(nside,x,y,z,nest=nest)
-        super(HpxCartesianAxes,self).projmap(map,f,**kwds)
+        return super(HpxCartesianAxes,self).projmap(map,f,**kwds)
 
         
 
