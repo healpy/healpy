@@ -1,3 +1,7 @@
+Release 1.6.2, 11 Jun 2013:
+
+* ez_setup, switch from distribute to the new setuptools
+
 Release 1.6.0, 15th March 2013:
 
 * support for NSIDE>8192, this broke compatibility with 32bit systems
