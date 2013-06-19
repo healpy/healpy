@@ -4,7 +4,6 @@ import numpy as np
 from pixelfunc import ang2pix, npix2nside
 from rotator import Rotator
 import exceptions
-
 from matplotlib.projections.geo import GeoAxes
 
 ###### WARNING #################
@@ -23,7 +22,6 @@ class ThetaFormatterShiftPi(GeoAxes.ThetaFormatter):
             x += 2*np.pi
         return super(ThetaFormatterShiftPi, self).__call__(x, pos)
 
-
 def lonlat(theta, phi):
     """Converts theta and phi to longitude and latitude
 
@@ -33,7 +31,7 @@ def lonlat(theta, phi):
     latitude = np.pi/2 - np.asarray(theta)
     return longitude, latitude 
 
-def mollview(m, rot=None, coord=None, unit='',
+def mollview(m=None, rot=None, coord=None, unit='',
              xsize=1000, nest=False,
              min=None, max=None, flip='astro',
              format='%g',
@@ -91,8 +89,6 @@ def mollview(m, rot=None, coord=None, unit='',
 
     # Create the figure
     import matplotlib.pyplot as plt
-    from matplotlib.backends import pylab_setup
-    _backend_mod, new_figure_manager, draw_if_interactive, _show = pylab_setup()
 
     width = 8.5
     fig = plt.figure(figsize=(width,width*.63))
@@ -105,11 +101,12 @@ def mollview(m, rot=None, coord=None, unit='',
     if graticule and graticule_labels:
         plt.subplots_adjust(left=0.04, right=0.98, top=0.95, bottom=0.05)
 
-    # auto min and max
-    if min is None:
-        min = m.min()
-    if max is None:
-        max = m.max()
+    if not m is None:
+        # auto min and max
+        if min is None:
+            min = m.min()
+        if max is None:
+            max = m.max()
 
     # allow callers to override the hold state by passing hold=True|False
     washold = ax.ishold()
@@ -135,11 +132,12 @@ def mollview(m, rot=None, coord=None, unit='',
             THETA = THETA.reshape(ysize, xsize)
             PHI = PHI.reshape(ysize, xsize)
         nside = npix2nside(len(m))
-        grid_pix = ang2pix(nside, THETA, PHI, nest=nest)
-        grid_map = m[grid_pix]
+        if not m is None:
+            grid_pix = ang2pix(nside, THETA, PHI, nest=nest)
+            grid_map = m[grid_pix]
 
-        # plot
-        ret = plt.pcolormesh(longitude, latitude, grid_map, vmin=min, vmax=max, rasterized=True, **kwargs)
+            # plot
+            ret = plt.pcolormesh(longitude, latitude, grid_map, vmin=min, vmax=max, rasterized=True, **kwargs)
 
         # graticule
         plt.grid(graticule)
@@ -158,14 +156,14 @@ def mollview(m, rot=None, coord=None, unit='',
             ax.yaxis.set_ticklabels([])
 
         # colorbar
-        if cbar:
+        if cbar and not m is None:
             cb = fig.colorbar(ret, orientation='horizontal', shrink=.4, pad=0.05, ticks=[min, max])
             cb.ax.xaxis.set_label_text(unit)
             cb.ax.xaxis.labelpad = -8
             # workaround for issue with viewers, see colorbar docstring
             cb.solids.set_edgecolor("face")
 
-        draw_if_interactive()
+        plt.draw()
     finally:
         ax.hold(washold)
 
