@@ -39,6 +39,7 @@ Installation
 healpy is available on pipy, you can install it with:
 
 ::
+
     pip install healpy
     
 otherwise, you can download a source tarball from:
