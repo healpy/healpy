@@ -35,6 +35,20 @@ Then, unpack each of the above packages and build them with the usual
 
 Installation
 ------------
+
+healpy is available on pipy, you can install it with:
+
+::
+    pip install healpy
+    
+otherwise, you can download a source tarball from:
+
+https://pypi.python.org/pypi/healpy
+
+DO NOT DOWNLOAD from github, github does not include the dependencies.
+
+and build it with:
+
 ::
 
     cd healpy
