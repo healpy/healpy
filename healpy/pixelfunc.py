@@ -1180,7 +1180,7 @@ def fit_dipole(m, nest=False, bad=UNSEEN, gal_cut=0):
     return mono,dipole
 
 def remove_dipole(m,nest=False,bad=UNSEEN,gal_cut=0,fitval=False,
-                  copy=True,verbose=False):
+                  copy=True,verbose=True):
     """Fit and subtract the dipole and the monopole from the given map m.
 
     Parameters
@@ -1295,7 +1295,7 @@ def fit_monopole(m,nest=False,bad=pixlib.UNSEEN,gal_cut=0):
     return mono
 
 def remove_monopole(m,nest=False,bad=pixlib.UNSEEN,gal_cut=0,fitval=False,
-                    copy=True,verbose=False):
+                    copy=True,verbose=True):
     """Fit and subtract the monopole from the given map m.
 
     Parameters

@@ -577,7 +577,7 @@ def almxfl(alm, fl, mmax = None, inplace = False):
     return almout
 
 def smoothalm(alms, fwhm = 0.0, sigma = None, invert = False, pol = True,
-              mmax = None, verbose = False, inplace = True):
+              mmax = None, verbose = True, inplace = True):
     """Smooth alm with a Gaussian symmetric beam function.
 
     Parameters

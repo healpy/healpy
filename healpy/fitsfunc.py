@@ -168,7 +168,7 @@ def write_map(filename,m,nest=False,dtype=np.float32,fits_IDL=True,coord=None,co
 
 
 def read_map(filename,field=0,dtype=np.float64,nest=False,hdu=1,h=False,
-             verbose=False,memmap=False):
+             verbose=True,memmap=False):
     """Read an healpix map from a fits file.
 
     Parameters
