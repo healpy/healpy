@@ -99,6 +99,8 @@ def write_map(filename,m,nest=False,dtype=np.float32,fits_IDL=True,coord=None,co
       Supports masked maps, see the `ma` function.
     nest : bool, optional
       If False, ordering scheme is NESTED, otherwise, it is RING. Default: RING.
+      The map ordering is not modified by this function, the input map array
+      should already be in the desired ordering (run `ud_grade` beforehand).
     fits_IDL : bool, optional
       If True, reshapes columns in rows of 1024, otherwise all the data will 
       go in one column. Default: True
