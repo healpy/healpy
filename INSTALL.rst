@@ -46,7 +46,7 @@ otherwise, you can download a source tarball from:
 
 https://pypi.python.org/pypi/healpy
 
-DO NOT DOWNLOAD from github, github does not include the dependencies.
+*DO NOT DOWNLOAD* from github, github does not include the dependencies.
 
 and build it with:
 
