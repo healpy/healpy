@@ -1,3 +1,8 @@
+Release 1.6.3, 26 Aug 2013:
+
+* updated C++ sources to 3.11
+* verbose=True default for most functions
+
 Release 1.6.2, 11 Jun 2013:
 
 * ez_setup, switch from distribute to the new setuptools
