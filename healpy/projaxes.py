@@ -826,10 +826,9 @@ class HistEqNorm(colors.Normalize):
             # new bins format, remove last point
             bins = bins[:-1]
         hist = hist.astype(np.float)/np.float(hist.sum())
-        self.yval = np.concatenate([0., hist.cumsum(), 1.], None)
-        self.xval = np.concatenate([self.vmin,
-                                     bins + 0.5*(bins[1]-bins[0]),
-                                     self.vmax], None)
+        self.yval = np.concatenate([[0.], hist.cumsum(), [1.]])
+        self.xval = np.concatenate([[self.vmin], bins + 0.5*(bins[1]-bins[0]),
+                                    [self.vmax]])
 
     def _lininterp(self,x,X,Y):
         if hasattr(x,'__len__'):
