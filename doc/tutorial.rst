@@ -24,7 +24,7 @@ In order to work with *NESTED* ordering, all map related functions support the `
 
 .. image:: static/moll_nside32_nest.png
 
-.. _healpix website: http://healpix.jpl.nasa.gov
+.. _healpix website: http://healpix.sourceforge.net
 
 Reading and writing maps to file
 --------------------------------
