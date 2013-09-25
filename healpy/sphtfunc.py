@@ -607,7 +607,7 @@ def smoothalm(alms, fwhm = 0.0, sigma = None, invert = False, pol = True,
       If True, the alm's are modified inplace if they are contiguous arrays
       of type complex128. Otherwise, a copy of alm is made. Default: True.
     verbose : bool, optional
-      If True prints diagnostic information. Default: False
+      If True prints diagnostic information. Default: True
 
     Returns
     -------
@@ -672,7 +672,7 @@ def smoothalm(alms, fwhm = 0.0, sigma = None, invert = False, pol = True,
 @accept_ma
 def smoothing(maps, fwhm = 0.0, sigma = None, invert = False, pol = True,
               iter = 3, lmax = None, mmax = None, use_weights = False,
-              regression = True, datapath = None):
+              regression = True, datapath = None, verbose = True):
     """Smooth a map with a Gaussian symmetric beam.
 
     Parameters
@@ -707,6 +707,8 @@ def smoothing(maps, fwhm = 0.0, sigma = None, invert = False, pol = True,
       If True, subtract map average before computing alm. Default: True.
     datapath : None or str, optional
       If given, the directory where to find the weights data.
+    verbose : bool, optional
+      If True prints diagnostic information. Default: True
 
     Returns
     -------
@@ -733,7 +735,7 @@ def smoothing(maps, fwhm = 0.0, sigma = None, invert = False, pol = True,
                        pol = pol, use_weights = use_weights,
                        regression = regression, datapath = datapath)
         smoothalm(alms, fwhm = fwhm, sigma = sigma, invert = invert,
-                  inplace = True)
+                  inplace = True, verbose = verbose)
         output_map = alm2map(alms, nside, pixwin = False)
     else:
         # Treat each map independently (any number)
@@ -743,7 +745,7 @@ def smoothing(maps, fwhm = 0.0, sigma = None, invert = False, pol = True,
                           use_weights = use_weights,
                        regression = regression, datapath = datapath)
             smoothalm(alm, fwhm = fwhm, sigma = sigma, invert = invert,
-                      inplace = True)
+                      inplace = True, verbose = verbose)
             output_map.append(alm2map(alm, nside, pixwin = False))
     if pixelfunc.maptype(output_map) == 0:
         output_map[masks.flatten()] = UNSEEN
