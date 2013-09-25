@@ -607,7 +607,7 @@ def smoothalm(alms, fwhm = 0.0, sigma = None, invert = False, pol = True,
       If True, the alm's are modified inplace if they are contiguous arrays
       of type complex128. Otherwise, a copy of alm is made. Default: True.
     verbose : bool, optional
-      If True prints diagnostic information. Default: False
+      If True prints diagnostic information. Default: True
 
     Returns
     -------
