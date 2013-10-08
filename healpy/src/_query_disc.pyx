@@ -208,7 +208,7 @@ def boundaries(nside, pix, step=1, nest=False):
     >>> import healpy as hp
     >>> import numpy as np
     >>> nside = 2
-    >>> corners = hp.boundary(nside, 5)
+    >>> corners = hp.boundaries(nside, 5)
     >>> print corners
     [[  2.44716655e-17   5.27046277e-01   3.60797400e-01   4.56398915e-17]
      [  3.99652627e-01   5.27046277e-01   8.71041977e-01   7.45355992e-01]
