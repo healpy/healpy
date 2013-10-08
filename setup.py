@@ -62,7 +62,7 @@ def check_output(*popenargs, **kwargs):
 
 
 # For ReadTheDocs, do not build the extensions, only install .py files
-on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
+on_rtd = False
 
 try:
     if sys.argv[1] in ['sdist']: #we need to distribute also c and cpp sources
