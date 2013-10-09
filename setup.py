@@ -311,11 +311,11 @@ else:
     libraries = [
         ('cfitsio', {
         'pkg_config_name': 'cfitsio',
-        'url': 'http://localhost:8000/cfitsio3340.tar.gz'}),
+        'url': 'https://gist.github.com/lpsinger/6815493/raw/e4620bb130e6a50bda62ac8bc4225ae06ad6b9e6/cfitsio3340.tar.gz'}),
         # FIXME: replace with official tarball URL when U.S. government restarts
         ('healpix_cxx', {
         'pkg_config_name': 'healpix_cxx',
-        'url': 'http://localhost:8000/healpix_cxx-3.11.1.tar.gz'})
+        'url': 'https://gist.github.com/lpsinger/6815493/raw/89c02798fb77d8d4a53d9f38a0cef65d59b1766b/healpix_cxx-3.11.1.tar.gz'})
         # FIXME: replace with official Autotools tarball URL
     ]
     extension_list = [pixel_lib, spht_lib, hfits_lib,
