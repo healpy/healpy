@@ -1,4 +1,4 @@
 numpy
 cython==0.16
-matplotlib==1.0.1
+matplotlib==1.3.0
 pyfits
