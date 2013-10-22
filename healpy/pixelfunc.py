@@ -362,6 +362,7 @@ def ang2pix(nside,theta,phi,nest=False):
     array([   4,   12,   72,  336, 1440])
     """
     check_theta_valid(theta)
+    check_nside(nside)
     if nest:
         return pixlib._ang2pix_nest(nside,theta,phi)
     else:
@@ -401,6 +402,7 @@ def pix2ang(nside,ipix,nest=False):
     >>> hp.pix2ang([1, 2, 4, 8], 11)
     (array([ 2.30052398,  0.84106867,  0.41113786,  0.2044802 ]), array([ 5.49778714,  5.89048623,  5.89048623,  5.89048623]))
     """
+    check_nside(nside)
     if nest:
         return pixlib._pix2ang_nest(nside, ipix)
     else:
@@ -479,6 +481,7 @@ def pix2vec(nside,ipix,nest=False):
     >>> hp.pix2vec([1, 2], 11)
     (array([ 0.52704628,  0.68861915]), array([-0.52704628, -0.28523539]), array([-0.66666667,  0.66666667]))
     """
+    check_nside(nside)
     if nest:
         return pixlib._pix2vec_nest(nside,ipix)
     else:
@@ -567,6 +570,7 @@ def ring2nest(nside, ipix):
     >>> hp.ring2nest([1, 2, 4, 8], 11)
     array([ 11,  13,  61, 253])
     """
+    check_nside(nside)
     return pixlib._ring2nest(nside, ipix)
 
 def nest2ring(nside, ipix):
@@ -600,6 +604,7 @@ def nest2ring(nside, ipix):
     >>> hp.nest2ring([1, 2, 4, 8], 11)
     array([ 11,   2,  12, 211])
     """
+    check_nside(nside)
     return pixlib._nest2ring(nside, ipix)
 
 @accept_ma
@@ -743,9 +748,7 @@ def nside2npix(nside):
        ...
     ValueError: Given number is not a valid nside parameter (must be a power of 2)
     """
-    if not isnsideok(nside):
-        raise ValueError("Given number is not a valid nside parameter "
-                         "(must be a power of 2)")
+    check_nside(nside)
     return 12*nside**2
 
 def nside2resol(nside, arcmin=False):
@@ -784,9 +787,7 @@ def nside2resol(nside, arcmin=False):
        ...
     ValueError: Given number is not a valid nside parameter (must be a power of 2)
     """
-    if not isnsideok(nside):
-        raise ValueError("Given number is not a valid nside parameter "
-                         "(must be a power of 2)")
+    check_nside(nside)
     
     resol = np.sqrt(nside2pixarea(nside))
 
@@ -829,9 +830,7 @@ def nside2pixarea(nside, degrees=False):
        ...
     ValueError: Given number is not a valid nside parameter (must be a power of 2)
     """
-    if not isnsideok(nside):
-        raise ValueError("Given number is not a valid nside parameter "
-                         "(must be a power of 2)")
+    check_nside(nside)
     
     pixarea = 4*np.pi/nside2npix(nside)
 
@@ -876,8 +875,7 @@ def npix2nside(npix):
     if nside != np.floor(nside):
         raise ValueError("Wrong pixel number (it is not 12*nside**2)")
     nside=int(np.floor(nside))
-    if not isnsideok(nside):
-        raise ValueError("Wrong nside value (it is not 2**N)")
+    check_nside(nside)
     return nside
 
 def isnsideok(nside):
@@ -915,6 +913,12 @@ def isnsideok(nside):
     else:
         return ( ( nside == int(nside) ) and ( nside != 0 ) and 
                ( ( int(nside) & (int(nside) - 1) ) == 0) )
+
+def check_nside(nside):
+    """Raises exception is nside is not valid"""
+    if not np.all(isnsideok(nside)):
+        raise ValueError("""%s is not a valid nside parameter 
+                         (must be a power of 2)""" % str(nside))
 
 def isnpixok(npix):
     """Return :const:`True` if npix is a valid value for healpix map size, :const:`False` otherwise.
@@ -1030,8 +1034,7 @@ def get_neighbours(nside,theta,phi=None,nest=False):
            [ 0.25,  0.  ],
            [ 0.25,  0.  ]]))
     """
-    if not isnsideok(nside):
-        raise ValueError('Wrong nside value. Must be a power of 2.')
+    check_nside(nside)
     if phi == None:
         theta,phi = pix2ang(nside,theta,nest=nest)
     if nest:
@@ -1076,8 +1079,7 @@ def get_all_neighbours(nside, theta, phi=None, nest=False):
     >>> hp.get_all_neighbours(1, np.pi/2, np.pi/2)
     array([ 8,  4,  0, -1,  1,  6,  9, -1])
     """
-    if not isnsideok(nside):
-        raise ValueError('Wrong nside value. Must be a power of 2.')
+    check_nside(nside)
     if phi is not None:
         theta = ang2pix(nside,theta, phi,nest=nest)
     if nest:
@@ -1107,6 +1109,7 @@ def max_pixrad(nside):
     >>> '%.15f' % max_pixrad(16)
     '0.066014761432513'
     """
+    check_nside(nside)
     return pixlib._max_pixrad(nside)
 
 def fit_dipole(m, nest=False, bad=UNSEEN, gal_cut=0):
@@ -1490,8 +1493,7 @@ def ud_grade(map_in,nside_out,pess=False,order_in='RING',order_out=None,
     array([  5.5 ,   7.25,   9.  ,  10.75,  21.75,  21.75,  23.75,  25.75,
             36.5 ,  38.25,  40.  ,  41.75])
     """
-    if not isnsideok(nside_out):
-        raise ValueError('Invalid nside for output')
+    check_nside(nside_out)
     typ = maptype(map_in)
     if typ<0:
         raise TypeError('Invalid map')
@@ -1522,8 +1524,7 @@ def _ud_grade_core(m,nside_out,pess=False,power=None, dtype=None):
         type_out = dtype
     else:
         type_out = type(m[0])
-    if not isnsideok(nside_out):
-        raise ValueError('invalid nside_out value')
+    check_nside(nside_out)
     npix_in = nside2npix(nside_in)
     npix_out = nside2npix(nside_out)
 
