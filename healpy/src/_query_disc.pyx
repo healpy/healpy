@@ -184,6 +184,8 @@ def _boundaries_single(nside, pix, step=1, nest=False):
         scheme = RING
     cdef T_Healpix_Base[int64] hb = T_Healpix_Base[int64](nside, scheme, SET_NSIDE)
     cdef vector[vec3] bounds
+    if pix >= (12*nside*nside):
+        raise ValueError('Pixel identifier is too large')
     hb.boundaries(pix, step, bounds)
     cdef size_t n = bounds.size()
     cdef np.ndarray[double, ndim = 2] out = np.empty((3, n), dtype=np.float)
@@ -202,9 +204,14 @@ def _boundaries_multiple(nside, pix, step=1, nest=False):
     cdef T_Healpix_Base[int64] hb = T_Healpix_Base[int64](nside, scheme, SET_NSIDE)
     cdef size_t npix = len(pix)
     cdef size_t n = step * 4
+    cdef size_t maxnpix = 12*nside*nside
     cdef np.ndarray[double, ndim = 3] out = np.empty((npix, 3, n), dtype=np.float)
     cdef vector[vec3] bounds
+ 
     for j in range(npix):
+        if pix[j] >= maxnpix:
+            raise ValueError('Pixel identifier is too large')
+
         hb.boundaries(pix[j], step, bounds)
         for i in range(n):
             out[j, 0, i] = bounds[i].x
