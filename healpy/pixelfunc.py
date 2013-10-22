@@ -375,7 +375,7 @@ def pix2ang(nside,ipix,nest=False):
     nside : int or array-like
       The healpix nside parameter, must be a power of 2
     ipix : int or array-like
-      Angular coordinates of a point on the sphere
+      Pixel indices
     nest : bool, optional
       if True, assume NESTED pixel ordering, otherwise, RING pixel ordering
 
