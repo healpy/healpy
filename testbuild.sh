@@ -3,5 +3,5 @@ for f in wmap_band_iqumap_r9_7yr_V_v4.fits wmap_band_iqumap_r9_7yr_W_v4.fits wma
 do
     ln -sf ../../../../../healpy/test/data/$f test/data/
 done
-nosetests -v
+nosetests -v --with-doctest
 cd ../../..

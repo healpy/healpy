@@ -737,6 +737,7 @@ def nside2npix(nside):
     Examples
     --------
     >>> import healpy as hp
+    >>> import numpy as np
     >>> hp.nside2npix(8)
     768
 
@@ -745,8 +746,8 @@ def nside2npix(nside):
 
     >>> hp.nside2npix(7)
     Traceback (most recent call last):
-       ...
-    ValueError: Given number is not a valid nside parameter (must be a power of 2)
+        ...
+    ValueError: 7 is not a valid nside parameter (must be a power of 2)
     """
     check_nside(nside)
     return 12*nside**2
@@ -785,7 +786,7 @@ def nside2resol(nside, arcmin=False):
     >>> hp.nside2resol(7)
     Traceback (most recent call last):
        ...
-    ValueError: Given number is not a valid nside parameter (must be a power of 2)
+    ValueError: 7 is not a valid nside parameter (must be a power of 2)
     """
     check_nside(nside)
     
@@ -828,7 +829,7 @@ def nside2pixarea(nside, degrees=False):
     >>> hp.nside2pixarea(7)
     Traceback (most recent call last):
        ...
-    ValueError: Given number is not a valid nside parameter (must be a power of 2)
+    ValueError: 7 is not a valid nside parameter (must be a power of 2)
     """
     check_nside(nside)
     
@@ -917,8 +918,7 @@ def isnsideok(nside):
 def check_nside(nside):
     """Raises exception is nside is not valid"""
     if not np.all(isnsideok(nside)):
-        raise ValueError("""%s is not a valid nside parameter 
-                         (must be a power of 2)""" % str(nside))
+        raise ValueError("%s is not a valid nside parameter (must be a power of 2)" % str(nside))
 
 def isnpixok(npix):
     """Return :const:`True` if npix is a valid value for healpix map size, :const:`False` otherwise.
