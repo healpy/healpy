@@ -176,6 +176,42 @@ def query_strip(nside, theta1, theta2, inclusive = False, nest = False):
     return pixset_to_array(pixset)
 
 
+def _boundaries_single(nside, pix, step=1, nest=False):
+    cdef Healpix_Ordering_Scheme scheme
+    if nest:
+        scheme = NEST
+    else:
+        scheme = RING
+    cdef T_Healpix_Base[int64] hb = T_Healpix_Base[int64](nside, scheme, SET_NSIDE)
+    cdef vector[vec3] bounds
+    hb.boundaries(pix, step, bounds)
+    cdef size_t n = bounds.size()
+    cdef np.ndarray[double, ndim = 2] out = np.empty((3, n), dtype=np.float)
+    for i in range(n):
+        out[0,i] = bounds[i].x
+        out[1,i] = bounds[i].y
+        out[2,i] = bounds[i].z
+    return out
+
+def _boundaries_multiple(nside, pix, step=1, nest=False):
+    cdef Healpix_Ordering_Scheme scheme
+    if nest:
+        scheme = NEST
+    else:
+        scheme = RING
+    cdef T_Healpix_Base[int64] hb = T_Healpix_Base[int64](nside, scheme, SET_NSIDE)
+    cdef size_t npix = len(pix)
+    cdef size_t n = step * 4
+    cdef np.ndarray[double, ndim = 3] out = np.empty((npix, 3, n), dtype=np.float)
+    cdef vector[vec3] bounds
+    for j in range(npix):
+        hb.boundaries(pix[j], step, bounds)
+        for i in range(n):
+            out[j, 0, i] = bounds[i].x
+            out[j, 1, i] = bounds[i].y
+            out[j, 2, i] = bounds[i].z
+    return out
+
 def boundaries(nside, pix, step=1, nest=False):
     """Returns an array containing vectors to the boundary of
     the nominated pixel.
@@ -213,32 +249,30 @@ def boundaries(nside, pix, step=1, nest=False):
     [[  2.44716655e-17   5.27046277e-01   3.60797400e-01   4.56398915e-17]
      [  3.99652627e-01   5.27046277e-01   8.71041977e-01   7.45355992e-01]
      [  9.16666667e-01   6.66666667e-01   3.33333333e-01   6.66666667e-01]]
-
+    >>> corners = hp.boundaries(nside, np.array([5,5]))
+    >>> print corners
+    [[[  2.44716655e-17   5.27046277e-01   3.60797400e-01   4.56398915e-17]
+     [  3.99652627e-01   5.27046277e-01   8.71041977e-01   7.45355992e-01]
+     [  9.16666667e-01   6.66666667e-01   3.33333333e-01   6.66666667e-01]]
+     [[  2.44716655e-17   5.27046277e-01   3.60797400e-01   4.56398915e-17]
+     [  3.99652627e-01   5.27046277e-01   8.71041977e-01   7.45355992e-01]
+     [  9.16666667e-01   6.66666667e-01   3.33333333e-01   6.66666667e-01]]]
     # Now convert to phi,theta representation:
 
     >>> hp.vec2ang(np.transpose(corners))
     (array([ 0.41113786,  0.84106867,  1.23095942,  0.84106867]), array([ 1.57079633,  0.78539816,  1.17809725,  1.57079633]))
     """
 
-
     if not isnsideok(nside):
         raise ValueError('Wrong nside value, must be a power of 2')
-    cdef Healpix_Ordering_Scheme scheme
-    if nest:
-        scheme = NEST
-    else:
-        scheme = RING
-    cdef T_Healpix_Base[int64] hb = T_Healpix_Base[int64](nside, scheme, SET_NSIDE)
-    cdef vector[vec3] bounds
-    hb.boundaries(pix, step, bounds)
-    cdef size_t n = bounds.size()
-    cdef np.ndarray[double, ndim = 2] out = np.empty((3, n), dtype=np.float)
-    for i in range(n):
-        out[0,i] = bounds[i].x
-        out[1,i] = bounds[i].y
-        out[2,i] = bounds[i].z
-    return out
-
+    if isinstance(pix, (int, long)):
+        return _boundaries_single(nside, pix, step=step, nest=nest)
+    if type(pix) is np.ndarray:
+        if not issubclass(pix.dtype.type, np.integer):
+            raise ValueError('Array of pixels has to be integers')
+        if pix.ndim!=1:
+            raise ValueError('Array has to one dimensional')
+        return _boundaries_multiple(nside, pix, step=step, nest=nest)
 
 # Try to implement pix2ang
 ### @cython.boundscheck(False)
