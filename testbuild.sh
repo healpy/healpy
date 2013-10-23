@@ -4,4 +4,6 @@ do
     ln -sf ../../../../../healpy/test/data/$f test/data/
 done
 nosetests -v --with-doctest
+echo Run Cython extensions doctests
+python run_doctest_cython.py
 cd ../../..
