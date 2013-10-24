@@ -144,9 +144,9 @@ def query_strip(nside, theta1, theta2, inclusive = False, nest = False):
     nside : int
       The nside of the Healpix map.
     theta1 : float
-      First colatitude
+      First colatitude (radians)
     theta2 : float
-      Second colatitude
+      Second colatitude (radians)
     inclusive ; bool
       If False, return the exact set of pixels whose pixels centers lie 
       within the region; if True, return all pixels that overlap with the
