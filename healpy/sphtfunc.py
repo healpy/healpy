@@ -160,7 +160,7 @@ def map2alm(maps, lmax = None, mmax = None, iter = 3, pol = True,
 
 def alm2map(alms, nside, lmax = None, mmax = None, pixwin = False,
             fwhm = 0.0, sigma = None, invert = False, pol = True,
-            inplace = False):
+            inplace = False, verbose=True):
     """Computes an Healpix map given the alm.
 
     The alm are given as a complex array. You can specify lmax
@@ -212,7 +212,7 @@ def alm2map(alms, nside, lmax = None, mmax = None, pixwin = False,
         raise TypeError("alms must be a sequence")
 
     alms = smoothalm(alms, fwhm = fwhm, sigma = sigma, invert = invert, 
-                     pol = pol, inplace = inplace)
+                     pol = pol, inplace = inplace, verbose=verbose)
 
     if not cb.is_seq_of_seq(alms):
         alms = [alms]
@@ -246,7 +246,7 @@ def alm2map(alms, nside, lmax = None, mmax = None, pixwin = False,
     else:
         return output
 
-def synalm(cls, lmax = None, mmax = None, new = False):
+def synalm(cls, lmax = None, mmax = None, new = False, verbose=True):
     """Generate a set of alm given cl.
     The cl are given as a float array. Corresponding alm are generated.
     If lmax is None, it is assumed lmax=cl.size-1
@@ -287,7 +287,7 @@ def synalm(cls, lmax = None, mmax = None, new = False):
     matrix. Eg, if fields are T, E, B, the spectra are TT, EE, BB, TE, EB, TB
     with new=True, and TT, TE, TB, EE, EB, BB if new=False.
     """
-    if not new:
+    if (not new) and verbose:
         warnings.warn("The order of the input cl's will change in a future "
                       "release.\n"
                       "Use new=True keyword to start using the new order.\n"
@@ -350,7 +350,7 @@ def synalm(cls, lmax = None, mmax = None, new = False):
 
 def synfast(cls, nside, lmax = None, mmax = None, alm = False,
             pol = True, pixwin = False, fwhm = 0.0, sigma = None,
-            new = False):
+            new = False, verbose=True):
     """Create a map(s) from cl(s).
 
     Parameters
@@ -404,9 +404,9 @@ def synfast(cls, nside, lmax = None, mmax = None, alm = False,
     cls_lmax = cb.len_array_or_arrays(cls) -1
     if lmax is None or lmax < 0:
         lmax = min(cls_lmax, 3 * nside - 1)
-    alms = synalm(cls, lmax = lmax, mmax = mmax, new = new)
+    alms = synalm(cls, lmax = lmax, mmax = mmax, new = new, verbose=verbose)
     maps = alm2map(alms, nside, lmax = lmax, mmax = mmax, pixwin = pixwin,
-                   pol = pol, fwhm = fwhm, sigma = sigma, inplace = True)
+                   pol = pol, fwhm = fwhm, sigma = sigma, inplace = True, verbose=verbose)
     if alm:
         return maps, alms
     else:
