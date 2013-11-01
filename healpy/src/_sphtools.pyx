@@ -94,15 +94,6 @@ def map2alm(m, lmax = None, mmax = None, niter = 3, use_weights = False,
         mask_mq = False if count_bad(mq) == 0 else mkmask(mq)
         mask_mu = False if count_bad(mu) == 0 else mkmask(mu)
 
-    # replace UNSEEN pixels with zeros
-    if mask_mi is not False:
-        mi[mask_mi] = 0.0
-    if polarization:
-        if mask_mq is not False:
-            mq[mask_mq] = 0.0
-        if mask_mu is not False:
-            mu[mask_mu] = 0.0
-
     # Adjust lmax and mmax
     cdef int lmax_, mmax_, nside, npix
     npix = mi.size
@@ -132,6 +123,16 @@ def map2alm(m, lmax = None, mmax = None, niter = 3, use_weights = False,
     if regression:
         avg = MI.average()
         MI.Add(-avg)
+
+    # replace UNSEEN pixels with zeros
+    if mask_mi is not False:
+        mi[mask_mi] = 0.0
+    if polarization:
+        if mask_mq is not False:
+            mq[mask_mq] = 0.0
+        if mask_mu is not False:
+            mu[mask_mu] = 0.0
+
 
     # Create an ndarray object that will contain the alm for output (to be returned)
     n_alm = alm_getn(lmax_, mmax_)
