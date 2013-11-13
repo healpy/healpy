@@ -666,6 +666,37 @@ class HpxCartesianAxes(CartesianAxes):
         return super(HpxCartesianAxes,self).projmap(map,f,**kwds)
 
         
+class OrthographicAxes(SphericalProjAxes):
+    """Define an orthographic Axes to handle orthographic projection.
+    
+    Input:
+    - rot=, coord= : define rotation and coordinate system. See rotator.
+    - coordprec= : num of digits after floating point for coordinates display.
+    - format= : format string for value display.
+    
+    Other keywords from Axes (see Axes).
+    """
+    def __init__(self,*args,**kwds):
+        kwds.setdefault('coordprec',2)
+        super(OrthographicAxes,self).__init__(P.OrthographicProj, *args,**kwds)
+        self._segment_threshold = 0.01
+        self._do_border = False
+        
+    def projmap(self,map,vec2pix_func,xsize=800,half_sky=False,**kwds):
+        self.proj.set_proj_plane_info(xsize=xsize,half_sky=half_sky)
+        img = super(OrthographicAxes,self).projmap(map,vec2pix_func,**kwds)
+        if half_sky: ratio = 1.01
+        else: ratio = 2.01
+        self.set_xlim(-ratio,ratio)
+        self.set_ylim(-1.01,1.01)
+        return img
+        
+class HpxOrthographicAxes(OrthographicAxes):
+    def projmap(self,map,nest=False,**kwds):
+        nside = pixelfunc.npix2nside(len(map))
+        f = lambda x,y,z: pixelfunc.vec2pix(nside,x,y,z,nest=nest)
+        return super(HpxOrthographicAxes,self).projmap(map,f,**kwds)
+
 
 ###################################################################
 #

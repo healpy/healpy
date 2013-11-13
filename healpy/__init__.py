@@ -76,7 +76,7 @@ except ImportError:
 
 try:
     from visufunc import (mollview,graticule,delgraticules,gnomview,
-                          projplot,projscatter, projtext, cartview)
+                          projplot,projscatter, projtext, cartview, orthview)
     from zoomtool import mollzoom,set_g_clim
     if visufunc.matplotlib.__version__ == '0.98,3':
         warnings.warn("Bug in matplotlib 0.98.3 prevents mollview from working\n"+

@@ -11,3 +11,7 @@ hpbeta/build.*
 hpbeta/healpy_*
 healpy/src/_ianafast.cpp
 healpy/src/_query_disc.cpp
+healpy/src/_pixelfunc.cpp
+healpy/src/_sphtools.cpp
+healpy.egg-info
+dist
