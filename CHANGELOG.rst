@@ -1,3 +1,8 @@
+Release 1.6.4, in development:
+
+* orthview: orthografic projection
+* fixed bug in monopole removal in anafast
+
 Release 1.6.3, 26 Aug 2013:
 
 * updated C++ sources to 3.11
