@@ -790,6 +790,9 @@ class OrthographicProj(SphericalProj):
             r[r>1] = np.nan
         elif r>1: r = np.nan
         c = np.arcsin(r)
+        if hasattr(y,'__len__'):
+            y[np.abs(y)>1] = np.nan
+        elif np.abs(y)>1: y = np.nan
         lat = np.arcsin(y)
         phi = np.arctan2(x,np.cos(c))
         phi *= flip

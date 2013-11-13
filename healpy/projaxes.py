@@ -681,32 +681,21 @@ class OrthographicAxes(SphericalProjAxes):
         super(OrthographicAxes,self).__init__(P.OrthographicProj, *args,**kwds)
         self._segment_threshold = 0.01
         self._do_border = False
-        if self.proj.arrayinfo is None:
-            raise TypeError("No projection plane array information defined for"
-                            " this projector")
-        half_sky = self.proj.arrayinfo['half_sky']
-        if half_sky: ratio = 1.01
-        else: ratio = 2.01
-        self.set_xlim(-ratio,ratio)
-        self.set_ylim(-1.01,1.01)
         
     def projmap(self,map,vec2pix_func,xsize=800,half_sky=False,**kwds):
         self.proj.set_proj_plane_info(xsize=xsize,half_sky=half_sky)
-        super(OrthographicAxes,self).projmap(map,vec2pix_func,**kwds)
-        if self.proj.arrayinfo is None:
-            raise TypeError("No projection plane array information defined for"
-                            " this projector")
-        half_sky = self.proj.arrayinfo['half_sky']
+        img = super(OrthographicAxes,self).projmap(map,vec2pix_func,**kwds)
         if half_sky: ratio = 1.01
         else: ratio = 2.01
         self.set_xlim(-ratio,ratio)
         self.set_ylim(-1.01,1.01)
+        return img
         
 class HpxOrthographicAxes(OrthographicAxes):
     def projmap(self,map,nest=False,**kwds):
         nside = pixelfunc.npix2nside(len(map))
         f = lambda x,y,z: pixelfunc.vec2pix(nside,x,y,z,nest=nest)
-        super(HpxOrthographicAxes,self).projmap(map,f,**kwds)
+        return super(HpxOrthographicAxes,self).projmap(map,f,**kwds)
 
 
 ###################################################################
