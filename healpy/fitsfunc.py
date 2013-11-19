@@ -193,8 +193,6 @@ def read_map(filename,field=0,dtype=np.float64,nest=False,hdu=1,h=False,
       If True, return also the header. Default: False.
     verbose : bool, optional
       If True, print a number of diagnostic messages
-    as_ma : bool, optional
-      If True, return also the header. Default: False.
     memmap : bool, optional
       Argument passed to pyfits.open, if True, the map is not read into memory,
       but only the required pixels are read when needed. Default: False.
