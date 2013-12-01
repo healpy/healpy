@@ -204,8 +204,8 @@ except OSError, e:
     if e.errno != errno.ENOENT:
         raise ValueError
     log.warn('pkg-config is not installed, falling back to pykg-config')
-    setup_requires = ['pykg-config']
-    pykg_config_egg_dir = os.path.join(os.path.realpath('.'), 'pykg_config-1.1.0dev-py2.7.egg')
+    setup_requires = ['pykg_config']
+    pykg_config_egg_dir = os.path.join(os.path.realpath('.'), 'pykg_config-1.1.0-py2.7.egg')
     os.environ['PKG_CONFIG'] = os.path.join(pykg_config_egg_dir, 'EGG-INFO/scripts/pykg-config.py')
     PYTHONPATH = pykg_config_egg_dir
     if 'PYTHONPATH' in os.environ:
@@ -484,6 +484,6 @@ setup(name='healpy',
       package_data = {'healpy': ['data/*.fits', 'data/totcls.dat', 'test/data/*.fits', 'test/data/*.sh']},
       setup_requires=setup_requires,
       install_requires=['pyfits'],
-      dependency_links=['https://gist.github.com/lpsinger/5044148/raw/pykg_config-1.1.0dev-py2.7.egg'],
+      dependency_links=['https://github.com/lpsinger/pykg-config/archive/not_zip_safe.zip#egg=pykg_config-1.1.0'],
       license='GPLv2'
       )
