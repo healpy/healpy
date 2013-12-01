@@ -423,17 +423,20 @@ healpy_fitsio_src = '_healpy_fitsio_lib.cc'
 #start with base extension
 pixel_lib = Extension('healpy._healpy_pixel_lib',
                       sources=[join('healpy','src', healpy_pixel_lib_src)],
-                      include_dirs=[numpy_inc]
+                      include_dirs=[numpy_inc],
+                      language='c++'
                       )
 
 spht_lib = Extension('healpy._healpy_sph_transform_lib',
                      sources=[join('healpy','src', healpy_spht_src)],
                      include_dirs=[numpy_inc],
+                     language='c++'
                      )
 
 hfits_lib = Extension('healpy._healpy_fitsio_lib',
                       sources=[join('healpy','src', healpy_fitsio_src)],
                       include_dirs=[numpy_inc],
+                      language='c++'
                       )
 
 if on_rtd:
