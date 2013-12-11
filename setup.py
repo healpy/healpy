@@ -8,6 +8,7 @@ import os
 from os.path import join
 import errno
 import sys
+import shlex
 from distutils.sysconfig import get_config_var
 from setuptools import setup, Extension
 from distutils.command.build_clib import build_clib
@@ -204,13 +205,8 @@ except OSError, e:
     if e.errno != errno.ENOENT:
         raise ValueError
     log.warn('pkg-config is not installed, falling back to pykg-config')
-    setup_requires = ['pykg_config']
-    pykg_config_egg_dir = os.path.join(os.path.realpath('.'), 'pykg_config-1.1.0-py2.7.egg')
-    os.environ['PKG_CONFIG'] = os.path.join(pykg_config_egg_dir, 'EGG-INFO/scripts/pykg-config.py')
-    PYTHONPATH = pykg_config_egg_dir
-    if 'PYTHONPATH' in os.environ:
-        PYTHONPATH += ':' + os.environ['PYTHONPATH']
-    os.environ['PYTHONPATH'] = PYTHONPATH
+    setup_requires = ['pykg-config >= 1.2.0']
+    os.environ['PKG_CONFIG'] = sys.executable + ' ' + os.path.abspath('pykg_config.py')
 
 
 class build_external_clib(build_clib):
@@ -235,10 +231,7 @@ class build_external_clib(build_clib):
         return dict(os.environ, PKG_CONFIG_PATH=pkg_config_path)
 
     def pkgconfig(self, *packages):
-        try:
-            PKG_CONFIG = os.environ['PKG_CONFIG']
-        except KeyError:
-            PKG_CONFIG = 'pkg-config'
+        PKG_CONFIG = tuple(shlex.split(os.environ.get('PKG_CONFIG', 'pkg-config')))
         kw = {}
         index_key_flag = (
             (2, '--cflags-only-I', ('include_dirs',)),
@@ -247,7 +240,7 @@ class build_external_clib(build_clib):
             (2, '--libs-only-l', ('libraries',)),
             (0, '--libs-only-other', ('extra_link_args',)))
         for index, flag, keys in index_key_flag:
-            cmd = (PKG_CONFIG, flag) + tuple(packages)
+            cmd = PKG_CONFIG + (flag,) + tuple(packages)
             log.debug('%s', ' '.join(cmd))
             args = [token[index:] for token in check_output(cmd, env=self._environ).split()]
             if args:
@@ -487,6 +480,5 @@ setup(name='healpy',
       package_data = {'healpy': ['data/*.fits', 'data/totcls.dat', 'test/data/*.fits', 'test/data/*.sh']},
       setup_requires=setup_requires,
       install_requires=['pyfits'],
-      dependency_links=['https://github.com/lpsinger/pykg-config/archive/not_zip_safe.zip#egg=pykg_config-1.1.0'],
       license='GPLv2'
       )
