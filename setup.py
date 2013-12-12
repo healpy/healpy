@@ -1,8 +1,16 @@
 #!/usr/bin/env python
 
-# Bootstrap distribute installation
-from ez_setup import use_setuptools
-use_setuptools('0.6.10')
+# Bootstrap setuptools installation.
+# Setuptools 0.6.10 is the oldest version with which we have tested Healpy,
+# and is also the least common denominator present on Scientific Linux 6.
+# If the user has setuptools >= 0.6.10, just take it.
+# Otherwise, let use_setuptools() download its default, more recent version. 
+try:
+    import pkg_resources
+    pkg_resources.require("setuptools >= 0.6.10")
+except:
+    from ez_setup import use_setuptools
+    use_setuptools()
 
 import os
 from os.path import join
