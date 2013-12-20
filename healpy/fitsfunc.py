@@ -98,7 +98,7 @@ def write_map(filename,m,nest=False,dtype=np.float32,fits_IDL=True,coord=None,co
       They will be considered as I, Q, U maps. 
       Supports masked maps, see the `ma` function.
     nest : bool, optional
-      If False, ordering scheme is NESTED, otherwise, it is RING. Default: RING.
+      If True, ordering scheme is assumed to be NESTED, otherwise, RING. Default: RING.
       The map ordering is not modified by this function, the input map array
       should already be in the desired ordering (run `ud_grade` beforehand).
     fits_IDL : bool, optional
