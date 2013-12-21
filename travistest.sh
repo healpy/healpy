@@ -2,7 +2,7 @@
 cd build/lib*/healpy/test/data
 . get_wmap_maps.sh
 cd ../..
-nosetests -v --with-doctest
+py.test -v --doctest-modules
 nosetests_returnvalue=$?
 echo Run Cython extensions doctests
 python run_doctest_cython.py
