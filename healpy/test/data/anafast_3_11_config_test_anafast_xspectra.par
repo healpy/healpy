@@ -1,0 +1,8 @@
+infile = wmap_band_iqumap_r9_7yr_W_v4_udgraded32_masked.fits
+infile2 = wmap_band_iqumap_r9_7yr_V_v4_udgraded32_masked.fits
+outfile = !cl_wmap_band_iqumap_r9_7yr_WVxspec_v4_udgraded32_II_lmax64_rmmono_3iter.fits
+simul_type = 1
+nlmax = 64
+#maskfile = wmap_temperature_analysis_mask_r9_7yr_v4_udgraded32.fits
+iter_order = 3
+regression = 1

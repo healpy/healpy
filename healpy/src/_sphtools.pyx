@@ -180,7 +180,8 @@ def map2alm(m, lmax = None, mmax = None, niter = 3, use_weights = False,
     
     if regression:
         MI.Add(avg)
-        almI[0] += avg * sqrt(4 * np.pi)
+        #we should not add back the monopole, as in fortran
+        #almI[0] += avg * sqrt(4 * np.pi)
 
     del w_arr
     if polarization:
