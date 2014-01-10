@@ -3,7 +3,7 @@ for f in wmap_band_iqumap_r9_7yr_V_v4.fits wmap_band_iqumap_r9_7yr_W_v4.fits wma
 do
     ln -sf ../../../../../healpy/test/data/$f test/data/
 done
-nosetests -v --with-doctest
+py.test -v --doctest-modules
 echo Run Cython extensions doctests
 python run_doctest_cython.py
 cd ../../..
