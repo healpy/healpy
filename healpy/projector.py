@@ -451,8 +451,8 @@ class MollweideProj(SphericalProj):
         if y is None: x,y = x
         xc,yc = (xsize-1.)/2., (ysize-1.)/2.
         if hasattr(x,'__len__'):
-            j = long(np.around(x*xc/2.+xc))
-            i = long(np.around(yc+y*yc))
+            j = np.around(x*xc/2.+xc).astype(long)
+            i = np.around(yc+y*yc).astype(long)
             mask = (x**2/4.+y**2>1.)
             if not mask.any(): mask=np.ma.nomask
             j=np.ma.array(j,mask=mask)
