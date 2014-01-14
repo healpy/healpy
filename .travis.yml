@@ -11,5 +11,3 @@ install:
 # command to run tests
 script:
   - bash testbuild.sh
-notifications:
-  email: false
