@@ -252,24 +252,13 @@ def boundaries(nside, pix, step=1, nest=False):
     >>> import numpy as np
     >>> nside = 2
     >>> corners = hp.boundaries(nside, 5)
-    >>> print corners
-    [[  2.44708573e-17   5.27046277e-01   3.60797400e-01   4.56383842e-17]
-     [  3.99652627e-01   5.27046277e-01   8.71041977e-01   7.45355992e-01]
-     [  9.16666667e-01   6.66666667e-01   3.33333333e-01   6.66666667e-01]]
 
     # Now convert to phi,theta representation:
-    >>> hp.vec2ang(np.transpose(corners))
-    (array([ 0.41113786,  0.84106867,  1.23095942,  0.84106867]), array([ 1.57079633,  0.78539816,  1.17809725,  1.57079633]))
+    >>> phi_theta = hp.vec2ang(np.transpose(corners))
 
     >>> corners = hp.boundaries(nside, np.array([5,5]))
-    >>> print corners
-    [[[  2.44708573e-17   5.27046277e-01   3.60797400e-01   4.56383842e-17]
-      [  3.99652627e-01   5.27046277e-01   8.71041977e-01   7.45355992e-01]
-      [  9.16666667e-01   6.66666667e-01   3.33333333e-01   6.66666667e-01]]
-    <BLANKLINE>      
-     [[  2.44708573e-17   5.27046277e-01   3.60797400e-01   4.56383842e-17]
-      [  3.99652627e-01   5.27046277e-01   8.71041977e-01   7.45355992e-01]
-      [  9.16666667e-01   6.66666667e-01   3.33333333e-01   6.66666667e-01]]]
+
+    # doctest moved to test_query_disc.py
     """
 
     if not isnsideok(nside):

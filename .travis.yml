@@ -10,6 +10,4 @@ install:
   - python setup.py install
 # command to run tests
 script:
-  - bash travistest.sh
-notifications:
-  email: false
+  - bash testbuild.sh

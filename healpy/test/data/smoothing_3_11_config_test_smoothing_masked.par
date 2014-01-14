@@ -1,0 +1,6 @@
+infile = wmap_band_iqumap_r9_7yr_W_v4_udgraded32_masked.fits
+outfile = !wmap_band_iqumap_r9_7yr_W_v4_udgraded32_masked_smoothed10deg_fortran.fits
+simul_type = 2
+fwhm_arcmin = 600
+nlmax = 64
+iter_order = 3

@@ -1,0 +1,6 @@
+infile = wmap_band_iqumap_r9_7yr_W_v4_udgraded32.fits
+outfile = !cl_wmap_band_iqumap_r9_7yr_W_v4_udgraded32_II_lmax64_rmmono_3iter_nomask.fits
+simul_type = 1
+nlmax = 64
+iter_order = 3
+regression = 1

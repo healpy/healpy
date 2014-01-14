@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
 
-from healpy import query_disc
+from healpy import query_disc, boundaries
 
 class TestQueryDisc(unittest.TestCase):
 
@@ -27,3 +27,26 @@ class TestQueryDisc(unittest.TestCase):
                 query_disc(self.NSIDE, self.vec, self.radius, inclusive=True),
                 np.array([ 0, 3, 4, 5, 11, 12, 13, 23 ])
             )
+
+    def test_boundaries(self):
+        nside = 2
+        corners = boundaries(nside, 5)
+        corners_precomp = np.array(
+            [[  2.44708573e-17,  5.27046277e-01,  3.60797400e-01,  4.56383842e-17],
+             [  3.99652627e-01,  5.27046277e-01,  8.71041977e-01,  7.45355992e-01],
+             [  9.16666667e-01,  6.66666667e-01,  3.33333333e-01,  6.66666667e-01]])
+        np.testing.assert_array_almost_equal(corners, corners_precomp, decimal=8)
+
+    def test_boundaries_phi_theta(self):
+        nside = 2
+        corners = boundaries(nside, np.array([5,5]))
+        corners_precomp = np.array(
+            [[[  2.44708573e-17,  5.27046277e-01,  3.60797400e-01,  4.56383842e-17],
+              [  3.99652627e-01,  5.27046277e-01,  8.71041977e-01,  7.45355992e-01],
+              [  9.16666667e-01,  6.66666667e-01,  3.33333333e-01,  6.66666667e-01]],
+             [[  2.44708573e-17,  5.27046277e-01,  3.60797400e-01,  4.56383842e-17],
+              [  3.99652627e-01,  5.27046277e-01,  8.71041977e-01,  7.45355992e-01],
+              [  9.16666667e-01,  6.66666667e-01,  3.33333333e-01,  6.66666667e-01]]]
+        )
+        np.testing.assert_array_almost_equal(corners, corners_precomp, decimal=8)
+

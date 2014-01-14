@@ -1,0 +1,8 @@
+infile = cl_wmap_band_iqumap_r9_7yr_W_v4_udgraded32_IQU_lmax64_rmmono_3iter.fits
+outfile = !map_synfast_fortran_seed12345.fits
+simul_type = 1
+nsmax = 32
+nlmax = 64
+iseed = 12345
+fwhm_arcmin = 420
+applywindows = false

@@ -1,9 +1,9 @@
 *pyc
 build
 *so
+*ipynb
 pshyt.c
 ipython_log*
-*fits
 doc/.build
 doc/generated
 *~

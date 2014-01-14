@@ -1,9 +1,9 @@
-cd build/lib*/healpy/
-for f in wmap_band_iqumap_r9_7yr_V_v4.fits wmap_band_iqumap_r9_7yr_W_v4.fits wmap_temperature_analysis_mask_r9_7yr_v4.fits 
-do
-    ln -sf ../../../../../healpy/test/data/$f test/data/
-done
-py.test -v --doctest-modules
+#!/bin/env bash
+cd build/lib*/healpy
+py.test -v --doctest-modules --ignore run_doctest_cython.py
+nosetests_returnvalue=$?
 echo Run Cython extensions doctests
-python run_doctest_cython.py
-cd ../../..
+cd ..
+python healpy/run_doctest_cython.py
+cython_doctest_returnvalue=$?
+exit $(($nosetests_returnvalue + $cython_doctest_returnvalue))
