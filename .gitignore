@@ -1,6 +1,7 @@
 *pyc
 build
 *so
+*ipynb
 pshyt.c
 ipython_log*
 doc/.build
