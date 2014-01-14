@@ -47,7 +47,7 @@ otherwise, you can download a source tarball from:
 https://pypi.python.org/pypi/healpy
 
 starting from version `1.7.0`, you can also download the `.tar.gz` source release
-from Github.
+from the "Releases" section on the Github repository.
 
 and build it with:
 
