@@ -1,9 +1,7 @@
 Release 1.7.0, 14 Jan 2014 
 
-* rewritten spherical armonics unit tests, now it uses low res maps
-included in the repository
-* fix in HEALPix C++ build flags allows easier install on MAC-OSX and 
-other python environments (e.g. anaconda)
+* rewritten spherical armonics unit tests, now it uses low res maps included in the repository
+* fix in HEALPix C++ build flags allows easier install on MAC-OSX and other python environments (e.g. anaconda)
 * orthview: orthografic projection
 * fixed bug in monopole removal in anafast
 
