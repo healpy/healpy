@@ -63,8 +63,8 @@ If everything goes fine, you can test it::
 
 >>> import matplotlib.pyplot as plt
 >>> import numpy as np
->>> import healpy as H
->>> H.mollview(np.arange(12))
+>>> import healpy as hp 
+>>> hp.mollview(np.arange(12))
 >>> plt.show()
 
 or run the test suite with nose::
