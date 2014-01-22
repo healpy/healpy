@@ -282,8 +282,8 @@ class build_external_clib(build_clib):
             log.info("building library '%s' from source", library)
 
             # Determine which compilers we are to use.
-            cc = self.compiler.compiler[0]
-            cxx = self.compiler.compiler_cxx[0]
+            cc = ' '.join(self.compiler.compiler)
+            cxx = ' '.join(self.compiler.compiler_cxx)
 
             # Use a subdirectory of build_temp as the build directory.
             build_temp = os.path.realpath(os.path.join(self.build_temp, library))
