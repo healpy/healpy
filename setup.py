@@ -25,6 +25,16 @@ from distutils.dir_util import mkpath
 from distutils.file_util import copy_file
 from distutils import log
 
+# Apple switched default C++ standard libraries (from gcc's libstdc++ to
+# clang's libc++), but some pre-packaged Python environments such as Anaconda
+# are built against the old C++ standard library. Luckily, we don't have to
+# actually detect which C++ standard library was used to build the Python
+# interpreter. We just have to propagate MACOSX_DEPLOYMENT_TARGET from the
+# configuration variables to the environment.
+#
+# This workaround fixes <https://github.com/healpy/healpy/issues/151>.
+if get_config_var('MACOSX_DEPLOYMENT_TARGET') and not 'MACOSX_DEPLOYMENT_TARGET' in os.environ:
+    os.environ['MACOSX_DEPLOYMENT_TARGET'] = get_config_var('MACOSX_DEPLOYMENT_TARGET')
 
 #
 # FIXME: Copied from Python 2.7's subprocess.check_output,
