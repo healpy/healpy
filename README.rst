@@ -71,13 +71,13 @@ The latest released version is available as a source
 package at:
 https://pypi.python.org/pypi/healpy
 
-`healpy` can also be automatically installed on most systems using:
+`healpy` can also be automatically installed on most systems using `pip` (>= 1.4.2):
 
-$ pip install healpy --user
+    $ pip install healpy --user
 
 and upgraded with:
 
-$ pip install --upgrade healpy --user
+    $ pip install --upgrade healpy --user
 
 Known Issues
 ------------
