@@ -1,3 +1,8 @@
+Release 1.7.1, 23 Jan 2014 
+
+* bugfix for Anaconda/Canopy on MAC OSX #152, #153
+* fixed packaging issue #154
+
 Release 1.7.0, 14 Jan 2014 
 
 * rewritten spherical armonics unit tests, now it uses low res maps included in the repository
