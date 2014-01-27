@@ -1,3 +1,7 @@
+Release 1.7.2, 27 Jan 2014 
+
+* now package does not require autotools, fixes #155
+
 Release 1.7.1, 23 Jan 2014 
 
 * bugfix for Anaconda/Canopy on MAC OSX #152, #153
