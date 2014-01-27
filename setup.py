@@ -15,6 +15,7 @@ except:
 import os
 from os.path import join
 import errno
+import fnmatch
 import sys
 import shlex
 from distutils.sysconfig import get_config_var
@@ -340,17 +341,19 @@ class build_external_clib(build_clib):
         # Done!
 
     @staticmethod
-    def _list_files_recursive(path):
+    def _list_files_recursive(path, skip=('.*', '*.o', 'autom4te.cache')):
         """Yield paths to all of the files contained within the given path,
-        following symlinks."""
+        following symlinks. If skip is a tuple of fnmatch()-style wildcard
+        strings, skip any directory or filename matching any of the patterns in
+        skip."""
         for dirpath, dirnames, filenames in walk(path, followlinks=True):
-            if not any(p.startswith('.') for p in dirpath.split(os.sep)):
+            if not any(any(fnmatch.fnmatch(p, s) for s in skip) for p in dirpath.split(os.sep)):
                 for filename in filenames:
-                    if not filename.startswith('.'):
+                    if not any(fnmatch.fnmatch(filename, s) for s in skip):
                         yield os.path.join(dirpath, filename)
 
     @staticmethod
-    def _stage_files_recursive(src, dest):
+    def _stage_files_recursive(src, dest, skip=None):
         """Hard link or copy all of the files in the path src into the path dest.
         Subdirectories are created as needed, and files in dest are overwritten."""
         # Use hard links if they are supported on this system.
