@@ -323,7 +323,8 @@ class build_external_clib(build_clib):
                 'CFLAGS=' + cflags,
                 'CXXFLAGS=' + cflags,
                 '--disable-shared',
-                '--with-pic']
+                '--with-pic',
+                '--disable-maintainer-mode']
 
             log.info('%s', ' '.join(cmd))
             check_call(cmd, cwd=build_temp, env=self._environ)
