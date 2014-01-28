@@ -1,3 +1,7 @@
+Release 1.7.3, 28 Jan 2014 
+
+* Minor cleanup for submitting debian package
+
 Release 1.7.2, 27 Jan 2014 
 
 * now package does not require autotools, fixes #155
