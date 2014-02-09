@@ -18,7 +18,7 @@ import errno
 import fnmatch
 import sys
 import shlex
-from distutils.sysconfig import get_config_var
+from distutils.sysconfig import get_config_var, get_config_vars
 from setuptools import setup, Extension
 from distutils.command.build_clib import build_clib
 from distutils.errors import DistutilsExecError
@@ -292,9 +292,21 @@ class build_external_clib(build_clib):
 
             log.info("building library '%s' from source", library)
 
-            # Determine which compilers we are to use.
-            cc = ' '.join(self.compiler.compiler)
-            cxx = ' '.join(self.compiler.compiler_cxx)
+            # Determine which compilers we are to use, and what flags.
+            # This is based on what distutils.sysconfig.customize_compiler()
+            # does, but that function has a problem that it doesn't produce
+            # necessary (e.g. architecture) flags for C++ compilers.
+            cc, cxx, opt, cflags = get_config_vars('CC', 'CXX', 'OPT', 'CFLAGS')
+            cxxflags = cflags
+
+            if 'CC' in os.environ:
+                cc = os.environ['CC']
+            if 'CXX' in os.environ:
+                cxx = os.environ['CXX']
+            if 'CFLAGS' in os.environ:
+                cflags = opt + ' ' + os.environ['CFLAGS']
+            if 'CXXLAGS' in os.environ:
+                cxxflags = opt + ' ' + os.environ['CXXFLAGS']
 
             # Use a subdirectory of build_temp as the build directory.
             build_temp = os.path.realpath(os.path.join(self.build_temp, library))
@@ -309,25 +321,16 @@ class build_external_clib(build_clib):
             if not supports_non_srcdir_builds:
                 self._stage_files_recursive(local_source, build_temp)
 
-            # This flag contains the architecture flags, if any.
-            # On 32-bit Python on Mac OS, this will map to something like
-            # '-arch i386  -DNDEBUG -g -O3  -arch i386'.
-            basecflags = get_config_var('BASECFLAGS')
-            cflags = get_config_var('CFLAGS')
-
             # Run configure.
             cmd = ['/bin/sh', os.path.join(os.path.realpath(local_source), 'configure'),
                 '--prefix=' + build_clib,
-                'CC=' + cc,
-                'CXX=' + cxx,
-                'CFLAGS=' + cflags,
-                'CXXFLAGS=' + cflags,
                 '--disable-shared',
                 '--with-pic',
                 '--disable-maintainer-mode']
 
             log.info('%s', ' '.join(cmd))
-            check_call(cmd, cwd=build_temp, env=self._environ)
+            check_call(cmd, cwd=build_temp, env=dict(self._environ,
+                CC=cc, CXX=cxx, CFLAGS=cflags, CXXFLAGS=cxxflags))
 
             # Run make install.
             cmd = ['make', 'install']
