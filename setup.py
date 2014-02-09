@@ -314,7 +314,6 @@ class build_external_clib(build_clib):
             # '-arch i386  -DNDEBUG -g -O3  -arch i386'.
             basecflags = get_config_var('BASECFLAGS')
             cflags = get_config_var('CFLAGS')
-            cflags.partition(basecflags)[-1]
 
             # Run configure.
             cmd = ['/bin/sh', os.path.join(os.path.realpath(local_source), 'configure'),
