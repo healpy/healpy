@@ -6,7 +6,7 @@ before_install:
   - sudo apt-get install libcfitsio3-dev python-matplotlib python-pyfits
 # command to install dependencies
 install: 
-  - pip install -r requirements.txt --use-mirrors --allow-all-external
+  - pip install -r requirements.txt --use-mirrors --allow-external matplotlib --allow-unverified matplotlib 
   - python setup.py install
 # command to run tests
 script:
