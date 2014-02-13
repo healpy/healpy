@@ -1,13 +1,65 @@
-language: python
-python:
-  - 2.6
-  - 2.7
+language: c
+
+env:
+  - USE_ANACONDA=false USE_PIP=false USE_EXTERNAL_CFITSIO=false
+  - USE_ANACONDA=false USE_PIP=false USE_EXTERNAL_CFITSIO=true
+  - USE_ANACONDA=false USE_PIP=true  USE_EXTERNAL_CFITSIO=false
+  - USE_ANACONDA=false USE_PIP=true  USE_EXTERNAL_CFITSIO=true
+  - USE_ANACONDA=true  USE_PIP=false USE_EXTERNAL_CFITSIO=false
+  - USE_ANACONDA=true  USE_PIP=false USE_EXTERNAL_CFITSIO=true
+  - USE_ANACONDA=true  USE_PIP=true  USE_EXTERNAL_CFITSIO=false
+  - USE_ANACONDA=true  USE_PIP=true  USE_EXTERNAL_CFITSIO=true
+
 before_install:
-  - sudo apt-get install libcfitsio3-dev python-matplotlib python-pyfits
-# command to install dependencies
-install: 
-  - pip install -r requirements.txt --use-mirrors --allow-external matplotlib --allow-unverified matplotlib 
-  - python setup.py install
-# command to run tests
+  # Add 'pip install --user' path to PATH
+  - export PATH=$HOME/.local/bin:$PATH
+
+  # Use Matplotlib backend appropriate for headless rendering
+  - mkdir -p $HOME/.matplotlib
+  - "echo 'backend: agg' > $HOME/.matplotlib/matplotlibrc"
+
+  # Install python and dependencies via system or anaconda
+  - |
+    if $USE_ANACONDA; then
+      wget http://repo.continuum.io/miniconda/Miniconda-3.0.0-Linux-x86_64.sh \
+        -O miniconda.sh && \
+      bash miniconda.sh -b && \
+      ~/miniconda/bin/conda create --yes -n anaconda_env \
+        setuptools pip numpy matplotlib && \
+      source ~/miniconda/bin/activate anaconda_env && \
+      pip install --user pyfits
+    else
+     sudo apt-get -y install \
+       python \
+       python-setuptools \
+       python-pip \
+       python-numpy \
+       python-matplotlib \
+       pkg-config && \
+       pip install --user pyfits
+    fi
+
+  # Install dependencies that aren't provided by both apt-get and conda.
+  - pip install --user cython pytest
+
+  # Install cfitsio if necessary
+  - if $USE_EXTERNAL_CFITSIO; then sudo apt-get -y install libcfitsio3-dev; fi
+
+install:
+  # Build first to create Cython sources
+  # Then make source distribution
+  # Uninstall things that are only needed when building from git
+  # Finally, install from the source distribution using pip
+  - |
+    if $USE_PIP; then
+      python setup.py build && \
+      python setup.py sdist && \
+      pip uninstall -y cython && \
+      sudo apt-get -y remove autoconf automake pkg-config && \
+      pip install --user dist/*.tar.gz
+    else
+      python setup.py install --user
+    fi
+
 script:
   - bash testbuild.sh
