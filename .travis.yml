@@ -11,6 +11,9 @@ env:
   # - USE_ANACONDA=true  USE_PIP=true  USE_EXTERNAL_CFITSIO=true
 
 before_install:
+  # Show environment
+  - env
+
   # Add 'pip install --user' path to PATH
   - export PATH=$HOME/.local/bin:$PATH
 
@@ -29,7 +32,7 @@ before_install:
       source ~/miniconda/bin/activate anaconda_env && \
       pip install --user pyfits
     else
-     sudo apt-get -y install \
+     brew install \
        python \
        python-setuptools \
        python-pip \
@@ -43,7 +46,7 @@ before_install:
   - pip install --user cython pytest
 
   # Install cfitsio if necessary
-  - if $USE_EXTERNAL_CFITSIO; then sudo apt-get -y install libcfitsio3-dev; fi
+  - if $USE_EXTERNAL_CFITSIO; then brew install libcfitsio3-dev; fi
 
 install:
   # Build first to create Cython sources
@@ -55,7 +58,7 @@ install:
       python setup.py build && \
       python setup.py sdist && \
       pip uninstall -y cython && \
-      sudo apt-get -y remove autoconf automake pkg-config && \
+      brew uninstall --force autoconf automake pkg-config && \
       pip install --user dist/*.tar.gz
     else
       python setup.py install --user
