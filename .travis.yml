@@ -32,6 +32,8 @@ before_install:
       source ~/miniconda/bin/activate anaconda_env && \
       pip install --user pyfits
     else
+     wget https://raw.github.com/pypa/pip/master/contrib/get-pip.py
+     python get-pip.py --user
      pip install --user numpy matplotlib pyfits
     fi
 
