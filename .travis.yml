@@ -1,18 +1,27 @@
 language: objective-c
 
 env:
-  # - USE_ANACONDA=false USE_PIP=false USE_EXTERNAL_CFITSIO=false
-  # - USE_ANACONDA=false USE_PIP=false USE_EXTERNAL_CFITSIO=true
-  # - USE_ANACONDA=false USE_PIP=true  USE_EXTERNAL_CFITSIO=false
-  # - USE_ANACONDA=false USE_PIP=true  USE_EXTERNAL_CFITSIO=true
+  - USE_ANACONDA=false USE_PIP=false USE_EXTERNAL_CFITSIO=false
+  - USE_ANACONDA=false USE_PIP=false USE_EXTERNAL_CFITSIO=true
+  - USE_ANACONDA=false USE_PIP=true  USE_EXTERNAL_CFITSIO=false
+  - USE_ANACONDA=false USE_PIP=true  USE_EXTERNAL_CFITSIO=true
   - USE_ANACONDA=true  USE_PIP=false USE_EXTERNAL_CFITSIO=false
   - USE_ANACONDA=true  USE_PIP=false USE_EXTERNAL_CFITSIO=true
   - USE_ANACONDA=true  USE_PIP=true  USE_EXTERNAL_CFITSIO=false
   - USE_ANACONDA=true  USE_PIP=true  USE_EXTERNAL_CFITSIO=true
 
 before_install:
-  # Show environment
-  - env
+  # Determine if we are on a Mac or a Linux buildbot
+  - |
+    if [ $(uname) = 'Darwin' ]; then
+      export MINICONDA_URL='http://repo.continuum.io/miniconda/Miniconda-3.0.4-MacOSX-x86_64.sh'
+      export PKG_INSTALL='brew install'
+      export PKG_UNINSTALL='brew uninstall --force'
+    else
+      export MINICONDA_URL='http://repo.continuum.io/miniconda/Miniconda-3.0.0-Linux-x86_64.sh'
+      export PKG_INSTALL='sudo apt-get -y install'
+      export PKG_UNINSTALL='sudo apt-get -y remove'
+    fi
 
   # Add 'pip install --user' path to PATH
   - export PATH=$HOME/.local/bin:$PATH
@@ -32,7 +41,7 @@ before_install:
       source ~/miniconda/bin/activate anaconda_env && \
       pip install --user pyfits
     else
-     brew install \
+     $PKG_INSTALL \
        python \
        python-setuptools \
        python-pip \
@@ -46,7 +55,7 @@ before_install:
   - pip install --user cython pytest
 
   # Install cfitsio if necessary
-  - if $USE_EXTERNAL_CFITSIO; then brew install cfitsio; fi
+  - if $USE_EXTERNAL_CFITSIO; then $PKG_INSTALL cfitsio; fi
 
 install:
   # Build first to create Cython sources
@@ -58,7 +67,7 @@ install:
       python setup.py build && \
       python setup.py sdist && \
       pip uninstall -y cython && \
-      brew uninstall --force autoconf automake pkg-config && \
+      $PKG_UNINSTALL autoconf automake pkg-config && \
       pip install --user dist/*.tar.gz
     else
       python setup.py install --user
