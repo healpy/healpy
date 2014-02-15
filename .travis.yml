@@ -1,13 +1,13 @@
 language: objective-c
 
 env:
-  - USE_ANACONDA=false USE_PIP=false USE_EXTERNAL_CFITSIO=false
+  # - USE_ANACONDA=false USE_PIP=false USE_EXTERNAL_CFITSIO=false
   # - USE_ANACONDA=false USE_PIP=false USE_EXTERNAL_CFITSIO=true
   # - USE_ANACONDA=false USE_PIP=true  USE_EXTERNAL_CFITSIO=false
   # - USE_ANACONDA=false USE_PIP=true  USE_EXTERNAL_CFITSIO=true
-  # - USE_ANACONDA=true  USE_PIP=false USE_EXTERNAL_CFITSIO=false
+  - USE_ANACONDA=true  USE_PIP=false USE_EXTERNAL_CFITSIO=false
   # - USE_ANACONDA=true  USE_PIP=false USE_EXTERNAL_CFITSIO=true
-  # - USE_ANACONDA=true  USE_PIP=true  USE_EXTERNAL_CFITSIO=false
+  - USE_ANACONDA=true  USE_PIP=true  USE_EXTERNAL_CFITSIO=false
   # - USE_ANACONDA=true  USE_PIP=true  USE_EXTERNAL_CFITSIO=true
 
 before_install:
