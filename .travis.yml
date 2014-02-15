@@ -6,9 +6,9 @@ env:
   # - USE_ANACONDA=false USE_PIP=true  USE_EXTERNAL_CFITSIO=false
   # - USE_ANACONDA=false USE_PIP=true  USE_EXTERNAL_CFITSIO=true
   - USE_ANACONDA=true  USE_PIP=false USE_EXTERNAL_CFITSIO=false
-  # - USE_ANACONDA=true  USE_PIP=false USE_EXTERNAL_CFITSIO=true
+  - USE_ANACONDA=true  USE_PIP=false USE_EXTERNAL_CFITSIO=true
   - USE_ANACONDA=true  USE_PIP=true  USE_EXTERNAL_CFITSIO=false
-  # - USE_ANACONDA=true  USE_PIP=true  USE_EXTERNAL_CFITSIO=true
+  - USE_ANACONDA=true  USE_PIP=true  USE_EXTERNAL_CFITSIO=true
 
 before_install:
   # Show environment
@@ -46,7 +46,7 @@ before_install:
   - pip install --user cython pytest
 
   # Install cfitsio if necessary
-  - if $USE_EXTERNAL_CFITSIO; then brew install libcfitsio3-dev; fi
+  - if $USE_EXTERNAL_CFITSIO; then brew install cfitsio; fi
 
 install:
   # Build first to create Cython sources
