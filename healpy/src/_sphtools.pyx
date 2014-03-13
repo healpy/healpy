@@ -10,6 +10,7 @@ from healpy import npix2nside
 from healpy.pixelfunc import maptype
 import os
 import cython
+from libcpp cimport bool as cbool
 
 from _common cimport tsize, arr, xcomplex, Healpix_Ordering_Scheme, RING, NEST, Healpix_Map, Alm, ndarray2map, ndarray2alm
 
@@ -28,6 +29,13 @@ cdef extern from "alm_healpix_tools.h":
                                Alm[xcomplex[double]] &almC,
                                int num_iter,
                                arr[double] &weight)
+    cdef void map2alm_spin(    Healpix_Map[double] &map1, 
+                               Healpix_Map[double] &map2,
+                               Alm[xcomplex[double]] &alm1, 
+                               Alm[xcomplex[double]] &alm2, 
+                               int spin, 
+                               arr[double] &weight, 
+                               cbool add_alm)
 
 cdef extern from "alm_powspec_tools.h":
     cdef void c_rotate_alm "rotate_alm" (Alm[xcomplex[double]] &alm, double psi, double theta, double phi)
@@ -36,7 +44,6 @@ cdef extern from "alm_powspec_tools.h":
 cdef extern from "healpix_data_io.h":
     cdef void read_weight_ring (string &dir, int nside, arr[double] &weight)
 
-
 DATAPATH = None
 
 def get_datapath():
@@ -44,6 +51,82 @@ def get_datapath():
     if DATAPATH is None:
         DATAPATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data')
     return DATAPATH
+
+def map2alm_spin_healpy(maps, spin, lmax = None, mmax = None):
+    """Computes the spinned alm of a 2 Healpix maps.
+
+    Parameters
+    ----------
+    m : list of 2 arrays
+        list of 2 input maps as numpy arrays
+    spin : int
+        spin of the alms (either 1, 2 or 3)
+    lmax : int, scalar, optional
+      Maximum l of the power spectrum. Default: 3*nside-1
+    mmax : int, scalar, optional
+      Maximum m of the alm. Default: lmax
+    
+    Returns
+    -------
+    alms : list of 2 arrays
+      list of 2 alms
+    """
+    maps_c = [np.ascontiguousarray(m, dtype=np.float64) for m in maps]
+
+    # create UNSEEN mask for map
+    masks = [False if count_bad(m) == 0 else mkmask(m) for m in maps_c]
+
+    # Adjust lmax and mmax
+    cdef int lmax_, mmax_, nside, npix
+    npix = maps_c[0].size
+    nside = npix2nside(npix)
+    if lmax is None:
+        lmax_ = 3 * nside - 1
+    else:
+        lmax_ = lmax
+    if mmax is None:
+        mmax_ = lmax_
+    else:
+        mmax_ = mmax
+
+    # Check all maps have same npix
+    if maps_c[1].size != npix:
+        raise ValueError("Input maps must have same size")
+    
+    # View the ndarray as a Healpix_Map
+    M1 = ndarray2map(maps_c[0], RING)
+    M2 = ndarray2map(maps_c[1], RING)
+
+    # replace UNSEEN pixels with zeros
+    for m, mask in zip(maps_c, masks):
+        if mask:
+            m[mask] = 0.0
+
+    # Create an ndarray object that will contain the alm for output (to be returned)
+    n_alm = alm_getn(lmax_, mmax_)
+    alms = [np.empty(n_alm, dtype=np.complex128) for m in maps]
+
+    # View the ndarray as an Alm
+    # Alms = [ndarray2alm(alm, lmax_, mmax_) for alm in alms]
+    A1 = ndarray2alm(alms[0], lmax_, mmax_) 
+    A2 = ndarray2alm(alms[1], lmax_, mmax_) 
+    
+    # ring weights
+    cdef arr[double] * w_arr = new arr[double]()
+    cdef int i
+    cdef char *c_datapath
+    w_arr.allocAndFill(2 * nside, 1.)
+    
+    map2alm_spin(M1[0], M2[0], A1[0], A2[0], spin, w_arr[0], False)
+    
+    # restore input map with UNSEEN pixels
+    for m, mask in zip(maps_c, masks):
+        if mask:
+            m[mask] = UNSEEN
+
+    del w_arr
+    del M1, M2, A1, A2
+    return alms
 
 
 def map2alm(m, lmax = None, mmax = None, niter = 3, use_weights = False, 
@@ -485,4 +568,3 @@ cpdef int count_bad(np.ndarray[double, ndim=1] m):
         if fabs(m[i] - UNSEEN) < rtol_UNSEEN:
             nbad += 1
     return nbad
-
