@@ -6,7 +6,7 @@ cimport numpy as np
 from libcpp.string cimport string
 from libc.math cimport sqrt, floor, fabs
 cimport libc
-from healpy import npix2nside
+from healpy import npix2nside, nside2npix
 from healpy.pixelfunc import maptype
 import os
 import cython
@@ -36,6 +36,11 @@ cdef extern from "alm_healpix_tools.h":
                                int spin, 
                                arr[double] &weight, 
                                cbool add_alm)
+    cdef void alm2map_spin(    Alm[xcomplex[double]] &alm1, 
+                               Alm[xcomplex[double]] &alm2, 
+                               Healpix_Map[double] &map1, 
+                               Healpix_Map[double] &map2,
+                               int spin) 
 
 cdef extern from "alm_powspec_tools.h":
     cdef void c_rotate_alm "rotate_alm" (Alm[xcomplex[double]] &alm, double psi, double theta, double phi)
@@ -128,6 +133,47 @@ def map2alm_spin_healpy(maps, spin, lmax = None, mmax = None):
     del M1, M2, A1, A2
     return alms
 
+def alm2map_spin_healpy(alms, spin, nside, lmax, mmax=None):
+    """Computes maps from a set of 2 spinned alm
+
+    Parameters
+    ----------
+    alms : list of 2 arrays
+      list of 2 alms
+    spin : int
+        spin of the alms (either 1, 2 or 3)
+    nside : int
+        requested nside of the output map 
+    lmax : int, scalar
+      Maximum l of the power spectrum.
+    mmax : int, scalar, optional
+      Maximum m of the alm. Default: lmax
+    
+    Returns
+    -------
+    m : list of 2 arrays
+        list of 2 out maps in RING scheme as numpy arrays
+    """
+    alms_c = [np.ascontiguousarray(alm, dtype=np.complex128) for alm in alms]
+
+    npix = nside2npix(nside)
+    maps = [np.empty(npix, dtype=np.float64) for alm in alms]
+
+    # View the ndarray as a Healpix_Map
+    M1 = ndarray2map(maps[0], RING)
+    M2 = ndarray2map(maps[1], RING)
+
+    if not mmax:
+        mmax = lmax
+
+    # View the ndarray as an Alm
+    A1 = ndarray2alm(alms_c[0], lmax, mmax) 
+    A2 = ndarray2alm(alms_c[1], lmax, mmax) 
+    
+    alm2map_spin(A1[0], A2[0], M1[0], M2[0], spin)
+    
+    del M1, M2, A1, A2
+    return maps
 
 def map2alm(m, lmax = None, mmax = None, niter = 3, use_weights = False, 
             regression = True, datapath = None):
