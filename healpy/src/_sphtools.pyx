@@ -133,17 +133,17 @@ def map2alm_spin_healpy(maps, spin, lmax = None, mmax = None):
     del M1, M2, A1, A2
     return alms
 
-def alm2map_spin_healpy(alms, spin, nside, lmax, mmax=None):
+def alm2map_spin_healpy(alms, nside, spin, lmax, mmax=None):
     """Computes maps from a set of 2 spinned alm
 
     Parameters
     ----------
     alms : list of 2 arrays
       list of 2 alms
-    spin : int
-        spin of the alms (either 1, 2 or 3)
     nside : int
         requested nside of the output map 
+    spin : int
+        spin of the alms (either 1, 2 or 3)
     lmax : int, scalar
       Maximum l of the power spectrum.
     mmax : int, scalar, optional
