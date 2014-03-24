@@ -561,11 +561,12 @@ def angdist(dir1,dir2,lonlat=False):
         else:
             vec2 = np.reshape(dir2, (3, 1))
             vec2 = normalize_vec(vec2)
+    # compute vec product
+    vec_prod = np.sqrt((np.cross(vec1.T, vec2.T)**2).sum(axis=1))
     # compute scalar product
-    pscal = (vec1*vec2).sum(axis=0)
-    # if scalar product is greater than 1 but close, set it to 1
-    pscal[(pscal - 1. > 0.) & (pscal - 1. < 1.e-14)] = 1. 
-    return np.arccos(pscal)
+    scal_prod = (vec1*vec2).sum(axis=0)
+
+    return np.arctan2(vec_prod, scal_prod)
 
 def normalize_vec(vec):
     """Normalize the vector(s) *vec* (in-place if it is a ndarray).
