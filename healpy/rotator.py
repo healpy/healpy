@@ -530,6 +530,9 @@ def angdist(dir1,dir2,lonlat=False):
 
     Examples
     --------
+    >>> import healpy as hp
+    >>> hp.rotator.angdist([.2,0], [.2, 1e-6])
+    array([  1.98669331e-07])
     """
     if hasattr(lonlat,'__len__') and len(lonlat) == 2:
         lonlat1,lonlat2 = lonlat
