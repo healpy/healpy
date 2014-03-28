@@ -157,7 +157,7 @@ def alm2map_spin_healpy(alms, nside, spin, lmax, mmax=None):
     alms_c = [np.ascontiguousarray(alm, dtype=np.complex128) for alm in alms]
 
     npix = nside2npix(nside)
-    maps = [np.empty(npix, dtype=np.float64) for alm in alms]
+    maps = [np.zeros(npix, dtype=np.float64) for alm in alms]
 
     # View the ndarray as a Healpix_Map
     M1 = ndarray2map(maps[0], RING)
