@@ -279,7 +279,7 @@ def write_alm(filename,alms,out_dtype=None,lmax=-1,mmax=-1,mmax_in=-1):
     filename : str
       The filename of the output fits file
     alms : array, complex
-      A complex ndarray holding the alms.
+      A complex ndarray holding the alms, index = m*(2*lmax+1-m)/2+l, see Alm.getidx
     lmax : int, optional
       The maximum l in the output file
     mmax : int, optional
