@@ -93,7 +93,8 @@ Development install
 -------------------
 
 Developers building from a snapshot of the github repository need:
-  * `autoconf` and `libtool` (in Ubuntu: sudo apt-get install autoconf automake libtool pkg-config)
+  * ``autoconf`` and ``libtool`` (in Debian or Ubuntu:
+    ``sudo apt-get install autoconf automake libtool pkg-config``)
   * `cython` > 0.16
   * run ``git submodule init`` and ``git submodule update`` to get the healpix sources
 
