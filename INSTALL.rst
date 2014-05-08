@@ -27,7 +27,7 @@ package manager, it's even easer to install Healpy with::
 
 Binary `apt-get` style packages are also available in the development versions of 
 `Debian (sid) <https://packages.debian.org/sid/python-healpy>`_ and
-`Ubuntu (utopic) <https://packages.ubuntu.com/utopic/python-healpy>`_.
+`Ubuntu (utopic) <http://packages.ubuntu.com/utopic/python-healpy>`_.
 
 Almost-as-quick installation from official source release
 ---------------------------------------------------------
