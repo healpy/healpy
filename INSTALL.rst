@@ -17,6 +17,11 @@ missing dependencies::
 
     pip install --user healpy
 
+If you have installed with ``pip``, you can keep your installation up to date
+by upgrading from time to time::
+
+    pip install --user --upgrade healpy
+
 Even quicker installation on Mac OS with MacPorts
 -------------------------------------------------
 
