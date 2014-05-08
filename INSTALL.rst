@@ -11,7 +11,7 @@ install them yourself.
 Quick installation with Pip
 ---------------------------
 
-Another easy way to install Healpy is with `pip <http://www.pip-installer.org>`_
+The quickest way to install Healpy is with `pip <http://www.pip-installer.org>`_
 (>= 1.4.2), which automatically fetches the latest version of Healpy and any
 missing dependencies::
 
