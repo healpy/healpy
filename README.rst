@@ -107,8 +107,8 @@ https://groups.google.com/d/forum/healpy
 Contribute
 ----------
 
-Project development takes place on github, http://github.com/healpy, please
-open an issue over there for reporting bugs or suggest improvements.
+Project development takes place on github, http://github.com/healpy/healpy,
+please open an issue over there for reporting bugs or suggest improvements.
 Collaboration is very welcome, just fork the project on github and send pull
 requests back to the main repository.
 
