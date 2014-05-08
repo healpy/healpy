@@ -110,11 +110,6 @@ please open an issue over there for reporting bugs or suggest improvements.
 Collaboration is very welcome, just fork the project on github and 
 send pull requests back to the main repository.
 
-Installation
-------------
-
-see INSTALL
-
 Developers
 ----------
 Core developers:
