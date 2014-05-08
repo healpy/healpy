@@ -46,6 +46,23 @@ Requirements
 
 * `PyFITS <http://www.stsci.edu/resources/software_hardware/pyfits>`_
 
+Quick installation with Pip
+---------------------------
+
+The quickest way to install Healpy is with `pip <http://www.pip-installer.org>`_
+(>= 1.4.2), which automatically fetches the latest version of Healpy and any
+missing dependencies::
+
+    pip install --user healpy
+
+If you have installed with ``pip``, you can keep your installation up to date
+by upgrading from time to time::
+
+    pip install --user --upgrade healpy
+
+See `INSTALL.rst <https://github.com/healpy/healpy/blob/master/INSTALL.rst>`_
+for further details and other installation options.
+
 Optional
 --------
 
@@ -58,26 +75,14 @@ HEALPix and cfitsio, you will also need:
 
 * `pkg-config <http://pkg-config.freedesktop.org>`_
 
-* `HEALPix <http://sourceforge.net/projects/healpix/>`_
+* `HEALPix
+  <http://sourceforge.net/projects/healpix/files/Healpix_3.11/autotools_packages/>`_
+  autotools-style C++ package
 
 * `cfitsio <http://heasarc.gsfc.nasa.gov/fitsio/>`_
 
-See INSTALL for further instructions.
-
-Download
---------
-
-The latest released version is available as a source
-package at:
-https://pypi.python.org/pypi/healpy
-
-`healpy` can also be automatically installed on most systems using `pip` (>= 1.4.2):
-
-    $ pip install healpy --user
-
-and upgraded with:
-
-    $ pip install --upgrade healpy --user
+See `INSTALL.rst <https://github.com/healpy/healpy/blob/master/INSTALL.rst>`_
+for further instructions.
 
 Known Issues
 ------------
