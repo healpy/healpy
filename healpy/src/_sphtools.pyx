@@ -176,7 +176,7 @@ def alm2map_spin_healpy(alms, nside, spin, lmax, mmax=None):
     return maps
 
 def map2alm(m, lmax = None, mmax = None, niter = 3, use_weights = False, 
-            regression = True, datapath = None):
+            datapath = None):
     """Computes the alm of a Healpix map.
 
     Parameters
@@ -191,8 +191,6 @@ def map2alm(m, lmax = None, mmax = None, niter = 3, use_weights = False,
       Number of iteration (default: 1)
     use_weights: bool, scalar, optional
       If True, use the ring weighting. Default: False.
-    regression: bool, scalar, optional
-      If True, subtract map average before computing alm. Default: True.
     
     Returns
     -------
@@ -246,12 +244,6 @@ def map2alm(m, lmax = None, mmax = None, niter = 3, use_weights = False,
     if polarization:
         MQ = ndarray2map(mq, RING)
         MU = ndarray2map(mu, RING)
-
-    # if regression is True, remove average of the intensity map before computing alm
-    cdef double avg = 0.0
-    if regression:
-        avg = MI.average()
-        MI.Add(-avg)
 
     # replace UNSEEN pixels with zeros
     if mask_mi is not False:
@@ -307,11 +299,6 @@ def map2alm(m, lmax = None, mmax = None, niter = 3, use_weights = False,
         if mask_mu is not False:
             mu[mask_mu] = UNSEEN
     
-    if regression:
-        MI.Add(avg)
-        #we should not add back the monopole, as in fortran
-        #almI[0] += avg * sqrt(4 * np.pi)
-
     del w_arr
     if polarization:
         del MI, MQ, MU, AI, AG, AC

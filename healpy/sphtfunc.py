@@ -39,7 +39,7 @@ DATAPATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data')
 # Spherical harmonics transformation
 def anafast(map1, map2 = None, nspec = None, lmax = None, mmax = None, 
             iter = 3, alm = False, pol = True, use_weights = False,
-            regression = True, datapath = None):
+            datapath = None):
     """Computes the power spectrum of an Healpix map, or the cross-spectrum
     between two maps if *map2* is given.
 
@@ -68,8 +68,6 @@ def anafast(map1, map2 = None, nspec = None, lmax = None, mmax = None,
       If False, maps are assumed to be described by spin 0 spherical harmonics.
       (input can be any number of maps)
       If there is only one input map, it has no effect. Default: True.
-    regression : bool, scalar, optional
-      If True, map average is removed before computing alm. Default: True.
     datapath : None or str, optional
       If given, the directory where to find the weights data.
 
@@ -83,18 +81,15 @@ def anafast(map1, map2 = None, nspec = None, lmax = None, mmax = None,
       for polarized input
     """
 
-    if regression:
-        warnings.warn("regression=True, the map mean will be removed before computing the power spectrum")
-
     map1 = ma_to_array(map1)
     alms1 = map2alm(map1, lmax = lmax, mmax = mmax, pol = pol, iter = iter, 
-                    use_weights = use_weights, regression = regression, 
+                    use_weights = use_weights,
                     datapath = datapath)
     if map2 is not None:
         map2 = ma_to_array(map2)
         alms2 = map2alm(map2, lmax = lmax, mmax = mmax, pol = pol,
                         iter = iter, use_weights = use_weights, 
-                        regression = regression, datapath = datapath)
+                        datapath = datapath)
     else:
         alms2 = None
     
@@ -110,7 +105,7 @@ def anafast(map1, map2 = None, nspec = None, lmax = None, mmax = None,
         return cls
 
 def map2alm(maps, lmax = None, mmax = None, iter = 3, pol = True, 
-            use_weights = False, regression = True, datapath = None):
+            use_weights = False, datapath = None):
     """Computes the alm of an Healpix map.
     
     Parameters
@@ -131,8 +126,6 @@ def map2alm(maps, lmax = None, mmax = None, iter = 3, pol = True,
       If there is only one input map, it has no effect. Default: True.
     use_weights: bool, scalar, optional
       If True, use the ring weighting. Default: False.
-    regression: bool, scalar, optional
-      If True, subtract map average before computing alm. Default: True.
     datapath : None or str, optional
       If given, the directory where to find the weights data.
     
@@ -151,12 +144,12 @@ def map2alm(maps, lmax = None, mmax = None, iter = 3, pol = True,
     maps = ma_to_array(maps)
     info = maptype(maps)
     if pol or info in (0, 1):
-        alms = _sphtools.map2alm(maps, niter = iter, regression = regression, 
+        alms = _sphtools.map2alm(maps, niter = iter, 
                                  datapath = datapath, use_weights = use_weights,
                                  lmax = lmax, mmax = mmax)
     else:
         # info >= 2 and pol is False : spin 0 spht for each map
-        alms = [_sphtools.map2alm(mm, niter = iter, regression = regression,
+        alms = [_sphtools.map2alm(mm, niter = iter,
                                   datapath = datapath, use_weights = use_weights,
                                   lmax = lmax, mmax = mmax)
                for mm in maps]
@@ -676,7 +669,7 @@ def smoothalm(alms, fwhm = 0.0, sigma = None, invert = False, pol = True,
 @accept_ma
 def smoothing(maps, fwhm = 0.0, sigma = None, invert = False, pol = True,
               iter = 3, lmax = None, mmax = None, use_weights = False,
-              regression = True, datapath = None, verbose = True):
+              datapath = None, verbose = True):
     """Smooth a map with a Gaussian symmetric beam.
 
     Parameters
@@ -707,8 +700,6 @@ def smoothing(maps, fwhm = 0.0, sigma = None, invert = False, pol = True,
       Maximum m of the alm. Default: lmax
     use_weights: bool, scalar, optional
       If True, use the ring weighting. Default: False.
-    regression: bool, scalar, optional
-      If True, subtract map average before computing alm. Default: True.
     datapath : None or str, optional
       If given, the directory where to find the weights data.
     verbose : bool, optional
@@ -733,14 +724,11 @@ def smoothing(maps, fwhm = 0.0, sigma = None, invert = False, pol = True,
         nside = pixelfunc.npix2nside(len(maps))
         n_maps = 0
 
-    if regression and verbose:
-        warnings.warn("regression=True, the map mean will be removed before smoothing")
-
     if pol or n_maps in (0, 1):
         # Treat the maps together (1 or 3 maps)
         alms = map2alm(maps, lmax = lmax, mmax = mmax, iter = iter,
                        pol = pol, use_weights = use_weights,
-                       regression = regression, datapath = datapath)
+                       datapath = datapath)
         smoothalm(alms, fwhm = fwhm, sigma = sigma, invert = invert,
                   inplace = True, verbose = verbose)
         output_map = alm2map(alms, nside, pixwin = False)
@@ -750,7 +738,7 @@ def smoothing(maps, fwhm = 0.0, sigma = None, invert = False, pol = True,
         for m, mask in zip(maps, masks):
             alm = map2alm(maps, iter = iter, pol = pol,
                           use_weights = use_weights,
-                       regression = regression, datapath = datapath)
+                       datapath = datapath)
             smoothalm(alm, fwhm = fwhm, sigma = sigma, invert = invert,
                       inplace = True, verbose = verbose)
             output_map.append(alm2map(alm, nside, pixwin = False))
