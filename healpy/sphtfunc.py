@@ -42,6 +42,7 @@ def anafast(map1, map2 = None, nspec = None, lmax = None, mmax = None,
             datapath = None):
     """Computes the power spectrum of an Healpix map, or the cross-spectrum
     between two maps if *map2* is given.
+    No removal of monopole or dipole is performed.
 
     Parameters
     ----------
@@ -671,6 +672,8 @@ def smoothing(maps, fwhm = 0.0, sigma = None, invert = False, pol = True,
               iter = 3, lmax = None, mmax = None, use_weights = False,
               datapath = None, verbose = True):
     """Smooth a map with a Gaussian symmetric beam.
+
+    No removal of monopole or dipole is performed.
 
     Parameters
     ----------
