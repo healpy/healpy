@@ -383,6 +383,18 @@ else:
 setup(name='healpy',
       version=get_version(),
       description='Healpix tools package for Python',
+      classifiers=[
+          'Development Status :: 5 - Production/Stable',
+          'Environment :: Console',
+          'Intended Audience :: Science/Research',
+          'License :: OSI Approved :: GNU General Public License v2 or later (GPLv2+)',
+          'Operating System :: POSIX',
+          'Programming Language :: C++',
+          'Programming Language :: Python :: 2.6',
+          'Programming Language :: Python :: 2.7',
+          'Topic :: Scientific/Engineering :: Astronomy',
+          'Topic :: Scientific/Engineering :: Visualization'
+      ],
       author='C. Rosset, A. Zonca',
       author_email='cyrille.rosset@apc.univ-paris-diderot.fr',
       url='http://github.com/healpy',
