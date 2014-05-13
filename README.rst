@@ -32,9 +32,7 @@ Characteristics
 Requirements
 ------------
 
-* `Python <http://www.python.org>`_, tested with 2.4, 2.5, 2.6 and 2.7; however
-  see `bug <http://code.google.com/p/healpy/issues/detail?id=19>`_ for Python
-  2.4.
+* `Python <http://www.python.org>`_ 2.6 or 2.7
 
 * `Numpy <http://numpy.scipy.org/>`_ (tested with version >=1.5.0)
 
