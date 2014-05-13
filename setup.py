@@ -1,13 +1,11 @@
 #!/usr/bin/env python
 
-# Bootstrap setuptools installation.
-# Setuptools 0.6.10 is the oldest version with which we have tested Healpy,
-# and is also the least common denominator present on Scientific Linux 6.
-# If the user has setuptools >= 0.6.10, just take it.
-# Otherwise, let use_setuptools() download its default, more recent version. 
+# Bootstrap setuptools installation. We require setuptools >= 3.2 because of a
+# bug in earlier versions regarding C++ sources generated with Cython. See:
+#    https://pypi.python.org/pypi/setuptools/3.6#id171
 try:
     import pkg_resources
-    pkg_resources.require("setuptools >= 0.6.10")
+    pkg_resources.require("setuptools >= 3.2")
 except:
     from ez_setup import use_setuptools
     use_setuptools()
@@ -85,22 +83,33 @@ def check_output(*popenargs, **kwargs):
 # For ReadTheDocs, do not build the extensions, only install .py files
 on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
 
+cython_require = 'Cython >= 0.16'
 try:
-    if sys.argv[1] in ['sdist']: #we need to distribute also c and cpp sources
-        raise
-    if not os.path.exists('healpy/src/_query_disc.pyx'): #pypi source package does contain the pyx files
-        raise
+    pkg_resources.require(cython_require)
     from Cython.Distutils import build_ext
-    import Cython.Compiler.Version as CythonVersion
-    from distutils.version import LooseVersion
-    assert LooseVersion(CythonVersion.version) >= LooseVersion("0.16")
     ext = "pyx"
     extcpp = "pyx"
 except:
-  from distutils.command.build_ext import build_ext
-  ext = "c"
-  extcpp = "cpp"
-  print "No Cython >= 0.16 found, defaulting to pregenerated c version."
+    # User does not have a sufficiently new version of Cython.
+    if os.path.exists('healpy/src/_query_disc.cpp'):
+        # This source package already contains the Cython-generated sources,
+        # so we can just use them.
+        from distutils.command.build_ext import build_ext
+        ext = "c"
+        extcpp = "cpp"
+    else:
+        # This source does not contain the Cython-generated sources, so fail.
+        raise DistutilsExecError('''
+
+It looks like you are attempting to build from the Healpy development
+sources, i.e., from GitHub. You need {0} to build Healpy from
+development sources.
+
+Either install Healpy from an official stable release from:
+    https://pypi.python.org/pypi/healpy
+
+OR, to build from development sources, first get {0} from:
+    https://pypi.python.org/pypi/Cython'''.format(cython_require))
   
 if on_rtd:
     numpy_inc = ''
