@@ -24,7 +24,7 @@ before_install:
   # Install python and dependencies via system or anaconda
   - |
     if $USE_ANACONDA; then
-      wget http://repo.continuum.io/miniconda/Miniconda-3.0.4-MacOSX-x86_64.sh \
+      wget http://repo.continuum.io/miniconda/Miniconda-3.4.2-MacOSX-x86_64.sh \
         -O miniconda.sh && \
       bash miniconda.sh -b && \
       ~/miniconda/bin/conda create --yes -n anaconda_env \

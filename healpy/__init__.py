@@ -48,7 +48,6 @@ from sphtfunc import (anafast, map2alm,
                       alm2map, Alm, synalm, synfast,
                       smoothing, smoothalm, almxfl, alm2cl,
                       pixwin, alm2map_der1, gauss_beam)
-from _sphtools import rotate_alm
 
 try:
     from _query_disc import query_disc, query_strip, query_polygon, boundaries
@@ -58,6 +57,13 @@ try:
     from _pixelfunc import ringinfo, pix2ring
 except ImportError:
     warnings.warn('Warning: cannot import pixelfunc module')
+
+try:
+    from _sphtools import rotate_alm
+    from _sphtools import alm2map_spin_healpy as alm2map_spin
+    from _sphtools import map2alm_spin_healpy as map2alm_spin
+except ImportError:
+    warnings.warn('Warning: cannot import _sphtools module')
 
 
 from rotator import Rotator, vec2dir, dir2vec

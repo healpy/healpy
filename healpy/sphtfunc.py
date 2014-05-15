@@ -82,6 +82,10 @@ def anafast(map1, map2 = None, nspec = None, lmax = None, mmax = None,
       alm is the spherical harmonic transform or a list of almT, almE, almB
       for polarized input
     """
+
+    if regression:
+        warnings.warn("regression=True, the map mean will be removed before computing the power spectrum")
+
     map1 = ma_to_array(map1)
     alms1 = map2alm(map1, lmax = lmax, mmax = mmax, pol = pol, iter = iter, 
                     use_weights = use_weights, regression = regression, 
@@ -728,6 +732,9 @@ def smoothing(maps, fwhm = 0.0, sigma = None, invert = False, pol = True,
     else:
         nside = pixelfunc.npix2nside(len(maps))
         n_maps = 0
+
+    if regression and verbose:
+        warnings.warn("regression=True, the map mean will be removed before smoothing")
 
     if pol or n_maps in (0, 1):
         # Treat the maps together (1 or 3 maps)

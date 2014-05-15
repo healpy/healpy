@@ -1473,7 +1473,7 @@ def ud_grade(map_in,nside_out,pess=False,order_in='RING',order_out=None,
     order_in, order_out : str
       pixel ordering of input and output ('RING' or 'NESTED')
     power : float
-      if non-zero, multiply the result by (nside_in/nside_out)**power
+      if non-zero, divide the result by (nside_in/nside_out)**power
       Examples:
       power=-2 keeps the sum of the map invariant (useful for hitmaps),
       power=2 divides the mean by another factor of (nside_in/nside_out)**2
