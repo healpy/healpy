@@ -42,24 +42,25 @@ class TestSphtFunc(unittest.TestCase):
                                  fwhm=np.radians(fwhm_deg), new=False)
 
     def test_anafast(self):
-        cl = hp.anafast(self.map1[0].filled(), lmax = self.lmax)
+        cl = hp.anafast(hp.remove_monopole(self.map1[0].filled()), lmax = self.lmax)
         self.assertEqual(len(cl), 65)
         np.testing.assert_array_almost_equal(cl, self.cla, decimal=8)
 
     def test_anafast_nomask(self):
-        cl = hp.anafast(self.map1[0].data, lmax = self.lmax)
+        cl = hp.anafast(hp.remove_monopole(self.map1[0].data), lmax = self.lmax)
         self.assertEqual(len(cl), 65)
         np.testing.assert_array_almost_equal(cl, self.cl_fortran_nomask, decimal=8)
 
     def test_anafast_iqu(self):
-        cl = hp.anafast(self.map1, regression=True, lmax = self.lmax)
+        self.map1[0] = hp.remove_monopole(self.map1[0])
+        cl = hp.anafast(self.map1, lmax = self.lmax)
         self.assertEqual(len(cl[0]), 65)
         self.assertEqual(len(cl), 6)
         for i in range(6):
             np.testing.assert_array_almost_equal(cl[i], self.cliqu[i], decimal=8)
 
     def test_anafast_xspectra(self):
-        cl = hp.anafast(self.map1[0], self.map2[0], lmax = self.lmax, regression=True)
+        cl = hp.anafast(hp.remove_monopole(self.map1[0]), hp.remove_monopole(self.map2[0]), lmax = self.lmax)
         self.assertEqual(len(cl), self.lmax+1)
         clx = hp.read_cl(os.path.join(self.path, 'data', 'cl_wmap_band_iqumap_r9_7yr_WVxspec_v4_udgraded32_II_lmax64_rmmono_3iter.fits'))
         np.testing.assert_array_almost_equal(cl, clx, decimal=8)
@@ -79,13 +80,13 @@ class TestSphtFunc(unittest.TestCase):
                                              decimal=8)
 
     def test_smoothing_notmasked(self):
-        smoothed = hp.smoothing([m.data for m in self.map1], fwhm=np.radians(10), lmax=self.lmax, regression=False)
+        smoothed = hp.smoothing([m.data for m in self.map1], fwhm=np.radians(10), lmax=self.lmax)
         smoothed_f90 = hp.read_map(os.path.join(self.path, 'data',
                   'wmap_band_iqumap_r9_7yr_W_v4_udgraded32_smoothed10deg_fortran.fits'), (0,1,2))
         np.testing.assert_array_almost_equal(smoothed, smoothed_f90, decimal=6)
 
     def test_smoothing_masked(self):
-        smoothed = hp.smoothing(self.map1, fwhm=np.radians(10), lmax=self.lmax, regression=False)
+        smoothed = hp.smoothing(self.map1, fwhm=np.radians(10), lmax=self.lmax)
         smoothed_f90 = hp.ma(hp.read_map(os.path.join(self.path, 'data',
                   'wmap_band_iqumap_r9_7yr_W_v4_udgraded32_masked_smoothed10deg_fortran.fits'), (0,1,2)))
         # fortran does not restore the mask
@@ -111,10 +112,9 @@ class TestSphtFunc(unittest.TestCase):
         tmp[::2] = orig
         maps = [orig, orig.astype(np.float32), tmp[::2]]
         for input in maps:
-            for regression in (False, True):
-                alm = hp.map2alm(input, iter=10, regression=regression)
-                output = hp.alm2map(alm, nside)
-                np.testing.assert_allclose(input, output, atol=1e-4)
+            alm = hp.map2alm(input, iter=10)
+            output = hp.alm2map(alm, nside)
+            np.testing.assert_allclose(input, output, atol=1e-4)
 
     def test_map2alm_pol(self):
         tmp = [np.empty(o.size*2) for o in self.mapiqu]
@@ -123,11 +123,10 @@ class TestSphtFunc(unittest.TestCase):
         maps = [self.mapiqu, [o.astype(np.float32) for o in self.mapiqu],
                 [t[::2] for t in tmp]]
         for input in maps:
-            for regression in (False, True):
-                alm = hp.map2alm(input, iter=10, regression=regression)
-                output = hp.alm2map(alm, 32)
-                for i, o in zip(input, output):
-                    np.testing.assert_allclose(i, o, atol=1e-4)
+            alm = hp.map2alm(input, iter=10)
+            output = hp.alm2map(alm, 32)
+            for i, o in zip(input, output):
+                np.testing.assert_allclose(i, o, atol=1e-4)
 
     def test_rotate_alm(self):
         almigc = hp.map2alm(self.mapiqu)
