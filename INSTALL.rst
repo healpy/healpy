@@ -124,7 +124,7 @@ extensions in place with::
 
     python setup.py build_ext --inplace
 
-the add the ``healpy/healpy`` folder to your ``PYTHONPATH``.
+then add the ``healpy/healpy`` folder to your ``PYTHONPATH``.
 
 Clean
 -----
