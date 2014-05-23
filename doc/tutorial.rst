@@ -4,9 +4,9 @@ Healpy tutorial
 Creating and manipulating maps
 ------------------------------
 
-Maps are simply numpy arrays, each array element refers to a location in the sky as defined by the Healpix pixelization schemes, see the `healpix website`_.
+Maps are simply numpy arrays, where each array element refers to a location in the sky as defined by the Healpix pixelization schemes (see the `healpix website`_).
 
-The resolution of the map is defined by the *NSIDE* parameter, the :py:func:`~healpy.pixelfunc.nside2npix` function gives the number of pixel *NPIX* of the map:
+The resolution of the map is defined by the *NSIDE* parameter. The :py:func:`~healpy.pixelfunc.nside2npix` function gives the number of pixel *NPIX* of the map:
 
 >>> import numpy as np
 >>> import healpy as hp
@@ -16,7 +16,7 @@ The resolution of the map is defined by the *NSIDE* parameter, the :py:func:`~he
 
 .. image:: static/moll_nside32_ring.png
 
-Healpix supports two different ordering schemes, *RING* or *NESTED*, **by default healpy maps are in *RING* ordering**.
+Healpix supports two different ordering schemes, *RING* or *NESTED*. By default, healpy maps are in *RING* ordering.
 
 In order to work with *NESTED* ordering, all map related functions support the `nest` keyword, for example:
 
@@ -33,9 +33,9 @@ Maps are read with the :py:func:`~healpy.fitsfunc.read_map` function:
 
 >>> wmap_map_I = hp.read_map('../healpy/test/data/wmap_band_imap_r9_7yr_W_v4.fits')
 
-by default input maps are **converted to *RING* ordering**, if they are in *NESTED* ordering. You can otherwise specify `nest=True` to retrieve a map is NESTED ordering, or `nest=None` to keep the ordering unchanged.
+By default, input maps are converted to *RING* ordering, if they are in *NESTED* ordering. You can otherwise specify `nest=True` to retrieve a map is NESTED ordering, or `nest=None` to keep the ordering unchanged.
 
-By default :py:func:`~healpy.fitsfunc.read_map` loads the first column, for reading other columns you can specify the `field` keyword. 
+By default, :py:func:`~healpy.fitsfunc.read_map` loads the first column, for reading other columns you can specify the `field` keyword. 
 
 :py:func:`~healpy.fitsfunc.write_map` writes a map to disk in FITS format, if the input map is a list of 3 maps, they are written to a single file as I,Q,U polarization components:
 
@@ -44,7 +44,7 @@ By default :py:func:`~healpy.fitsfunc.read_map` loads the first column, for read
 Visualization
 -------------
 
-Mollweide projection with :py:func:`~healpy.visufunc.mollview` is the most common visualization tool for HEALPIX maps, it supports also coordinate transformation:
+Mollweide projection with :py:func:`~healpy.visufunc.mollview` is the most common visualization tool for HEALPIX maps. It also supports coordinate transformation:
 
 >>> hp.mollview(wmap_map_I, coord=['G','E'], title='Histogram equalized Ecliptic', unit='mK', norm='hist', min=-1,max=1, xsize=2000) 
 >>> hp.graticule()
@@ -64,7 +64,7 @@ shows a projection of the galactic center, `xsize` and `ysize` change the dimens
 Masked map, partial maps
 ------------------------
 
-By convention HEALPIX uses -1.6375e+30 to mark invalid or unseen pixels, this is stored in healpy as the constant :py:func:`~healpy.pixelfunc.UNSEEN`.
+By convention, HEALPIX uses -1.6375e+30 to mark invalid or unseen pixels. This is stored in healpy as the constant :py:func:`~healpy.pixelfunc.UNSEEN`.
 
 All healpy functions automatically deal with maps with UNSEEN pixels, for example :py:func:`~healpy.visufunc.mollview` marks in grey that sections of a map.
 
@@ -74,11 +74,11 @@ There is an alternative way of dealing with UNSEEN pixel based on the numpy Mask
 >>> wmap_map_I_masked = hp.ma(wmap_map_I)
 >>> wmap_map_I_masked.mask = np.logical_not(mask)
 
-by convention the mask is 0 where the data are masked, while numpy defines data masked when the mask is True, so it is necessary to flip the mask.
+By convention the mask is 0 where the data are masked, while numpy defines data masked when the mask is True, so it is necessary to flip the mask.
 
 >>> hp.mollview(wmap_map_I_masked.filled())
 
-filling a masked array fills the `UNSEEN` value in and return a standard array that can be used by `mollview`.
+filling a masked array fills in the `UNSEEN` value and return a standard array that can be used by `mollview`.
 `compressed()` instead removes all the masked pixels and returns a standard array that can be used for examples by the matplotlib `hist()` function:
 
 >>> import matplotlib.pyplot as plt
