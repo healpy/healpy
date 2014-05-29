@@ -10,7 +10,7 @@ from _common cimport int64, pointing, rangeset, vec3, Healpix_Ordering_Scheme, R
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-def query_disc(nside, vec, radius, inclusive = False, fact = 4, nest = False):
+def query_disc(nside, vec, radius, inclusive = False, fact = 4, nest = False, np.ndarray[np.int64_t, ndim=1] buff=None):
     """Returns pixels whose centers lie within the disk defined by
     *vec* and *radius* (in radians) (if *inclusive* is False), or which
     overlap with this disk (if *inclusive* is True).
@@ -33,11 +33,14 @@ def query_disc(nside, vec, radius, inclusive = False, fact = 4, nest = False):
       else it can be any positive integer. Default: 4.
     nest: bool, optional
       if True, assume NESTED pixel ordering, otherwise, RING pixel ordering
+    buff: int array, optional
+      if provided, this numpy array is used to contain the return values and must be
+      at least long enough to do so
 
     Returns
     -------
     ipix : int, array
-      The pixels which lie within the given disk.
+      The pixels which lie within the given disk. 
 
     Note
     ----
@@ -67,10 +70,10 @@ def query_disc(nside, vec, radius, inclusive = False, fact = 4, nest = False):
     else:
         hb.query_disc(pointing(v), radius, pixset)
 
-    return pixset_to_array(pixset)
+    return pixset_to_array(pixset,buff)
 
 
-def query_polygon(nside, vertices, inclusive = False, fact = 4, nest = False):
+def query_polygon(nside, vertices, inclusive = False, fact = 4, nest = False, np.ndarray[np.int64_t, ndim=1] buff=None):
     """ Returns the pixels whose centers lie within the convex polygon 
     defined by the *vertices* array (if *inclusive* is False), or which 
     overlap with this polygon (if *inclusive* is True).
@@ -91,7 +94,10 @@ def query_polygon(nside, vertices, inclusive = False, fact = 4, nest = False):
       else it can be any positive integer. Default: 4.
     nest: bool, optional
       if True, assume NESTED pixel ordering, otherwise, RING pixel ordering
-    
+    buff: int array, optional
+      if provided, this numpy array is used to contain the return values and must be
+      at least long enough to do so
+      
     Returns
     -------
     ipix : int, array
@@ -130,9 +136,9 @@ def query_polygon(nside, vertices, inclusive = False, fact = 4, nest = False):
     else:
         hb.query_polygon(vert, pixset)
 
-    return pixset_to_array(pixset)
+    return pixset_to_array(pixset,buff)
 
-def query_strip(nside, theta1, theta2, inclusive = False, nest = False):
+def query_strip(nside, theta1, theta2, inclusive = False, nest = False, np.ndarray[np.int64_t, ndim=1] buff=None):
     """Returns pixels whose centers lie within the colatitude range
     defined by *theta1* and *theta2* (if inclusive is False), or which 
     overlap with this region (if *inclusive* is True). If theta1<theta2, the
@@ -153,7 +159,10 @@ def query_strip(nside, theta1, theta2, inclusive = False, nest = False):
       region.
     nest: bool, optional
       if True, assume NESTED pixel ordering, otherwise, RING pixel ordering
-
+    buff: int array, optional
+      if provided, this numpy array is used to contain the return values and must be
+      at least long enough to do so
+      
     Returns
     -------
     ipix : int, array
@@ -173,7 +182,7 @@ def query_strip(nside, theta1, theta2, inclusive = False, nest = False):
     cdef rangeset[int64] pixset
     hb.query_strip(theta1, theta2, inclusive, pixset)
 
-    return pixset_to_array(pixset)
+    return pixset_to_array(pixset,buff)
 
 
 def _boundaries_single(nside, pix, step=1, nest=False):
@@ -301,14 +310,23 @@ def boundaries(nside, pix, step=1, nest=False):
 ###     del out_r, ipix_r, ipix_
 ###     return out
     
-
-cdef pixset_to_array(rangeset[int64] &pixset):
+@cython.boundscheck(False)
+@cython.wraparound(False)
+cdef pixset_to_array(rangeset[int64] &pixset, buff=None):
     cdef int64 i, n
     n = pixset.nval()
-    cdef np.ndarray[np.int64_t, ndim=1] ipix = np.empty(n, dtype=np.int64)
-    n = pixset.size()
+    cdef np.ndarray[np.int64_t, ndim=1] ipix 
+   		
+    if buff is None :
+       ipix = np.empty(n, dtype=np.int64)
+    else :
+       if n>=len(buff) :
+           raise RuntimeError("Buffer too small to contain return value")
+       ipix = buff[:n] 		
+    
     cdef int64 a, b, ii, ip
     ii = 0
+    n = pixset.size()
     for i in range(n):
         a = pixset.ivbegin(i)
         b = pixset.ivend(i)
@@ -318,9 +336,7 @@ cdef pixset_to_array(rangeset[int64] &pixset):
     return ipix
 
 cdef bool isnsideok(int nside):
-    if nside < 0 or nside != 2**int(round(np.log2(nside))):
-        return False
-    else:
-        return True
+     return nside > 0 and ((nside & (nside -1))==0)
+    
 
 
