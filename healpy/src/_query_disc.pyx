@@ -40,7 +40,7 @@ def query_disc(nside, vec, radius, inclusive = False, fact = 4, nest = False, np
     Returns
     -------
     ipix : int, array
-      The pixels which lie within the given disk. 
+      The pixels which lie within the given disk.
 
     Note
     ----
