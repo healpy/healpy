@@ -321,7 +321,7 @@ cdef pixset_to_array(rangeset[int64] &pixset, buff=None):
        ipix = np.empty(n, dtype=np.int64)
     else :
        if n>=len(buff) :
-           raise RuntimeError("Buffer too small to contain return value")
+           raise ValueError("Buffer too small to contain return value")
        ipix = buff[:n] 		
     
     cdef int64 a, b, ii, ip
