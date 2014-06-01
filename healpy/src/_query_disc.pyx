@@ -70,7 +70,7 @@ def query_disc(nside, vec, radius, inclusive = False, fact = 4, nest = False, np
     else:
         hb.query_disc(pointing(v), radius, pixset)
 
-    return pixset_to_array(pixset,buff)
+    return pixset_to_array(pixset, buff)
 
 
 def query_polygon(nside, vertices, inclusive = False, fact = 4, nest = False, np.ndarray[np.int64_t, ndim=1] buff=None):
@@ -136,7 +136,7 @@ def query_polygon(nside, vertices, inclusive = False, fact = 4, nest = False, np
     else:
         hb.query_polygon(vert, pixset)
 
-    return pixset_to_array(pixset,buff)
+    return pixset_to_array(pixset, buff)
 
 def query_strip(nside, theta1, theta2, inclusive = False, nest = False, np.ndarray[np.int64_t, ndim=1] buff=None):
     """Returns pixels whose centers lie within the colatitude range
@@ -182,7 +182,7 @@ def query_strip(nside, theta1, theta2, inclusive = False, nest = False, np.ndarr
     cdef rangeset[int64] pixset
     hb.query_strip(theta1, theta2, inclusive, pixset)
 
-    return pixset_to_array(pixset,buff)
+    return pixset_to_array(pixset, buff)
 
 
 def _boundaries_single(nside, pix, step=1, nest=False):
