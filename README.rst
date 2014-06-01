@@ -32,7 +32,7 @@ Characteristics
 Requirements
 ------------
 
-* `Python <http://www.python.org>`_ 2.6 or 2.7
+* `Python <http://www.python.org>`_ 2.6, 2.7, 3.2, 3.3, or 3.4
 
 * `Numpy <http://numpy.scipy.org/>`_ (tested with version >=1.5.0)
 
