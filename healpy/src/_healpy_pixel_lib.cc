@@ -416,14 +416,31 @@ static char max_pixrad_signatures[] = {
   PyArray_LONG, PyArray_DOUBLE  
 };
 
+#if PY_MAJOR_VERSION >= 3
+static PyModuleDef moduledef = {
+	.m_base = PyModuleDef_HEAD_INIT,
+	.m_name = "_healpy_pixel_lib",
+	.m_doc = docstring
+};
+#endif
+
 PyMODINIT_FUNC
+#if PY_MAJOR_VERSION < 3
 init_healpy_pixel_lib(void)
+#else
+PyInit__healpy_pixel_lib(void)
+#endif
 {
   PyObject *m, *d, *f;
 
-  m = Py_InitModule3("_healpy_pixel_lib", NULL, docstring);
   import_array();
   import_ufunc();
+
+#if PY_MAJOR_VERSION < 3
+  m = Py_InitModule3("_healpy_pixel_lib", NULL, docstring);
+#else
+	m = PyModule_Create(&moduledef);
+#endif
 
   /* Add some symbolic constants to the module */
   d = PyModule_GetDict(m);
@@ -558,5 +575,7 @@ init_healpy_pixel_lib(void)
   PyDict_SetItemString(d, "UNSEEN", f);
   Py_DECREF(f);
 
-  return;
+#if PY_MAJOR_VERSION >= 3
+  return m;
+#endif
 }

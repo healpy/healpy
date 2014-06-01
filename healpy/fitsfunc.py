@@ -23,9 +23,9 @@
 import pyfits as pf
 import numpy as np
 import pixelfunc
-from sphtfunc import Alm
+from .sphtfunc import Alm
 import warnings
-from pixelfunc import UNSEEN
+from .pixelfunc import UNSEEN
 
 standard_column_names = {
     1 : "I_STOKES",

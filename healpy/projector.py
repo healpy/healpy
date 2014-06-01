@@ -29,7 +29,7 @@ GnomonicProj : Gnomonic projection
 import rotator as R
 import numpy as np
 import pixelfunc
-from pixelfunc import UNSEEN
+from .pixelfunc import UNSEEN
 
 pi = np.pi
 dtor = np.pi/180.

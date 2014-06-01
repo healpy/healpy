@@ -21,15 +21,15 @@ import warnings
 import numpy as np
 pi = np.pi
 
-import _healpy_sph_transform_lib as sphtlib
-import _healpy_fitsio_lib as hfitslib
-import _sphtools as _sphtools
-import healpy.cookbook as cb
+from . import _healpy_sph_transform_lib as sphtlib
+from . import _healpy_fitsio_lib as hfitslib
+from . import _sphtools as _sphtools
+from . import cookbook as cb
 
 import os.path
-import healpy.pixelfunc as pixelfunc
+from . import pixelfunc
 
-from healpy.pixelfunc import maptype, UNSEEN, ma_to_array, accept_ma
+from .pixelfunc import maptype, UNSEEN, ma_to_array, accept_ma
 
 class FutureChangeWarning(UserWarning):
     pass
@@ -618,8 +618,8 @@ def smoothalm(alms, fwhm = 0.0, sigma = None, invert = False, pol = True,
         sigma = fwhm / (2.*np.sqrt(2.*np.log(2.)))
 
     if verbose:
-        print "Sigma is %f arcmin (%f rad) " %  (sigma*60*180/pi,sigma)
-        print "-> fwhm is %f arcmin" % (sigma*60*180/pi*(2.*np.sqrt(2.*np.log(2.))))
+        print("Sigma is {0:f} arcmin ({1:f} rad) ".format(sigma*60*180/pi,sigma))
+        print("-> fwhm is {0:f} arcmin".format(sigma*60*180/pi*(2.*np.sqrt(2.*np.log(2.)))))
 
     # Check alms
     if not cb.is_seq(alms):
@@ -780,10 +780,7 @@ def pixwin(nside, pol = False):
     try:
         import pyfits
     except ImportError:
-        print "*********************************************************"
-        print "**   You need to install pyfits to use this function   **"
-        print "*********************************************************"
-        raise
+        raise ImportError("You need to install pyfits to use this function.")
     pw = pyfits.getdata(fname)
     pw_temp, pw_pol = pw.field(0), pw.field(1)
     if pol:

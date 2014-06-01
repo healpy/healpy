@@ -1,8 +1,8 @@
 __all__ = ['mollview', 'projplot']
 
 import numpy as np
-from pixelfunc import ang2pix, npix2nside
-from rotator import Rotator
+from .pixelfunc import ang2pix, npix2nside
+from .rotator import Rotator
 import exceptions
 from matplotlib.projections.geo import GeoAxes
 

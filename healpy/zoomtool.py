@@ -18,12 +18,12 @@
 #  For more information about Healpy, see http://code.google.com/p/healpy
 # 
 
-import projaxes as PA
-import rotator as R
+from . import projaxes as PA
+from . import rotator as R
 import numpy as np
 import matplotlib
-from _healpy_pixel_lib import UNSEEN
-import pixelfunc
+from ._healpy_pixel_lib import UNSEEN
+from . import pixelfunc
 
 pi = np.pi
 dtor = pi/180.

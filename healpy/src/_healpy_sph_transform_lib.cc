@@ -983,7 +983,7 @@ PyObject *healpy_getn(PyObject *self, PyObject *args)
   return Py_BuildValue("l",n);
 }
 
-static PyMethodDef SphtMethods[] = {
+static PyMethodDef methods[] = {
   {"_map2alm", (PyCFunction)healpy_map2alm, METH_VARARGS | METH_KEYWORDS,
    "Compute alm or cl from an input map.\n"
    "The input map is assumed to be ordered in RING.\n"
@@ -1004,12 +1004,26 @@ static PyMethodDef SphtMethods[] = {
   {NULL, NULL, 0, NULL} /* Sentinel */
 };
 
+#if PY_MAJOR_VERSION >= 3
+static PyModuleDef moduledef = {
+  PyModuleDef_HEAD_INIT,
+  "_healpy_sph_transform_lib",
+  NULL, -1, methods
+};
+#endif
 
 PyMODINIT_FUNC
+#if PY_MAJOR_VERSION < 3
 init_healpy_sph_transform_lib(void)
+#else
+PyInit__healpy_sph_transform_lib(void)
+#endif
 {
-  PyObject *m;
-  m =  Py_InitModule("_healpy_sph_transform_lib", SphtMethods);
-
   import_array();
+
+#if PY_MAJOR_VERSION < 3
+  Py_InitModule("_healpy_sph_transform_lib", methods);
+#else
+  return PyModule_Create(&moduledef);
+#endif
 }

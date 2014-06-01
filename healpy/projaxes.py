@@ -17,13 +17,13 @@
 # 
 #  For more information about Healpy, see http://code.google.com/p/healpy
 # 
-import projector as P
-import rotator as R
-import pixelfunc
+from . import projector as P
+from . import rotator as R
+from . import pixelfunc
 import matplotlib
 from matplotlib import axes,ticker,colors,cm,lines,cbook,figure
 import numpy as np
-from _healpy_pixel_lib import UNSEEN
+from ._healpy_pixel_lib import UNSEEN
 
 pi = np.pi
 dtor = pi/180.

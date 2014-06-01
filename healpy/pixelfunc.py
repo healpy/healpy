@@ -83,8 +83,7 @@ Map data manipulation
 """
 
 import numpy as np
-import exceptions
-import _healpy_pixel_lib as pixlib
+from . import _healpy_pixel_lib as pixlib
 from functools import wraps
 
 #: Special value used for masked pixels
@@ -176,10 +175,10 @@ def ma_to_array(m):
 
     try:
         return m.filled()
-    except exceptions.AttributeError:
+    except AttributeError:
         try:
             return tuple([mm.filled() for mm in m])
-        except exceptions.AttributeError:
+        except AttributeError:
             pass
     return m
 
@@ -509,7 +508,7 @@ def ang2vec(theta, phi):
     """
     check_theta_valid(theta)
     if np.any(theta < 0) or np.any(theta > np.pi):
-        raise exceptions.ValueError('THETA is out of range [0,pi]')
+        raise ValueError('THETA is out of range [0,pi]')
     sintheta = np.sin(theta)
     return np.array([sintheta*np.cos(phi),
                       sintheta*np.sin(phi),
@@ -1237,10 +1236,9 @@ def remove_dipole(m,nest=False,bad=UNSEEN,gal_cut=0,fitval=False,
         import rotator as R
         lon,lat = R.vec2dir(dipole,lonlat=True)
         amp = np.sqrt((dipole**2).sum())
-        print 'monopole: %g  dipole: lon: %g, lat: %g, amp: %g'%(mono,
-                                                                 lon,
-                                                                 lat,
-                                                                 amp)
+        print(
+            'monopole: {0:g}  dipole: lon: {1:g}, lat: {2:g}, amp: {3:g}'
+            .format(mono, lon, lat, amp))
     if is_ma:
         m = ma(m)
     if fitval:
@@ -1345,7 +1343,7 @@ def remove_monopole(m,nest=False,bad=pixlib.UNSEEN,gal_cut=0,fitval=False,
         x,y,z = pix2vec(nside, ipix, nest)
         m.flat[ipix] -= mono
     if verbose:
-        print 'monopole: %g'%mono
+        print('monopole: {0:g}'.format(mono))
     if input_ma:
         m = ma(m)
     if fitval:
