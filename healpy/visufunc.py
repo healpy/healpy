@@ -51,10 +51,10 @@ __all__ = ['mollview', 'gnomview', 'cartview', 'orthview',
            'graticule', 'delgraticules',
            'projplot', 'projscatter', 'projtext']
 
-import projaxes as PA
+from . import projaxes as PA
 import numpy as np
 import matplotlib
-import pixelfunc
+from . import pixelfunc
 
 pi = np.pi
 dtor = pi/180.

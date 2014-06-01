@@ -3,7 +3,6 @@ __all__ = ['mollview', 'projplot']
 import numpy as np
 from .pixelfunc import ang2pix, npix2nside
 from .rotator import Rotator
-import exceptions
 from matplotlib.projections.geo import GeoAxes
 
 ###### WARNING #################
@@ -85,7 +84,7 @@ def mollview(m=None, rot=None, coord=None, unit='',
 
     # not implemented features
     if not (norm is None):
-        raise exceptions.NotImplementedError()
+        raise NotImplementedError()
 
     # Create the figure
     import matplotlib.pyplot as plt

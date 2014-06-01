@@ -281,12 +281,12 @@ class ZoomTool(object):
         elif ev.key == 't':
             self._increase_reso()
         elif ev.key == 'p':
-            print 'lon,lat = %.17g,%.17g'%(self.lon,self.lat)
+            print('lon,lat = %.17g,%.17g'%(self.lon,self.lat))
         elif ev.key == 'c':
             self._move_zoom_center(0,0)
             self.draw_gnom(0,0)
         elif ev.key == 'v':
-            print 'val = %.17g'%(self.lastval)
+            print('val = %.17g'%(self.lastval))
         elif ev.key == 'f':
             self._range_status += 1
             self._range_status %= 3

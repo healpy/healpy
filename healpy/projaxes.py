@@ -481,7 +481,9 @@ class SphericalProjAxes(axes.Axes):
         if u_pmax: pmax = u_pmax
         if u_mmin: mmin = u_mmin
         if u_mmax: mmax = u_pmax
-        if verbose: print pmin/dtor,pmax/dtor,mmin/dtor,mmax/dtor
+        if verbose:
+            print('{0} {1} {2} {3}'.format(
+                pmin/dtor, pmax/dtor, mmin/dtor, mmax/dtor))
         if not kwds.pop('force',False):
             dpar,dmer = self._get_interv_graticule(pmin,pmax,dpar,
                                                    mmin,mmax,dmer,
@@ -549,7 +551,7 @@ class SphericalProjAxes(axes.Axes):
                         if l in self.lines:
                             self.lines.remove(l)
                         else:
-                            print 'line not in lines'
+                            print('line not in lines')
             del self._graticules
 
     def _get_interv_graticule(self,pmin,pmax,dpar,mmin,mmax,dmer,verbose=True):
@@ -578,10 +580,10 @@ class SphericalProjAxes(axes.Axes):
             dmer = dpar = max(dmer,dpar)
         vdeg = np.floor(np.around(dpar/dtor,10))
         varcmin = (dpar/dtor-vdeg)*60.
-        if verbose: print "The interval between parallels is %d deg %.2f'."%(vdeg,varcmin)
+        if verbose: print("The interval between parallels is {0:d} deg {1:.2f}'.".format(vdeg,varcmin))
         vdeg = np.floor(np.around(dmer/dtor,10))
         varcmin = (dmer/dtor-vdeg)*60.
-        if verbose: print "The interval between meridians is %d deg %.2f'."%(vdeg,varcmin)
+        if verbose: print("The interval between meridians is {0:d} deg {1:.2f}'.".format(vdeg,varcmin))
         return dpar,dmer
         
 class GnomonicAxes(SphericalProjAxes):

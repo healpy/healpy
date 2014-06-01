@@ -402,6 +402,9 @@ setup(name='healpy',
           'Programming Language :: C++',
           'Programming Language :: Python :: 2.6',
           'Programming Language :: Python :: 2.7',
+          'Programming Language :: Python :: 3.2',
+          'Programming Language :: Python :: 3.3',
+          'Programming Language :: Python :: 3.4',
           'Topic :: Scientific/Engineering :: Astronomy',
           'Topic :: Scientific/Engineering :: Visualization'
       ],
@@ -418,6 +421,6 @@ setup(name='healpy',
       ext_modules = extension_list,
       package_data = {'healpy': ['data/*.fits', 'data/totcls.dat', 'test/data/*.fits', 'test/data/*.sh']},
       setup_requires=setup_requires,
-      install_requires=['pyfits'],
+      install_requires=['pyfits', 'six'],
       license='GPLv2'
       )

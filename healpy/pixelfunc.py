@@ -165,11 +165,11 @@ def ma_to_array(m):
     >>> import healpy as hp
     >>> m = hp.ma(np.array([2., 2., 3, 4, 5, 0, 0, 0, 0, 0, 0, 0]))
     >>> m.mask = np.array([0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], dtype=np.bool)
-    >>> print m.data[1] # data is not affected by mask
+    >>> print(m.data[1]) # data is not affected by mask
     2.0
-    >>> print m[1] # shows that the value is masked
+    >>> print(m[1]) # shows that the value is masked
     --
-    >>> print ma_to_array(m)[1] # filled array, masked values replace by UNSEEN
+    >>> print(ma_to_array(m)[1]) # filled array, masked values replace by UNSEEN
     -1.6375e+30
     """
 
@@ -563,7 +563,7 @@ def ring2nest(nside, ipix):
     >>> hp.ring2nest(16, 1504)
     1130
 
-    >>> hp.ring2nest(2, range(10))
+    >>> hp.ring2nest(2, np.arange(10))
     array([ 3,  7, 11, 15,  2,  1,  6,  5, 10,  9])
     
     >>> hp.ring2nest([1, 2, 4, 8], 11)
@@ -597,7 +597,7 @@ def nest2ring(nside, ipix):
     >>> hp.nest2ring(16, 1130)
     1504
 
-    >>> hp.nest2ring(2, range(10))
+    >>> hp.nest2ring(2, np.arange(10))
     array([13,  5,  4,  0, 15,  7,  6,  1, 17,  9])
     
     >>> hp.nest2ring([1, 2, 4, 8], 11)
@@ -649,7 +649,7 @@ def reorder(map_in, inp=None, out=None, r2n=None, n2r=None):
                  mask = False,
            fill_value = 999999)
     <BLANKLINE>
-    >>> m = [range(12), range(12), range(12)]
+    >>> m = [np.arange(12.), np.arange(12.), np.arange(12.)]
     >>> m[0][2] = hp.UNSEEN
     >>> m[1][2] = hp.UNSEEN
     >>> m[2][2] = hp.UNSEEN
@@ -696,7 +696,7 @@ def reorder(map_in, inp=None, out=None, r2n=None, n2r=None):
             mapout.append(m_in)
         elif inp == 'RING':
             m_out = np.zeros(npix,dtype=type(m_in[0]))
-            for ibunch in range(npix/bunchsize):
+            for ibunch in range(npix//bunchsize):
                 ipix_n = np.arange(ibunch*bunchsize,
                                     (ibunch+1)*bunchsize)
                 ipix_r = nest2ring(nside, ipix_n)
@@ -704,7 +704,7 @@ def reorder(map_in, inp=None, out=None, r2n=None, n2r=None):
             mapout.append(m_out)
         elif inp == 'NEST':
             m_out = np.zeros(npix,dtype=type(m_in[0]))
-            for ibunch in range(npix/bunchsize):
+            for ibunch in range(npix//bunchsize):
                 ipix_r = np.arange(ibunch*bunchsize,
                                     (ibunch+1)*bunchsize)
                 ipix_n = ring2nest(nside, ipix_r)
@@ -1144,7 +1144,7 @@ def fit_dipole(m, nest=False, bad=UNSEEN, gal_cut=0):
         bunchsize = npix
     aa = np.zeros((4,4),dtype=np.float64)
     v = np.zeros(4,dtype=np.float64)
-    for ibunch in range(npix/bunchsize):
+    for ibunch in range(npix//bunchsize):
         ipix = np.arange(ibunch*bunchsize,
                           (ibunch+1)*bunchsize)
         ipix = ipix[(m.flat[ipix]!=bad) & (np.isfinite(m.flat[ipix]))]
@@ -1223,7 +1223,7 @@ def remove_dipole(m,nest=False,bad=UNSEEN,gal_cut=0,fitval=False,
     else:
         bunchsize = npix
     mono,dipole = fit_dipole(m,nest=nest,bad=bad,gal_cut=gal_cut)
-    for ibunch in range(npix/bunchsize):
+    for ibunch in range(npix//bunchsize):
         ipix = np.arange(ibunch*bunchsize,
                           (ibunch+1)*bunchsize)
         ipix = ipix[(m.flat[ipix]!=bad) & (np.isfinite(m.flat[ipix]))]
@@ -1278,7 +1278,7 @@ def fit_monopole(m,nest=False,bad=pixlib.UNSEEN,gal_cut=0):
     else:
         bunchsize=npix
     aa = v = 0.0
-    for ibunch in range(npix/bunchsize):
+    for ibunch in range(npix//bunchsize):
         ipix = np.arange(ibunch*bunchsize,
                           (ibunch+1)*bunchsize)
         ipix = ipix[(m.flat[ipix]!=bad) & (np.isfinite(m.flat[ipix]))]
@@ -1336,7 +1336,7 @@ def remove_monopole(m,nest=False,bad=pixlib.UNSEEN,gal_cut=0,fitval=False,
     else:
         bunchsize = npix
     mono = fit_monopole(m,nest=nest,bad=bad,gal_cut=gal_cut)
-    for ibunch in range(npix/bunchsize):
+    for ibunch in range(npix//bunchsize):
         ipix = np.arange(ibunch*bunchsize,
                           (ibunch+1)*bunchsize)
         ipix = ipix[(m.flat[ipix]!=bad) & (np.isfinite(m.flat[ipix]))]
@@ -1377,14 +1377,14 @@ def get_map_size(m):
      --------
     >>> import healpy as hp
      >>> m = {0: 1, 1: 1, 2: 1, 'nside': 1}
-     >>> print hp.get_map_size(m)
+     >>> print(hp.get_map_size(m))
      12
 
      >>> m = {0: 1, 767: 1}
-     >>> print hp.get_map_size(m)
+     >>> print(hp.get_map_size(m))
      768
 
-     >>> print hp.get_map_size(np.zeros(12 * 8 ** 2))
+     >>> print(hp.get_map_size(np.zeros(12 * 8 ** 2)))
      768
     """
     if isinstance(m, dict):

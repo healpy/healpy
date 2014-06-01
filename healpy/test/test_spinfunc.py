@@ -1,8 +1,8 @@
 # Implemented by Duncan Hanson
 import pyfits
+import six
 import os
 import numpy as np
-import exceptions
 from copy import deepcopy
 from itertools import chain
 
@@ -52,7 +52,7 @@ class TestSpinFunc(unittest.TestCase):
         
         m, dt_der1, dp_der1 = hp.alm2map_der1( self.almg, self.nside )
 
-        alm_spin            = hp.almxfl( self.almg, np.array( [np.sqrt(l*(l+1.)) for l in xrange(0,self.lmax+1)] ), inplace=False )
+        alm_spin            = hp.almxfl( self.almg, np.array( [np.sqrt(l*(l+1.)) for l in six.moves.xrange(0,self.lmax+1)] ), inplace=False )
         dt_spin, dp_spin    = hp.alm2map_spin( [alm_spin, alm_spin*0.], self.nside, 1, self.lmax )
 
         np.testing.assert_array_almost_equal( dt_der1, dt_spin, decimal=8)

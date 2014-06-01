@@ -66,14 +66,18 @@ class Rotator(object):
     >>> r = Rotator(coord=['G','E'])  # Transforms galactic to ecliptic coordinates
     >>> theta_gal, phi_gal = np.pi/2., 0.
     >>> theta_ecl, phi_ecl = r(theta_gal, phi_gal)  # Apply the conversion
-    >>> print theta_ecl, phi_ecl
-    1.66742286715 -1.62596400306
+    >>> print(theta_ecl)
+    1.66742286715
+    >>> print(phi_ecl)
+    -1.62596400306
     >>> theta_ecl, phi_ecl = Rotator(coord='ge')(theta_gal, phi_gal) # In one line
-    >>> print theta_ecl, phi_ecl
-    1.66742286715 -1.62596400306
+    >>> print(theta_ecl)
+    1.66742286715
+    >>> print(phi_ecl)
+    -1.62596400306
     >>> vec_gal = np.array([1, 0, 0]) #Using vectors
     >>> vec_ecl = r(vec_gal)
-    >>> print vec_ecl
+    >>> print(vec_ecl)
     [-0.05488249 -0.99382103 -0.09647625]
     """
     ErrMessWrongPar = ("rot and coord must be single elements or "
@@ -149,7 +153,8 @@ class Rotator(object):
             self._do_rotation = self._do_rotation or (do_rot or do_conv)
 
     def _is_coords_consistent(self):
-        c,i = zip(self._coords,self._invs)[0]
+        for c,i in zip(self._coords,self._invs):
+            break
         for cnext,inext in zip(self._coords[1:],self._invs[1:]):
             if c[i] != cnext[not inext]:
                 return False
@@ -262,7 +267,8 @@ class Rotator(object):
         """The input coordinate system.
         """
         if not self.consistent: return None
-        c,i = zip(self._coords,self._invs)[-1]
+        for c,i in zip(self._coords,self._invs):
+            pass
         return c[i]
 
     @property
@@ -270,7 +276,8 @@ class Rotator(object):
         """The output coordinate system.
         """
         if not self.consistent: return None
-        c,i = zip(self._coords,self._invs)[0]
+        for c,i in zip(self._coords,self._invs):
+            pass
         return c[not i]
 
     @property

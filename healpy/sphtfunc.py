@@ -19,6 +19,7 @@
 # 
 import warnings
 import numpy as np
+import six
 pi = np.pi
 
 from . import _healpy_sph_transform_lib as sphtlib
@@ -333,7 +334,7 @@ def synalm(cls, lmax = None, mmax = None, new = False, verbose=True):
     
     szalm = Alm.getsize(lmax,mmax)
     alms_list = []
-    for i in xrange(Nspec):
+    for i in six.moves.xrange(Nspec):
         alm = np.zeros(szalm,'D')
         alm.real = np.random.standard_normal(szalm)
         alm.imag = np.random.standard_normal(szalm)
@@ -438,7 +439,7 @@ class Alm(object):
         if i is None:
             i=np.arange(Alm.getsize(lmax))
         m=(np.ceil(((2*lmax+1)-np.sqrt((2*lmax+1)**2-8*(i-lmax)))/2)).astype(int)
-        l = i-m*(2*lmax+1-m)/2
+        l = i-m*(2*lmax+1-m)//2
         return (l,m)
 
     @staticmethod
@@ -459,7 +460,7 @@ class Alm(object):
         idx : int
           The index corresponding to (l,m)
         """
-        return m*(2*lmax+1-m)/2+l
+        return m*(2*lmax+1-m)//2+l
 
     @staticmethod
     def getsize(lmax,mmax = None):
@@ -479,7 +480,7 @@ class Alm(object):
         """
         if mmax is None or mmax < 0 or mmax > lmax:
             mmax = lmax
-        return mmax * (2 * lmax + 1 - mmax) / 2 + lmax + 1
+        return mmax * (2 * lmax + 1 - mmax) // 2 + lmax + 1
 
     @staticmethod
     def getlmax(s, mmax = None):
@@ -655,7 +656,7 @@ def smoothalm(alms, fwhm = 0.0, sigma = None, invert = False, pol = True,
     if lonely:
         return retalm[0]
     # case 2: 2d input, check if in-place smoothing for all alm's
-    for i in xrange(len(alms)):
+    for i in six.moves.xrange(len(alms)):
         samearray = alms[i] is retalm[i]
         if not samearray:
             # Case 2a:
@@ -826,8 +827,8 @@ def new_to_old_spectra_order(cls_new_order):
     if Nspec < 0:
         raise ValueError("Input must be a list of n(n+1)/2 arrays")
     cls_old_order = []
-    for i in xrange(Nspec):
-        for j in xrange(i, Nspec):
+    for i in six.moves.xrange(Nspec):
+        for j in six.moves.xrange(i, Nspec):
             p = j - i
             q = i
             idx_new = p * (2 * Nspec + 1 - p) / 2 + q
