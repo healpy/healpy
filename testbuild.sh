@@ -1,4 +1,4 @@
-#!/bin/env bash
+#!/bin/sh
 cd build/lib*/healpy
 py.test -v --doctest-modules --ignore run_doctest_cython.py
 nosetests_returnvalue=$?
