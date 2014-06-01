@@ -330,7 +330,6 @@ def get_version():
     try:
         exec(open('healpy/version.py'))
     except Exception as e:
-        print e
         raise ValueError('Error getting revision number from '
                          'healpy/version.py')
     return __version__
