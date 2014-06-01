@@ -46,7 +46,7 @@
 
 /* Some helpful macro */
 #define XMALLOC(X,Y,Z) if( !(X = (Y*)malloc(Z*sizeof(Y))) ) { PyErr_NoMemory(); goto fail;}
-#define XNEW(X,Y,Z) if( !(X = new(Y[Z])) ) { PyErr_NoMemory(); goto fail; }
+#define XNEW(X,Y,Z) if( !(X = new Y[Z]) ) { PyErr_NoMemory(); goto fail; }
 #define XFREE(X) if( X ) free(X);
 #define XDELETE(X) if( X ) delete[] X;
 #define DBGPRINTF(X,...) if( IS_DEBUG_ON ) printf(X, ## __VA_ARGS__)
