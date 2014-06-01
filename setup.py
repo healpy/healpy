@@ -122,7 +122,7 @@ else:
 try:
     check_output(['pkg-config', '--version'])
     setup_requires = []
-except OSError, e:
+except OSError as e:
     if e.errno != errno.ENOENT:
         raise ValueError
     log.warn('pkg-config is not installed, falling back to pykg-config')
@@ -329,7 +329,7 @@ class custom_build_ext(build_ext):
 def get_version():
     try:
         exec(open('healpy/version.py'))
-    except Exception, e:
+    except Exception as e:
         print e
         raise ValueError('Error getting revision number from '
                          'healpy/version.py')

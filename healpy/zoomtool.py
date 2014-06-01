@@ -243,7 +243,7 @@ class ZoomTool(object):
         self._ysize = self._gnom_ax.proj.arrayinfo['ysize']
         try:
             self._reso_idx = self.reso_list.index(self._gnom_ax.proj._arrayinfo['reso'])
-        except ValueError,e:
+        except ValueError as e:
             raise ValueError('Resolution not in %s'%self.reso_list)
         self.zoomcenter, = self._moll_ax.plot([0],[0],'ok',
                                               mew=1,ms=15,alpha=0.1)
@@ -269,7 +269,7 @@ class ZoomTool(object):
             self.lastval = val
             self._move_zoom_center(lon,lat)
             self.draw_gnom(lon,lat)            
-        except Exception,s:
+        except Exception as s:
             self._move_zoom_center(0,0,False)
             pylab.draw_if_interactive()
             #print s
@@ -443,7 +443,7 @@ class ZoomTool(object):
             self._text_range.set_text('scale mode: %s'%mode)
             self.lon,self.lat = lon,lat
             self._update_grat_info()
-        except Exception, e:
+        except Exception as e:
             pass #print e
         finally:
             if wasinteractive:
