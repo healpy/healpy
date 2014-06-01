@@ -55,20 +55,15 @@ class TestQueryDisc(unittest.TestCase):
         
         # allocate something manifestly too short, should raise a value error
         buff = np.empty(0,dtype=np.int64)
-        try:
-            query_disc(self.NSIDE,self.vec,self.radius,inclusive=True,buff=buff)
-            assert False, "query_disc succeeded where it should have failed - insufficent buffer length"
-        except ValueError:
-            pass
+        self.assertRaises(ValueError,
+                          lambda : query_disc(self.NSIDE,self.vec,self.radius,inclusive=True,buff=buff))
+        
 
         # allocate something of wrong type, should raise a value error
         buff = np.empty(nside2npix(self.NSIDE),dtype=np.float64)
-        try:
-            query_disc(self.NSIDE,self.vec,self.radius,inclusive=True,buff=buff)
-            assert False, "query_disc succeeded where it should have failed - incorrect buffer type"
-        except ValueError:
-            pass
-        
+        self.assertRaises(ValueError,
+                lambda : query_disc(self.NSIDE,self.vec,self.radius,inclusive=True,buff=buff))
+       
         # allocate something acceptable, should succeed and return a subview
         buff = np.empty(nside2npix(self.NSIDE),dtype=np.int64)
         result = query_disc(self.NSIDE,self.vec,self.radius,inclusive=True,buff=buff)
