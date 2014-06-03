@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
 
-from healpy import query_disc, boundaries
+from healpy import query_disc, boundaries, nside2npix
 
 class TestQueryDisc(unittest.TestCase):
 
@@ -50,3 +50,29 @@ class TestQueryDisc(unittest.TestCase):
         )
         np.testing.assert_array_almost_equal(corners, corners_precomp, decimal=8)
 
+    def test_buffer_mode(self) :
+    
+        
+        # allocate something manifestly too short, should raise a value error
+        buff = np.empty(0, dtype=np.int64)
+        self.assertRaises(ValueError,
+                          query_disc,
+                          self.NSIDE, self.vec, self.radius, inclusive=True, buff=buff)
+        
+
+        # allocate something of wrong type, should raise a value error
+        buff = np.empty(nside2npix(self.NSIDE), dtype=np.float64)
+        self.assertRaises(ValueError,
+                          query_disc,
+                          self.NSIDE, self.vec, self.radius, inclusive=True, buff=buff)
+       
+        # allocate something acceptable, should succeed and return a subview
+        buff = np.empty(nside2npix(self.NSIDE), dtype=np.int64)
+        result = query_disc(self.NSIDE, self.vec, self.radius, inclusive=True, buff=buff)
+        
+        assert result.base is buff
+        
+        np.testing.assert_array_equal(
+            result,
+            np.array([ 0, 3, 4, 5, 11, 12, 13, 23 ])
+            )
