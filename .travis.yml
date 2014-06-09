@@ -28,18 +28,18 @@ before_install:
   # Install python and dependencies via system or anaconda
   - |
     if $USE_ANACONDA; then
-      wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh \
+      travis_retry wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh \
         -O miniconda.sh && \
       bash miniconda.sh -b && \
       ~/miniconda/bin/conda create --yes -n anaconda_env \
         python=$TRAVIS_PYTHON_VERSION \
         setuptools pip numpy matplotlib && \
       source ~/miniconda/bin/activate anaconda_env && \
-      pip install pyfits cython pytest
+      travis_retry pip install pyfits cython pytest
     else
      sudo apt-get -y install pkg-config && \
-     pip install --upgrade setuptools && \
-     pip install numpy matplotlib pyfits cython pytest
+     travis_retry pip install --upgrade setuptools && \
+     travis_retry pip install numpy matplotlib pyfits cython pytest
     fi
 
   # Install cfitsio if necessary
