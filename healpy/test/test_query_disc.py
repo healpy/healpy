@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
 
-from healpy import query_disc, boundaries, nside2npix
+from .. import query_disc, boundaries, nside2npix
 
 class TestQueryDisc(unittest.TestCase):
 

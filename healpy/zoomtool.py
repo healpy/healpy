@@ -18,12 +18,12 @@
 #  For more information about Healpy, see http://code.google.com/p/healpy
 # 
 
-import projaxes as PA
-import rotator as R
+from . import projaxes as PA
+from . import rotator as R
 import numpy as np
 import matplotlib
-from _healpy_pixel_lib import UNSEEN
-import pixelfunc
+from ._healpy_pixel_lib import UNSEEN
+from . import pixelfunc
 
 pi = np.pi
 dtor = pi/180.
@@ -243,7 +243,7 @@ class ZoomTool(object):
         self._ysize = self._gnom_ax.proj.arrayinfo['ysize']
         try:
             self._reso_idx = self.reso_list.index(self._gnom_ax.proj._arrayinfo['reso'])
-        except ValueError,e:
+        except ValueError as e:
             raise ValueError('Resolution not in %s'%self.reso_list)
         self.zoomcenter, = self._moll_ax.plot([0],[0],'ok',
                                               mew=1,ms=15,alpha=0.1)
@@ -269,7 +269,7 @@ class ZoomTool(object):
             self.lastval = val
             self._move_zoom_center(lon,lat)
             self.draw_gnom(lon,lat)            
-        except Exception,s:
+        except Exception as s:
             self._move_zoom_center(0,0,False)
             pylab.draw_if_interactive()
             #print s
@@ -281,12 +281,12 @@ class ZoomTool(object):
         elif ev.key == 't':
             self._increase_reso()
         elif ev.key == 'p':
-            print 'lon,lat = %.17g,%.17g'%(self.lon,self.lat)
+            print('lon,lat = %.17g,%.17g'%(self.lon,self.lat))
         elif ev.key == 'c':
             self._move_zoom_center(0,0)
             self.draw_gnom(0,0)
         elif ev.key == 'v':
-            print 'val = %.17g'%(self.lastval)
+            print('val = %.17g'%(self.lastval))
         elif ev.key == 'f':
             self._range_status += 1
             self._range_status %= 3
@@ -443,7 +443,7 @@ class ZoomTool(object):
             self._text_range.set_text('scale mode: %s'%mode)
             self.lon,self.lat = lon,lat
             self._update_grat_info()
-        except Exception, e:
+        except Exception as e:
             pass #print e
         finally:
             if wasinteractive:

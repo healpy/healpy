@@ -19,17 +19,18 @@
 # 
 import warnings
 import numpy as np
+import six
 pi = np.pi
 
-import _healpy_sph_transform_lib as sphtlib
-import _healpy_fitsio_lib as hfitslib
-import _sphtools as _sphtools
-import healpy.cookbook as cb
+from . import _healpy_sph_transform_lib as sphtlib
+from . import _healpy_fitsio_lib as hfitslib
+from . import _sphtools as _sphtools
+from . import cookbook as cb
 
 import os.path
-import healpy.pixelfunc as pixelfunc
+from . import pixelfunc
 
-from healpy.pixelfunc import maptype, UNSEEN, ma_to_array, accept_ma
+from .pixelfunc import maptype, UNSEEN, ma_to_array, accept_ma
 
 class FutureChangeWarning(UserWarning):
     pass
@@ -333,7 +334,7 @@ def synalm(cls, lmax = None, mmax = None, new = False, verbose=True):
     
     szalm = Alm.getsize(lmax,mmax)
     alms_list = []
-    for i in xrange(Nspec):
+    for i in six.moves.xrange(Nspec):
         alm = np.zeros(szalm,'D')
         alm.real = np.random.standard_normal(szalm)
         alm.imag = np.random.standard_normal(szalm)
@@ -438,7 +439,7 @@ class Alm(object):
         if i is None:
             i=np.arange(Alm.getsize(lmax))
         m=(np.ceil(((2*lmax+1)-np.sqrt((2*lmax+1)**2-8*(i-lmax)))/2)).astype(int)
-        l = i-m*(2*lmax+1-m)/2
+        l = i-m*(2*lmax+1-m)//2
         return (l,m)
 
     @staticmethod
@@ -459,7 +460,7 @@ class Alm(object):
         idx : int
           The index corresponding to (l,m)
         """
-        return m*(2*lmax+1-m)/2+l
+        return m*(2*lmax+1-m)//2+l
 
     @staticmethod
     def getsize(lmax,mmax = None):
@@ -479,7 +480,7 @@ class Alm(object):
         """
         if mmax is None or mmax < 0 or mmax > lmax:
             mmax = lmax
-        return mmax * (2 * lmax + 1 - mmax) / 2 + lmax + 1
+        return mmax * (2 * lmax + 1 - mmax) // 2 + lmax + 1
 
     @staticmethod
     def getlmax(s, mmax = None):
@@ -618,8 +619,8 @@ def smoothalm(alms, fwhm = 0.0, sigma = None, invert = False, pol = True,
         sigma = fwhm / (2.*np.sqrt(2.*np.log(2.)))
 
     if verbose:
-        print "Sigma is %f arcmin (%f rad) " %  (sigma*60*180/pi,sigma)
-        print "-> fwhm is %f arcmin" % (sigma*60*180/pi*(2.*np.sqrt(2.*np.log(2.))))
+        print("Sigma is {0:f} arcmin ({1:f} rad) ".format(sigma*60*180/pi,sigma))
+        print("-> fwhm is {0:f} arcmin".format(sigma*60*180/pi*(2.*np.sqrt(2.*np.log(2.)))))
 
     # Check alms
     if not cb.is_seq(alms):
@@ -655,7 +656,7 @@ def smoothalm(alms, fwhm = 0.0, sigma = None, invert = False, pol = True,
     if lonely:
         return retalm[0]
     # case 2: 2d input, check if in-place smoothing for all alm's
-    for i in xrange(len(alms)):
+    for i in six.moves.xrange(len(alms)):
         samearray = alms[i] is retalm[i]
         if not samearray:
             # Case 2a:
@@ -780,10 +781,7 @@ def pixwin(nside, pol = False):
     try:
         import pyfits
     except ImportError:
-        print "*********************************************************"
-        print "**   You need to install pyfits to use this function   **"
-        print "*********************************************************"
-        raise
+        raise ImportError("You need to install pyfits to use this function.")
     pw = pyfits.getdata(fname)
     pw_temp, pw_pol = pw.field(0), pw.field(1)
     if pol:
@@ -829,8 +827,8 @@ def new_to_old_spectra_order(cls_new_order):
     if Nspec < 0:
         raise ValueError("Input must be a list of n(n+1)/2 arrays")
     cls_old_order = []
-    for i in xrange(Nspec):
-        for j in xrange(i, Nspec):
+    for i in six.moves.xrange(Nspec):
+        for j in six.moves.xrange(i, Nspec):
             p = j - i
             q = i
             idx_new = p * (2 * Nspec + 1 - p) / 2 + q

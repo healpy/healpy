@@ -1,7 +1,6 @@
-from healpy.pixelfunc import *
-from healpy._query_disc import boundaries
-from healpy._pixelfunc import ringinfo, pix2ring
-import exceptions
+from ..pixelfunc import *
+from .._query_disc import boundaries
+from .._pixelfunc import ringinfo, pix2ring
 import numpy as np
 import unittest
 
@@ -65,7 +64,7 @@ class TestPixelFunc(unittest.TestCase):
         self.assertFalse(np.all(np.isfinite(phi1)))
 
     def test_ang2pix_negative_theta(self):
-        self.assertRaises(exceptions.AssertionError, ang2pix, 32, -1, 0)
+        self.assertRaises(AssertionError, ang2pix, 32, -1, 0)
       
     def test_fit_dipole(self):
         nside = 32

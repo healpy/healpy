@@ -4,8 +4,8 @@ import unittest
 import numpy as np
 
 import healpy
-from healpy.fitsfunc import *
-from healpy.sphtfunc import *
+from ..fitsfunc import *
+from ..sphtfunc import *
 
 class TestFitsFunc(unittest.TestCase):
     

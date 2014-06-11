@@ -2,8 +2,8 @@ import unittest
 import numpy as np
 
 import healpy as hp
-from healpy.visufunc import *
-from healpy.zoomtool import mollzoom
+from ..visufunc import *
+from ..zoomtool import mollzoom
 
 class TestNoCrash(unittest.TestCase):
     

@@ -26,10 +26,10 @@ SphericalProj : a virtual class (do nothing). Just a template for derived
 GnomonicProj : Gnomonic projection
 """
 
-import rotator as R
+from . import rotator as R
 import numpy as np
-import pixelfunc
-from pixelfunc import UNSEEN
+from . import pixelfunc
+from .pixelfunc import UNSEEN
 
 pi = np.pi
 dtor = np.pi/180.
@@ -323,8 +323,8 @@ class GnomonicProj(SphericalProj):
         if y is None: x,y = x
         dx = reso/60. * dtor
         xc,yc = 0.5*(xsize-1), 0.5*(ysize-1)
-        j = np.around(xc+x/dx).astype(long)
-        i = np.around(yc+y/dx).astype(long)
+        j = np.around(xc+x/dx).astype(np.long)
+        i = np.around(yc+y/dx).astype(np.long)
         return i,j
     xy2ij.__doc__ = SphericalProj.xy2ij.__doc__ % (name,name)
 
@@ -451,8 +451,8 @@ class MollweideProj(SphericalProj):
         if y is None: x,y = x
         xc,yc = (xsize-1.)/2., (ysize-1.)/2.
         if hasattr(x,'__len__'):
-            j = np.around(x*xc/2.+xc).astype(long)
-            i = np.around(yc+y*yc).astype(long)
+            j = np.around(x*xc/2.+xc).astype(np.long)
+            i = np.around(yc+y*yc).astype(np.long)
             mask = (x**2/4.+y**2>1.)
             if not mask.any(): mask=np.ma.nomask
             j=np.ma.array(j,mask=mask)
@@ -461,8 +461,8 @@ class MollweideProj(SphericalProj):
             if x**2/4.+y**2 > 1.:
                 i,j=np.nan,np.nan
             else:
-                j = np.around(x*xc/2.+xc).astype(long)
-                i = np.around(yc+y*yc).astype(long)
+                j = np.around(x*xc/2.+xc).astype(np.long)
+                i = np.around(yc+y*yc).astype(np.long)
         return i,j
     xy2ij.__doc__ = SphericalProj.xy2ij.__doc__ % (name,name)
 
@@ -558,20 +558,20 @@ class CartesianProj(SphericalProj):
                             "with a<b, c<d, a>=-180, b<=180, c>=-90, d<=+90")
         lonra = self._flip*np.float64(lonra)[::self._flip]
         latra = np.float64(latra)
-        xsize=long(xsize)
+        xsize = np.long(xsize)
         if ysize is None:
             ratio = (latra[1]-latra[0])/(lonra[1]-lonra[0])
-            ysize = long(round(ratio*xsize))
+            ysize = np.long(round(ratio*xsize))
         else:
-            ysize = long(ysize)
+            ysize = np.long(ysize)
             ratio = float(ysize)/float(xsize)
         if max(xsize,ysize) > 2000:
             if max(xsize,ysize) == xsize:
                 xsize = 2000
-                ysize = long(round(ratio*xsize))
+                ysize = np.long(round(ratio*xsize))
             else:
                 ysize = 2000
-                xsize = long(round(ysize/ratio))
+                xsize = np.long(round(ysize/ratio))
         super(CartesianProj,self).set_proj_plane_info(xsize=xsize, lonra=lonra, latra=latra, 
                                                         ysize=ysize, ratio=ratio)
 
@@ -834,15 +834,15 @@ class OrthographicProj(SphericalProj):
             else:
                 mask = ((np.mod(x+2.0,2.0)-1.0)**2+y**2>1.0)
             if not mask.any(): mask = np.ma.nomask
-            j=np.ma.array(np.around(x*xc/ratio+xc).astype(long),mask=mask)
-            i=np.ma.array(np.around(yc+y*yc).astype(long),mask=mask)
+            j=np.ma.array(np.around(x*xc/ratio+xc).astype(np.long),mask=mask)
+            i=np.ma.array(np.around(yc+y*yc).astype(np.long),mask=mask)
         else:
             if ( half_sky and x**2+y**2>1.0 ) or \
                    ( not half_sky and (np.mod(x+2.0,2.0)-1.0)**2+y**2>1.0 ):
                 i,j,=np.nan,np.nan
             else:
-                j = np.around(x*xc/ratio+xc).astype(long)
-                i = np.around(yc+y*yc).astype(long)
+                j = np.around(x*xc/ratio+xc).astype(np.long)
+                i = np.around(yc+y*yc).astype(np.long)
         return i,j
     xy2ij.__doc__ = SphericalProj.xy2ij.__doc__ % (name,name)
     

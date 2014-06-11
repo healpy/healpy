@@ -29,9 +29,9 @@ except NameError:
     class ImportWarning(Warning):
         pass
 
-from version import __version__
+from .version import __version__
 
-from pixelfunc import (ma, mask_good, mask_bad,
+from .pixelfunc import (ma, mask_good, mask_bad,
                        ang2pix, pix2ang,
                        pix2vec, vec2pix,
                        vec2ang, ang2vec,
@@ -44,32 +44,32 @@ from pixelfunc import (ma, mask_good, mask_bad,
                        get_nside, maptype, ud_grade, nside2resol, nside2pixarea,
                        get_map_size)
 
-from sphtfunc import (anafast, map2alm,
+from .sphtfunc import (anafast, map2alm,
                       alm2map, Alm, synalm, synfast,
                       smoothing, smoothalm, almxfl, alm2cl,
                       pixwin, alm2map_der1, gauss_beam)
 
 try:
-    from _query_disc import query_disc, query_strip, query_polygon, boundaries
+    from ._query_disc import query_disc, query_strip, query_polygon, boundaries
 except ImportError:
     warnings.warn('Warning: cannot import query disc module')
 try:
-    from _pixelfunc import ringinfo, pix2ring
+    from ._pixelfunc import ringinfo, pix2ring
 except ImportError:
     warnings.warn('Warning: cannot import pixelfunc module')
 
 try:
-    from _sphtools import rotate_alm
-    from _sphtools import alm2map_spin_healpy as alm2map_spin
-    from _sphtools import map2alm_spin_healpy as map2alm_spin
+    from ._sphtools import rotate_alm
+    from ._sphtools import alm2map_spin_healpy as alm2map_spin
+    from ._sphtools import map2alm_spin_healpy as map2alm_spin
 except ImportError:
     warnings.warn('Warning: cannot import _sphtools module')
 
 
-from rotator import Rotator, vec2dir, dir2vec
+from .rotator import Rotator, vec2dir, dir2vec
 
 try:
-    from _healpy_pixel_lib import UNSEEN
+    from ._healpy_pixel_lib import UNSEEN
 except ImportError:
     warnings.warn('Warning: cannot import pixel lib module')
 
@@ -81,9 +81,9 @@ except ImportError:
                   category=ImportWarning)
 
 try:
-    from visufunc import (mollview,graticule,delgraticules,gnomview,
+    from .visufunc import (mollview,graticule,delgraticules,gnomview,
                           projplot,projscatter, projtext, cartview, orthview)
-    from zoomtool import mollzoom,set_g_clim
+    from .zoomtool import mollzoom,set_g_clim
     if visufunc.matplotlib.__version__ == '0.98,3':
         warnings.warn("Bug in matplotlib 0.98.3 prevents mollview from working\n"+
                       "You should upgrade to matplotlib 0.98.4 or above",
@@ -93,7 +93,7 @@ except ImportError:
                   category=ImportWarning)
 
 try:
-    from fitsfunc import write_map,read_map,mrdfits,mwrfits,read_alm,write_alm,write_cl,read_cl
+    from .fitsfunc import write_map,read_map,mrdfits,mwrfits,read_alm,write_alm,write_cl,read_cl
 except:
     warnings.warn("Warning: Cannot import fits i/o tools (needs pyfits)",
                   category=ImportWarning)

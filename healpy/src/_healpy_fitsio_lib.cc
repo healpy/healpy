@@ -90,16 +90,33 @@ static PyObject *healpy_pixwin(PyObject *self, PyObject *args, PyObject *kwds)
     return Py_BuildValue("NN",pixwin_temp,pixwin_pol);
 }
 
-static PyMethodDef HEALFITSMethods[] = {
+static PyMethodDef methods[] = {
   {"_pixwin", (PyCFunction)healpy_pixwin, METH_VARARGS | METH_KEYWORDS,
    "Return the pixel window for some nside\n"
    "_pixwin(nside,data_path,pol=False)"},
   {NULL, NULL, 0, NULL} /* Sentinel */
 };
 
+#if PY_MAJOR_VERSION >= 3
+static PyModuleDef moduledef = {
+	PyModuleDef_HEAD_INIT,
+	"_healpy_sph_transform_lib",
+	NULL, -1, methods
+};
+#endif
+
 PyMODINIT_FUNC
+#if PY_MAJOR_VERSION < 3
 init_healpy_fitsio_lib(void)
+#else
+PyInit__healpy_fitsio_lib(void)
+#endif
 {
-  Py_InitModule("_healpy_fitsio_lib", HEALFITSMethods);
   import_array();
+
+#if PY_MAJOR_VERSION < 3
+	Py_InitModule("_healpy_fitsio_lib", methods);
+#else
+	return PyModule_Create(&moduledef);
+#endif
 }

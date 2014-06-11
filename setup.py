@@ -122,7 +122,7 @@ else:
 try:
     check_output(['pkg-config', '--version'])
     setup_requires = []
-except OSError, e:
+except OSError as e:
     if e.errno != errno.ENOENT:
         raise ValueError
     log.warn('pkg-config is not installed, falling back to pykg-config')
@@ -163,7 +163,7 @@ class build_external_clib(build_clib):
         for index, flag, keys in index_key_flag:
             cmd = PKG_CONFIG + (flag,) + tuple(packages)
             log.debug('%s', ' '.join(cmd))
-            args = [token[index:] for token in check_output(cmd, env=self._environ).split()]
+            args = [token[index:].decode() for token in check_output(cmd, env=self._environ).split()]
             if args:
                 for key in keys:
                     kw.setdefault(key, []).extend(args)
@@ -299,7 +299,7 @@ class build_external_clib(build_clib):
         # from pkg-config.
         for lib_name, build_info in libraries:
             if 'sources' not in build_info:
-                for key, value in self.build_library(lib_name, **build_info).iteritems():
+                for key, value in self.build_library(lib_name, **build_info).items():
                     if key in self.build_args:
                         self.build_args[key].extend(value)
                     else:
@@ -318,7 +318,7 @@ class custom_build_ext(build_ext):
         if self.distribution.has_c_libraries():
             self.run_command('build_clib')
             build_clib = self.get_finalized_command('build_clib')
-            for key, value in build_clib.build_args.iteritems():
+            for key, value in build_clib.build_args.items():
                 for ext in self.extensions:
                     if not hasattr(ext, key) or getattr(ext, key) is None:
                         setattr(ext, key, value)
@@ -327,13 +327,14 @@ class custom_build_ext(build_ext):
         build_ext.run(self)
 
 def get_version():
+    context = {}
     try:
-        exec(open('healpy/version.py'))
-    except Exception, e:
-        print e
-        raise ValueError('Error getting revision number from '
-                         'healpy/version.py')
-    return __version__
+        execfile
+    except NameError:
+        exec(open('healpy/version.py').read(), context)
+    else:
+        execfile('healpy/version.py', context)
+    return context['__version__']
 
 healpy_pixel_lib_src = '_healpy_pixel_lib.cc'
 healpy_spht_src = '_healpy_sph_transform_lib.cc'
@@ -401,6 +402,9 @@ setup(name='healpy',
           'Programming Language :: C++',
           'Programming Language :: Python :: 2.6',
           'Programming Language :: Python :: 2.7',
+          'Programming Language :: Python :: 3.2',
+          'Programming Language :: Python :: 3.3',
+          'Programming Language :: Python :: 3.4',
           'Topic :: Scientific/Engineering :: Astronomy',
           'Topic :: Scientific/Engineering :: Visualization'
       ],
@@ -417,6 +421,6 @@ setup(name='healpy',
       ext_modules = extension_list,
       package_data = {'healpy': ['data/*.fits', 'data/totcls.dat', 'test/data/*.fits', 'test/data/*.sh']},
       setup_requires=setup_requires,
-      install_requires=['pyfits'],
+      install_requires=['pyfits', 'six'],
       license='GPLv2'
       )

@@ -1,7 +1,6 @@
 import pyfits
 import os
 import numpy as np
-import exceptions
 from copy import deepcopy
 from itertools import chain
 

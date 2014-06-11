@@ -22,10 +22,10 @@
 
 import pyfits as pf
 import numpy as np
-import pixelfunc
-from sphtfunc import Alm
+from . import pixelfunc
+from .sphtfunc import Alm
 import warnings
-from pixelfunc import UNSEEN
+from .pixelfunc import UNSEEN
 
 standard_column_names = {
     1 : "I_STOKES",
@@ -209,7 +209,7 @@ def read_map(filename,field=0,dtype=np.float64,nest=False,hdu=1,h=False,
         warnings.warn("No NSIDE in the header file : will use length of array", HealpixFitsWarning)
     else:
         nside = int(nside)
-    if verbose: print 'NSIDE = %d'%nside
+    if verbose: print('NSIDE = {0:d}'.format(nside))
 
     if not pixelfunc.isnsideok(nside):
         raise ValueError('Wrong nside parameter.')
@@ -218,7 +218,7 @@ def read_map(filename,field=0,dtype=np.float64,nest=False,hdu=1,h=False,
         ordering = (nest and 'NESTED' or 'RING')
         warnings.warn("No ORDERING keyword in header file : "
                       "assume %s"%ordering)
-    if verbose: print 'ORDERING = %s in fits file'%ordering
+    if verbose: print('ORDERING = {0:s} in fits file'.format(ordering))
 
     sz=pixelfunc.nside2npix(nside)
     if not (hasattr(field, '__len__') or isinstance(field, str)):
@@ -228,24 +228,24 @@ def read_map(filename,field=0,dtype=np.float64,nest=False,hdu=1,h=False,
     for ff in field:
         try:
             m=hdulist[hdu].data.field(ff).astype(dtype).ravel()
-        except pf.VerifyError, e:
+        except pf.VerifyError as e:
             print(e)
             print("Trying to fix a badly formatted header")
             m=hdulist[hdu].verify("fix")
             m=hdulist[hdu].data.field(ff).astype(dtype).ravel()
             
         if (not pixelfunc.isnpixok(m.size) or (sz>0 and sz != m.size)) and verbose:
-            print 'nside=%d, sz=%d, m.size=%d'%(nside,sz,m.size)
+            print('nside={0:d}, sz={1:d}, m.size={2:d}'.format(nside,sz,m.size))
             raise ValueError('Wrong nside parameter.')
         if not nest is None: # no conversion with None
             if nest and ordering == 'RING':
                 idx = pixelfunc.nest2ring(nside,np.arange(m.size,dtype=np.int32))
                 m = m[idx]
-                if verbose: print 'Ordering converted to NEST'
+                if verbose: print('Ordering converted to NEST')
             elif (not nest) and ordering == 'NESTED':
                 idx = pixelfunc.ring2nest(nside,np.arange(m.size,dtype=np.int32))
                 m = m[idx]
-                if verbose: print 'Ordering converted to RING'
+                if verbose: print('Ordering converted to RING')
         try:
             m[pixelfunc.mask_bad(m)] = UNSEEN
         except OverflowError:
@@ -297,12 +297,12 @@ def write_alm(filename,alms,out_dtype=None,lmax=-1,mmax=-1,mmax_in=-1):
         lmax = l2max
 
     if mmax_in == -1:
-	mmax_in = l2max
+        mmax_in = l2max
 
     if mmax == -1:
         mmax = lmax
     if mmax > mmax_in:
-	mmax = mmax_in
+        mmax = mmax_in
 
     if (out_dtype == None):
         out_dtype = alms.real.dtype
@@ -354,7 +354,7 @@ def read_alm(filename,hdu=1,return_mmax=False):
       The alms read from the file and optionally mmax read from the file
     """
     idx, almr, almi = mrdfits(filename,hdu=hdu)
-    l = np.floor(np.sqrt(idx-1)).astype(long)
+    l = np.floor(np.sqrt(idx-1)).astype(np.long)
     m = idx - l**2 - l - 1
     if (m<0).any():
         raise ValueError('Negative m value encountered !')
