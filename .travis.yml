@@ -20,6 +20,19 @@ env:
   - USE_ANACONDA=true  USE_PIP=true  USE_EXTERNAL_CFITSIO=false
   - USE_ANACONDA=true  USE_PIP=true  USE_EXTERNAL_CFITSIO=true
 
+# FIXME: The Ubuntu Python 3.4 package may use different default compiler flags.
+# I think that Healpy needs to be built with the C compiler in C99 mode.
+matrix:
+  exclude:
+    - python: 3.4
+      env: USE_ANACONDA=false USE_PIP=false USE_EXTERNAL_CFITSIO=false
+    - python: 3.4
+      env: USE_ANACONDA=false USE_PIP=false USE_EXTERNAL_CFITSIO=true
+    - python: 3.4
+      env: USE_ANACONDA=false USE_PIP=true  USE_EXTERNAL_CFITSIO=false
+    - python: 3.4
+      env: USE_ANACONDA=false USE_PIP=true  USE_EXTERNAL_CFITSIO=true
+
 before_install:
   # Use Matplotlib backend appropriate for headless rendering
   - mkdir -p $HOME/.matplotlib
