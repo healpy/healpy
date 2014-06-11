@@ -61,14 +61,16 @@ def query_disc(nside, vec, radius, inclusive = False, fact = 4, nest = False, np
     cdef T_Healpix_Base[int64] hb = T_Healpix_Base[int64](nside, scheme, SET_NSIDE)
     cdef rangeset[int64] pixset
     cdef int factor = fact
+    cdef pointing ptg = pointing(v)
+    ptg.normalize()
     if inclusive:
         factor = abs(fact)
         if nest and (factor == 0 or (factor & (factor - 1) != 0)):
             raise ValueError('fact must be a power of 2 when '
                              'nest is True (fact=%d)' % (fact))
-        hb.query_disc_inclusive(pointing(v), radius, pixset, factor)
+        hb.query_disc_inclusive(ptg, radius, pixset, factor)
     else:
-        hb.query_disc(pointing(v), radius, pixset)
+        hb.query_disc(ptg, radius, pixset)
 
     return pixset_to_array(pixset, buff)
 
@@ -115,8 +117,11 @@ def query_polygon(nside, vertices, inclusive = False, fact = 4, nest = False, np
         raise ValueError('Wrong nside value, must be a power of 2')
     # Create vector of vertices
     cdef vector[pointing] vert
+    cdef pointing ptg
     for v in vertices:
-        vert.push_back(pointing(vec3(v[0], v[1], v[2])))
+        ptg = pointing(vec3(v[0], v[1], v[2]))
+        ptg.normalize()
+        vert.push_back(ptg)
     # Create the Healpix_Base2 structure
     cdef Healpix_Ordering_Scheme scheme
     if nest:
