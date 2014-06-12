@@ -18,6 +18,7 @@ import sys
 import shlex
 from distutils.sysconfig import get_config_var, get_config_vars
 from setuptools import setup, Extension
+from setuptools.command.test import test as TestCommand
 from distutils.command.build_clib import build_clib
 from distutils.errors import DistutilsExecError
 from distutils.dir_util import mkpath
@@ -326,6 +327,20 @@ class custom_build_ext(build_ext):
                         getattr(ext, key).extend(value)
         build_ext.run(self)
 
+
+class PyTest(TestCommand):
+    """Custom Setuptools test command to run doctests with py.test. Based on
+    http://pytest.org/latest/goodpractises.html#integration-with-setuptools-test-commands"""
+
+    def finalize_options(self):
+        TestCommand.finalize_options(self)
+        self.test_args.insert(0, '--doctest-modules')
+
+    def run_tests(self):
+        import pytest
+        sys.exit(pytest.main(self.test_args))
+
+
 def get_version():
     context = {}
     try:
@@ -364,7 +379,10 @@ if on_rtd:
     cmdclass = {}
     extension_list = []
 else:
-    cmdclass = {'build_ext': custom_build_ext, 'build_clib': build_external_clib}
+    cmdclass = {
+        'build_ext': custom_build_ext,
+        'build_clib': build_external_clib,
+        'test': PyTest}
     libraries = [
         ('cfitsio', {
         'pkg_config_name': 'cfitsio',
@@ -422,5 +440,7 @@ setup(name='healpy',
       package_data = {'healpy': ['data/*.fits', 'data/totcls.dat', 'test/data/*.fits', 'test/data/*.sh']},
       setup_requires=setup_requires,
       install_requires=['pyfits', 'six'],
+      tests_require=['pytest'],
+      test_suite='healpy',
       license='GPLv2'
       )
