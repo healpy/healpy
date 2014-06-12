@@ -1,4 +1,14 @@
-language: c
+# Based on http://conda.pydata.org/docs/travis.html,
+# but modified so that we can test with Ubuntu's Python interpreter
+# as well as Anaconda's.
+
+language: python
+
+python:
+  - 2.6
+  - 2.7
+  - 3.3
+  - 3.4
 
 env:
   - USE_ANACONDA=false USE_PIP=false USE_EXTERNAL_CFITSIO=false
@@ -10,10 +20,39 @@ env:
   - USE_ANACONDA=true  USE_PIP=true  USE_EXTERNAL_CFITSIO=false
   - USE_ANACONDA=true  USE_PIP=true  USE_EXTERNAL_CFITSIO=true
 
-before_install:
-  # Add 'pip install --user' path to PATH
-  - export PATH=$HOME/.local/bin:$PATH
+# FIXME: The Ubuntu Python 3.4 package may use different default compiler flags.
+# I think that Healpy needs to be built with the C compiler in C99 mode.
+#
+# For speed, only test internal cfitsio on certain versions of Python.
 
+matrix:
+  exclude:
+    - python: 2.6
+      env: USE_ANACONDA=false USE_PIP=false USE_EXTERNAL_CFITSIO=false
+    - python: 2.6
+      env: USE_ANACONDA=false USE_PIP=true  USE_EXTERNAL_CFITSIO=false
+    - python: 2.6
+      env: USE_ANACONDA=true  USE_PIP=false USE_EXTERNAL_CFITSIO=false
+    - python: 2.6
+      env: USE_ANACONDA=true  USE_PIP=true  USE_EXTERNAL_CFITSIO=false
+    - python: 3.3
+      env: USE_ANACONDA=false USE_PIP=false USE_EXTERNAL_CFITSIO=false
+    - python: 3.3
+      env: USE_ANACONDA=false USE_PIP=true  USE_EXTERNAL_CFITSIO=false
+    - python: 3.3
+      env: USE_ANACONDA=true  USE_PIP=false USE_EXTERNAL_CFITSIO=false
+    - python: 3.3
+      env: USE_ANACONDA=true  USE_PIP=true  USE_EXTERNAL_CFITSIO=false
+    - python: 3.4
+      env: USE_ANACONDA=false USE_PIP=false USE_EXTERNAL_CFITSIO=false
+    - python: 3.4
+      env: USE_ANACONDA=false USE_PIP=false USE_EXTERNAL_CFITSIO=true
+    - python: 3.4
+      env: USE_ANACONDA=false USE_PIP=true  USE_EXTERNAL_CFITSIO=false
+    - python: 3.4
+      env: USE_ANACONDA=false USE_PIP=true  USE_EXTERNAL_CFITSIO=true
+
+before_install:
   # Use Matplotlib backend appropriate for headless rendering
   - mkdir -p $HOME/.matplotlib
   - "echo 'backend: agg' > $HOME/.matplotlib/matplotlibrc"
@@ -21,26 +60,19 @@ before_install:
   # Install python and dependencies via system or anaconda
   - |
     if $USE_ANACONDA; then
-      wget http://repo.continuum.io/miniconda/Miniconda-3.4.2-Linux-x86_64.sh \
+      travis_retry wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh \
         -O miniconda.sh && \
       bash miniconda.sh -b && \
       ~/miniconda/bin/conda create --yes -n anaconda_env \
+        python=$TRAVIS_PYTHON_VERSION \
         setuptools pip numpy matplotlib && \
       source ~/miniconda/bin/activate anaconda_env && \
-      pip install --user pyfits
+      travis_retry pip install pyfits cython pytest
     else
-     sudo apt-get -y install \
-       python \
-       python-setuptools \
-       python-pip \
-       python-numpy \
-       python-matplotlib \
-       pkg-config && \
-       pip install --user pyfits
+     sudo apt-get -y install pkg-config && \
+     travis_retry pip install --upgrade setuptools && \
+     travis_retry pip install numpy matplotlib pyfits cython pytest
     fi
-
-  # Install dependencies that aren't provided by both apt-get and conda.
-  - pip install --user cython pytest
 
   # Install cfitsio if necessary
   - if $USE_EXTERNAL_CFITSIO; then sudo apt-get -y install libcfitsio3-dev; fi
@@ -56,10 +88,9 @@ install:
       python setup.py sdist && \
       pip uninstall -y cython && \
       sudo apt-get -y remove autoconf automake pkg-config && \
-      pip install --user dist/*.tar.gz
+      pip install dist/*.tar.gz
     else
-      python setup.py install --user
+      python setup.py install
     fi
 
-script:
-  - bash testbuild.sh
+script: ./testbuild.sh

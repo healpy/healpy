@@ -418,9 +418,9 @@ static char max_pixrad_signatures[] = {
 
 #if PY_MAJOR_VERSION >= 3
 static PyModuleDef moduledef = {
-	.m_base = PyModuleDef_HEAD_INIT,
-	.m_name = "_healpy_pixel_lib",
-	.m_doc = docstring
+  PyModuleDef_HEAD_INIT,
+  "_healpy_pixel_lib",
+  NULL, -1, NULL
 };
 #endif
 
