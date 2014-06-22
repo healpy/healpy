@@ -1,3 +1,9 @@
+Release 1.8.0, 21 Jun 2014 
+
+* Python 3 support <https://github.com/healpy/healpy/pull/186>
+* Fixed bug in `get_interpol_ring`: <https://github.com/healpy/healpy/pull/189>
+* Performance improvements in `_query_disc.pyx`: <https://github.com/healpy/healpy/pull/184>
+
 Release 1.7.4, 26 Feb 2014 
 
 * Fix bug for MAC OS X build <https://github.com/healpy/healpy/pull/159>
