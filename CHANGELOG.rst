@@ -1,3 +1,8 @@
+Release 1.8.1, 22 Jun 2014 
+
+* Added `common.pxd` to source tarball
+* Check that nside is less than 2^30 <https://github.com/healpy/healpy/pull/193>
+
 Release 1.8.0, 21 Jun 2014 
 
 * Python 3 support <https://github.com/healpy/healpy/pull/186>
