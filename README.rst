@@ -117,6 +117,7 @@ Core developers:
 * Cyrille Rosset
 * Andrea Zonca
 * Martin Reinecke
+* Leo Singer 
 
 Contributors:
 
@@ -126,7 +127,6 @@ Contributors:
 * Sergey Koposov
 * Maude Martin Lejeune
 * Paul Price
-* Leo Singer 
 * Maurizio Tomasi
 
 Acknowledgements
