@@ -61,7 +61,7 @@ If everything goes fine, you can test it::
 
 or run the test suite with nose::
 
-    cd healpy-1.7.4 && nosetests -v
+    cd healpy-1.7.4 && python setup.py test
 
 Building against external Healpix and cfitsio
 ---------------------------------------------
