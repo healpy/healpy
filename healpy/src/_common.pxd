@@ -44,6 +44,7 @@ cdef extern from "pointing.h":
     cdef cppclass pointing:
         pointing()
         pointing(vec3 inp)
+        void normalize()
         double theta
         double phi
 

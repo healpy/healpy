@@ -55,7 +55,9 @@ template<Healpix_Ordering_Scheme scheme>static void
       if (nside!=oldnside)
         { oldnside=nside; hb.SetNside(nside, scheme); }
       try {
-        *(long *)op = hb.ang2pix(pointing(*(double *)ip2,*(double *)ip3));
+        pointing ptg = pointing(*(double *)ip2,*(double *)ip3);
+        ptg.normalize();
+        *(long *)op = hb.ang2pix(ptg);
       } catch(PlanckError &e) {
         *(long *)op = -1;
       }
@@ -231,7 +233,9 @@ template<Healpix_Ordering_Scheme scheme> static void
       if (nside!=oldnside)
         { oldnside=nside; hb.SetNside(nside, scheme); }
       try {
-        hb.get_interpol(pointing(*(double*)ip2, *(double*)ip3), pix, wgt);
+        pointing ptg = pointing(*(double*)ip2, *(double*)ip3);
+        ptg.normalize();
+        hb.get_interpol(ptg, pix, wgt);
         *(long*)op1 = (long)pix[0];
         *(long*)op2 = (long)pix[1];
         *(long*)op3 = (long)pix[2];
