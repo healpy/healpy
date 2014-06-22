@@ -56,7 +56,7 @@ static PyObject *healpy_pixwin(PyObject *self, PyObject *args, PyObject *kwds)
     return NULL;
 
   healpyAssertValue((nside&(nside-1))==0,
-    "Wrong nside value (must be a power of 2)");
+    "Wrong nside value (must be a power of 2, less than 2**30)");
 
   arr<double> pw_temp, pw_pol;
   read_pixwin(datapath, nside, pw_temp, pw_pol);

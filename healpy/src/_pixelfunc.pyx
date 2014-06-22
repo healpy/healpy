@@ -14,7 +14,7 @@ def ringinfo(nside, np.ndarray[int64, ndim=1] ring not None):
     Parameters
     ----------
     nside : int
-      The healpix nside parameter, must be a power of 2
+      The healpix nside parameter, must be a power of 2, less than 2**30
     ring : int, scalar or array-like
       The ring number
 
@@ -42,7 +42,7 @@ def ringinfo(nside, np.ndarray[int64, ndim=1] ring not None):
             0.94280904,  0.74535599]), array([ True,  True,  True, False,  True, False,  True], dtype=bool))
     """
     if not isnsideok(nside):
-        raise ValueError('Wrong nside value, must be a power of 2')
+        raise ValueError('Wrong nside value, must be a power of 2, less than 2**30')
     cdef Healpix_Ordering_Scheme scheme = NEST
     cdef T_Healpix_Base[int64] hb = T_Healpix_Base[int64](nside, scheme, SET_NSIDE)
     num = ring.shape[0]
@@ -63,7 +63,7 @@ def pix2ring(nside, np.ndarray[int64, ndim=1] pix not None, nest=False):
     Parameters
     ----------
     nside : int
-      The healpix nside parameter, must be a power of 2
+      The healpix nside parameter, must be a power of 2, less than 2**30
     pix : int64, scalar or array-like
       The pixel identifier(s)
     nest : bool
@@ -86,7 +86,7 @@ def pix2ring(nside, np.ndarray[int64, ndim=1] pix not None, nest=False):
     """
 
     if not isnsideok(nside):
-        raise ValueError('Wrong nside value, must be a power of 2')
+        raise ValueError('Wrong nside value, must be a power of 2, less than 2**30')
     cdef Healpix_Ordering_Scheme scheme
     if nest:
         scheme = NEST

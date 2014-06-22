@@ -89,6 +89,10 @@ from functools import wraps
 #: Special value used for masked pixels
 UNSEEN = pixlib.UNSEEN
 
+# We are using 64-bit integer types.
+# nside > 2**29 requires extended integer types.
+max_nside = 1 << 29
+
 __all__ = ['pix2ang', 'pix2vec', 'ang2pix', 'vec2pix',
            'ang2vec', 'vec2ang',
            'get_neighbours', 'get_interp_val', 'get_all_neighbours',
@@ -329,7 +333,7 @@ def ang2pix(nside,theta,phi,nest=False):
     Parameters
     ----------
     nside : int, scalar or array-like
-      The healpix nside parameter, must be a power of 2
+      The healpix nside parameter, must be a power of 2, less than 2**30
     theta, phi : float, scalars or array-like
       Angular coordinates of a point on the sphere
     nest : bool, optional
@@ -373,7 +377,7 @@ def pix2ang(nside,ipix,nest=False):
     Parameters
     ----------
     nside : int or array-like
-      The healpix nside parameter, must be a power of 2
+      The healpix nside parameter, must be a power of 2, less than 2**30
     ipix : int or array-like
       Pixel indices
     nest : bool, optional
@@ -413,7 +417,7 @@ def vec2pix(nside,x,y,z,nest=False):
     Parameters
     ----------
     nside : int or array-like
-      The healpix nside parameter, must be a power of 2
+      The healpix nside parameter, must be a power of 2, less than 2**30
     x,y,z : floats or array-like
       vector coordinates defining point on the sphere
     nest : bool, optional
@@ -452,7 +456,7 @@ def pix2vec(nside,ipix,nest=False):
     Parameters
     ----------
     nside : int, scalar or array-like
-      The healpix nside parameter, must be a power of 2
+      The healpix nside parameter, must be a power of 2, less than 2**30
     ipix : int, scalar or array-like
       Healpix pixel number
     nest : bool, optional
@@ -722,7 +726,7 @@ def nside2npix(nside):
     ----------
     nside : int
       healpix nside parameter; an exception is raised if nside is not valid
-      (nside must be a power of 2)
+      (nside must be a power of 2, less than 2**30)
 
     Returns
     -------
@@ -746,7 +750,7 @@ def nside2npix(nside):
     >>> hp.nside2npix(7)
     Traceback (most recent call last):
         ...
-    ValueError: 7 is not a valid nside parameter (must be a power of 2)
+    ValueError: 7 is not a valid nside parameter (must be a power of 2, less than 2**30)
     """
     check_nside(nside)
     return 12*nside**2
@@ -760,7 +764,7 @@ def nside2resol(nside, arcmin=False):
     Parameters
     ----------
     nside : int
-      healpix nside parameter, must be a power of 2
+      healpix nside parameter, must be a power of 2, less than 2**30
     arcmin : bool
       if True, return resolution in arcmin, otherwise in radian
 
@@ -785,7 +789,7 @@ def nside2resol(nside, arcmin=False):
     >>> hp.nside2resol(7)
     Traceback (most recent call last):
        ...
-    ValueError: 7 is not a valid nside parameter (must be a power of 2)
+    ValueError: 7 is not a valid nside parameter (must be a power of 2, less than 2**30)
     """
     check_nside(nside)
     
@@ -803,7 +807,7 @@ def nside2pixarea(nside, degrees=False):
     Parameters
     ----------
     nside : int
-      healpix nside parameter, must be a power of 2
+      healpix nside parameter, must be a power of 2, less than 2**30
     degrees : bool
       if True, returns pixel area in square degrees, in square radians otherwise
 
@@ -828,7 +832,7 @@ def nside2pixarea(nside, degrees=False):
     >>> hp.nside2pixarea(7)
     Traceback (most recent call last):
        ...
-    ValueError: 7 is not a valid nside parameter (must be a power of 2)
+    ValueError: 7 is not a valid nside parameter (must be a power of 2, less than 2**30)
     """
     check_nside(nside)
     
@@ -907,17 +911,17 @@ def isnsideok(nside):
     if hasattr(nside, '__len__'):
         if not isinstance(nside, np.ndarray):
             nside = np.asarray(nside)
-        return ( (nside == nside.astype(np.int)) & (nside != 0) & 
-	            (np.bitwise_and(nside.astype(np.int), nside.astype(np.int) - 1) == 0)
-	           )
+        return ((nside == nside.astype(np.int)) & (0 < nside) &
+                (nside <= max_nside) &
+                ((nside.astype(np.int) & (nside.astype(np.int) - 1)) == 0))
     else:
-        return ( ( nside == int(nside) ) and ( nside != 0 ) and 
-               ( ( int(nside) & (int(nside) - 1) ) == 0) )
+        return (nside == int(nside) and 0 < nside <= max_nside and
+               (int(nside) & (int(nside) - 1)) == 0)
 
 def check_nside(nside):
     """Raises exception is nside is not valid"""
     if not np.all(isnsideok(nside)):
-        raise ValueError("%s is not a valid nside parameter (must be a power of 2)" % str(nside))
+        raise ValueError("%s is not a valid nside parameter (must be a power of 2, less than 2**30)" % str(nside))
 
 def isnpixok(npix):
     """Return :const:`True` if npix is a valid value for healpix map size, :const:`False` otherwise.

@@ -31,14 +31,11 @@ class TestPixelFunc(unittest.TestCase):
         np.testing.assert_array_almost_equal(theta1, self.theta0)
         np.testing.assert_array_almost_equal(phi1, self.phi0)
 
-    def test_ang2pix_ring_outofrange_doesntcrash(self):
-        # ensure nside = 1 << 30 is incorrectly calcualted,
-        # because Healpy_Base2 works upto 1<<29.
-        # Healpy_Base2 shall not crash the test suite
-        id = ang2pix(1<<30, self.theta0, self.phi0, nest=False)
-        theta1, phi1 = pix2ang(1<<30, id, nest=False)
-        self.assertFalse(np.all(np.isfinite(theta1)))
-        self.assertFalse(np.all(np.isfinite(phi1)))
+    def test_ang2pix_ring_outofrange(self):
+        # Healpy_Base2 works up to nside = 2**29.
+        # Check that a ValueError is raised for nside = 2**30.
+        self.assertRaises(
+            ValueError, ang2pix, 1<<30, self.theta0, self.phi0, nest=False)
 
     def test_ang2pix_nest(self):
         # ensure nside = 1 << 23 is correctly calculated
@@ -55,13 +52,10 @@ class TestPixelFunc(unittest.TestCase):
         self.assertTrue(np.allclose(phi1, self.phi0))
 
     def test_ang2pix_nest_outofrange_doesntcrash(self):
-        # ensure nside = 1 << 30 is incorrectly calcualted,
-        # because Healpy_Base2 works upto 1<<29.
-        # Healpy_Base2 shall not crash the test suite
-        id = ang2pix(1<<30, self.theta0, self.phi0, nest=True)
-        theta1, phi1 = pix2ang(1<<30, id, nest=True)
-        self.assertFalse(np.all(np.isfinite(theta1)))
-        self.assertFalse(np.all(np.isfinite(phi1)))
+        # Healpy_Base2 works up to nside = 2**29.
+        # Check that a ValueError is raised for nside = 2**30.
+        self.assertRaises(
+            ValueError, ang2pix, 1<<30, self.theta0, self.phi0, nest=False)
 
     def test_ang2pix_negative_theta(self):
         self.assertRaises(AssertionError, ang2pix, 32, -1, 0)
