@@ -29,7 +29,7 @@ def query_disc(nside, vec, radius, inclusive = False, fact = 4, nest = False, np
       and maybe a few more. Default: False
     fact : int, optional
       Only used when inclusive=True. The overlapping test will be done at
-      the resolution fact*nside. For NESTED ordering, fact must be a power of 2,
+      the resolution fact*nside. For NESTED ordering, fact must be a power of 2, less than 2**30,
       else it can be any positive integer. Default: 4.
     nest: bool, optional
       if True, assume NESTED pixel ordering, otherwise, RING pixel ordering
@@ -51,7 +51,7 @@ def query_disc(nside, vec, radius, inclusive = False, fact = 4, nest = False, np
     """
     # Check Nside value
     if not isnsideok(nside):
-        raise ValueError('Wrong nside value, must be a power of 2')
+        raise ValueError('Wrong nside value, must be a power of 2, less than 2**30')
     cdef vec3 v = vec3(vec[0], vec[1], vec[2])
     cdef Healpix_Ordering_Scheme scheme
     if nest:
@@ -66,7 +66,7 @@ def query_disc(nside, vec, radius, inclusive = False, fact = 4, nest = False, np
     if inclusive:
         factor = abs(fact)
         if nest and (factor == 0 or (factor & (factor - 1) != 0)):
-            raise ValueError('fact must be a power of 2 when '
+            raise ValueError('fact must be a power of 2, less than 2**30 when '
                              'nest is True (fact=%d)' % (fact))
         hb.query_disc_inclusive(ptg, radius, pixset, factor)
     else:
@@ -92,7 +92,7 @@ def query_polygon(nside, vertices, inclusive = False, fact = 4, nest = False, np
       polygon, and maybe a few more. Default: False.
     fact : int, optional
       Only used when inclusive=True. The overlapping test will be done at
-      the resolution fact*nside. For NESTED ordering, fact must be a power of 2,
+      the resolution fact*nside. For NESTED ordering, fact must be a power of 2, less than 2**30,
       else it can be any positive integer. Default: 4.
     nest: bool, optional
       if True, assume NESTED pixel ordering, otherwise, RING pixel ordering
@@ -114,7 +114,7 @@ def query_polygon(nside, vertices, inclusive = False, fact = 4, nest = False, np
     """
     # Check Nside value
     if not isnsideok(nside):
-        raise ValueError('Wrong nside value, must be a power of 2')
+        raise ValueError('Wrong nside value, must be a power of 2, less than 2**30')
     # Create vector of vertices
     cdef vector[pointing] vert
     cdef pointing ptg
@@ -135,7 +135,7 @@ def query_polygon(nside, vertices, inclusive = False, fact = 4, nest = False, np
     if inclusive:
         factor = abs(fact)
         if nest and (factor == 0 or (factor & (factor - 1) != 0)):
-            raise ValueError('fact must be a power of 2 when '
+            raise ValueError('fact must be a power of 2, less than 2**30 when '
                              'nest is True (fact=%d)' % (fact))
         hb.query_polygon_inclusive(vert, pixset, factor)
     else:
@@ -175,7 +175,7 @@ def query_strip(nside, theta1, theta2, inclusive = False, nest = False, np.ndarr
     """
     # Check Nside value
     if not isnsideok(nside):
-        raise ValueError('Wrong nside value, must be a power of 2')
+        raise ValueError('Wrong nside value, must be a power of 2, less than 2**30')
     # Create the Healpix_Base2 structure
     cdef Healpix_Ordering_Scheme scheme
     if nest:
@@ -276,7 +276,7 @@ def boundaries(nside, pix, step=1, nest=False):
     """
 
     if not isnsideok(nside):
-        raise ValueError('Wrong nside value, must be a power of 2')
+        raise ValueError('Wrong nside value, must be a power of 2, less than 2**30')
     if isinstance(pix, (int, long)):
         return _boundaries_single(nside, pix, step=step, nest=nest)
     if type(pix) is np.ndarray:
@@ -292,7 +292,7 @@ def boundaries(nside, pix, step=1, nest=False):
 ### def pix2ang(nside, ipix, nest = False):
 ###     # Check Nside value
 ###     if not isnsideok(nside):
-###         raise ValueError('Wrong nside value, must be a power of 2')
+###         raise ValueError('Wrong nside value, must be a power of 2, less than 2**30')
 ###     # Create the Healpix_Base2 structure
 ###     cdef Healpix_Ordering_Scheme scheme
 ###     if nest:
