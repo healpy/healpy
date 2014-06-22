@@ -978,6 +978,10 @@ def get_interp_val(m,theta,phi,nest=False):
     >>> import healpy as hp
     >>> hp.get_interp_val(np.arange(12.), np.pi/2, 0)
     4.0
+    >>> hp.get_interp_val(np.arange(12.), np.pi/2, np.pi/2)
+    5.0
+    >>> hp.get_interp_val(np.arange(12.), np.pi/2, np.pi/2 + 2*np.pi)
+    5.0
     >>> hp.get_interp_val(np.arange(12.), np.linspace(0, np.pi, 10), 0)
     array([ 1.5       ,  1.5       ,  1.5       ,  2.20618428,  3.40206143,
             5.31546486,  7.94639458,  9.5       ,  9.5       ,  9.5       ])
