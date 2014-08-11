@@ -58,7 +58,7 @@ class TestPixelFunc(unittest.TestCase):
             ValueError, ang2pix, 1<<30, self.theta0, self.phi0, nest=False)
 
     def test_ang2pix_negative_theta(self):
-        self.assertRaises(AssertionError, ang2pix, 32, -1, 0)
+        self.assertRaises(ValueError, ang2pix, 32, -1, 0)
       
     def test_fit_dipole(self):
         nside = 32

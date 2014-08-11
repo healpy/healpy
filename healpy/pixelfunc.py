@@ -107,7 +107,9 @@ __all__ = ['pix2ang', 'pix2vec', 'ang2pix', 'vec2pix',
 
 def check_theta_valid(theta):
     """Raises exception if theta is not within 0 and pi"""
-    assert (np.asarray(theta) >= 0).all() & (np.asarray(theta) <= np.pi + 1e-5).all(), "Theta is defined between 0 and pi"
+    theta = np.asarray(theta)
+    if not((theta >= 0).all() and (theta <= np.pi + 1e-5).all()):
+        raise ValueError('THETA is out of range [0,pi]')
 
 def maptype(m):
     """Describe the type of the map (valid, single, sequence of maps).
@@ -511,8 +513,6 @@ def ang2vec(theta, phi):
     vec2ang, rotator.dir2vec, rotator.vec2dir
     """
     check_theta_valid(theta)
-    if np.any(theta < 0) or np.any(theta > np.pi):
-        raise ValueError('THETA is out of range [0,pi]')
     sintheta = np.sin(theta)
     return np.array([sintheta*np.cos(phi),
                       sintheta*np.sin(phi),
