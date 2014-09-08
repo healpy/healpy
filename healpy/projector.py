@@ -565,13 +565,6 @@ class CartesianProj(SphericalProj):
         else:
             ysize = np.long(ysize)
             ratio = float(ysize)/float(xsize)
-        if max(xsize,ysize) > 2000:
-            if max(xsize,ysize) == xsize:
-                xsize = 2000
-                ysize = np.long(round(ratio*xsize))
-            else:
-                ysize = 2000
-                xsize = np.long(round(ysize/ratio))
         super(CartesianProj,self).set_proj_plane_info(xsize=xsize, lonra=lonra, latra=latra, 
                                                         ysize=ysize, ratio=ratio)
 
