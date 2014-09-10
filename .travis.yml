@@ -54,8 +54,9 @@ matrix:
 
 before_install:
   # Use Matplotlib backend appropriate for headless rendering
-  - mkdir -p $HOME/.matplotlib
-  - "echo 'backend: agg' > $HOME/.matplotlib/matplotlibrc"
+  - |
+    mkdir -p $HOME/.config/matplotlib && \
+    echo 'backend: agg' > $HOME/.config/matplotlib/matplotlibrc
 
   # Install python and dependencies via system or anaconda
   - |
