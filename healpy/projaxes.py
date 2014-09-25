@@ -578,10 +578,10 @@ class SphericalProjAxes(axes.Axes):
             dmer = set_prec((mmax-mmin)/dtor,max_n_mer/2,nn=1)*dtor
         if dmer/dpar < 0.2 or dmer/dpar > 5.:
             dmer = dpar = max(dmer,dpar)
-        vdeg = np.floor(np.around(dpar/dtor,10))
+        vdeg = int(np.floor(np.around(dpar/dtor,10)))
         varcmin = (dpar/dtor-vdeg)*60.
         if verbose: print("The interval between parallels is {0:d} deg {1:.2f}'.".format(vdeg,varcmin))
-        vdeg = np.floor(np.around(dmer/dtor,10))
+        vdeg = int(np.floor(np.around(dmer/dtor,10)))
         varcmin = (dmer/dtor-vdeg)*60.
         if verbose: print("The interval between meridians is {0:d} deg {1:.2f}'.".format(vdeg,varcmin))
         return dpar,dmer
