@@ -648,10 +648,10 @@ def reorder(map_in, inp=None, out=None, r2n=None, n2r=None):
            36, 29, 45, 39, 38, 31, 46, 41, 40, 33, 47, 43, 42, 35])
     >>> hp.reorder(np.arange(12), n2r = True)
     array([ 0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11])
-    >>> hp.reorder(hp.ma(np.arange(12)), n2r = True)
-    masked_array(data = [ 0  1  2  3  4  5  6  7  8  9 10 11],
+    >>> hp.reorder(hp.ma(np.arange(12.)), n2r = True)
+    masked_array(data = [  0.   1.   2.   3.   4.   5.   6.   7.   8.   9.  10.  11.],
                  mask = False,
-           fill_value = 999999)
+           fill_value = -1.6375e+30)
     <BLANKLINE>
     >>> m = [np.arange(12.), np.arange(12.), np.arange(12.)]
     >>> m[0][2] = hp.UNSEEN
