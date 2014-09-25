@@ -254,7 +254,10 @@ class SphericalProjAxes(axes.Axes):
         thelines = []
         for xx,yy in zip(x,y):
             if fmt is not None:
-                linestyle, marker, color = axes._process_plot_format(fmt)
+                try: # works in matplotlib 1.3 and earlier
+                    linestyle, marker, color = axes._process_plot_format(fmt)
+                except: # matplotlib 1.4 and later
+                    linestyle, marker, color = axes._axes._process_plot_format(fmt)
                 kwds.setdefault('linestyle',linestyle)
                 kwds.setdefault('marker',marker)
                 if color is not None: kwds.setdefault('color',color)
