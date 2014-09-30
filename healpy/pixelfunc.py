@@ -677,7 +677,7 @@ def reorder(map_in, inp=None, out=None, r2n=None, n2r=None):
         npix = len(map_in[0])
     nside = npix2nside(npix)
     if nside>128:
-        bunchsize = npix/24
+        bunchsize = npix//24
     else:
         bunchsize = npix
     if r2n:
