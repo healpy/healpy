@@ -720,7 +720,7 @@ def reorder(map_in, inp=None, out=None, r2n=None, n2r=None):
         return mapout
 
 def nside2npix(nside):
-    """Give the number of pixel for the given nside.
+    """Give the number of pixels for the given nside.
 
     Parameters
     ----------
@@ -756,7 +756,7 @@ def nside2npix(nside):
     return 12*nside**2
 
 def nside2resol(nside, arcmin=False):
-    """Give approximate resolution for nside.
+    """Give approximate resolution (pixel size in radian or arcmin) for nside.
 
     Resolution is just the square root of the pixel area, which is a gross
     approximation given the different pixel shapes
@@ -802,7 +802,7 @@ def nside2resol(nside, arcmin=False):
 
 
 def nside2pixarea(nside, degrees=False):
-    """Give pixel area given nside.
+    """Give pixel area given nside in square radians or square degrees.
 
     Parameters
     ----------
