@@ -1,4 +1,7 @@
-import pyfits
+try:
+    import astropy.io.fits as pf
+except:
+    import pyfits as pf
 import os
 import numpy as np
 from copy import deepcopy
@@ -24,7 +27,7 @@ class TestSphtFunc(unittest.TestCase):
             m.mask = np.logical_not(self.mask)
         self.cla = hp.read_cl(os.path.join(self.path, 'data', 'cl_wmap_band_iqumap_r9_7yr_W_v4_udgraded32_II_lmax64_rmmono_3iter.fits'))
         self.cl_fortran_nomask = hp.read_cl(os.path.join(self.path, 'data', 'cl_wmap_band_iqumap_r9_7yr_W_v4_udgraded32_II_lmax64_rmmono_3iter_nomask.fits'))
-        cls_file = pyfits.open(os.path.join(self.path, 'data',
+        cls_file = pf.open(os.path.join(self.path, 'data',
                                        'cl_wmap_band_iqumap_r9_7yr_W_v4_udgraded32_IQU_lmax64_rmmono_3iter.fits'))
         # fix for pyfits to read the file with duplicate column names
         for i in range(2, 6):
@@ -95,7 +98,7 @@ class TestSphtFunc(unittest.TestCase):
             np.testing.assert_array_almost_equal(smoothed[i].filled(), smoothed_f90[i].filled(), decimal=6)
         
     def test_gauss_beam(self):
-        idl_gauss_beam = np.array(pyfits.open(os.path.join(self.path, 'data', 'gaussbeam_10arcmin_lmax512_pol.fits'))[0].data).T
+        idl_gauss_beam = np.array(pf.open(os.path.join(self.path, 'data', 'gaussbeam_10arcmin_lmax512_pol.fits'))[0].data).T
         gauss_beam = hp.gauss_beam(np.radians(10./60.), lmax=512, pol=True)
         np.testing.assert_allclose(idl_gauss_beam, gauss_beam)
 

@@ -1,5 +1,4 @@
 # Implemented by Duncan Hanson
-import pyfits
 import six
 import os
 import numpy as np

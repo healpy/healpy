@@ -20,7 +20,10 @@
 """Provides input and output functions for Healpix maps, alm, and cl.
 """
 
-import pyfits as pf
+try:
+    import astropy.io.fits as pf
+except:
+    import pyfits as pf
 import numpy as np
 from . import pixelfunc
 from .sphtfunc import Alm
@@ -194,7 +197,7 @@ def read_map(filename,field=0,dtype=np.float64,nest=False,hdu=1,h=False,
     verbose : bool, optional
       If True, print a number of diagnostic messages
     memmap : bool, optional
-      Argument passed to pyfits.open, if True, the map is not read into memory,
+      Argument passed to astropy.io.fits.open, if True, the map is not read into memory,
       but only the required pixels are read when needed. Default: False.
 
     Returns
