@@ -677,7 +677,7 @@ def reorder(map_in, inp=None, out=None, r2n=None, n2r=None):
         npix = len(map_in[0])
     nside = npix2nside(npix)
     if nside>128:
-        bunchsize = npix/24
+        bunchsize = npix//24
     else:
         bunchsize = npix
     if r2n:
@@ -1147,7 +1147,7 @@ def fit_dipole(m, nest=False, bad=UNSEEN, gal_cut=0):
     npix = m.size
     nside = npix2nside(npix)
     if nside>128:
-        bunchsize = npix/24
+        bunchsize = npix//24
     else:
         bunchsize = npix
     aa = np.zeros((4,4),dtype=np.float64)
@@ -1227,7 +1227,7 @@ def remove_dipole(m,nest=False,bad=UNSEEN,gal_cut=0,fitval=False,
     npix = m.size
     nside = npix2nside(npix)
     if nside>128:
-        bunchsize = npix/24
+        bunchsize = npix//24
     else:
         bunchsize = npix
     mono,dipole = fit_dipole(m,nest=nest,bad=bad,gal_cut=gal_cut)
@@ -1282,7 +1282,7 @@ def fit_monopole(m,nest=False,bad=pixlib.UNSEEN,gal_cut=0):
     npix=m.size
     nside = npix2nside(npix)
     if nside>128:
-        bunchsize=npix/24
+        bunchsize=npix//24
     else:
         bunchsize=npix
     aa = v = 0.0
@@ -1340,7 +1340,7 @@ def remove_monopole(m,nest=False,bad=pixlib.UNSEEN,gal_cut=0,fitval=False,
     npix = m.size
     nside = npix2nside(npix)
     if nside>128:
-        bunchsize = npix/24
+        bunchsize = npix//24
     else:
         bunchsize = npix
     mono = fit_monopole(m,nest=nest,bad=bad,gal_cut=gal_cut)
