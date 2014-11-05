@@ -1241,7 +1241,7 @@ def remove_dipole(m,nest=False,bad=UNSEEN,gal_cut=0,fitval=False,
         m.flat[ipix] -= dipole[2]*z
         m.flat[ipix] -= mono
     if verbose:
-        import rotator as R
+        from . import rotator as R
         lon,lat = R.vec2dir(dipole,lonlat=True)
         amp = np.sqrt((dipole**2).sum())
         print(
