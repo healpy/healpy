@@ -17,7 +17,7 @@ Note: Running the code below in a regular Python session will not display the ma
 >>> matplotlib inline # for IPython notebook
 >>> matplotlib qt     # using Qt (e.g. Windows)
 >>> matplotlib osx    # on Macs
->>> matplotlib gtx    # GTK
+>>> matplotlib gtk    # GTK
 
 The resolution of the map is defined by the *NSIDE* parameter. The :py:func:`~healpy.pixelfunc.nside2npix` function gives the number of pixel *NPIX* of the map:
 
