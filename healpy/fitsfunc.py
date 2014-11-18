@@ -19,10 +19,9 @@
 # 
 """Provides input and output functions for Healpix maps, alm, and cl.
 """
-
 try:
     import astropy.io.fits as pf
-except:
+except ImportError:
     import pyfits as pf
 import numpy as np
 from . import pixelfunc

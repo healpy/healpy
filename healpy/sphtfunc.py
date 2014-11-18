@@ -781,10 +781,10 @@ def pixwin(nside, pol = False):
     try:
         try:
             import astropy.io.fits as pf
-        except:
+        except ImportError:
             import pyfits as pf
     except ImportError:
-        raise ImportError("You need to install pyfits to use this function.")
+        raise ImportError("You need to install astropy.io.fits or pyfits to use this function.")
     pw = pf.getdata(fname)
     pw_temp, pw_pol = pw.field(0), pw.field(1)
     if pol:
