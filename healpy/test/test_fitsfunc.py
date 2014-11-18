@@ -1,5 +1,8 @@
 import os
-import pyfits
+try:
+    import astropy.io.fits as pf
+except:
+    import pyfits as pf
 import unittest
 import numpy as np
 
@@ -16,20 +19,20 @@ class TestFitsFunc(unittest.TestCase):
 
     def test_write_map_IDL(self):
         write_map(self.filename, self.m, fits_IDL=True)
-        read_m = pyfits.open(self.filename)[1].data.field(0)
+        read_m = pf.open(self.filename)[1].data.field(0)
         self.assertEqual(read_m.ndim, 2)
         self.assertEqual(read_m.shape[1], 1024)
         self.assertTrue(np.all(self.m == read_m.flatten()))
 
     def test_write_map_C(self):
         write_map(self.filename, self.m, fits_IDL=False)
-        read_m = pyfits.open(self.filename)[1].data.field(0)
+        read_m = pf.open(self.filename)[1].data.field(0)
         self.assertEqual(read_m.ndim, 1)
         self.assertTrue(np.all(self.m == read_m))
 
     def test_write_map_C_3comp(self):
         write_map(self.filename, [self.m, self.m, self.m], fits_IDL=False)
-        read_m = pyfits.open(self.filename)[1].data
+        read_m = pf.open(self.filename)[1].data
         for comp in range(3):
             self.assertTrue(np.all(self.m == read_m.field(comp)))
 

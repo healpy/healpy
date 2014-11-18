@@ -779,10 +779,13 @@ def pixwin(nside, pol = False):
                          "or data files missing")
     # return hfitslib._pixwin(nside,datapath,pol)  ## BROKEN -> seg fault...
     try:
-        import pyfits
+        try:
+            import astropy.io.fits as pf
+        except ImportError:
+            import pyfits as pf
     except ImportError:
-        raise ImportError("You need to install pyfits to use this function.")
-    pw = pyfits.getdata(fname)
+        raise ImportError("You need to install astropy.io.fits or pyfits to use this function.")
+    pw = pf.getdata(fname)
     pw_temp, pw_pol = pw.field(0), pw.field(1)
     if pol:
         return pw_temp, pw_pol

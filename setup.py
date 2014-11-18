@@ -439,7 +439,6 @@ setup(name='healpy',
       ext_modules = extension_list,
       package_data = {'healpy': ['data/*.fits', 'data/totcls.dat', 'test/data/*.fits', 'test/data/*.sh']},
       setup_requires=setup_requires,
-      install_requires=['pyfits', 'six'],
       tests_require=['pytest'],
       test_suite='healpy',
       license='GPLv2'
