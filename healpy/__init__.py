@@ -33,6 +33,7 @@ from .version import __version__
 
 from .pixelfunc import (ma, mask_good, mask_bad,
                        ang2pix, pix2ang,
+                       xyf2pix, pix2xyf,
                        pix2vec, vec2pix,
                        vec2ang, ang2vec,
                        nside2npix, npix2nside, 

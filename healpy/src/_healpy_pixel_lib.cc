@@ -94,6 +94,65 @@ template<Healpix_Ordering_Scheme scheme> static void
 }
 
 /*
+   xyf2pix
+*/
+template<Healpix_Ordering_Scheme scheme>static void
+  ufunc_xyf2pix(char **args, intp *dimensions, intp *steps, void *func)
+{
+  intp n=dimensions[0];
+
+  intp is1=steps[0],is2=steps[1],is3=steps[2],is4=steps[3], os=steps[4];
+  char *ip1=args[0], *ip2=args[1], *ip3=args[2], *ip4=args[3], *op=args[4];
+
+  Healpix_Base2 hb;
+  long oldnside=-1;
+
+  for(intp i=0; i<n; i++, ip1+=is1, ip2+=is2, ip3+=is3, ip4+=is4, op+=os)
+    {
+      long nside = *(long*)ip1;
+      if (nside!=oldnside)
+        { oldnside=nside; hb.SetNside(nside, scheme); }
+      try {
+        *(long *)op = hb.xyf2pix((int)*(long *)ip2,(int)*(long *)ip3,(int)*(long *)ip4);
+      } catch(PlanckError &e) {
+        *(long *)op = -1;
+      }
+  }
+}
+
+/*
+   pix2xyf
+*/
+template<Healpix_Ordering_Scheme scheme> static void
+  ufunc_pix2xyf(char **args, intp *dimensions, intp *steps, void *func)
+{
+  register intp i, n=dimensions[0];
+  register intp is1=steps[0],is2=steps[1],os1=steps[2],os2=steps[3],os3=steps[4];
+  char *ip1=args[0], *ip2=args[1], *op1=args[2], *op2=args[3], *op3=args[4];
+
+  Healpix_Base2 hb;
+  long oldnside=-1;
+
+  for(i=0; i<n; i++, ip1+=is1, ip2+=is2, op1+=os1, op2+=os2, op3+=os3)
+    {
+      long nside = *(long*)ip1;
+      if (nside!=oldnside)
+        { oldnside=nside; hb.SetNside(nside, scheme); }
+      try {
+        int x, y, f;
+        hb.pix2xyf(*(long *)ip2, x, y, f);
+        *(long *)op1 = x;
+        *(long *)op2 = y;
+        *(long *)op3 = f;
+      } catch (PlanckError & e) {
+        *(long *)op1 = -1;
+        *(long *)op2 = -1;
+        *(long *)op3 = -1;
+      }
+    }
+}
+
+/*
    ring2nest
 */
 static void
@@ -349,6 +408,18 @@ static PyUFuncGenericFunction pix2ang_ring_functions[] = {
 static PyUFuncGenericFunction pix2ang_nest_functions[] = {
   ufunc_pix2ang<NEST>
 };
+static PyUFuncGenericFunction xyf2pix_ring_functions[] = {
+  ufunc_xyf2pix<RING>
+};
+static PyUFuncGenericFunction xyf2pix_nest_functions[] = {
+  ufunc_xyf2pix<NEST>
+};
+static PyUFuncGenericFunction pix2xyf_ring_functions[] = {
+  ufunc_pix2xyf<RING>
+};
+static PyUFuncGenericFunction pix2xyf_nest_functions[] = {
+  ufunc_pix2xyf<NEST>
+};
 static PyUFuncGenericFunction vec2pix_ring_functions[] = {
   ufunc_vec2pix<RING>
 };
@@ -391,6 +462,12 @@ static char ang2pix_signatures[] = {
 };
 static char pix2ang_signatures[] = {
   PyArray_LONG, PyArray_LONG, PyArray_DOUBLE, PyArray_DOUBLE
+};
+static char xyf2pix_signatures[] = {
+  PyArray_LONG, PyArray_LONG, PyArray_LONG, PyArray_LONG, PyArray_LONG
+};
+static char pix2xyf_signatures[] = {
+  PyArray_LONG, PyArray_LONG, PyArray_LONG, PyArray_LONG, PyArray_LONG
 };
 static char pix2vec_signatures[] = {
   PyArray_LONG, PyArray_LONG, PyArray_DOUBLE, PyArray_DOUBLE, PyArray_DOUBLE
@@ -480,6 +557,36 @@ PyInit__healpy_pixel_lib(void)
       pix2ang_signatures, 1,
       2, 2, PyUFunc_None, CP_("_pix2ang_nest"),
       CP_("nside,ipix -> theta,phi [rad] (NEST)"),0)) < 0)
+    FREE_MODULE_AND_FAIL;
+
+  //=========
+
+  if (PyModule_AddObject(m, "_xyf2pix_ring", PyUFunc_FromFuncAndData(
+      xyf2pix_ring_functions, blank_data,
+      xyf2pix_signatures, 1,
+      4, 1, PyUFunc_None, CP_("_xyf2pix_ring"),
+      CP_("nside,x,y,face -> ipix (RING)"),0)) < 0)
+    FREE_MODULE_AND_FAIL;
+
+  if (PyModule_AddObject(m, "_xyf2pix_nest", PyUFunc_FromFuncAndData(
+      xyf2pix_nest_functions, blank_data,
+      xyf2pix_signatures, 1,
+      4, 1, PyUFunc_None, CP_("_xyf2pix_nest"),
+      CP_("nside,x,y,face -> ipix (NEST)"),0)) < 0)
+    FREE_MODULE_AND_FAIL;
+
+  if (PyModule_AddObject(m, "_pix2xyf_ring", PyUFunc_FromFuncAndData(
+      pix2xyf_ring_functions, blank_data,
+      pix2xyf_signatures, 1,
+      2, 3, PyUFunc_None, CP_("_pix2xyf_ring"),
+      CP_("nside,ipix -> x,y,face (RING)"),0)) < 0)
+    FREE_MODULE_AND_FAIL;
+
+  if (PyModule_AddObject(m, "_pix2xyf_nest", PyUFunc_FromFuncAndData(
+      pix2xyf_nest_functions, blank_data,
+      pix2xyf_signatures, 1,
+      2, 3, PyUFunc_None, CP_("_pix2xyf_nest"),
+      CP_("nside,ipix -> x,y,face (NEST)"),0)) < 0)
     FREE_MODULE_AND_FAIL;
 
   //=========
