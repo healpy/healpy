@@ -16,3 +16,4 @@ healpy/src/_pixelfunc.cpp
 healpy/src/_sphtools.cpp
 healpy.egg-info
 dist
+.eggs
