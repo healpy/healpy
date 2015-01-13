@@ -6,8 +6,8 @@ Healpy, a python wrapper for healpix
    :target: https://travis-ci.org/healpy/healpy
 
 .. image:: https://readthedocs.org/projects/healpy/badge/?version=latest
-:target: https://readthedocs.org/projects/healpy/?badge=latest
-:alt: Documentation Status
+   :target: https://readthedocs.org/projects/healpy/?badge=latest
+   :alt: Documentation Status
 
 Description
 -----------
