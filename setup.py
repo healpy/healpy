@@ -128,7 +128,7 @@ except OSError as e:
         raise ValueError
     log.warn('pkg-config is not installed, falling back to pykg-config')
     setup_requires = ['pykg-config >= 1.2.0']
-    os.environ['PKG_CONFIG'] = sys.executable + ' ' + os.path.abspath('pykg_config.py')
+    os.environ['PKG_CONFIG'] = sys.executable + ' ' + os.path.abspath('run_pykg_config.py')
 
 
 class build_external_clib(build_clib):
