@@ -1,3 +1,8 @@
+Release 1.8.2, 13 Jan 2015
+
+* Several fixes in the build process
+* Support for `astropy.fits` <https://github.com/healpy/healpy/pull/213>
+
 Release 1.8.1, 22 Jun 2014 
 
 * Added `common.pxd` to source tarball
