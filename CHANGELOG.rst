@@ -1,3 +1,7 @@
+Release 1.8.4, 16 Jan 2015
+
+* Fixed another permission issue on install-sh
+
 Release 1.8.3, 16 Jan 2015
 
 * Fix permission issue in the release tarball <https://github.com/healpy/healpy/issues/220>
