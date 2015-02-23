@@ -209,10 +209,10 @@ def accept_ma(f):
     a masked to a regular numpy array, and convert back the
     output from a regular array to a masked array"""
     @wraps(f)
-    def wrapper(*args, **kwds):
-        return_ma = is_ma(args[0])
-        m = ma_to_array(args[0])
-        out = f(m, *args[1:], **kwds)
+    def wrapper(map_in, *args, **kwds):
+        return_ma = is_ma(map_in)
+        m = ma_to_array(map_in)
+        out = f(m, *args, **kwds)
         return ma(out) if return_ma else out
 
     return wrapper
