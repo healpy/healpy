@@ -139,6 +139,15 @@ class TestSphtFunc(unittest.TestCase):
             hp.rotate_alm(o, -0.3, -0.2, -0.1)
             np.testing.assert_allclose(i, o, rtol=1e-6)
 
+    def test_accept_ma_allows_only_keywords(self):
+        """ Test whether 'smoothing' wrapped with accept_ma works with only
+            keyword arguments. """
+
+        ma = np.ones(12*16**2)
+        try:
+            hp.smoothing(map_in=ma)
+        except IndexError:
+            self.fail()
 
 if __name__ == '__main__':
     unittest.main()

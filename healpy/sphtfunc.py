@@ -669,7 +669,7 @@ def smoothalm(alms, fwhm = 0.0, sigma = None, invert = False, pol = True,
     return alms
 
 @accept_ma
-def smoothing(maps, fwhm = 0.0, sigma = None, invert = False, pol = True,
+def smoothing(map_in, fwhm = 0.0, sigma = None, invert = False, pol = True,
               iter = 3, lmax = None, mmax = None, use_weights = False,
               datapath = None, verbose = True):
     """Smooth a map with a Gaussian symmetric beam.
@@ -678,7 +678,7 @@ def smoothing(maps, fwhm = 0.0, sigma = None, invert = False, pol = True,
 
     Parameters
     ----------
-    maps : array or sequence of 3 arrays
+    map_in : array or sequence of 3 arrays
       Either an array representing one map, or a sequence of
       3 arrays representing 3 maps, accepts masked arrays
     fwhm : float, optional
@@ -715,22 +715,22 @@ def smoothing(maps, fwhm = 0.0, sigma = None, invert = False, pol = True,
       The smoothed map(s)
     """
 
-    if not cb.is_seq(maps):
-        raise TypeError("maps must be a sequence")
+    if not cb.is_seq(map_in):
+        raise TypeError("map_in must be a sequence")
 
     # save the masks of inputs
-    masks = pixelfunc.mask_bad(maps) 
+    masks = pixelfunc.mask_bad(map_in) 
 
-    if cb.is_seq_of_seq(maps):
-        nside = pixelfunc.npix2nside(len(maps[0]))
-        n_maps = len(maps)
+    if cb.is_seq_of_seq(map_in):
+        nside = pixelfunc.npix2nside(len(map_in[0]))
+        n_maps = len(map_in)
     else:
-        nside = pixelfunc.npix2nside(len(maps))
+        nside = pixelfunc.npix2nside(len(map_in))
         n_maps = 0
 
     if pol or n_maps in (0, 1):
         # Treat the maps together (1 or 3 maps)
-        alms = map2alm(maps, lmax = lmax, mmax = mmax, iter = iter,
+        alms = map2alm(map_in, lmax = lmax, mmax = mmax, iter = iter,
                        pol = pol, use_weights = use_weights,
                        datapath = datapath)
         smoothalm(alms, fwhm = fwhm, sigma = sigma, invert = invert,
@@ -739,8 +739,8 @@ def smoothing(maps, fwhm = 0.0, sigma = None, invert = False, pol = True,
     else:
         # Treat each map independently (any number)
         output_map = []
-        for m, mask in zip(maps, masks):
-            alm = map2alm(maps, iter = iter, pol = pol,
+        for m, mask in zip(map_in, masks):
+            alm = map2alm(map_in, iter = iter, pol = pol,
                           use_weights = use_weights,
                        datapath = datapath)
             smoothalm(alm, fwhm = fwhm, sigma = sigma, invert = invert,
