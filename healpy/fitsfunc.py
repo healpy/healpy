@@ -24,6 +24,7 @@ try:
 except ImportError:
     import pyfits as pf
 import numpy as np
+import six
 from . import pixelfunc
 from .sphtfunc import Alm
 import warnings
@@ -422,7 +423,7 @@ def mwrfits(filename,data,hdu=1,colnames=None,keys=None):
     else:
         colnames = ['']*len(data)
     cols=[]
-    for line in xrange(len(data)):
+    for line in six.moves.xrange(len(data)):
         cols.append(pf.Column(name=colnames[line],
                                format=getformat(data[line]),
                                array=data[line]))
