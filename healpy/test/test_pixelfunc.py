@@ -103,6 +103,13 @@ class TestPixelFunc(unittest.TestCase):
                     second = ring[1:]
                     self.assertTrue(np.logical_or(first == second, first == second-1).all())
 
+    def test_accept_ma_allows_only_keywords(self):
+        """ Test whether the accept_ma wrapper accepts calls using only keywords."""
+        ma = np.zeros(12 * 16 ** 2)
+        try:
+            ud_grade(map_in=ma, nside_out=32)
+        except IndexError:
+            self.fail("IndexError raised")
 
 if __name__ == '__main__':
     unittest.main()
