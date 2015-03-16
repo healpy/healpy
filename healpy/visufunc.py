@@ -158,7 +158,7 @@ def mollview(map=None,fig=None,rot=None,coord=None,unit='',
             raise ValueError('Wrong values for sub: %d, %d, %d'%(nrows,
                                                                  ncols,
                                                                  idx))
-        c,r = (idx-1)%ncols,(idx-1)/ncols
+        c,r = (idx-1)%ncols,(idx-1)//ncols
         if not margins:
             margins = (0.01,0.0,0.0,0.02)
         extent = (c*1./ncols+margins[0], 
@@ -327,7 +327,7 @@ def gnomview(map=None,fig=None,rot=None,coord=None,unit='',
             raise ValueError('Wrong values for sub: %d, %d, %d'%(nrows,
                                                                  ncols,
                                                                  idx))
-        c,r = (idx-1)%ncols,(idx-1)/ncols
+        c,r = (idx-1)%ncols,(idx-1)//ncols
         if not margins:
             margins = (0.01,0.0,0.0,0.02)
         extent = (c*1./ncols+margins[0], 
@@ -504,7 +504,7 @@ def cartview(map=None,fig=None,rot=None,zat=None,coord=None,unit='',
             raise ValueError('Wrong values for sub: %d, %d, %d'%(nrows,
                                                                  ncols,
                                                                  idx))
-        c,r = (idx-1)%ncols,(idx-1)/ncols
+        c,r = (idx-1)%ncols,(idx-1)//ncols
         if not margins:
             margins = (0.01,0.0,0.0,0.02)
         extent = (c*1./ncols+margins[0], 
@@ -675,7 +675,7 @@ def orthview(map=None,fig=None,rot=None,coord=None,unit='',
             raise ValueError('Wrong values for sub: %d, %d, %d'%(nrows,
                                                                  ncols,
                                                                  idx))
-        c,r = (idx-1)%ncols,(idx-1)/ncols
+        c,r = (idx-1)%ncols,(idx-1)//ncols
         if not margins:
             margins = (0.01,0.0,0.0,0.02)
         extent = (c*1./ncols+margins[0],
