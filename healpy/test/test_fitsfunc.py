@@ -24,6 +24,14 @@ class TestFitsFunc(unittest.TestCase):
         self.assertEqual(read_m.shape[1], 1024)
         self.assertTrue(np.all(self.m == read_m.flatten()))
 
+    def test_write_map_units_string(self):
+        write_map(self.filename, self.m, column_units='K')
+        read_m = pf.open(self.filename)[1].data.field(0)
+
+    def test_write_map_units_list(self):
+        write_map(self.filename, [self.m, self.m], column_units=['K', 'K'])
+        read_m = pf.open(self.filename)[1].data.field(0)
+
     def test_write_map_C(self):
         write_map(self.filename, self.m, fits_IDL=False)
         read_m = pf.open(self.filename)[1].data.field(0)

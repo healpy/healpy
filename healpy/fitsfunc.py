@@ -90,7 +90,7 @@ def write_cl(filename, cl, dtype=np.float64):
     tbhdu.header.update('CREATOR','healpy')
     tbhdu.writeto(filename,clobber=True)
 
-def write_map(filename,m,nest=False,dtype=np.float32,fits_IDL=True,coord=None,column_names=None):
+def write_map(filename,m,nest=False,dtype=np.float32,fits_IDL=True,coord=None,column_names=None,column_units=None):
     """Writes an healpix map into an healpix file.
 
     Parameters
@@ -117,6 +117,8 @@ def write_map(filename,m,nest=False,dtype=np.float32,fits_IDL=True,coord=None,co
       I/Q/U_STOKES for 3 components,
       II, IQ, IU, QQ, QU, UU for 6 components,
       COLUMN_0, COLUMN_1... otherwise
+    column_units : str or list
+      Units for each column, or same units for all columns.
     """
     if not hasattr(m, '__len__'):
         raise TypeError('The map must be a sequence')
@@ -132,6 +134,9 @@ def write_map(filename,m,nest=False,dtype=np.float32,fits_IDL=True,coord=None,co
     else:
         assert len(column_names) == len(m), "Length column_names != number of maps"
 
+    if column_units is None or isinstance(column_units, six.string_types):
+        column_units = [column_units] * len(m)
+
     # maps must have same length
     assert len(set(map(len, m))) == 1, "Maps must have same length"
     nside = pixelfunc.npix2nside(len(m[0]))
@@ -140,17 +145,19 @@ def write_map(filename,m,nest=False,dtype=np.float32,fits_IDL=True,coord=None,co
         raise ValueError('Invalid healpix map : wrong number of pixel')
 
     cols=[]
-    for cn, mm in zip(column_names, m):
+    for cn, cu, mm in zip(column_names, column_units, m):
         if len(mm) > 1024 and fits_IDL:
             # I need an ndarray, for reshape:
             mm2 = np.asarray(mm)
             cols.append(pf.Column(name=cn,
                                    format='1024%s' % fitsformat,
-                                   array=mm2.reshape(mm2.size/1024,1024)))
+                                   array=mm2.reshape(mm2.size/1024,1024),
+                                   unit=cu))
         else:
             cols.append(pf.Column(name=cn,
                                    format='%s' % fitsformat,
-                                   array=mm))
+                                   array=mm,
+                                   unit=cu))
             
     tbhdu = pf.new_table(cols)
     # add needed keywords
