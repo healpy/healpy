@@ -29,6 +29,7 @@ from . import pixelfunc
 from .sphtfunc import Alm
 import warnings
 from .pixelfunc import UNSEEN
+import six
 
 standard_column_names = {
     1 : "I_STOKES",

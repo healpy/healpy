@@ -25,6 +25,7 @@ from matplotlib import axes,ticker,colors,cm,lines,cbook,figure
 import numpy as np
 import six
 from ._healpy_pixel_lib import UNSEEN
+import six
 
 pi = np.pi
 dtor = pi/180.
