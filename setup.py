@@ -374,6 +374,13 @@ hfits_lib = Extension('healpy._healpy_fitsio_lib',
                       language='c++'
                       )
 
+install_requires = ['matplotlib', 'numpy', 'six']
+# Add install dependency on astropy, unless pyfits is already installed.
+try:
+    import pyfits
+except ImportError:
+    install_requires.append('astropy')
+
 if on_rtd:
     libraries = []
     cmdclass = {}
@@ -439,6 +446,7 @@ setup(name='healpy',
       ext_modules = extension_list,
       package_data = {'healpy': ['data/*.fits', 'data/totcls.dat', 'test/data/*.fits', 'test/data/*.sh']},
       setup_requires=setup_requires,
+      install_requires=install_requires,
       tests_require=['pytest'],
       test_suite='healpy',
       license='GPLv2'
