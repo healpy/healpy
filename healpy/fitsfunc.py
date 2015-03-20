@@ -282,7 +282,7 @@ def write_alm(filename,alms,out_dtype=None,lmax=-1,mmax=-1,mmax_in=-1):
     ----------
     filename : str
       The filename of the output fits file
-    alms : array, complex
+    alms : array, complex or list of arrays
       A complex ndarray holding the alms, index = m*(2*lmax+1-m)/2+l, see Alm.getidx
     lmax : int, optional
       The maximum l in the output file
@@ -294,7 +294,10 @@ def write_alm(filename,alms,out_dtype=None,lmax=-1,mmax=-1,mmax_in=-1):
       maximum m in the input array
     """
 
-    l2max = Alm.getlmax(len(alms),mmax=mmax_in)
+    if not isinstance(alms, list):
+        alms = [alms]
+
+    l2max = Alm.getlmax(len(alms[0]),mmax=mmax_in)
     if (lmax != -1 and lmax > l2max):
         raise ValueError("Too big lmax in parameter")
     elif lmax == -1:
@@ -309,7 +312,7 @@ def write_alm(filename,alms,out_dtype=None,lmax=-1,mmax=-1,mmax_in=-1):
         mmax = mmax_in
 
     if (out_dtype == None):
-        out_dtype = alms.real.dtype
+        out_dtype = alms[0].real.dtype
 
     l,m = Alm.getlm(lmax)
     idx = np.where((l <= lmax)*(m <= mmax))
@@ -320,20 +323,23 @@ def write_alm(filename,alms,out_dtype=None,lmax=-1,mmax=-1,mmax_in=-1):
     
     index = l**2 + l + m + 1
 
-    out_data = np.empty(len(index),
-               dtype=[('index','i'),
-                      ('real',out_dtype),
-                      ('imag',out_dtype)])
-    out_data['index'] = index
-    out_data['real'] = alms.real[idx_in_original]
-    out_data['imag'] = alms.imag[idx_in_original]
+    hdulist = pf.HDUList()
+    for alm in alms:
+        out_data = np.empty(len(index),
+                   dtype=[('index','i'),
+                          ('real',out_dtype),
+                          ('imag',out_dtype)])
+        out_data['index'] = index
+        out_data['real'] = alm.real[idx_in_original]
+        out_data['imag'] = alm.imag[idx_in_original]
 
-    cindex = pf.Column(name="index", format=getformat(np.int32), unit="l*l+l+m+1", array=out_data['index'])
-    creal = pf.Column(name="real", format=getformat(out_dtype), unit="unknown", array=out_data['real'])
-    cimag = pf.Column(name="imag", format=getformat(out_dtype), unit="unknown", array=out_data['imag'])
+        cindex = pf.Column(name="index", format=getformat(np.int32), unit="l*l+l+m+1", array=out_data['index'])
+        creal = pf.Column(name="real", format=getformat(out_dtype), unit="unknown", array=out_data['real'])
+        cimag = pf.Column(name="imag", format=getformat(out_dtype), unit="unknown", array=out_data['imag'])
 
-    tbhdu = pf.new_table([cindex,creal,cimag])
-    tbhdu.writeto(filename,clobber=True)       
+        tbhdu = pf.BinTableHDU.from_columns([cindex,creal,cimag])
+        hdulist.append(tbhdu)
+    hdulist.writeto(filename,clobber=True)
     
 def read_alm(filename,hdu=1,return_mmax=False):
     """Read alm from a fits file. 
