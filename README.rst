@@ -123,15 +123,7 @@ Core developers:
 * Martin Reinecke
 * Leo Singer 
 
-Contributors:
-
-* Pierre Chanial
-* Yu Feng
-* Duncan Hanson
-* Sergey Koposov
-* Maude Martin Lejeune
-* Paul Price
-* Maurizio Tomasi
+List of contributors: https://github.com/healpy/healpy/graphs/contributors
 
 Acknowledgements
 ----------------
