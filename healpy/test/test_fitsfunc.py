@@ -44,7 +44,9 @@ class TestReadWriteAlm(unittest.TestCase):
     def setUp(self):
 
         s=Alm.getsize(256)
-        self.alms = np.arange(s, dtype=np.complex128)
+        self.alms = [np.arange(s, dtype=np.complex128),
+                     np.arange(s, dtype=np.complex128),
+                     np.arange(s, dtype=np.complex128)]
 
     def test_write_alm(self):
 
@@ -58,7 +60,7 @@ class TestReadWriteAlm(unittest.TestCase):
         l0,m0 = Alm.getlm(128)
         # We extract 0 <= l <= 128 and 0 <= m <= 128 from self.alms
         idx = Alm.getidx(256,l0,m0)
-        np.testing.assert_array_almost_equal(self.alms[idx],a0)
+        np.testing.assert_array_almost_equal(self.alms[0][idx],a0)
 	
 
     def test_write_alm_256_128(self):
@@ -75,7 +77,7 @@ class TestReadWriteAlm(unittest.TestCase):
             # Extract 0 <= l <= 256 and 0 <= m <= 128
         idx_mmax = np.where(m0 <= mmax)
         idx = idx[idx_mmax]
-        np.testing.assert_array_almost_equal(self.alms[idx], a0)
+        np.testing.assert_array_almost_equal(self.alms[0][idx], a0)
 
 class TestReadWriteCl(unittest.TestCase):
 
