@@ -65,7 +65,7 @@ class TestPixelFunc(unittest.TestCase):
         npix = nside2npix(nside)
         d = [0.3, 0.5, 0.2]
         vec = np.transpose(pix2vec(nside, np.arange(npix)))
-        signal = vec.dot(d)
+        signal = np.dot(vec, d)
         mono, dipole = fit_dipole(signal)
         self.assertAlmostEqual(mono, 0.)
         self.assertAlmostEqual(d[0], dipole[0])
