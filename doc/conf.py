@@ -11,7 +11,11 @@
 # All configuration values have a default value; values that are commented out
 # serve to show the default value.
 
-import sys, os, exceptions
+import sys, os
+try:
+    from exceptions import ImportError
+except:
+    pass
 
 # To avoid problem with ReadTheDocs and compiled extensions.
 class Mock(object):
@@ -40,7 +44,7 @@ class Mock(object):
 
 try:
     import healpy
-except exceptions.ImportError:
+except ImportError:
     MOCK_MODULES = ['matplotlib', 'pylab', 'matplotlib.colors',
                     'matplotlib.cbook', 'pyfits',
                     'numpy', '_healpy_pixel_lib',
