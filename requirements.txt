@@ -3,3 +3,5 @@ cython>=0.16
 matplotlib
 astropy
 six
+# Needed for readthedocs.org build to succeed
+setuptools==12.0.5
