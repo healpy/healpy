@@ -6,7 +6,7 @@ Creating and manipulating maps
 
 Maps are simply numpy arrays, where each array element refers to a location in the sky as defined by the Healpix pixelization schemes (see the `healpix website`_).
 
-Note: Running the code below in a regular Python session will not display the maps; it’s recommended that iPython be used:
+Note: Running the code below in a regular Python session will not display the maps; it's recommended to use IPython:
 
 .. code-block:: bash
 
@@ -14,10 +14,10 @@ Note: Running the code below in a regular Python session will not display the ma
 
 ...then select the appropriate backend display:
 
->>> matplotlib inline # for IPython notebook
->>> matplotlib qt     # using Qt (e.g. Windows)
->>> matplotlib osx    # on Macs
->>> matplotlib gtx    # GTK
+>>> %matplotlib inline # for IPython notebook
+>>> %matplotlib qt     # using Qt (e.g. Windows)
+>>> %matplotlib osx    # on Macs
+>>> %matplotlib gtk    # GTK
 
 The resolution of the map is defined by the *NSIDE* parameter. The :py:func:`~healpy.pixelfunc.nside2npix` function gives the number of pixel *NPIX* of the map:
 
