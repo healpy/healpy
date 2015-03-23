@@ -19,12 +19,17 @@
 # 
 """Provides input and output functions for Healpix maps, alm, and cl.
 """
+from __future__ import with_statement
 try:
     import astropy.io.fits as pf
 except ImportError:
     import pyfits as pf
 import numpy as np
 import six
+import gzip
+import tempfile
+import shutil
+import os
 from . import pixelfunc
 from .sphtfunc import Alm
 import warnings
@@ -39,6 +44,27 @@ standard_column_names = {
 
 class HealpixFitsWarning(Warning):
     pass
+
+def writeto(tbhdu, filename):
+    # FIXME: Pyfits versions earlier than 3.1.2 had no support or flaky support
+    # for writing to .gz files or GzipFile objects. Drop this code when
+    # we decide to drop support for older versions of Pyfits or if we decide
+    # to support only Astropy.
+    if isinstance(filename, six.string_types) and filename.endswith('.gz'):
+        basefilename, ext = os.path.splitext(filename)
+        with tempfile.NamedTemporaryFile(suffix='.fits') as tmpfile:
+            tbhdu.writeto(tmpfile.name, clobber=True)
+            gzfile = gzip.open(filename, 'wb')
+            try:
+                try:
+                    shutil.copyfileobj(tmpfile, gzfile)
+                finally:
+                    gzfile.close()
+            except:
+                os.unlink(gzfile.name)
+                raise
+    else:
+        tbhdu.writeto(filename, clobber=True)
 
 def read_cl(filename, dtype=np.float64, h=False):
     """Reads Cl from an healpix file, as IDL fits2cl.
@@ -56,7 +82,7 @@ def read_cl(filename, dtype=np.float64, h=False):
       the cl array
     """
     hdulist=pf.open(filename)
-    cl = [hdulist[1].data.field(n) for n in range(len(hdulist[1].data.columns))]
+    cl = [hdulist[1].data.field(n) for n in range(len(hdulist[1].columns))]
     hdulist.close()
     if len(cl) == 1:
         return cl[0]
@@ -88,9 +114,9 @@ def write_cl(filename, cl, dtype=np.float64):
     tbhdu = pf.new_table(cols)
     # add needed keywords
     tbhdu.header.update('CREATOR','healpy')
-    tbhdu.writeto(filename,clobber=True)
+    writeto(tbhdu, filename)
 
-def write_map(filename,m,nest=False,dtype=np.float32,fits_IDL=True,coord=None,column_names=None):
+def write_map(filename,m,nest=False,dtype=np.float32,fits_IDL=True,coord=None,column_names=None,column_units=None):
     """Writes an healpix map into an healpix file.
 
     Parameters
@@ -117,6 +143,8 @@ def write_map(filename,m,nest=False,dtype=np.float32,fits_IDL=True,coord=None,co
       I/Q/U_STOKES for 3 components,
       II, IQ, IU, QQ, QU, UU for 6 components,
       COLUMN_0, COLUMN_1... otherwise
+    column_units : str or list
+      Units for each column, or same units for all columns.
     """
     if not hasattr(m, '__len__'):
         raise TypeError('The map must be a sequence')
@@ -132,6 +160,9 @@ def write_map(filename,m,nest=False,dtype=np.float32,fits_IDL=True,coord=None,co
     else:
         assert len(column_names) == len(m), "Length column_names != number of maps"
 
+    if column_units is None or isinstance(column_units, six.string_types):
+        column_units = [column_units] * len(m)
+
     # maps must have same length
     assert len(set(map(len, m))) == 1, "Maps must have same length"
     nside = pixelfunc.npix2nside(len(m[0]))
@@ -140,17 +171,19 @@ def write_map(filename,m,nest=False,dtype=np.float32,fits_IDL=True,coord=None,co
         raise ValueError('Invalid healpix map : wrong number of pixel')
 
     cols=[]
-    for cn, mm in zip(column_names, m):
+    for cn, cu, mm in zip(column_names, column_units, m):
         if len(mm) > 1024 and fits_IDL:
             # I need an ndarray, for reshape:
             mm2 = np.asarray(mm)
             cols.append(pf.Column(name=cn,
                                    format='1024%s' % fitsformat,
-                                   array=mm2.reshape(mm2.size/1024,1024)))
+                                   array=mm2.reshape(mm2.size/1024,1024),
+                                   unit=cu))
         else:
             cols.append(pf.Column(name=cn,
                                    format='%s' % fitsformat,
-                                   array=mm))
+                                   array=mm,
+                                   unit=cu))
             
     tbhdu = pf.new_table(cols)
     # add needed keywords
@@ -170,7 +203,7 @@ def write_map(filename,m,nest=False,dtype=np.float32,fits_IDL=True,coord=None,co
                         'Last pixel # (0 based)')
     tbhdu.header.update('INDXSCHM','IMPLICIT',
                         'Indexing: IMPLICIT or EXPLICIT')
-    tbhdu.writeto(filename,clobber=True)
+    writeto(tbhdu, filename)
 
 
 def read_map(filename,field=0,dtype=np.float64,nest=False,hdu=1,h=False,
@@ -339,7 +372,7 @@ def write_alm(filename,alms,out_dtype=None,lmax=-1,mmax=-1,mmax_in=-1):
 
         tbhdu = pf.BinTableHDU.from_columns([cindex,creal,cimag])
         hdulist.append(tbhdu)
-    hdulist.writeto(filename,clobber=True)
+    writeto(tbhdu, filename)
     
 def read_alm(filename,hdu=1,return_mmax=False):
     """Read alm from a fits file. 
@@ -439,7 +472,7 @@ def mwrfits(filename,data,hdu=1,colnames=None,keys=None):
         for k,v in keys.items():
             tbhdu.header.update(k,v)
     # write the file
-    tbhdu.writeto(filename,clobber=True)
+    writeto(tbhdu, filename)
 
 def getformat(t):
     """Get the FITS convention format string of data type t.

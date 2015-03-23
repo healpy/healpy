@@ -5,6 +5,7 @@ except:
     import pyfits as pf
 import unittest
 import numpy as np
+import gzip
 
 import healpy
 from ..fitsfunc import *
@@ -24,6 +25,14 @@ class TestFitsFunc(unittest.TestCase):
         self.assertEqual(read_m.shape[1], 1024)
         self.assertTrue(np.all(self.m == read_m.flatten()))
 
+    def test_write_map_units_string(self):
+        write_map(self.filename, self.m, column_units='K')
+        read_m = pf.open(self.filename)[1].data.field(0)
+
+    def test_write_map_units_list(self):
+        write_map(self.filename, [self.m, self.m], column_units=['K', 'K'])
+        read_m = pf.open(self.filename)[1].data.field(0)
+
     def test_write_map_C(self):
         write_map(self.filename, self.m, fits_IDL=False)
         read_m = pf.open(self.filename)[1].data.field(0)
@@ -35,6 +44,24 @@ class TestFitsFunc(unittest.TestCase):
         read_m = pf.open(self.filename)[1].data
         for comp in range(3):
             self.assertTrue(np.all(self.m == read_m.field(comp)))
+
+    def tearDown(self):
+        os.remove(self.filename)
+
+class TestFitsFuncGzip(unittest.TestCase):
+
+    def setUp(self):
+        self.nside = 4
+        self.m = np.arange(healpy.nside2npix(self.nside))
+        self.filename = 'testmap.fits.gz'
+
+    def test_write_map(self):
+        write_map(self.filename, self.m)
+        # Make sure file is gzip-compressed
+        gzfile = gzip.open(self.filename, 'rb')
+        gzfile.read()
+        gzfile.close()
+        read_m = pf.open(self.filename)[1].data.field(0)
 
     def tearDown(self):
         os.remove(self.filename)
