@@ -79,7 +79,7 @@ master_doc = 'index'
 
 # General substitutions.
 project = u'healpy'
-copyright = u'2008, C. Rosset'
+copyright = u'CC/BY/4.0/International'
 
 # The default replacements for |version| and |release|, also used in various
 # other places throughout the built documents.
@@ -209,7 +209,7 @@ htmlhelp_basename = 'healpydoc'
 # (source start file, target name, title, author, document class [howto/manual]).
 latex_documents = [
   ('index', 'healpy.tex', u'healpy Documentation',
-   u'C. Rosset', 'manual'),
+   u'', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
