@@ -21,10 +21,25 @@ import warnings
 import numpy as np
 import six
 pi = np.pi
+import warnings
 
-from . import _healpy_sph_transform_lib as sphtlib
-from . import _healpy_fitsio_lib as hfitslib
-from . import _sphtools as _sphtools
+try:
+    from exceptions import ImportError
+except:
+    pass
+
+try:
+    from . import _healpy_sph_transform_lib as sphtlib
+except ImportError:
+    warnings.warn('Warning: cannot import _healpy_pixel_lib module')
+try:
+    from . import _healpy_fitsio_lib as hfitslib
+except ImportError:
+    warnings.warn('Warning: cannot import _healpy_fitsio_lib module')
+try:
+    from . import _sphtools as _sphtools
+except ImportError:
+    warnings.warn('Warning: cannot import _sphtools module')
 from . import cookbook as cb
 
 import os.path

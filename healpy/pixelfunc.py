@@ -85,11 +85,17 @@ Map data manipulation
 """
 
 import numpy as np
-from . import _healpy_pixel_lib as pixlib
 from functools import wraps
 
-#: Special value used for masked pixels
-UNSEEN = pixlib.UNSEEN
+UNSEEN = None
+
+try:
+    from . import _healpy_pixel_lib as pixlib
+    #: Special value used for masked pixels
+    UNSEEN = pixlib.UNSEEN
+except:
+    import warnings
+    warnings.warn('Warning: cannot import _healpy_pixel_lib module')
 
 # We are using 64-bit integer types.
 # nside > 2**29 requires extended integer types.
@@ -1336,7 +1342,7 @@ def remove_dipole(m,nest=False,bad=UNSEEN,gal_cut=0,fitval=False,
     else:
         return m
 
-def fit_monopole(m,nest=False,bad=pixlib.UNSEEN,gal_cut=0):
+def fit_monopole(m,nest=False,bad=UNSEEN,gal_cut=0):
     """Fit a monopole to the map, excluding unseen pixels.
 
     Parameters
@@ -1385,7 +1391,7 @@ def fit_monopole(m,nest=False,bad=pixlib.UNSEEN,gal_cut=0):
     mono = v/aa
     return mono
 
-def remove_monopole(m,nest=False,bad=pixlib.UNSEEN,gal_cut=0,fitval=False,
+def remove_monopole(m,nest=False,bad=UNSEEN,gal_cut=0,fitval=False,
                     copy=True,verbose=True):
     """Fit and subtract the monopole from the given map m.
 
