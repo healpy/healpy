@@ -116,7 +116,7 @@ def write_cl(filename, cl, dtype=np.float64):
     tbhdu.header.update('CREATOR','healpy')
     writeto(tbhdu, filename)
 
-def write_map(filename,m,nest=False,dtype=np.float32,fits_IDL=True,coord=None,column_names=None,column_units=None):
+def write_map(filename,m,nest=False,dtype=np.float32,fits_IDL=True,coord=None,column_names=None,column_units=None,extra_header=()):
     """Writes an healpix map into an healpix file.
 
     Parameters
@@ -145,6 +145,8 @@ def write_map(filename,m,nest=False,dtype=np.float32,fits_IDL=True,coord=None,co
       COLUMN_0, COLUMN_1... otherwise
     column_units : str or list
       Units for each column, or same units for all columns.
+    extra_header : list
+      Extra records to add to FITS header.
     """
     if not hasattr(m, '__len__'):
         raise TypeError('The map must be a sequence')
@@ -203,6 +205,16 @@ def write_map(filename,m,nest=False,dtype=np.float32,fits_IDL=True,coord=None,co
                         'Last pixel # (0 based)')
     tbhdu.header.update('INDXSCHM','IMPLICIT',
                         'Indexing: IMPLICIT or EXPLICIT')
+
+    # FIXME: In modern versions of Pyfits, header.update() understands a
+    # header as an argument, and headers can be concatenated with the `+'
+    # operator.
+    for args in extra_header:
+        if args[0] == 'COMMENT':
+            tbhdu.header.add_comment(*args[1:])
+        else:
+            tbhdu.header.update(*args)
+
     writeto(tbhdu, filename)
 
 
