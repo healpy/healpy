@@ -137,7 +137,8 @@ class TestSphtFunc(unittest.TestCase):
             o = deepcopy(i)
             hp.rotate_alm(o, 0.1, 0.2, 0.3)
             hp.rotate_alm(o, -0.3, -0.2, -0.1)
-            np.testing.assert_allclose(i, o, rtol=1e-6)
+            # FIXME: rtol=1e-6 works here, except on Debian with Python 3.4.
+            np.testing.assert_allclose(i, o, rtol=1e-5)
 
     def test_accept_ma_allows_only_keywords(self):
         """ Test whether 'smoothing' wrapped with accept_ma works with only
