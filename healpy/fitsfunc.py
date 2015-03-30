@@ -382,7 +382,7 @@ def write_alm(filename,alms,out_dtype=None,lmax=-1,mmax=-1,mmax_in=-1):
         creal = pf.Column(name="real", format=getformat(out_dtype), unit="unknown", array=out_data['real'])
         cimag = pf.Column(name="imag", format=getformat(out_dtype), unit="unknown", array=out_data['imag'])
 
-        tbhdu = pf.BinTableHDU.from_columns([cindex,creal,cimag])
+        tbhdu = pf.new_table([cindex,creal,cimag])
         hdulist.append(tbhdu)
     writeto(tbhdu, filename)
     
