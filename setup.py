@@ -208,7 +208,7 @@ class build_external_clib(build_clib):
                 cxx = os.environ['CXX']
             if 'CFLAGS' in os.environ:
                 cflags = opt + ' ' + os.environ['CFLAGS']
-            if 'CXXLAGS' in os.environ:
+            if 'CXXFLAGS' in os.environ:
                 cxxflags = opt + ' ' + os.environ['CXXFLAGS']
 
             # Use a subdirectory of build_temp as the build directory.
