@@ -1,3 +1,8 @@
+Release 1.8.5, 21 Apr 2015
+
+* Renamed `get_neighbours` to `get_interp_weights` <https://github.com/healpy/healpy/issues/240>
+* Updated HEALPix C++ to fix bug in `query_disc` https://github.com/healpy/healpy/issues/229>
+
 Release 1.8.4, 16 Jan 2015
 
 * Fixed another permission issue on install-sh
