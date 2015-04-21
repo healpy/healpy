@@ -35,8 +35,8 @@ conversion from/to sky coordinates
 - :func:`ang2vec` converts angular coordinates to unit 3-vector
 - :func:`pix2xyf` converts pixel number to coordinates within face
 - :func:`xyf2pix` converts coordinates within face to pixel number
-- :func:`get_neighbours` returns the 4 nearest pixels for given
-  angular coordinates
+- :func:`get_interp_weights` returns the 4 nearest pixels for given
+  angular coordinates and the relative weights for interpolation
 - :func:`get_all_neighbours` return the 8 nearest pixels for given
   angular coordinates
 
@@ -103,7 +103,7 @@ max_nside = 1 << 29
 
 __all__ = ['pix2ang', 'pix2vec', 'ang2pix', 'vec2pix',
            'ang2vec', 'vec2ang',
-           'get_neighbours', 'get_interp_val', 'get_all_neighbours',
+           'get_interp_weights', 'get_interp_val', 'get_all_neighbours',
            'max_pixrad',
            'nest2ring', 'ring2nest', 'reorder', 'ud_grade',
            'UNSEEN', 'mask_good', 'mask_bad', 'ma',
@@ -1062,7 +1062,7 @@ def get_interp_val(m,theta,phi,nest=False):
 
     See Also
     --------
-    get_neighbours, get_all_neighbours
+    get_interp_weights, get_all_neighbours
 
     Examples
     --------
@@ -1088,7 +1088,7 @@ def get_interp_val(m,theta,phi,nest=False):
     del r
     return np.sum(m2[p]*w,0)
 
-def get_neighbours(nside,theta,phi=None,nest=False):
+def get_interp_weights(nside,theta,phi=None,nest=False):
     """Return the 4 closest pixels on the two rings above and below the
     location and corresponding weights.
     Weights are provided for bilinear interpolation along latitude and longitude
@@ -1116,13 +1116,13 @@ def get_neighbours(nside,theta,phi=None,nest=False):
     Examples
     --------
     >>> import healpy as hp
-    >>> hp.get_neighbours(1, 0)
+    >>> hp.get_interp_weights(1, 0)
     (array([0, 1, 4, 5]), array([ 1.,  0.,  0.,  0.]))
 
-    >>> hp.get_neighbours(1, 0, 0)
+    >>> hp.get_interp_weights(1, 0, 0)
     (array([1, 2, 3, 0]), array([ 0.25,  0.25,  0.25,  0.25]))
 
-    >>> hp.get_neighbours(1, [0, np.pi/2], 0)
+    >>> hp.get_interp_weights(1, [0, np.pi/2], 0)
     (array([[ 1,  4],
            [ 2,  5],
            [ 3, 11],
@@ -1165,7 +1165,7 @@ def get_all_neighbours(nside, theta, phi=None, nest=False):
 
     See Also
     --------
-    get_neighbours, get_interp_val
+    get_interp_weights, get_interp_val
 
     Examples
     --------
