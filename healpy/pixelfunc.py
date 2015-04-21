@@ -1089,7 +1089,9 @@ def get_interp_val(m,theta,phi,nest=False):
     return np.sum(m2[p]*w,0)
 
 def get_neighbours(nside,theta,phi=None,nest=False):
-    """Return the 4 nearest pixels and corresponding weights.
+    """Return the 4 closest pixels on the two rings above and below the
+    location and corresponding weights.
+    Weights are provided for bilinear interpolation along latitude and longitude
 
     Parameters
     ----------
