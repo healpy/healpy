@@ -84,6 +84,11 @@ Map data manipulation
   at given angular coordinates, using 4 nearest neighbours
 """
 
+try:
+    from exceptions import NameError
+except:
+    pass
+
 import numpy as np
 from functools import wraps
 
@@ -103,7 +108,7 @@ max_nside = 1 << 29
 
 __all__ = ['pix2ang', 'pix2vec', 'ang2pix', 'vec2pix',
            'ang2vec', 'vec2ang',
-           'get_interp_weights', 'get_interp_val', 'get_all_neighbours',
+           'get_interp_weights', 'get_neighbours', 'get_interp_val', 'get_all_neighbours',
            'max_pixrad',
            'nest2ring', 'ring2nest', 'reorder', 'ud_grade',
            'UNSEEN', 'mask_good', 'mask_bad', 'ma',
@@ -1087,6 +1092,9 @@ def get_interp_val(m,theta,phi,nest=False):
     w=np.array(r[4:8])
     del r
     return np.sum(m2[p]*w,0)
+
+def get_neighbours(nside, theta, phi=None, nest=False):
+    raise NameError("get_neighbours has been renamed to get_interp_weights")
 
 def get_interp_weights(nside,theta,phi=None,nest=False):
     """Return the 4 closest pixels on the two rings above and below the
