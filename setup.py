@@ -153,7 +153,9 @@ class build_external_clib(build_clib):
         return dict(os.environ, PKG_CONFIG_PATH=pkg_config_path)
 
     def pkgconfig(self, *packages):
-        PKG_CONFIG = tuple(shlex.split(os.environ.get('PKG_CONFIG', 'pkg-config')))
+        PKG_CONFIG = tuple(shlex.split(
+            os.environ.get('PKG_CONFIG', 'pkg-config'),
+            posix=(os.sep == '/')))
         kw = {}
         index_key_flag = (
             (2, '--cflags-only-I', ('include_dirs',)),
