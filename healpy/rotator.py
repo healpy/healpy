@@ -18,6 +18,7 @@
 #  For more information about Healpy, see http://code.google.com/p/healpy
 # 
 import numpy as np
+import six
 import warnings
 
 coordname = {'G': 'Galactic', 'E': 'Ecliptic', 'C': 'Equatorial'}
@@ -608,7 +609,7 @@ def check_coord(c):
     """
     if c is None:
         return c
-    if type(c) is not str:
+    if not isinstance(c, six.string_types):
         raise TypeError('Coordinate must be a string (G[alactic],'
                         ' E[cliptic], C[elestial]'
                         ' or Equatorial=Celestial)')
