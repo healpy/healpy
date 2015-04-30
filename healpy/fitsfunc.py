@@ -21,21 +21,23 @@
 """
 from __future__ import with_statement
 
-try:
-    import astropy.io.fits as pf
-except ImportError:
-    import pyfits as pf
-import numpy as np
 import six
 import gzip
 import tempfile
 import shutil
 import os
+import warnings
+
+try:
+    import astropy.io.fits as pf
+except ImportError:
+    import pyfits as pf
+
+import numpy as np
+
 from . import pixelfunc
 from .sphtfunc import Alm
-import warnings
 from .pixelfunc import UNSEEN
-import six
 
 standard_column_names = {
     1 : "I_STOKES",
@@ -84,7 +86,6 @@ def read_cl(filename, dtype=np.float64, h=False):
     """
     fits_hdu = _get_hdu(filename, hdu=1)
     cl = [fits_hdu.data.field(n) for n in range(len(fits_hdu.columns))]
-    hdulist.close()
     if len(cl) == 1:
         return cl[0]
     else:
@@ -253,7 +254,7 @@ def read_map(filename,field=0,dtype=np.float64,nest=False,hdu=1,h=False,
       The map(s) read from the file, and the header if *h* is True.
     """
 
-    fits_hdu = _get_hdu(filename, hdu=hdu)
+    fits_hdu = _get_hdu(filename, hdu=hdu, memmap=memmap)
 
     nside = fits_hdu.header.get('NSIDE')
     if nside is None:
@@ -428,7 +429,7 @@ def read_alm(filename,hdu=1,return_mmax=False):
 
 ## Generic functions to read and write column of data in fits file
 
-def get_hdu(input_data, hdu=None):
+def _get_hdu(input_data, hdu=None, memmap=None):
     """
     Return an HDU from a FITS file
 
