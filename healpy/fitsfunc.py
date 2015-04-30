@@ -445,8 +445,8 @@ def _get_hdu(input_data, hdu=None, memmap=None):
     """
 
     if isinstance(input_data, six.string_types):
-        with pf.open(input_data, memmap=memmap) as hdulist:
-            return _get_hdu(hdulist, hdu=hdu)
+        hdulist = pf.open(input_data, memmap=memmap)
+        return _get_hdu(hdulist, hdu=hdu)
 
     if isinstance(input_data, pf.HDUList):
         if isinstance(hdu, int) and hdu >= len(input_data):
