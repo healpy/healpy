@@ -224,7 +224,7 @@ def read_map(filename,field=0,dtype=np.float64,nest=False,hdu=1,h=False,
 
     Parameters
     ----------
-    filename : str
+    filename : str or HDU or HDUList
       the fits file name
     field : int or tuple of int, optional
       The column to read. Default: 0.
@@ -233,7 +233,7 @@ def read_map(filename,field=0,dtype=np.float64,nest=False,hdu=1,h=False,
     dtype : data type, optional
       Force the conversion to some type. Default: np.float64
     nest : bool, optional
-      If True return the map in NEST ordering, otherwise in RING ordering; 
+      If True return the map in NEST ordering, otherwise in RING ordering;
       use fits keyword ORDERING to decide whether conversion is needed or not
       If None, no conversion is performed.
     hdu : int, optional
@@ -251,9 +251,17 @@ def read_map(filename,field=0,dtype=np.float64,nest=False,hdu=1,h=False,
     m | (m0, m1, ...) [, header] : array or a tuple of arrays, optionally with header appended
       The map(s) read from the file, and the header if *h* is True.
     """
-    hdulist=pf.open(filename, memmap=memmap)
-    #print hdulist[1].header
-    nside = hdulist[hdu].header.get('NSIDE')
+
+    if isinstance(filename, six.string_types):
+        fits_hdu = pf.open(filename, memmap=memmap)[hdu]
+    elif isinstance(filename, pf.HDUList):
+        fits_hdu = filename[hdu]
+    elif isinstance(filename, (pf.PrimaryHDU, pf.ImageHDU)):
+        fits_hdu = filename
+    else:
+        raise TypeError("First argument should be a filename, HDUList instance, or HDU instance")
+
+    nside = fits_hdu.header.get('NSIDE')
     if nside is None:
         warnings.warn("No NSIDE in the header file : will use length of array", HealpixFitsWarning)
     else:
@@ -262,7 +270,7 @@ def read_map(filename,field=0,dtype=np.float64,nest=False,hdu=1,h=False,
 
     if not pixelfunc.isnsideok(nside):
         raise ValueError('Wrong nside parameter.')
-    ordering = hdulist[hdu].header.get('ORDERING','UNDEF').strip()
+    ordering = fits_hdu.header.get('ORDERING','UNDEF').strip()
     if ordering == 'UNDEF':
         ordering = (nest and 'NESTED' or 'RING')
         warnings.warn("No ORDERING keyword in header file : "
@@ -276,13 +284,13 @@ def read_map(filename,field=0,dtype=np.float64,nest=False,hdu=1,h=False,
 
     for ff in field:
         try:
-            m=hdulist[hdu].data.field(ff).astype(dtype).ravel()
+            m=fits_hdu.data.field(ff).astype(dtype).ravel()
         except pf.VerifyError as e:
             print(e)
             print("Trying to fix a badly formatted header")
-            m=hdulist[hdu].verify("fix")
-            m=hdulist[hdu].data.field(ff).astype(dtype).ravel()
-            
+            m=fits_hdu.verify("fix")
+            m=fits_hdu.data.field(ff).astype(dtype).ravel()
+
         if (not pixelfunc.isnpixok(m.size) or (sz>0 and sz != m.size)) and verbose:
             print('nside={0:d}, sz={1:d}, m.size={2:d}'.format(nside,sz,m.size))
             raise ValueError('Wrong nside parameter.')
@@ -300,15 +308,15 @@ def read_map(filename,field=0,dtype=np.float64,nest=False,hdu=1,h=False,
         except OverflowError:
             pass
         ret.append(m)
-    
+
     if len(ret) == 1:
         if h:
-            return ret[0],hdulist[hdu].header.items()
+            return ret[0],fits_hdu.header.items()
         else:
             return ret[0]
     else:
         if h:
-            ret.append(hdulist[hdu].header.items())
+            ret.append(fits_hdu.header.items())
             return tuple(ret)
         else:
             return tuple(ret)
