@@ -1,40 +1,43 @@
-# 
+#
 #  This file is part of Healpy.
-# 
+#
 #  Healpy is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation; either version 2 of the License, or
 #  (at your option) any later version.
-# 
+#
 #  Healpy is distributed in the hope that it will be useful,
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU General Public License for more details.
-# 
+#
 #  You should have received a copy of the GNU General Public License
 #  along with Healpy; if not, write to the Free Software
 #  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-# 
+#
 #  For more information about Healpy, see http://code.google.com/p/healpy
-# 
+#
 """Provides input and output functions for Healpix maps, alm, and cl.
 """
 from __future__ import with_statement
-try:
-    import astropy.io.fits as pf
-except ImportError:
-    import pyfits as pf
-import numpy as np
+
 import six
 import gzip
 import tempfile
 import shutil
 import os
+import warnings
+
+try:
+    import astropy.io.fits as pf
+except ImportError:
+    import pyfits as pf
+
+import numpy as np
+
 from . import pixelfunc
 from .sphtfunc import Alm
-import warnings
 from .pixelfunc import UNSEEN
-import six
 
 standard_column_names = {
     1 : "I_STOKES",
@@ -71,7 +74,7 @@ def read_cl(filename, dtype=np.float64, h=False):
 
     Parameters
     ----------
-    filename : str
+    filename : str or HDUList or HDU
       the fits file name
     dtype : data type, optional
       the data type of the returned array
@@ -81,9 +84,8 @@ def read_cl(filename, dtype=np.float64, h=False):
     cl : array
       the cl array
     """
-    hdulist=pf.open(filename)
-    cl = [hdulist[1].data.field(n) for n in range(len(hdulist[1].columns))]
-    hdulist.close()
+    fits_hdu = _get_hdu(filename, hdu=1)
+    cl = [fits_hdu.data.field(n) for n in range(len(fits_hdu.columns))]
     if len(cl) == 1:
         return cl[0]
     else:
@@ -110,7 +112,7 @@ def write_cl(filename, cl, dtype=np.float64):
         cols = [pf.Column(name='TEMPERATURE',
                                format='%s'%fitsformat,
                                array=cl)]
-            
+
     tbhdu = pf.new_table(cols)
     # add needed keywords
     tbhdu.header.update('CREATOR','healpy')
@@ -125,14 +127,14 @@ def write_map(filename,m,nest=False,dtype=np.float32,fits_IDL=True,coord=None,co
       the fits file name
     m : array or sequence of 3 arrays
       the map to write. Possibly a sequence of 3 maps of same size.
-      They will be considered as I, Q, U maps. 
+      They will be considered as I, Q, U maps.
       Supports masked maps, see the `ma` function.
     nest : bool, optional
       If True, ordering scheme is assumed to be NESTED, otherwise, RING. Default: RING.
       The map ordering is not modified by this function, the input map array
       should already be in the desired ordering (run `ud_grade` beforehand).
     fits_IDL : bool, optional
-      If True, reshapes columns in rows of 1024, otherwise all the data will 
+      If True, reshapes columns in rows of 1024, otherwise all the data will
       go in one column. Default: True
     coord : str
       The coordinate system, typically 'E' for Ecliptic, 'G' for Galactic or 'C' for
@@ -186,7 +188,7 @@ def write_map(filename,m,nest=False,dtype=np.float32,fits_IDL=True,coord=None,co
                                    format='%s' % fitsformat,
                                    array=mm,
                                    unit=cu))
-            
+
     tbhdu = pf.new_table(cols)
     # add needed keywords
     tbhdu.header.update('PIXTYPE','HEALPIX','HEALPIX pixelisation')
@@ -224,7 +226,7 @@ def read_map(filename,field=0,dtype=np.float64,nest=False,hdu=1,h=False,
 
     Parameters
     ----------
-    filename : str
+    filename : str or HDU or HDUList
       the fits file name
     field : int or tuple of int, optional
       The column to read. Default: 0.
@@ -233,7 +235,7 @@ def read_map(filename,field=0,dtype=np.float64,nest=False,hdu=1,h=False,
     dtype : data type, optional
       Force the conversion to some type. Default: np.float64
     nest : bool, optional
-      If True return the map in NEST ordering, otherwise in RING ordering; 
+      If True return the map in NEST ordering, otherwise in RING ordering;
       use fits keyword ORDERING to decide whether conversion is needed or not
       If None, no conversion is performed.
     hdu : int, optional
@@ -251,9 +253,10 @@ def read_map(filename,field=0,dtype=np.float64,nest=False,hdu=1,h=False,
     m | (m0, m1, ...) [, header] : array or a tuple of arrays, optionally with header appended
       The map(s) read from the file, and the header if *h* is True.
     """
-    hdulist=pf.open(filename, memmap=memmap)
-    #print hdulist[1].header
-    nside = hdulist[hdu].header.get('NSIDE')
+
+    fits_hdu = _get_hdu(filename, hdu=hdu, memmap=memmap)
+
+    nside = fits_hdu.header.get('NSIDE')
     if nside is None:
         warnings.warn("No NSIDE in the header file : will use length of array", HealpixFitsWarning)
     else:
@@ -262,7 +265,7 @@ def read_map(filename,field=0,dtype=np.float64,nest=False,hdu=1,h=False,
 
     if not pixelfunc.isnsideok(nside):
         raise ValueError('Wrong nside parameter.')
-    ordering = hdulist[hdu].header.get('ORDERING','UNDEF').strip()
+    ordering = fits_hdu.header.get('ORDERING','UNDEF').strip()
     if ordering == 'UNDEF':
         ordering = (nest and 'NESTED' or 'RING')
         warnings.warn("No ORDERING keyword in header file : "
@@ -276,13 +279,13 @@ def read_map(filename,field=0,dtype=np.float64,nest=False,hdu=1,h=False,
 
     for ff in field:
         try:
-            m=hdulist[hdu].data.field(ff).astype(dtype).ravel()
+            m=fits_hdu.data.field(ff).astype(dtype).ravel()
         except pf.VerifyError as e:
             print(e)
             print("Trying to fix a badly formatted header")
-            m=hdulist[hdu].verify("fix")
-            m=hdulist[hdu].data.field(ff).astype(dtype).ravel()
-            
+            m=fits_hdu.verify("fix")
+            m=fits_hdu.data.field(ff).astype(dtype).ravel()
+
         if (not pixelfunc.isnpixok(m.size) or (sz>0 and sz != m.size)) and verbose:
             print('nside={0:d}, sz={1:d}, m.size={2:d}'.format(nside,sz,m.size))
             raise ValueError('Wrong nside parameter.')
@@ -300,24 +303,24 @@ def read_map(filename,field=0,dtype=np.float64,nest=False,hdu=1,h=False,
         except OverflowError:
             pass
         ret.append(m)
-    
+
     if len(ret) == 1:
         if h:
-            return ret[0],hdulist[hdu].header.items()
+            return ret[0],fits_hdu.header.items()
         else:
             return ret[0]
     else:
         if h:
-            ret.append(hdulist[hdu].header.items())
+            ret.append(fits_hdu.header.items())
             return tuple(ret)
         else:
             return tuple(ret)
 
 
 def write_alm(filename,alms,out_dtype=None,lmax=-1,mmax=-1,mmax_in=-1):
-    """Write alms to a fits file. 
-    
-    In the fits file the alms are written 
+    """Write alms to a fits file.
+
+    In the fits file the alms are written
     with explicit index scheme, index = l*l + l + m +1, possibly out of order.
     By default write_alm makes a table with the same precision as the alms.
     If specified, the lmax and mmax parameters truncate the input data to
@@ -365,7 +368,7 @@ def write_alm(filename,alms,out_dtype=None,lmax=-1,mmax=-1,mmax_in=-1):
     m = m[idx]
 
     idx_in_original = Alm.getidx(l2max, l=l, m=m)
-    
+
     index = l**2 + l + m + 1
 
     hdulist = pf.HDUList()
@@ -385,18 +388,18 @@ def write_alm(filename,alms,out_dtype=None,lmax=-1,mmax=-1,mmax_in=-1):
         tbhdu = pf.new_table([cindex,creal,cimag])
         hdulist.append(tbhdu)
     writeto(tbhdu, filename)
-    
+
 def read_alm(filename,hdu=1,return_mmax=False):
-    """Read alm from a fits file. 
-    
+    """Read alm from a fits file.
+
     In the fits file, the alm are written
     with explicit index scheme, index = l**2+l+m+1, while healpix cxx
-    uses index = m*(2*lmax+1-m)/2+l. The conversion is done in this 
+    uses index = m*(2*lmax+1-m)/2+l. The conversion is done in this
     function.
 
     Parameters
     ----------
-    filename : str
+    filename : str or HDUList or HDU
       The name of the fits file to read
     hdu : int, optional
       The header to read. Start at 0. Default: hdu=1
@@ -426,13 +429,46 @@ def read_alm(filename,hdu=1,return_mmax=False):
 
 ## Generic functions to read and write column of data in fits file
 
-def mrdfits(filename,hdu=1):
-    """Read a table in a fits file.
+def _get_hdu(input_data, hdu=None, memmap=None):
+    """
+    Return an HDU from a FITS file
 
     Parameters
     ----------
-    filename : str
-      The name of the fits file to read
+    input_data : str or HDUList or HDU instance
+        The input FITS file, either as a filename, HDU list, or HDU instance.
+
+    Returns
+    -------
+    fits_hdu : HDU
+        The extracted HDU
+    """
+
+    if isinstance(input_data, six.string_types):
+        hdulist = pf.open(input_data, memmap=memmap)
+        return _get_hdu(hdulist, hdu=hdu)
+
+    if isinstance(input_data, pf.HDUList):
+        if isinstance(hdu, int) and hdu >= len(input_data):
+            raise ValueError('Available hdu in [0-%d]' % len(hdulist))
+        else:
+            fits_hdu = input_data[hdu]
+    elif isinstance(input_data, (pf.PrimaryHDU, pf.ImageHDU, pf.BinTableHDU, pf.TableHDU, pf.GroupsHDU)):
+        fits_hdu = input_data
+    else:
+        raise TypeError("First argument should be a input_data, HDUList instance, or HDU instance")
+
+    return fits_hdu
+
+
+def mrdfits(filename, hdu=1):
+    """
+    Read a table in a fits file.
+
+    Parameters
+    ----------
+    filename : str or HDUList or HDU
+      The name of the fits file to read, or an HDUList or HDU instance.
     hdu : int, optional
       The header to read. Start at 0. Default: hdu=1
 
@@ -441,16 +477,12 @@ def mrdfits(filename,hdu=1):
     cols : a list of arrays
       A list of column data in the given header
     """
-    hdulist=pf.open(filename)
-    if hdu>=len(hdulist):
-        raise ValueError('Available hdu in [0-%d]'%len(hdulist))
-    hdu=hdulist[hdu]
+    fits_hdu = _get_hdu(filename, hdu=hdu)
     val=[]
-    for i in range(len(hdu.columns)):
-        val.append(hdu.data.field(i))
-    hdulist.close()
-    del hdulist
+    for i in range(len(fits_hdu.columns)):
+        val.append(fits_hdu.data.field(i))
     return val
+
 
 def mwrfits(filename,data,hdu=1,colnames=None,keys=None):
     """Write columns to a fits file in a table extension.

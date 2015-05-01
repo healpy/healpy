@@ -12,7 +12,7 @@ from ..fitsfunc import *
 from ..sphtfunc import *
 
 class TestFitsFunc(unittest.TestCase):
-    
+
     def setUp(self):
         self.nside = 512
         self.m = np.arange(healpy.nside2npix(self.nside))
@@ -45,8 +45,23 @@ class TestFitsFunc(unittest.TestCase):
         for comp in range(3):
             self.assertTrue(np.all(self.m == read_m.field(comp)))
 
+    def test_read_map_filename(self):
+        write_map(self.filename, self.m)
+        read_map(self.filename)
+
+    def test_read_map_hdulist(self):
+        write_map(self.filename, self.m)
+        hdulist = pf.open(self.filename)
+        read_map(hdulist)
+
+    def test_read_map_hdu(self):
+        write_map(self.filename, self.m)
+        hdu = pf.open(self.filename)[1]
+        read_map(hdu)
+
     def tearDown(self):
         os.remove(self.filename)
+
 
 class TestFitsFuncGzip(unittest.TestCase):
 
@@ -79,7 +94,7 @@ class TestReadWriteAlm(unittest.TestCase):
 
         write_alm('testalm_128.fits',self.alms,lmax=128,mmax=128)
         a0 = read_alm('testalm_128.fits')
-	# Sanity check of the file
+        # Sanity check of the file
         self.assertEqual(Alm.getlmax(len(a0)),128)
 
         # Check the written data
@@ -88,7 +103,7 @@ class TestReadWriteAlm(unittest.TestCase):
         # We extract 0 <= l <= 128 and 0 <= m <= 128 from self.alms
         idx = Alm.getidx(256,l0,m0)
         np.testing.assert_array_almost_equal(self.alms[0][idx],a0)
-	
+
 
     def test_write_alm_256_128(self):
         write_alm('testalm_256_128.fits',self.alms,lmax=256,mmax=128)
@@ -98,13 +113,28 @@ class TestReadWriteAlm(unittest.TestCase):
 
         # Check the written data
         a0 = read_alm('testalm_256_128.fits')
-        
+
         l0,m0 = Alm.getlm(256)
         idx = Alm.getidx(256, l0, m0)
             # Extract 0 <= l <= 256 and 0 <= m <= 128
         idx_mmax = np.where(m0 <= mmax)
         idx = idx[idx_mmax]
         np.testing.assert_array_almost_equal(self.alms[0][idx], a0)
+
+    def test_read_alm_filename(self):
+        write_alm('testalm_128.fits',self.alms,lmax=128,mmax=128)
+        read_alm('testalm_128.fits')
+
+    def test_read_alm_hdulist(self):
+        write_alm('testalm_128.fits',self.alms,lmax=128,mmax=128)
+        hdulist = pf.open('testalm_128.fits')
+        read_alm(hdulist)
+
+    def test_read_alm_hdu(self):
+        write_alm('testalm_128.fits',self.alms,lmax=128,mmax=128)
+        hdu = pf.open('testalm_128.fits')[1]
+        read_alm(hdu)
+
 
 class TestReadWriteCl(unittest.TestCase):
 
@@ -130,6 +160,23 @@ class TestReadWriteCl(unittest.TestCase):
         cl_read = read_cl("test_cl.fits")
         for cl_column, cl_read_column in zip(cl, cl_read):
             np.testing.assert_array_almost_equal(cl_column, cl_read_column)
+
+    def test_read_cl_filename(self):
+        cl = np.arange(1025, dtype=np.double)
+        write_cl("test_cl.fits", cl)
+        read_cl('test_cl.fits')
+
+    def test_read_cl_hdulist(self):
+        cl = np.arange(1025, dtype=np.double)
+        write_cl("test_cl.fits", cl)
+        hdulist = pf.open('test_cl.fits')
+        read_cl(hdulist)
+
+    def test_read_cl_hdu(self):
+        cl = np.arange(1025, dtype=np.double)
+        write_cl("test_cl.fits", cl)
+        hdu = pf.open('test_cl.fits')[1]
+        read_cl(hdu)
 
 if __name__ == '__main__':
     unittest.main()
