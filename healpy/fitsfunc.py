@@ -453,7 +453,7 @@ def _get_hdu(input_data, hdu=None, memmap=None):
             raise ValueError('Available hdu in [0-%d]' % len(hdulist))
         else:
             fits_hdu = input_data[hdu]
-    elif isinstance(input_data, (pf.PrimaryHDU, pf.ImageHDU)):
+    elif isinstance(input_data, (pf.PrimaryHDU, pf.ImageHDU, pf.BinTableHDU, pf.TableHDU, pf.GroupsHDU)):
         fits_hdu = input_data
     else:
         raise TypeError("First argument should be a input_data, HDUList instance, or HDU instance")
