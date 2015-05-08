@@ -226,10 +226,6 @@ def write_map(filename,m,nest=False,dtype=np.float32,fits_IDL=True,coord=None,pa
                         'Indexing: IMPLICIT or EXPLICIT')
     tbhdu.header.update('OBJECT', 'PARTIAL' if partial else 'FULLSKY',
                         'Sky coverage, either FULLSKY or PARTIAL')
-    tbhdu.header.update('GRAIN', 1 if partial else 0,
-                        'GRAIN = 0: No index')
-    tbhdu.header.add_comment('GRAIN = 1: 1 pixel index for each pixel',
-                             after='GRAIN')
 
     # FIXME: In modern versions of Pyfits, header.update() understands a
     # header as an argument, and headers can be concatenated with the `+'
@@ -269,9 +265,9 @@ def read_map(filename,field=0,dtype=np.float64,nest=False,partial=False,hdu=1,h=
       if the indexing scheme cannot be determined from the header.
       If False, implicit indexing is assumed.  Default: False.
       A partial sky file is one in which OBJECT=PARTIAL and INDXSCHM=EXPLICIT,
-      and GRAIN=1, and the first column is then assumed to contain pixel indices.
-      A full sky file is one in which OBJECT=FULLSKY and INDXSCHM=IMPLICIT,
-      and GRAIN=0.  At least one of these keywords must be set for the indexing
+      and the first column is then assumed to contain pixel indices.
+      A full sky file is one in which OBJECT=FULLSKY and INDXSCHM=IMPLICIT.
+      At least one of these keywords must be set for the indexing
       scheme to be properly identified.
     hdu : int, optional
       the header number to look at (start at 0)
@@ -312,7 +308,7 @@ def read_map(filename,field=0,dtype=np.float64,nest=False,partial=False,hdu=1,h=
         field = (field,)
     ret = []
 
-    # partial sky: check OBJECT, then INDXSCHM, then GRAIN
+    # partial sky: check OBJECT, then INDXSCHM
     obj = fits_hdu.header.get('OBJECT', 'UNDEF').strip()
     if obj != 'UNDEF':
         if obj == 'PARTIAL':
@@ -329,17 +325,6 @@ def read_map(filename,field=0,dtype=np.float64,nest=False,partial=False,hdu=1,h=
         elif schm == 'IMPLICIT':
             if obj == 'PARTIAL':
                 raise ValueError('Incompatible INDXSCHM keyword')
-            partial = False
-
-    grain = fits_hdu.header.get('GRAIN', 'UNDEF')
-    if grain != 'UNDEF':
-        if grain == 1:
-            if obj == 'FULLSKY' or schm == 'IMPLICIT':
-                raise ValueError('Incompatible GRAIN keyword')
-            partial = True
-        elif grain == 0:
-            if obj == 'PARTIAL' or schm == 'EXPLICIT':
-                raise ValueError('Incompatible GRAIN keyword')
             partial = False
 
     if schm == 'UNDEF':
