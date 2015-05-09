@@ -118,7 +118,7 @@ def write_cl(filename, cl, dtype=np.float64):
     tbhdu.header.update('CREATOR','healpy')
     writeto(tbhdu, filename)
 
-def write_map(filename,m,nest=False,dtype=np.float32,fits_IDL=True,coord=None,column_names=None,column_units=None,extra_header=()):
+def write_map(filename,m,nest=False,dtype=np.float32,fits_IDL=True,coord=None,partial=False,column_names=None,column_units=None,extra_header=()):
     """Writes an healpix map into an healpix file.
 
     Parameters
@@ -139,6 +139,9 @@ def write_map(filename,m,nest=False,dtype=np.float32,fits_IDL=True,coord=None,co
     coord : str
       The coordinate system, typically 'E' for Ecliptic, 'G' for Galactic or 'C' for
       Celestial (equatorial)
+    partial : bool, optional
+      If True, fits file is written as a partial-sky file with explicit indexing.
+      Otherwise, implicit indexing is used.  Default: False.
     column_names : str or list
       Column name or list of column names, if None we use:
       I_STOKES for 1 component,
@@ -175,6 +178,19 @@ def write_map(filename,m,nest=False,dtype=np.float32,fits_IDL=True,coord=None,co
         raise ValueError('Invalid healpix map : wrong number of pixel')
 
     cols=[]
+    if partial:
+        fits_IDL = False
+        mask = pixelfunc.mask_good(m[0])
+        pix = np.where(mask)[0]
+        m = [mm[mask] for mm in m]
+        ff = getformat(np.min_scalar_type(-pix.max()))
+        if ff is None:
+            ff = 'I'
+        cols.append(pf.Column(name='PIXEL',
+                              format=ff,
+                              array=pix,
+                              unit=None))
+
     for cn, cu, mm in zip(column_names, column_units, m):
         if len(mm) > 1024 and fits_IDL:
             # I need an ndarray, for reshape:
@@ -202,11 +218,14 @@ def write_map(filename,m,nest=False,dtype=np.float32,fits_IDL=True,coord=None,co
     tbhdu.header.update('EXTNAME','xtension',
                         'name of this binary table extension')
     tbhdu.header.update('NSIDE',nside,'Resolution parameter of HEALPIX')
-    tbhdu.header.update('FIRSTPIX', 0, 'First pixel # (0 based)')
-    tbhdu.header.update('LASTPIX',pixelfunc.nside2npix(nside)-1,
-                        'Last pixel # (0 based)')
-    tbhdu.header.update('INDXSCHM','IMPLICIT',
+    if not partial:
+        tbhdu.header.update('FIRSTPIX', 0, 'First pixel # (0 based)')
+        tbhdu.header.update('LASTPIX',pixelfunc.nside2npix(nside)-1,
+                            'Last pixel # (0 based)')
+    tbhdu.header.update('INDXSCHM', 'EXPLICIT' if partial else 'IMPLICIT',
                         'Indexing: IMPLICIT or EXPLICIT')
+    tbhdu.header.update('OBJECT', 'PARTIAL' if partial else 'FULLSKY',
+                        'Sky coverage, either FULLSKY or PARTIAL')
 
     # FIXME: In modern versions of Pyfits, header.update() understands a
     # header as an argument, and headers can be concatenated with the `+'
@@ -220,9 +239,10 @@ def write_map(filename,m,nest=False,dtype=np.float32,fits_IDL=True,coord=None,co
     writeto(tbhdu, filename)
 
 
-def read_map(filename,field=0,dtype=np.float64,nest=False,hdu=1,h=False,
+def read_map(filename,field=0,dtype=np.float64,nest=False,partial=False,hdu=1,h=False,
              verbose=True,memmap=False):
-    """Read an healpix map from a fits file.
+    """Read an healpix map from a fits file.  Partial-sky files,
+    if properly identified, are expanded to full size and filled with UNSEEN.
 
     Parameters
     ----------
@@ -232,12 +252,23 @@ def read_map(filename,field=0,dtype=np.float64,nest=False,hdu=1,h=False,
       The column to read. Default: 0.
       By convention 0 is temperature, 1 is Q, 2 is U.
       Field can be a tuple to read multiple columns (0,1,2)
+      If the fits file is a partial-sky file, field=0 corresponds to the
+      first column after the pixel index column.
     dtype : data type, optional
       Force the conversion to some type. Default: np.float64
     nest : bool, optional
       If True return the map in NEST ordering, otherwise in RING ordering;
       use fits keyword ORDERING to decide whether conversion is needed or not
       If None, no conversion is performed.
+    partial : bool, optional
+      If True, fits file is assumed to be a partial-sky file with explicit indexing,
+      if the indexing scheme cannot be determined from the header.
+      If False, implicit indexing is assumed.  Default: False.
+      A partial sky file is one in which OBJECT=PARTIAL and INDXSCHM=EXPLICIT,
+      and the first column is then assumed to contain pixel indices.
+      A full sky file is one in which OBJECT=FULLSKY and INDXSCHM=IMPLICIT.
+      At least one of these keywords must be set for the indexing
+      scheme to be properly identified.
     hdu : int, optional
       the header number to look at (start at 0)
     h : bool, optional
@@ -277,6 +308,43 @@ def read_map(filename,field=0,dtype=np.float64,nest=False,hdu=1,h=False,
         field = (field,)
     ret = []
 
+    # partial sky: check OBJECT, then INDXSCHM
+    obj = fits_hdu.header.get('OBJECT', 'UNDEF').strip()
+    if obj != 'UNDEF':
+        if obj == 'PARTIAL':
+            partial = True
+        elif obj == 'FULLSKY':
+            partial = False
+
+    schm = fits_hdu.header.get('INDXSCHM', 'UNDEF').strip()
+    if schm != 'UNDEF':
+        if schm == 'EXPLICIT':
+            if obj == 'FULLSKY':
+                raise ValueError('Incompatible INDXSCHM keyword')
+            partial = True
+        elif schm == 'IMPLICIT':
+            if obj == 'PARTIAL':
+                raise ValueError('Incompatible INDXSCHM keyword')
+            partial = False
+
+    if schm == 'UNDEF':
+        schm = (partial and 'EXPLICIT' or 'IMPLICIT')
+        warnings.warn("No INDXSCHM keyword in header file : "
+                       "assume {}".format(schm))
+    if verbose:
+        print('INDXSCHM = {0:s}'.format(schm))
+
+    if partial:
+        # increment field counters
+        field = tuple(f+1 for f in field)
+        try:
+            pix = fits_hdu.data.field(0).astype(int).ravel()
+        except pf.VerifyError as e:
+            print(e)
+            print("Trying to fix a badly formatted header")
+            fits_hdu.verify("fix")
+            pix = fits_hdu.data.field(0).astype(int).ravel()
+
     for ff in field:
         try:
             m=fits_hdu.data.field(ff).astype(dtype).ravel()
@@ -285,6 +353,11 @@ def read_map(filename,field=0,dtype=np.float64,nest=False,hdu=1,h=False,
             print("Trying to fix a badly formatted header")
             m=fits_hdu.verify("fix")
             m=fits_hdu.data.field(ff).astype(dtype).ravel()
+
+        if partial:
+            mnew = UNSEEN * np.ones(sz, dtype=dtype)
+            mnew[pix] = m
+            m = mnew
 
         if (not pixelfunc.isnpixok(m.size) or (sz>0 and sz != m.size)) and verbose:
             print('nside={0:d}, sz={1:d}, m.size={2:d}'.format(nside,sz,m.size))

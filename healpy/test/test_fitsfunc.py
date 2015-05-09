@@ -59,6 +59,21 @@ class TestFitsFunc(unittest.TestCase):
         hdu = pf.open(self.filename)[1]
         read_map(hdu)
 
+    def test_read_write_partial(self):
+        m = self.m.astype(float)
+        m[:11 * self.nside * self.nside] = UNSEEN
+        write_map(self.filename, m, partial=True)
+        read_m = read_map(self.filename)
+        np.testing.assert_array_almost_equal(m, read_m)
+
+    def test_read_write_partial_3comp(self):
+        m = self.m.astype(float)
+        m[:11 * self.nside * self.nside] = UNSEEN
+        write_map(self.filename, [m, m, m], partial=True)
+        read_m = read_map(self.filename,(0,1,2))
+        for rm in read_m:
+            np.testing.assert_array_almost_equal(m, rm)
+
     def tearDown(self):
         os.remove(self.filename)
 
