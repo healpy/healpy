@@ -173,7 +173,7 @@ def map2alm(maps, lmax = None, mmax = None, iter = 3, pol = True,
     return alms
 
 def alm2map(alms, nside, lmax = None, mmax = None, pixwin = False,
-            fwhm = 0.0, sigma = None, invert = False, pol = True,
+            fwhm = 0.0, sigma = None,  pol = True,
             inplace = False, verbose=True):
     """Computes an Healpix map given the alm.
 
@@ -200,10 +200,6 @@ def alm2map(alms, nside, lmax = None, mmax = None, pixwin = False,
     sigma : float, scalar, optional
       The sigma of the Gaussian used to smooth the map (applied on alm)
       [in radians]
-    invert : bool, optional
-      If True, alms are divided by Gaussian beam function (un-smooth).
-      Otherwise, alms are multiplied by Gaussian beam function (smooth).
-      Default: False.
     pol : bool, optional
       If True, assumes input alms are TEB. Output will be TQU maps.
       (input must be 1 or 3 alms)
@@ -225,7 +221,7 @@ def alm2map(alms, nside, lmax = None, mmax = None, pixwin = False,
     if not cb.is_seq(alms):
         raise TypeError("alms must be a sequence")
 
-    alms = smoothalm(alms, fwhm = fwhm, sigma = sigma, invert = invert, 
+    alms = smoothalm(alms, fwhm = fwhm, sigma = sigma,  
                      pol = pol, inplace = inplace, verbose=verbose)
 
     if not cb.is_seq_of_seq(alms):
@@ -590,7 +586,7 @@ def almxfl(alm, fl, mmax = None, inplace = False):
     almout = _sphtools.almxfl(alm, fl, mmax = mmax, inplace = inplace)
     return almout
 
-def smoothalm(alms, fwhm = 0.0, sigma = None, invert = False, pol = True,
+def smoothalm(alms, fwhm = 0.0, sigma = None,  pol = True,
               mmax = None, verbose = True, inplace = True):
     """Smooth alm with a Gaussian symmetric beam function.
 
@@ -605,10 +601,6 @@ def smoothalm(alms, fwhm = 0.0, sigma = None, invert = False, pol = True,
     sigma : float, optional
       The sigma of the Gaussian. Override fwhm.
       [in radians]
-    invert : bool, optional
-      If True, alms are divided by Gaussian beam function (un-smooth).
-      Otherwise, alms are multiplied by Gaussian beam function (smooth).
-      Default: False.
     pol : bool, optional
       If True, assumes input alms are TEB. Output will be TQU maps.
       (input must be 1 or 3 alms)
@@ -684,7 +676,7 @@ def smoothalm(alms, fwhm = 0.0, sigma = None, invert = False, pol = True,
     return alms
 
 @accept_ma
-def smoothing(map_in, fwhm = 0.0, sigma = None, invert = False, pol = True,
+def smoothing(map_in, fwhm = 0.0, sigma = None,  pol = True,
               iter = 3, lmax = None, mmax = None, use_weights = False,
               datapath = None, verbose = True):
     """Smooth a map with a Gaussian symmetric beam.
@@ -701,10 +693,6 @@ def smoothing(map_in, fwhm = 0.0, sigma = None, invert = False, pol = True,
       radians]. Default:0.0
     sigma : float, optional
       The sigma of the Gaussian [in radians]. Override fwhm.
-    invert : bool, optional
-      If True, alms are divided by Gaussian beam function (un-smooth).
-      Otherwise, alms are multiplied by Gaussian beam function (smooth).
-      Default: False.
     pol : bool, optional
       If True, assumes input maps are TQU. Output will be TQU maps.
       (input must be 1 or 3 alms)
@@ -748,7 +736,7 @@ def smoothing(map_in, fwhm = 0.0, sigma = None, invert = False, pol = True,
         alms = map2alm(map_in, lmax = lmax, mmax = mmax, iter = iter,
                        pol = pol, use_weights = use_weights,
                        datapath = datapath)
-        smoothalm(alms, fwhm = fwhm, sigma = sigma, invert = invert,
+        smoothalm(alms, fwhm = fwhm, sigma = sigma, 
                   inplace = True, verbose = verbose)
         output_map = alm2map(alms, nside, pixwin = False, verbose=verbose)
     else:
@@ -758,7 +746,7 @@ def smoothing(map_in, fwhm = 0.0, sigma = None, invert = False, pol = True,
             alm = map2alm(map_in, iter = iter, pol = pol,
                           use_weights = use_weights,
                        datapath = datapath)
-            smoothalm(alm, fwhm = fwhm, sigma = sigma, invert = invert,
+            smoothalm(alm, fwhm = fwhm, sigma = sigma, 
                       inplace = True, verbose = verbose)
             output_map.append(alm2map(alm, nside, pixwin = False, verbose=verbose))
     if pixelfunc.maptype(output_map) == 0:
