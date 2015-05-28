@@ -340,7 +340,7 @@ def read_map(filename,field=0,dtype=np.float64,nest=False,partial=False,hdu=1,h=
 
     if partial:
         # increment field counters
-        field = tuple(f if isinstance(f, basestring) else f+1 for f in field)
+        field = tuple(f if isinstance(f, str) else f+1 for f in field)
         try:
             pix = fits_hdu.data.field(0).astype(int).ravel()
         except pf.VerifyError as e:
