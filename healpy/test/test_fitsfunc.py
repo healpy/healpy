@@ -59,6 +59,12 @@ class TestFitsFunc(unittest.TestCase):
         hdu = pf.open(self.filename)[1]
         read_map(hdu)
 
+    def test_read_map_all(self):
+        write_map(self.filename, [self.m, self.m, self.m])
+        read_m = read_map(self.filename, None)
+        for rm in read_m:
+            np.testing.assert_array_almost_equal(self.m, rm)
+
     def test_read_write_partial(self):
         m = self.m.astype(float)
         m[:11 * self.nside * self.nside] = UNSEEN
@@ -104,6 +110,12 @@ class TestReadWriteAlm(unittest.TestCase):
         self.alms = [np.arange(s, dtype=np.complex128),
                      np.arange(s, dtype=np.complex128),
                      np.arange(s, dtype=np.complex128)]
+
+    def tearDown(self):
+        if os.path.exists('testalm_128.fits'):
+            os.remove('testalm_128.fits')
+        if os.path.exists('testalm_256_128.fits'):
+            os.remove('testalm_256_128.fits')
 
     def test_write_alm(self):
 

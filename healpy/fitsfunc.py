@@ -248,12 +248,13 @@ def read_map(filename,field=0,dtype=np.float64,nest=False,partial=False,hdu=1,h=
     ----------
     filename : str or HDU or HDUList
       the fits file name
-    field : int or tuple of int, optional
+    field : int or tuple of int, or None, optional
       The column to read. Default: 0.
       By convention 0 is temperature, 1 is Q, 2 is U.
       Field can be a tuple to read multiple columns (0,1,2)
       If the fits file is a partial-sky file, field=0 corresponds to the
       first column after the pixel index column.
+      If None, all columns are read in.
     dtype : data type, optional
       Force the conversion to some type. Default: np.float64
     nest : bool, optional
@@ -304,8 +305,6 @@ def read_map(filename,field=0,dtype=np.float64,nest=False,partial=False,hdu=1,h=
     if verbose: print('ORDERING = {0:s} in fits file'.format(ordering))
 
     sz=pixelfunc.nside2npix(nside)
-    if not (hasattr(field, '__len__') or isinstance(field, str)):
-        field = (field,)
     ret = []
 
     # partial sky: check OBJECT, then INDXSCHM
@@ -334,9 +333,14 @@ def read_map(filename,field=0,dtype=np.float64,nest=False,partial=False,hdu=1,h=
     if verbose:
         print('INDXSCHM = {0:s}'.format(schm))
 
+    if field is None:
+        field = range(len(fits_hdu.data.columns) - 1*partial)
+    if not (hasattr(field, '__len__') or isinstance(field, str)):
+        field = (field,)
+
     if partial:
         # increment field counters
-        field = tuple(f+1 for f in field)
+        field = tuple(f if isinstance(f, basestring) else f+1 for f in field)
         try:
             pix = fits_hdu.data.field(0).astype(int).ravel()
         except pf.VerifyError as e:
