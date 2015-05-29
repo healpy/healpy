@@ -742,10 +742,9 @@ def smoothing(map_in, fwhm = 0.0, sigma = None,  pol = True,
     else:
         # Treat each map independently (any number)
         output_map = []
-        for m, mask in zip(map_in, masks):
-            alm = map2alm(map_in, iter = iter, pol = pol,
-                          use_weights = use_weights,
-                       datapath = datapath)
+        for m in map_in:
+            alm = map2alm(m, lmax = lmax, mmax = mmax, iter = iter, pol = pol,
+                          use_weights = use_weights, datapath = datapath)
             smoothalm(alm, fwhm = fwhm, sigma = sigma, 
                       inplace = True, verbose = verbose)
             output_map.append(alm2map(alm, nside, pixwin = False, verbose=verbose))
