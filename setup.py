@@ -145,7 +145,9 @@ class build_external_clib(build_clib):
     def _environ(self):
         """Construct an environment dictionary suitable for having pkg-config
         pick up .pc files in the build_clib directory."""
-        pkg_config_path = os.path.join(os.path.realpath(self.build_clib), 'lib', 'pkgconfig')
+        pkg_config_path = (
+            os.path.join(os.path.realpath(self.build_clib), 'lib64', 'pkgconfig') +
+            ':' + os.path.join(os.path.realpath(self.build_clib), 'lib', 'pkgconfig'))
         try:
             pkg_config_path += ':' + os.environ['PKG_CONFIG_PATH']
         except KeyError:
