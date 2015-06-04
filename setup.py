@@ -86,10 +86,16 @@ on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
 
 cython_require = 'Cython >= 0.16'
 try:
-    pkg_resources.require(cython_require)
-    from Cython.Distutils import build_ext
-    ext = "pyx"
-    extcpp = "pyx"
+    if ('--help' in sys.argv[1:] or
+        sys.argv[1] in ('--help-commands', 'egg_info', 'clean', '--version')):
+        from distutils.command.build_ext import build_ext        
+        ext = "c"
+        extcpp = "cpp"
+    else:
+        pkg_resources.require(cython_require)
+        from Cython.Distutils import build_ext
+        ext = "pyx"
+        extcpp = "pyx"
 except:
     # User does not have a sufficiently new version of Cython.
     if os.path.exists('healpy/src/_query_disc.cpp'):
@@ -115,9 +121,12 @@ OR, to build from development sources, first get {0} from:
 if on_rtd:
     numpy_inc = ''
 else:
-    from numpy import get_include
-    numpy_inc = get_include()
-
+    if ('--help' in sys.argv[1:] or
+        sys.argv[1] in ('--help-commands', 'egg_info', 'clean', '--version')):
+        numpy_inc = ''
+    else:
+        from numpy import get_include
+        numpy_inc = get_include()
 
 # Test if pkg-config is present. If not, fall back to pykg-config.
 try:
