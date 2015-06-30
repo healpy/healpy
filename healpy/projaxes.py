@@ -21,16 +21,26 @@ from . import projector as P
 from . import rotator as R
 from . import pixelfunc
 import matplotlib
-from matplotlib import axes,ticker,colors,cm,lines,cbook,figure
+import matplotlib.axes
 import numpy as np
 import six
-from ._healpy_pixel_lib import UNSEEN
+
+UNSEEN=None
+
+try:
+    from . import _healpy_pixel_lib as pixlib
+    #: Special value used for masked pixels
+    UNSEEN = pixlib.UNSEEN
+except:
+    import warnings
+    warnings.warn('Warning: cannot import _healpy_pixel_lib module')
+
 import six
 
 pi = np.pi
 dtor = pi/180.
 
-class SphericalProjAxes(axes.Axes):
+class SphericalProjAxes(matplotlib.axes.Axes):
     """Define a special Axes to take care of spherical projection.
 
     Parameters
@@ -257,13 +267,13 @@ class SphericalProjAxes(axes.Axes):
         for xx,yy in zip(x,y):
             if fmt is not None:
                 try: # works in matplotlib 1.3 and earlier
-                    linestyle, marker, color = axes._process_plot_format(fmt)
+                    linestyle, marker, color = matplotlib.axes._process_plot_format(fmt)
                 except: # matplotlib 1.4 and later
-                    linestyle, marker, color = axes._axes._process_plot_format(fmt)
+                    linestyle, marker, color = matplotlib.axes._axes._process_plot_format(fmt)
                 kwds.setdefault('linestyle',linestyle)
                 kwds.setdefault('marker',marker)
                 if color is not None: kwds.setdefault('color',color)
-            l = lines.Line2D(xx,yy,**kwds)
+            l = matplotlib.lines.Line2D(xx,yy,**kwds)
             self.add_line(l)
             thelines.append(l)
         return thelines
@@ -731,8 +741,8 @@ def get_color_table(vmin,vmax,val,cmap=None,norm=None):
 def create_colormap(cmap):
     if cmap is not None:
         return cmap 
-    cmap0 = cm.jet
-    newcm = colors.LinearSegmentedColormap('newcm',cmap0._segmentdata,
+    cmap0 = matplotlib.cm.jet
+    newcm = matplotlib.colors.LinearSegmentedColormap('newcm',cmap0._segmentdata,
                                                cmap0.N)
     newcm.set_over(newcm(1.0))
     newcm.set_under('w')
@@ -743,7 +753,7 @@ def create_colormap(cmap):
 #
 #   A Locator that gives the bounds of the interval
 #
-class BoundaryLocator(ticker.Locator):
+class BoundaryLocator(matplotlib.ticker.Locator):
     def __init__(self,N=2):
         if N < 2:
             raise ValueError("Number of locs must be greater than 1")
@@ -774,9 +784,9 @@ class BoundaryLocator(ticker.Locator):
 #   the histogram of data
 #
 
-class HistEqNorm(colors.Normalize):
+class HistEqNorm(matplotlib.colors.Normalize):
     def __init__(self, vmin=None, vmax=None, clip=False):
-        colors.Normalize.__init__(self,vmin,vmax,clip)
+        matplotlib.colors.Normalize.__init__(self,vmin,vmax,clip)
         self.xval = None
         self.yval = None
 
@@ -784,7 +794,7 @@ class HistEqNorm(colors.Normalize):
         if clip is None:
             clip = self.clip
 
-        if cbook.iterable(value):
+        if matplotlib.cbook.iterable(value):
             vtype = 'array'
             val = np.ma.asarray(value).astype(np.float)
         else:
@@ -814,7 +824,7 @@ class HistEqNorm(colors.Normalize):
         if not self.scaled():
             raise ValueError("Not invertible until scaled")
 
-        if cbook.iterable(value):
+        if matplotlib.cbook.iterable(value):
             vtype='array'
             val = np.ma.array(value)
         else:
@@ -900,7 +910,7 @@ class HistEqNorm(colors.Normalize):
 #   A normalization class to get logarithmic color table
 #
 
-class LogNorm2(colors.Normalize):
+class LogNorm2(matplotlib.colors.Normalize):
     """
     Normalize a given value to the 0-1 range on a log scale
     """
@@ -908,7 +918,7 @@ class LogNorm2(colors.Normalize):
         if clip is None:
             clip = self.clip
 
-        if cbook.iterable(value):
+        if matplotlib.cbook.iterable(value):
             vtype = 'array'
             val = np.ma.asarray(value).astype(np.float)
         else:
@@ -944,14 +954,14 @@ class LogNorm2(colors.Normalize):
         ' autoscale only None-valued vmin or vmax'
         if self.vmin is None or self.vmax is None:
             val = np.ma.masked_where(np.isinf(A.data),A)
-            colors.Normalize.autoscale_None(self,val)
+            matplotlib.colors.Normalize.autoscale_None(self,val)
 
     def inverse(self, value):
         if not self.scaled():
             raise ValueError("Not invertible until scaled")
         vmin, vmax = float(self.vmin), float(self.vmax)
 
-        if cbook.iterable(value):
+        if matplotlib.cbook.iterable(value):
             val = np.ma.asarray(value)
             return vmin * np.ma.power((vmax/vmin), val)
         else:
@@ -965,7 +975,7 @@ class LogNorm2(colors.Normalize):
 #   A normalization class to get linear color table
 #
 
-class LinNorm2(colors.Normalize):
+class LinNorm2(matplotlib.colors.Normalize):
     """
     Normalize a given value to the 0-1 range on a lin scale
     """
@@ -973,7 +983,7 @@ class LinNorm2(colors.Normalize):
         if clip is None:
             clip = self.clip
 
-        if cbook.iterable(value):
+        if matplotlib.cbook.iterable(value):
             vtype = 'array'
             val = np.ma.asarray(value).astype(np.float)
         else:
@@ -1008,14 +1018,14 @@ class LinNorm2(colors.Normalize):
         ' autoscale only None-valued vmin or vmax'
         if self.vmin is None or self.vmax is None:
             val = np.ma.masked_where(np.isinf(A.data),A)
-            colors.Normalize.autoscale_None(self,val)
+            matplotlib.colors.Normalize.autoscale_None(self,val)
 
     def inverse(self, value):
         if not self.scaled():
             raise ValueError("Not invertible until scaled")
         vmin, vmax = float(self.vmin), float(self.vmax)
 
-        if cbook.iterable(value):
+        if matplotlib.cbook.iterable(value):
             val = np.ma.asarray(value)
             return vmin + (vmax-vmin) * val
         else:

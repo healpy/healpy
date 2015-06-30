@@ -45,7 +45,7 @@ class Mock(object):
 try:
     import healpy
 except ImportError:
-    MOCK_MODULES = ['matplotlib', 'pylab', 'matplotlib.colors',
+    MOCK_MODULES = ['matplotlib', 'pylab', 'matplotlib.colors', 'matplotlib.axes',
                     'matplotlib.cbook', 'pyfits',
                     'numpy', '_healpy_pixel_lib',
                     '_healpy_sph_transform_lib', '_healpy_fitsio_lib', '_sphtools',
