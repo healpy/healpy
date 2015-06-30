@@ -14,6 +14,7 @@ Map projections
    mollview
    gnomview
    cartview
+   orthview
 
 Graticules
 ----------
