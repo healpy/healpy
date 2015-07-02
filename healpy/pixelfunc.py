@@ -1647,10 +1647,9 @@ def _ud_grade_core(m,nside_out,pess=False,power=None, dtype=None):
         bads = (mask_bad(m) | (~np.isfinite(m)))
         hit = np.ones(npix_in,dtype=np.int16)
         hit[bads] = 0
-        m[bads] = 0
         mr = m.reshape(npix_out,rat2)
         hit = hit.reshape(npix_out,rat2)
-        map_out = mr.sum(axis=1).astype(type_out)
+        map_out = np.sum(mr*hit, axis=1).astype(type_out)
         nhit = hit.sum(axis=1)
         if pess:
             badout = np.where(nhit != rat2)
@@ -1661,7 +1660,6 @@ def _ud_grade_core(m,nside_out,pess=False,power=None, dtype=None):
         map_out[nhit!=0] /= nhit[nhit!=0] 
         try:
             map_out[badout] = UNSEEN
-            m[bads] = UNSEEN
         except OverflowError:
             pass
     else:
