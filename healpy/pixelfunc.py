@@ -54,6 +54,8 @@ nside/npix/resolution
 
 - :func:`nside2npix` converts healpix nside parameter to number of pixel
 - :func:`npix2nside` converts number of pixel to healpix nside parameter
+- :func:`nside2order` converts nside to order
+- :func:`order2nside` converts order to nside
 - :func:`nside2resol` converts nside to mean angular resolution
 - :func:`nside2pixarea` converts nside to pixel area
 - :func:`isnsideok` checks the validity of nside
@@ -113,8 +115,9 @@ __all__ = ['pix2ang', 'pix2vec', 'ang2pix', 'vec2pix',
            'nest2ring', 'ring2nest', 'reorder', 'ud_grade',
            'UNSEEN', 'mask_good', 'mask_bad', 'ma',
            'fit_dipole', 'remove_dipole', 'fit_monopole', 'remove_monopole',
-           'nside2npix', 'npix2nside', 'nside2resol',
-           'nside2pixarea', 'isnsideok', 'isnpixok',
+           'nside2npix', 'npix2nside', 'nside2order', 'order2nside',
+           'nside2resol', 'nside2pixarea',
+           'isnsideok', 'isnpixok',
            'get_map_size', 'get_min_valid_nside',
            'get_nside', 'maptype', 'ma_to_array']
 
@@ -848,6 +851,42 @@ def nside2npix(nside):
     check_nside(nside)
     return 12*nside**2
 
+def nside2order(nside):
+    """Give the resolution order for a given nside.
+
+    Parameters
+    ----------
+    nside : int
+      healpix nside parameter; an exception is raised if nside is not valid
+      (nside must be a power of 2, less than 2**30)
+
+    Returns
+    -------
+    order : int
+      corresponding order where nside = 2**(order)
+
+    Notes
+    -----
+    Raise a ValueError exception if nside is not valid.
+
+    Examples
+    --------
+    >>> import healpy as hp
+    >>> import numpy as np
+    >>> hp.nside2order(128)
+    7
+
+    >>> np.all([hp.nside2order(2**o) == o for o in range(30)])
+    True
+
+    >>> hp.nside2order(7)
+    Traceback (most recent call last):
+        ...
+    ValueError: 7 is not a valid nside parameter (must be a power of 2, less than 2**30)
+    """
+    check_nside(nside)
+    return np.frexp(nside)[1]-1
+
 def nside2resol(nside, arcmin=False):
     """Give approximate resolution (pixel size in radian or arcmin) for nside.
 
@@ -972,6 +1011,41 @@ def npix2nside(npix):
     if nside != np.floor(nside):
         raise ValueError("Wrong pixel number (it is not 12*nside**2)")
     nside=int(np.floor(nside))
+    check_nside(nside)
+    return nside
+
+def order2nside(order):
+    """Give the nside parameter for the given resolution order.
+
+    Parameters
+    ----------
+    order : int
+      the resolution order
+
+    Returns
+    -------
+    nside : int
+      the nside parameter corresponding to order
+
+    Notes
+    -----
+    Raise a ValueError exception if order produces an nside out of range.
+
+    Examples
+    --------
+    >>> import healpy as hp
+    >>> hp.order2nside(7)
+    128
+
+    >>> hp.order2nside(np.arange(8))
+    array([  1,   2,   4,   8,  16,  32,  64, 128])
+
+    >>> hp.order2nside(31)
+    Traceback (most recent call last):
+        ...
+    ValueError: 2147483648 is not a valid nside parameter (must be a power of 2, less than 2**30)
+    """
+    nside = 1<<order
     check_nside(nside)
     return nside
 
