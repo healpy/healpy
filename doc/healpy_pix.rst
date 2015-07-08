@@ -36,6 +36,8 @@ nside/npix/resolution
 
    nside2npix
    npix2nside
+   nside2order
+   order2nside
    nside2resol
    nside2pixarea
    max_pixrad

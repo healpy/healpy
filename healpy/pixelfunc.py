@@ -885,7 +885,7 @@ def nside2order(nside):
     ValueError: 7 is not a valid nside parameter (must be a power of 2, less than 2**30)
     """
     check_nside(nside)
-    return np.frexp(nside)[1]-1
+    return nside.bit_length()-1
 
 def nside2resol(nside, arcmin=False):
     """Give approximate resolution (pixel size in radian or arcmin) for nside.
