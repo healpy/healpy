@@ -279,12 +279,13 @@ def boundaries(nside, pix, step=1, nest=False):
         raise ValueError('Wrong nside value, must be a power of 2, less than 2**30')
     if isinstance(pix, (int, long)):
         return _boundaries_single(nside, pix, step=step, nest=nest)
-    if type(pix) is np.ndarray:
-        if not issubclass(pix.dtype.type, np.integer):
-            raise ValueError('Array of pixels has to be integers')
-        if pix.ndim!=1:
-            raise ValueError('Array has to one dimensional')
-        return _boundaries_multiple(nside, pix, step=step, nest=nest)
+    if not (type(pix) is np.ndarray):
+       pix = np.asarray(pix)
+    if not issubclass(pix.dtype.type, np.integer):
+        raise ValueError('Array of pixels has to be integers')
+    if pix.ndim!=1:
+        raise ValueError('Array has to one dimensional')
+    return _boundaries_multiple(nside, pix, step=step, nest=nest)
 
 # Try to implement pix2ang
 ### @cython.boundscheck(False)
