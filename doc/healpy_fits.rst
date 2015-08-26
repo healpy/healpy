@@ -3,7 +3,7 @@
 .. currentmodule:: healpy.fitsfunc
 
 
-:mod:`fitsfunc` -- Pixelisation related functions
+:mod:`fitsfunc` -- FITS file related functions
 ==================================================
 
 Reading/writing maps
