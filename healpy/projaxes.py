@@ -35,8 +35,6 @@ except:
     import warnings
     warnings.warn('Warning: cannot import _healpy_pixel_lib module')
 
-import six
-
 pi = np.pi
 dtor = pi/180.
 
@@ -859,7 +857,7 @@ class HistEqNorm(matplotlib.colors.Normalize):
         if data.mask is not np.ma.nomask:
             w = w|data.mask
         data2 = data.data[~w]
-        bins = long(min(data2.size/20, 5000))
+        bins = min(data2.size//20, 5000)
         if bins < 3: bins=data2.size
         try:
             # for numpy 1.1, use new bins format (left and right edges)
