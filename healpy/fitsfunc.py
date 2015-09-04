@@ -38,7 +38,7 @@ import numpy as np
 from . import pixelfunc
 from .sphtfunc import Alm
 from .pixelfunc import UNSEEN
-import cookbook as cb
+from . import cookbook as cb
 
 standard_column_names = {
     1 : "I_STOKES",
