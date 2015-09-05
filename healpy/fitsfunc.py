@@ -38,6 +38,7 @@ import numpy as np
 from . import pixelfunc
 from .sphtfunc import Alm
 from .pixelfunc import UNSEEN
+from . import cookbook as cb
 
 standard_column_names = {
     1 : "I_STOKES",
@@ -182,6 +183,8 @@ def write_map(filename,m,nest=False,dtype=np.float32,fits_IDL=True,coord=None,pa
         fits_IDL = False
         mask = pixelfunc.mask_good(m[0])
         pix = np.where(mask)[0]
+        if len(pix) == 0:
+            raise ValueError('Invalid healpix map : empty partial map')
         m = [mm[mask] for mm in m]
         ff = getformat(np.min_scalar_type(-pix.max()))
         if ff is None:
@@ -419,7 +422,7 @@ def write_alm(filename,alms,out_dtype=None,lmax=-1,mmax=-1,mmax_in=-1):
       maximum m in the input array
     """
 
-    if not isinstance(alms, list):
+    if not cb.is_seq_of_seq(alms):
         alms = [alms]
 
     l2max = Alm.getlmax(len(alms[0]),mmax=mmax_in)
