@@ -4,44 +4,67 @@
 
 language: python
 
+sudo: false
+
+addons:
+    apt:
+        packages:
+        - pkg-config
+
 python:
   - 2.7
   - 3.3
   - 3.4
 
 env:
-  - USE_ANACONDA=false USE_PIP=false USE_EXTERNAL_CFITSIO=false
-  - USE_ANACONDA=false USE_PIP=false USE_EXTERNAL_CFITSIO=true
-  - USE_ANACONDA=false USE_PIP=true  USE_EXTERNAL_CFITSIO=false
-  - USE_ANACONDA=false USE_PIP=true  USE_EXTERNAL_CFITSIO=true
-  - USE_ANACONDA=true  USE_PIP=false USE_EXTERNAL_CFITSIO=false
-  - USE_ANACONDA=true  USE_PIP=false USE_EXTERNAL_CFITSIO=true
-  - USE_ANACONDA=true  USE_PIP=true  USE_EXTERNAL_CFITSIO=false
-  - USE_ANACONDA=true  USE_PIP=true  USE_EXTERNAL_CFITSIO=true
+  - USE_ANACONDA=false USE_PIP=false
+  - USE_ANACONDA=false USE_PIP=true
+  - USE_ANACONDA=true  USE_PIP=false
+  - USE_ANACONDA=true  USE_PIP=true
 
 # FIXME: The Ubuntu Python 3.4 package may use different default compiler flags.
 # I think that Healpy needs to be built with the C compiler in C99 mode.
 #
-# For speed, only test internal cfitsio on certain versions of Python.
+# For speed, only fully test internal cfitsio in Python 3.4
 
 matrix:
-  exclude:
+  include:
+    - python: 2.7
+      env: USE_ANACONDA=true USE_PIP=false
+      addons:
+        apt:
+          packages:
+            - libcfitsio3-dev
     - python: 3.3
-      env: USE_ANACONDA=false USE_PIP=false USE_EXTERNAL_CFITSIO=false
-    - python: 3.3
-      env: USE_ANACONDA=false USE_PIP=true  USE_EXTERNAL_CFITSIO=false
-    - python: 3.3
-      env: USE_ANACONDA=true  USE_PIP=false USE_EXTERNAL_CFITSIO=false
-    - python: 3.3
-      env: USE_ANACONDA=true  USE_PIP=true  USE_EXTERNAL_CFITSIO=false
+      env: USE_ANACONDA=true USE_PIP=false
+      addons:
+        apt:
+          packages:
+            - libcfitsio3-dev
     - python: 3.4
-      env: USE_ANACONDA=false USE_PIP=false USE_EXTERNAL_CFITSIO=false
+      env: USE_ANACONDA=false USE_PIP=false
+      addons:
+        apt:
+          packages:
+            - libcfitsio3-dev
     - python: 3.4
-      env: USE_ANACONDA=false USE_PIP=false USE_EXTERNAL_CFITSIO=true
+      env: USE_ANACONDA=false USE_PIP=true
+      addons:
+        apt:
+          packages:
+            - libcfitsio3-dev
     - python: 3.4
-      env: USE_ANACONDA=false USE_PIP=true  USE_EXTERNAL_CFITSIO=false
+      env: USE_ANACONDA=true USE_PIP=false
+      addons:
+        apt:
+          packages:
+            - libcfitsio3-dev
     - python: 3.4
-      env: USE_ANACONDA=false USE_PIP=true  USE_EXTERNAL_CFITSIO=true
+      env: USE_ANACONDA=true USE_PIP=true
+      addons:
+        apt:
+          packages:
+            - libcfitsio3-dev
 
 before_install:
   # Use Matplotlib backend appropriate for headless rendering
@@ -61,25 +84,21 @@ before_install:
       source ~/miniconda/bin/activate anaconda_env && \
       travis_retry pip install pyfits cython pytest
     else
-     sudo apt-get -y install pkg-config && \
      travis_retry pip install --upgrade setuptools && \
      travis_retry pip install numpy matplotlib pyfits cython pytest
     fi
-
-  # Install cfitsio if necessary
-  - if $USE_EXTERNAL_CFITSIO; then sudo apt-get -y install libcfitsio3-dev; fi
 
 install:
   # Build first to create Cython sources
   # Then make source distribution
   # Uninstall things that are only needed when building from git
   # Finally, install from the source distribution using pip
+  # how to remove this FIXME :    sudo apt-get -y remove autoconf automake pkg-config && \
   - |
     if $USE_PIP; then
       python setup.py build && \
       python setup.py sdist && \
       pip uninstall -y cython && \
-      sudo apt-get -y remove autoconf automake pkg-config && \
       pip install dist/*.tar.gz
     else
       python setup.py install
