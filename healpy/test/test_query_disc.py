@@ -3,12 +3,25 @@ import numpy as np
 
 from .. import query_disc, boundaries, nside2npix
 
+try:
+    from exceptions import ValueError
+except:
+    pass
+
 class TestQueryDisc(unittest.TestCase):
 
     def setUp(self):
         self.NSIDE = 8
         self.vec = np.array([ 0.17101007,  0.03015369,  0.98480775])
         self.radius = np.radians(6)
+        self.nside2_55_corners_precomp = np.array(
+            [[[  2.44708573e-17,  5.27046277e-01,  3.60797400e-01,  4.56383842e-17],
+              [  3.99652627e-01,  5.27046277e-01,  8.71041977e-01,  7.45355992e-01],
+              [  9.16666667e-01,  6.66666667e-01,  3.33333333e-01,  6.66666667e-01]],
+             [[  2.44708573e-17,  5.27046277e-01,  3.60797400e-01,  4.56383842e-17],
+              [  3.99652627e-01,  5.27046277e-01,  8.71041977e-01,  7.45355992e-01],
+              [  9.16666667e-01,  6.66666667e-01,  3.33333333e-01,  6.66666667e-01]]]
+        )
 
     def test_not_inclusive(self):
         #HIDL> query_disc, 8, [ 0.17101007,  0.03015369,  0.98480775],6,listpix,/DEG,NESTED=0           
@@ -37,18 +50,23 @@ class TestQueryDisc(unittest.TestCase):
              [  9.16666667e-01,  6.66666667e-01,  3.33333333e-01,  6.66666667e-01]])
         np.testing.assert_array_almost_equal(corners, corners_precomp, decimal=8)
 
+    def test_boundaries_list(self):
+        nside = 2
+        corners = boundaries(nside, [5,5])
+        np.testing.assert_array_almost_equal(corners, self.nside2_55_corners_precomp, decimal=8)
+
     def test_boundaries_phi_theta(self):
         nside = 2
         corners = boundaries(nside, np.array([5,5]))
-        corners_precomp = np.array(
-            [[[  2.44708573e-17,  5.27046277e-01,  3.60797400e-01,  4.56383842e-17],
-              [  3.99652627e-01,  5.27046277e-01,  8.71041977e-01,  7.45355992e-01],
-              [  9.16666667e-01,  6.66666667e-01,  3.33333333e-01,  6.66666667e-01]],
-             [[  2.44708573e-17,  5.27046277e-01,  3.60797400e-01,  4.56383842e-17],
-              [  3.99652627e-01,  5.27046277e-01,  8.71041977e-01,  7.45355992e-01],
-              [  9.16666667e-01,  6.66666667e-01,  3.33333333e-01,  6.66666667e-01]]]
-        )
-        np.testing.assert_array_almost_equal(corners, corners_precomp, decimal=8)
+        np.testing.assert_array_almost_equal(corners, self.nside2_55_corners_precomp, decimal=8)
+
+    def test_boundaries_floatpix_array(self):
+        with self.assertRaises(ValueError):
+            corners = boundaries(2, np.array([5.,5]))
+
+    def test_boundaries_floatpix_scalar(self):
+        with self.assertRaises(ValueError):
+            corners = boundaries(2, 1/2.)
 
     def test_buffer_mode(self) :
     
