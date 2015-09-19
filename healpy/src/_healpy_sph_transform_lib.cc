@@ -920,11 +920,11 @@ static PyObject *healpy_synalm(PyObject *self, PyObject *args,
         {
           double x;
           x = 0.0;
-          almalms[i](l,0).im = 0.0;
+          almalms[i](l,0).imag(0.0);
           for( int j=0; j<=i; j++ )
-            x += res[getidx(nalm,i,j)]*almalms[j](l,0).re;
-          almalms[i](l,0).re = x;
-          DBGPRINTF(" %lg %lg ;", almalms[i](l,0).re, almalms[i](l,0).im);
+            x += res[getidx(nalm,i,j)]*almalms[j](l,0).real();
+          almalms[i](l,0).real(x);
+          DBGPRINTF(" %lg %lg ;", almalms[i](l,0).real(), almalms[i](l,0).imag());
         }
       DBGPRINTF("\n");
 
@@ -938,17 +938,17 @@ static PyObject *healpy_synalm(PyObject *self, PyObject *args,
               xi = xr = 0.0;
               for( int j=0; j<=i; j++ )
                 {
-                  xr += res[getidx(nalm,i,j)]*almalms[j](l,m).re;
-                  xi += res[getidx(nalm,i,j)]*almalms[j](l,m).im;
+                  xr += res[getidx(nalm,i,j)]*almalms[j](l,m).real();
+                  xi += res[getidx(nalm,i,j)]*almalms[j](l,m).imag();
                   DBGPRINTF("(res[%d]=%lg, alm=%lg,%lg) %lg %lg", (int)getidx(nalm,i,j),
                             res[getidx(nalm,i,j)],
-                            almalms[j](l,m).re, almalms[j](l,m).im,
+                            almalms[j](l,m).real(), almalms[j](l,m).imag(),
                             xr, xi);
                 }
-              almalms[i](l,m).re = xr/sqrt_two;
-              almalms[i](l,m).im = xi/sqrt_two;
+              almalms[i](l,m).real(xr/sqrt_two);
+              almalms[i](l,m).imag(xi/sqrt_two);
               DBGPRINTF(" xre,xim[%d]: %lg %lg ;", i,
-                        almalms[i](l,m).re, almalms[i](l,m).im);
+                        almalms[i](l,m).real(), almalms[i](l,m).imag());
             }
           DBGPRINTF("\n");
       }
