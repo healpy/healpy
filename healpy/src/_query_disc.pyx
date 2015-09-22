@@ -285,7 +285,7 @@ def boundaries(nside, pix, step=1, nest=False):
         pix = np.asarray(pix)
         if np.can_cast(pix.dtype, np.int):
             if pix.ndim!=1:
-                raise ValueError('Array has to one dimensional')
+                raise ValueError('Array has to be one dimensional')
             return _boundaries_multiple(nside, pix.astype(np.int), step=step, nest=nest)
         else:
             raise ValueError('Array of pixels has to be integers')
