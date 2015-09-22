@@ -116,7 +116,7 @@ def write_cl(filename, cl, dtype=np.float64):
 
     tbhdu = pf.new_table(cols)
     # add needed keywords
-    tbhdu.header['CREATOR'] = 'healpy'
+    tbhdu.header.update('CREATOR','healpy')
     writeto(tbhdu, filename)
 
 def write_map(filename,m,nest=False,dtype=np.float32,fits_IDL=True,coord=None,partial=False,column_names=None,column_units=None,extra_header=()):
@@ -210,31 +210,34 @@ def write_map(filename,m,nest=False,dtype=np.float32,fits_IDL=True,coord=None,pa
 
     tbhdu = pf.new_table(cols)
     # add needed keywords
-    tbhdu.header['PIXTYPE'] = ('HEALPIX','HEALPIX pixelisation')
+    tbhdu.header.update('PIXTYPE','HEALPIX','HEALPIX pixelisation')
     if nest: ordering = 'NESTED'
     else:    ordering = 'RING'
-    tbhdu.header['ORDERING'] = (ordering,
+    tbhdu.header.update('ORDERING',ordering,
                         'Pixel ordering scheme, either RING or NESTED')
     if coord:
-        tbhdu.header['COORDSYS'] = (coord,
+        tbhdu.header.update('COORDSYS',coord,
                             'Ecliptic, Galactic or Celestial (equatorial)')
-    tbhdu.header['EXTNAME'] = ('xtension',
+    tbhdu.header.update('EXTNAME','xtension',
                         'name of this binary table extension')
-    tbhdu.header['NSIDE'] = (nside,'Resolution parameter of HEALPIX')
+    tbhdu.header.update('NSIDE',nside,'Resolution parameter of HEALPIX')
     if not partial:
-        tbhdu.header['FIRSTPIX'] = (0, 'First pixel # (0 based)')
-        tbhdu.header['LASTPIX'] = (pixelfunc.nside2npix(nside)-1,
+        tbhdu.header.update('FIRSTPIX', 0, 'First pixel # (0 based)')
+        tbhdu.header.update('LASTPIX',pixelfunc.nside2npix(nside)-1,
                             'Last pixel # (0 based)')
-    tbhdu.header['INDXSCHM'] = ('EXPLICIT' if partial else 'IMPLICIT',
+    tbhdu.header.update('INDXSCHM', 'EXPLICIT' if partial else 'IMPLICIT',
                         'Indexing: IMPLICIT or EXPLICIT')
-    tbhdu.header['OBJECT'] = ('PARTIAL' if partial else 'FULLSKY',
+    tbhdu.header.update('OBJECT', 'PARTIAL' if partial else 'FULLSKY',
                         'Sky coverage, either FULLSKY or PARTIAL')
 
+    # FIXME: In modern versions of Pyfits, header.update() understands a
+    # header as an argument, and headers can be concatenated with the `+'
+    # operator.
     for args in extra_header:
         if args[0] == 'COMMENT':
             tbhdu.header.add_comment(*args[1:])
         else:
-            tbhdu.header.set(*args)
+            tbhdu.header.update(*args)
 
     writeto(tbhdu, filename)
 
@@ -591,7 +594,7 @@ def mwrfits(filename,data,hdu=1,colnames=None,keys=None):
     tbhdu = pf.new_table(cols)
     if type(keys) is dict:
         for k,v in keys.items():
-            tbhdu.header[k] = v
+            tbhdu.header.update(k,v)
     # write the file
     writeto(tbhdu, filename)
 
