@@ -61,12 +61,10 @@ class TestQueryDisc(unittest.TestCase):
         np.testing.assert_array_almost_equal(corners, self.nside2_55_corners_precomp, decimal=8)
 
     def test_boundaries_floatpix_array(self):
-        with self.assertRaises(ValueError):
-            corners = boundaries(2, np.array([5.,5]))
+        self.assertRaises(ValueError, boundaries, 2, np.array([5.,5]))
 
     def test_boundaries_floatpix_scalar(self):
-        with self.assertRaises(ValueError):
-            corners = boundaries(2, 1/2.)
+        self.assertRaises(ValueError, boundaries, 2, 1/2.)
 
     def test_buffer_mode(self) :
     
