@@ -741,7 +741,7 @@ class OrthographicProj(SphericalProj):
                 if half_sky:
                     x = np.nan
                 else:
-                    x *= 1
+                    x *= -1
         if half_sky:
             mask = (np.asarray(x)**2+np.asarray(y)**2>1.0)
         else:
