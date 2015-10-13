@@ -355,6 +355,8 @@ def gnomview(map=None,fig=None,rot=None,coord=None,unit='',
             map=pixelfunc.remove_dipole(map,gal_cut=gal_cut,nest=nest,copy=True)
         elif remove_mono:
             map=pixelfunc.remove_monopole(map,gal_cut=gal_cut,nest=nest,copy=True)
+        if degree:
+            reso *= 60
         img = ax.projmap(map,nest=nest,coord=coord,vmin=min,vmax=max,
                    xsize=xsize,ysize=ysize,reso=reso,cmap=cmap,norm=norm)
         if cbar:
