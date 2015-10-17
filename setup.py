@@ -409,7 +409,7 @@ else:
         'local_source': 'cfitsio',
         'supports_non_srcdir_builds': False}),
         ('healpix_cxx', {
-        'pkg_config_name': 'healpix_cxx',
+        'pkg_config_name': 'healpix_cxx >= 3.30.0',
         'local_source': 'healpixsubmodule/src/cxx/autotools'})
     ]
     extension_list = [pixel_lib, spht_lib, hfits_lib,
