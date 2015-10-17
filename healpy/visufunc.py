@@ -226,7 +226,7 @@ def mollview(map=None,fig=None,rot=None,coord=None,unit='',
         return img
 
 def gnomview(map=None,fig=None,rot=None,coord=None,unit='',
-             xsize=200,ysize=None,reso=1.5,degree=False,
+             xsize=200,ysize=None,reso=1.5,
              title='Gnomonic view',nest=False,remove_dip=False,
              remove_mono=False,gal_cut=0,
              min=None,max=None,flip='astro',
@@ -260,9 +260,7 @@ def gnomview(map=None,fig=None,rot=None,coord=None,unit='',
     ysize : None or int, optional
       The size of the image. Default: None= xsize
     reso : float, optional
-      Resolution (in arcmin if degree is False). Default: 1.5 arcmin
-    degree : bool, optional
-      if True, reso is in degree. Default: False
+      Resolution (in arcmin). Default: 1.5 arcmin
     title : str, optional
       The title of the plot. Default: 'Gnomonic view'
     nest : bool, optional
