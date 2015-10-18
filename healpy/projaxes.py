@@ -25,15 +25,7 @@ import matplotlib.axes
 import numpy as np
 import six
 
-UNSEEN=None
-
-try:
-    from . import _healpy_pixel_lib as pixlib
-    #: Special value used for masked pixels
-    UNSEEN = pixlib.UNSEEN
-except:
-    import warnings
-    warnings.warn('Warning: cannot import _healpy_pixel_lib module')
+from ._healpy_pixel_lib import UNSEEN
 
 pi = np.pi
 dtor = pi/180.

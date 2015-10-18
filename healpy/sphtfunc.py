@@ -24,22 +24,13 @@ pi = np.pi
 import warnings
 
 try:
-    from exceptions import ImportError
-except:
-    pass
+    import astropy.io.fits as pf
+except ImportError:
+    import pyfits as pf
 
-try:
-    from . import _healpy_sph_transform_lib as sphtlib
-except ImportError:
-    warnings.warn('Warning: cannot import _healpy_pixel_lib module')
-try:
-    from . import _healpy_fitsio_lib as hfitslib
-except ImportError:
-    warnings.warn('Warning: cannot import _healpy_fitsio_lib module')
-try:
-    from . import _sphtools as _sphtools
-except ImportError:
-    warnings.warn('Warning: cannot import _sphtools module')
+from . import _healpy_sph_transform_lib as sphtlib
+from . import _healpy_fitsio_lib as hfitslib
+from . import _sphtools as _sphtools
 from . import cookbook as cb
 
 import os.path
@@ -780,13 +771,6 @@ def pixwin(nside, pol = False):
         raise ValueError("No pixel window for this nside "
                          "or data files missing")
     # return hfitslib._pixwin(nside,datapath,pol)  ## BROKEN -> seg fault...
-    try:
-        try:
-            import astropy.io.fits as pf
-        except ImportError:
-            import pyfits as pf
-    except ImportError:
-        raise ImportError("You need to install astropy.io.fits or pyfits to use this function.")
     pw = pf.getdata(fname)
     pw_temp, pw_pol = pw.field(0), pw.field(1)
     if pol:
