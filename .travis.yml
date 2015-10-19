@@ -66,13 +66,12 @@ before_install:
       bash miniconda.sh -b && \
       ~/miniconda/bin/conda create --yes -n anaconda_env \
         python=$TRAVIS_PYTHON_VERSION \
-        setuptools pip numpy matplotlib && \
-      source ~/miniconda/bin/activate anaconda_env && \
-      travis_retry pip install pyfits cython pytest
+        setuptools pip numpy matplotlib astropy cython pytest && \
+      source ~/miniconda/bin/activate anaconda_env
     else
      sudo apt-get -y install pkg-config && \
      travis_retry pip install --upgrade setuptools && \
-     travis_retry pip install numpy matplotlib pyfits cython pytest
+     travis_retry pip install numpy matplotlib astropy cython pytest
     fi
 
   # Install cfitsio if necessary
@@ -86,8 +85,12 @@ install:
   - |
     if $USE_PIP; then
       python setup.py build && \
-      python setup.py sdist && \
-      pip uninstall -y cython && \
+      python setup.py sdist
+      if $USE_ANACONDA; then
+        conda uninstall -y cython
+      else
+        pip uninstall -y cython
+      fi
       sudo apt-get -y remove autoconf automake pkg-config && \
       pip install dist/*.tar.gz
     else
