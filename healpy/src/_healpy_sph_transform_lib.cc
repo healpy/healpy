@@ -920,10 +920,10 @@ static PyObject *healpy_synalm(PyObject *self, PyObject *args,
         {
           double x;
           x = 0.0;
-          almalms[i](l,0).imag(0.0);
+          almalms[i](l,0)=xcomplex<double>(almalms[i](l,0).real(),0.0);
           for( int j=0; j<=i; j++ )
             x += res[getidx(nalm,i,j)]*almalms[j](l,0).real();
-          almalms[i](l,0).real(x);
+          almalms[i](l,0)=xcomplex<double>(x,0.);
           DBGPRINTF(" %lg %lg ;", almalms[i](l,0).real(), almalms[i](l,0).imag());
         }
       DBGPRINTF("\n");
@@ -945,8 +945,7 @@ static PyObject *healpy_synalm(PyObject *self, PyObject *args,
                             almalms[j](l,m).real(), almalms[j](l,m).imag(),
                             xr, xi);
                 }
-              almalms[i](l,m).real(xr/sqrt_two);
-              almalms[i](l,m).imag(xi/sqrt_two);
+              almalms[i](l,m)=xcomplex<double>(xr/sqrt_two,xi/sqrt_two);
               DBGPRINTF(" xre,xim[%d]: %lg %lg ;", i,
                         almalms[i](l,m).real(), almalms[i](l,m).imag());
             }
