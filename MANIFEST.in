@@ -5,6 +5,7 @@ exclude cfitsio/*pdf cfitsio/*ps cfitsio/*doc cfitsio/*tex
 prune cfitsio/docs
 exclude *.so
 exclude *.a
+exclude .gitignore .gitmodules .travis.yml clean.sh
 include COPYING CITATION INSTALL.rst README.rst MANIFEST.in CHANGELOG.rst ez_setup.py run_pykg_config.py
 include healpy/src/_healpy_utils.h
 include healpy/src/_query_disc.cpp
