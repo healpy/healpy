@@ -153,7 +153,7 @@ def mollview(map=None,fig=None,rot=None,coord=None,unit='',
         if hasattr(sub,'__len__'):
             nrows, ncols, idx = sub
         else:
-            nrows, ncols, idx = int(sub/100), int((sub%100)/10), int(sub%10)
+            nrows, ncols, idx = sub//100, (sub%100)//10, sub%10
         if idx < 1 or idx > ncols*nrows:
             raise ValueError('Wrong values for sub: %d, %d, %d'%(nrows,
                                                                  ncols,
@@ -320,7 +320,7 @@ def gnomview(map=None,fig=None,rot=None,coord=None,unit='',
         if hasattr(sub,'__len__'):
             nrows, ncols, idx = sub
         else:
-            nrows, ncols, idx = int(sub/100), int((sub%100)/10), int(sub%10)
+            nrows, ncols, idx = sub//100, (sub%100)//10, sub%10
         if idx < 1 or idx > ncols*nrows:
             raise ValueError('Wrong values for sub: %d, %d, %d'%(nrows,
                                                                  ncols,
@@ -497,7 +497,7 @@ def cartview(map=None,fig=None,rot=None,zat=None,coord=None,unit='',
         if hasattr(sub,'__len__'):
             nrows, ncols, idx = sub
         else:
-            nrows, ncols, idx = int(sub/100), int((sub%100)/10), int(sub%10)
+            nrows, ncols, idx = sub//100, (sub%100)//10, sub%10
         if idx < 1 or idx > ncols*nrows:
             raise ValueError('Wrong values for sub: %d, %d, %d'%(nrows,
                                                                  ncols,
@@ -668,7 +668,7 @@ def orthview(map=None,fig=None,rot=None,coord=None,unit='',
         if hasattr(sub,'__len__'):
             nrows, ncols, idx = sub
         else:
-            nrows, ncols, idx = int(sub/100), int((sub%100)/10), int(sub%10)
+            nrows, ncols, idx = sub//100, (sub%100)//10, sub%10
         if idx < 1 or idx > ncols*nrows:
             raise ValueError('Wrong values for sub: %d, %d, %d'%(nrows,
                                                                  ncols,
