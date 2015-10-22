@@ -1727,8 +1727,8 @@ def _ud_grade_core(m,nside_out,pess=False,power=None, dtype=None):
         else:
             badout = np.where(nhit == 0)
         if power:
-            nhit /= ratio
-        map_out[nhit!=0] /= nhit[nhit!=0] 
+            nhit = nhit / ratio
+        map_out[nhit!=0] = map_out[nhit!=0] / nhit[nhit!=0]
         try:
             map_out[badout] = UNSEEN
         except OverflowError:
