@@ -820,7 +820,7 @@ def new_to_old_spectra_order(cls_new_order):
         for j in six.moves.xrange(i, Nspec):
             p = j - i
             q = i
-            idx_new = p * (2 * Nspec + 1 - p) / 2 + q
+            idx_new = p * (2 * Nspec + 1 - p) // 2 + q
             cls_old_order.append(cls_new_order[idx_new])
     return cls_old_order
 
