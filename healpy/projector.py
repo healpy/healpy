@@ -337,9 +337,9 @@ class GnomonicProj(SphericalProj):
         dx = reso/60. * dtor
         xc,yc = 0.5*(xsize-1), 0.5*(ysize-1)
         if i is None and j is None:
-            idx=np.outer(np.ones(xsize),np.arange(ysize))
+            idx=np.outer(np.ones(ysize),np.arange(xsize))
             x=(idx-xc) * dx   # astro= '-' sign, geo '+' sign
-            idx=np.outer(np.arange(xsize),np.ones(ysize))
+            idx=np.outer(np.arange(ysize),np.ones(xsize))
             y=(idx-yc)*dx #(idx-yc) * dx
         elif i is not None and j is not None:
             x=(np.asarray(j)-xc) * dx
@@ -356,7 +356,7 @@ class GnomonicProj(SphericalProj):
     def get_extent(self):
         xsize,ysize = self.arrayinfo['xsize'],self.arrayinfo['ysize']
         left,bottom = self.ij2xy(0,0)
-        right,top = self.ij2xy(xsize-1,ysize-1)
+        right,top = self.ij2xy(ysize-1,xsize-1)
         return (left,right,bottom,top)
 
     def get_fov(self):
