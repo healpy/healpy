@@ -1011,30 +1011,45 @@ class LambertProj(SphericalProj):
         dx = reso/60. * dtor
         xc,yc = 0.5*(xsize-1), 0.5*(ysize-1)
         if i is None and j is None:
-            idx=np.outer(np.ones(ysize),np.arange(xsize))
-            x=(idx-xc) * dx   # astro= '-' sign, geo '+' sign
-            idx=np.outer(np.arange(ysize),np.ones(xsize))
-            y=(idx-yc)*dx #(idx-yc) * dx
+            idx = np.outer(np.arange(ysize),np.ones(xsize))
+            y = (idx-yc) * dx
+            idx = np.outer(np.ones(ysize),np.arange(xsize))
+            x = (idx-xc) * dx
         elif i is not None and j is not None:
-            x=(np.asarray(j)-xc) * dx
-            y=(np.asarray(i)-yc) * dx #(asarray(i)-yc) * dx
+            y = (np.asarray(i)-yc) * dx
+            x = (np.asarray(j)-xc) * dx
         elif i is not None and j is None:
-            i, j = i
+            i,j = i
+            y=(np.asarray(i)-yc) * dx
             x=(np.asarray(j)-xc) * dx
-            y=(np.asarray(i)-yc) * dx #(i-yc) * dx
         else:
-            raise TypeError("Wrong parameters")
+            raise TypeError("i and j must be both given or both not given")
+        if hasattr(x,'__len__'):
+            mask = (x**2+y**2 > 4.)
+            if not mask.any(): mask=np.ma.nomask
+            x = np.ma.array(x,mask=mask)
+            y = np.ma.array(y,mask=mask)
+        else:
+            if (x**2+y**2>4.): x,y=np.nan,np.nan
         return x,y
     ij2xy.__doc__ = SphericalProj.ij2xy.__doc__ % (name,name)
 
     def get_extent(self):
         xsize,ysize = self.arrayinfo['xsize'],self.arrayinfo['ysize']
-        left,bottom = self.ij2xy(0,0)
-        right,top = self.ij2xy(ysize-1,xsize-1)
+        reso = self.arrayinfo['reso']
+        dx = reso/60.0 * dtor
+        xc,yc = 0.5*(xsize-1), 0.5*(ysize-1)
+        left = -xc * dx
+        bottom = -yc * dx
+        right = (xsize-1-xc) * dx
+        top = (ysize-1-yc) * dx
         return (left,right,bottom,top)
     get_extent.__doc__ = SphericalProj.get_extent.__doc__
 
     def get_fov(self):
         vx,vy,vz = self.xy2vec(self.ij2xy(0,0), direct=True)
         a = np.arccos(vx)
-        return 2.*a
+        if np.isfinite(a):
+          return 2.*a
+        else:
+          return 2.*pi
