@@ -919,7 +919,7 @@ class LambertProj(SphericalProj):
         # set phi in [-pi,pi]
         phi = flip*((phi+pi)%(2*pi)-pi)
         lat = pi/2. - theta
-        kprime = np.sqrt (2.0 / (np.cos(lat) * np.cos(phi)))
+        kprime = np.sqrt (2. / (1. + np.cos(lat) * np.cos(phi)))
         x = kprime * np.cos(lat) * np.sin(phi)
         y = kprime * np.sin(lat)
 
