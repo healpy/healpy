@@ -24,6 +24,8 @@ SphericalProj : a virtual class (do nothing). Just a template for derived
                 (useful) classes
 
 GnomonicProj : Gnomonic projection
+
+LambertProj : Lambert azimuthal equal-area projection
 """
 
 from . import rotator as R
@@ -886,3 +888,127 @@ class OrthographicProj(SphericalProj):
         else: ratio = 2.0
         return (-ratio,ratio,-1.0,1.0)
     get_extent.__doc__ = SphericalProj.get_extent.__doc__
+
+# JP Snyder, Map projections -- a working manual.  US Geological Survey, Washington, 1987.
+# http://pubs.usgs.gov/pp/1395/report.pdf pg. 186-187
+class LambertProj(SphericalProj):
+    """This class provides methods for Lambert azimuthal equal-area projection
+    """
+
+    name = "Lambert"
+
+    def __init__(self, rot=None, coord=None, xsize=None, ysize=None, reso=None, **kwds):
+        super(LambertProj,self).__init__(rot=rot, coord=coord,xsize=xsize,ysize=ysize,reso=reso,**kwds)
+
+    def set_proj_plane_info(self, xsize=800,ysize=None,reso=1.5):
+        if xsize is None: xsize=800
+        if ysize is None: ysize=xsize
+        if reso is None: reso=1.5
+        super(LambertProj,self).set_proj_plane_info(xsize=xsize,
+                                                    ysize=ysize,reso=reso)
+
+    def vec2xy(self, vx, vy=None, vz=None, direct=False):
+        if not direct:
+            theta,phi=R.vec2dir(self.rotator(vx,vy,vz))
+        else:
+            theta,phi=R.vec2dir(vx,vy,vz)
+        if self.arrayinfo is None:
+            raise TypeError("No projection plane array information defined for"
+                            " this projector")
+        flip = self._flip
+
+        lat = pi/2. - theta
+        # set phi in [-pi,pi]
+        lon = flip*((phi+pi)%(2*pi)-pi)
+        kprime = np.sqrt (2.0 / (np.cos(lat) * np.cos(lon)))
+        x = kprime * np.cos(lat) * np.sin(lon)
+        y = kprime * np.sin(lat)
+
+        return x,y
+    vec2xy.__doc__ = SphericalProj.vec2xy.__doc__ % (name,name)
+
+    def xy2vec(self, x, y=None, direct=False):
+        if y is None:
+            x,y = x
+        if hasattr(x,'__len__'):
+            x,y = np.asarray(x),np.asarray(y)
+        if self.arrayinfo is None:
+            raise TypeError("No projection plane array information defined for"
+                            " this projector")
+        flip = self._flip
+
+        rho = np.sqrt(x**2 + y**2)
+        c = 2 * np.arcsin(rho/2.)
+        phi = np.arcsin(y * np.sin(c) /rho)
+        lam = np.arctan(x * np.sin(c) / (rho * np.cos(c)))
+        lam *= flip
+
+        # dir2vec does not support 2d arrays, so first use flatten and then
+        # reshape back to previous shape
+        vec = R.dir2vec(pi/2.-phi.flatten(),lam.flatten())
+        vec = [v.reshape(lam.shape) for v in vec]
+
+        if not direct:
+            return self.rotator.I(vec)
+        else:
+            return vec
+    xy2vec.__doc__ = SphericalProj.xy2vec.__doc__ % (name,name)
+
+    def ang2xy(self, theta, phi=None, lonlat=False, direct=False):
+        return self.vec2xy(R.dir2vec(theta,phi,lonlat=lonlat),direct=direct)
+    ang2xy.__doc__ = SphericalProj.ang2xy.__doc__ % (name,name)
+
+    def xy2ang(self, x, y=None, lonlat=False, direct=False):
+        return R.vec2dir(self.xy2vec(x,y,direct=direct),lonlat=lonlat)
+    xy2ang.__doc__ = SphericalProj.xy2ang.__doc__ % (name,name)
+
+    def xy2ij(self, x, y=None):
+        if self.arrayinfo is None:
+            raise TypeError("No projection plane array information defined for "
+                            "this projector")
+        xsize,ysize = self.arrayinfo['xsize'],self.arrayinfo['ysize']
+        reso = self.arrayinfo['reso']
+        if y is None: x,y = x
+        dx = reso/60. * dtor
+        xc,yc = 0.5*(xsize-1), 0.5*(ysize-1)
+        j = np.around(xc+x/dx).astype(np.long)
+        i = np.around(yc+y/dx).astype(np.long)
+        return i,j
+    xy2ij.__doc__ = SphericalProj.xy2ij.__doc__ % (name,name)
+
+    def ij2xy(self, i=None, j=None):
+        if self.arrayinfo is None:
+            raise TypeError("No projection plane array information defined for "
+                            "this projector")
+        xsize,ysize = self.arrayinfo['xsize'],self.arrayinfo['ysize']
+        reso = self.arrayinfo['reso']
+        dx = reso/60. * dtor
+        xc,yc = 0.5*(xsize-1), 0.5*(ysize-1)
+        if i is None and j is None:
+            idx=np.outer(np.ones(ysize),np.arange(xsize))
+            x=(idx-xc) * dx   # astro= '-' sign, geo '+' sign
+            idx=np.outer(np.arange(ysize),np.ones(xsize))
+            y=(idx-yc)*dx #(idx-yc) * dx
+        elif i is not None and j is not None:
+            x=(np.asarray(j)-xc) * dx
+            y=(np.asarray(i)-yc) * dx #(asarray(i)-yc) * dx
+        elif i is not None and j is None:
+            i, j = i
+            x=(np.asarray(j)-xc) * dx
+            y=(np.asarray(i)-yc) * dx #(i-yc) * dx
+        else:
+            raise TypeError("Wrong parameters")
+        return x,y
+    ij2xy.__doc__ = SphericalProj.ij2xy.__doc__ % (name,name)
+
+    def get_extent(self):
+        xsize,ysize = self.arrayinfo['xsize'],self.arrayinfo['ysize']
+        left,bottom = self.ij2xy(0,0)
+        right,top = self.ij2xy(ysize-1,xsize-1)
+        return (left,right,bottom,top)
+    get_extent.__doc__ = SphericalProj.get_extent.__doc__
+
+    def get_fov(self):
+        vx,vy,vz = self.xy2vec(self.ij2xy(0,0), direct=True)
+        a = np.arccos(vx)
+        return 2.*a

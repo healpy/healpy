@@ -28,6 +28,9 @@ class TestNoCrash(unittest.TestCase):
     def test_orthview_nocrash(self):
         orthview(self.m)
 
+    def test_lambview_nocrash(self):
+        lambview(self.m)
+
     def test_mollzoom_nocrash(self):
         mollzoom(self.m)
 
@@ -45,3 +48,6 @@ class TestNoCrash(unittest.TestCase):
 
     def test_mollzoom_ma_nocrash(self):
         mollzoom(self.ma)
+
+    def test_lambview_ma_nocrash(self):
+        lambview(self.ma)

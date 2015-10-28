@@ -704,6 +704,36 @@ class HpxOrthographicAxes(OrthographicAxes):
         f = lambda x,y,z: pixelfunc.vec2pix(nside,x,y,z,nest=nest)
         return super(HpxOrthographicAxes,self).projmap(map,f,**kwds)
 
+class LambertAxes(SphericalProjAxes):
+    """Define a Lambert Axes to handle Lambert azimuthal equal-area projection.
+
+    Input:
+      - rot=, coord= : define rotation and coordinate system. See rotator.
+      - coordprec= : number of digit after floating point for coordinates display.
+      - format= : format string for value display.
+
+      Other keywords from Axes (see Axes).
+    """
+    def __init__(self,*args,**kwds):
+        kwds.setdefault('coordprec',3)
+        super(LambertAxes,self).__init__(P.LambertProj, *args,**kwds)
+        self._do_border = False
+        self._gratdef['local'] = True
+        self._gratdef['dpar'] = 1.
+
+    def projmap(self,map,vec2pix_func,xsize=200,ysize=None,reso=1.5,**kwds):
+        self.proj.set_proj_plane_info(xsize=xsize,ysize=ysize,reso=reso)
+        return super(LambertAxes,self).projmap(map,vec2pix_func,**kwds)
+
+class HpxLambertAxes(LambertAxes):
+    def projmap(self,map,nest=False,**kwds):
+        nside = pixelfunc.npix2nside(pixelfunc.get_map_size(map))
+        f = lambda x,y,z: pixelfunc.vec2pix(nside,x,y,z,nest=nest)
+        xsize = kwds.pop('xsize',200)
+        ysize = kwds.pop('ysize',None)
+        reso = kwds.pop('reso',1.5)
+        return super(HpxLambertAxes,self).projmap(map,f,xsize=xsize,
+                                            ysize=ysize,reso=reso,**kwds)
 
 ###################################################################
 #
