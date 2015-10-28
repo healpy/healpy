@@ -936,21 +936,39 @@ class LambertProj(SphericalProj):
                             " this projector")
         flip = self._flip
 
-        rho = np.sqrt(x**2 + y**2)
-        c = 2 * np.arcsin(rho/2.)
-        lat = np.arcsin(y * np.sin(c) /rho)
-        phi = np.arctan(x * np.sin(c) / (rho * np.cos(c)))
-        phi *= flip
-
-        # dir2vec does not support 2d arrays, so first use flatten and then
-        # reshape back to previous shape
-        vec = R.dir2vec(pi/2.-lat.flatten(),phi.flatten())
-        vec = [v.reshape(phi.shape) for v in vec]
-
-        if not direct:
-            return self.rotator.I(vec)
+        mask = (np.asarray(x)**2+np.asarray(y)**2 > 4.)
+        w=np.where(mask == False)
+        if not mask.any(): mask = np.ma.nomask
+        if not hasattr(x,'__len__'):
+            if mask is not np.ma.nomask:
+                return np.nan,np.nan,np.nan
+            else:
+                rho = np.sqrt(x**2 + y**2)
+                c = 2. * np.arcsin(rho/2.)
+                lat = np.arcsin(y * np.sin(c)/rho)
+                phi = np.arctan2(x * np.sin(c), (rho * np.cos(c)))
+                phi *= flip
+                vec = R.dir2vec(pi/2.-lat,phi)
+                if not direct:
+                    return self.rotator.I(vec)
+                else:
+                    return vec
         else:
-            return vec
+            vec = (np.zeros(x.shape)+np.nan,
+                   np.zeros(x.shape)+np.nan,
+                   np.zeros(x.shape)+np.nan)
+            rho = np.sqrt(x[w]**2 + y[w]**2)
+            c = 2. * np.arcsin(rho/2.)
+            lat = np.arcsin(y[w] * np.sin(c)/rho)
+            phi = np.arctan2(x[w] * np.sin(c), (rho * np.cos(c)))
+            phi *= flip
+            vec[0][w] = np.cos(phi)*np.cos(lat)
+            vec[1][w] = np.sin(phi)*np.cos(lat)
+            vec[2][w] = np.sin(lat)
+            if not direct:
+                return self.rotator.I(vec)
+            else:
+                return vec
     xy2vec.__doc__ = SphericalProj.xy2vec.__doc__ % (name,name)
 
     def ang2xy(self, theta, phi=None, lonlat=False, direct=False):
@@ -970,8 +988,17 @@ class LambertProj(SphericalProj):
         if y is None: x,y = x
         dx = reso/60. * dtor
         xc,yc = 0.5*(xsize-1), 0.5*(ysize-1)
-        j = np.around(xc+x/dx).astype(np.long)
-        i = np.around(yc+y/dx).astype(np.long)
+        if hasattr(x,'__len__'):
+            mask = (x**2+y**2>4.)
+            if not mask.any(): mask = np.ma.nomask
+            j=np.ma.array(np.around(xc+x/dx).astype(np.long),mask=mask)
+            i=np.ma.array(np.around(yc+y/dx).astype(np.long),mask=mask)
+        else:
+            if (x**2+y**2>4.):
+                i,j,=np.nan,np.nan
+            else:
+                j = np.around(xc+x/dx).astype(np.long)
+                i = np.around(yc+y/dx).astype(np.long)
         return i,j
     xy2ij.__doc__ = SphericalProj.xy2ij.__doc__ % (name,name)
 
