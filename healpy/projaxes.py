@@ -718,8 +718,6 @@ class LambertAxes(SphericalProjAxes):
         kwds.setdefault('coordprec',3)
         super(LambertAxes,self).__init__(P.LambertProj, *args,**kwds)
         self._do_border = False
-        self._gratdef['local'] = True
-        self._gratdef['dpar'] = 1.
 
     def projmap(self,map,vec2pix_func,xsize=200,ysize=None,reso=1.5,**kwds):
         self.proj.set_proj_plane_info(xsize=xsize,ysize=ysize,reso=reso)
@@ -729,7 +727,7 @@ class HpxLambertAxes(LambertAxes):
     def projmap(self,map,nest=False,**kwds):
         nside = pixelfunc.npix2nside(pixelfunc.get_map_size(map))
         f = lambda x,y,z: pixelfunc.vec2pix(nside,x,y,z,nest=nest)
-        xsize = kwds.pop('xsize',200)
+        xsize = kwds.pop('xsize',800)
         ysize = kwds.pop('ysize',None)
         reso = kwds.pop('reso',1.5)
         return super(HpxLambertAxes,self).projmap(map,f,xsize=xsize,
