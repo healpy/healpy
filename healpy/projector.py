@@ -916,12 +916,11 @@ class LambertProj(SphericalProj):
             raise TypeError("No projection plane array information defined for"
                             " this projector")
         flip = self._flip
-
-        lat = pi/2. - theta
         # set phi in [-pi,pi]
-        lon = flip*((phi+pi)%(2*pi)-pi)
-        kprime = np.sqrt (2.0 / (np.cos(lat) * np.cos(lon)))
-        x = kprime * np.cos(lat) * np.sin(lon)
+        phi = flip*((phi+pi)%(2*pi)-pi)
+        lat = pi/2. - theta
+        kprime = np.sqrt (2.0 / (np.cos(lat) * np.cos(phi)))
+        x = kprime * np.cos(lat) * np.sin(phi)
         y = kprime * np.sin(lat)
 
         return x,y
@@ -939,14 +938,14 @@ class LambertProj(SphericalProj):
 
         rho = np.sqrt(x**2 + y**2)
         c = 2 * np.arcsin(rho/2.)
-        phi = np.arcsin(y * np.sin(c) /rho)
-        lam = np.arctan(x * np.sin(c) / (rho * np.cos(c)))
-        lam *= flip
+        lat = np.arcsin(y * np.sin(c) /rho)
+        phi = np.arctan(x * np.sin(c) / (rho * np.cos(c)))
+        phi *= flip
 
         # dir2vec does not support 2d arrays, so first use flatten and then
         # reshape back to previous shape
-        vec = R.dir2vec(pi/2.-phi.flatten(),lam.flatten())
-        vec = [v.reshape(lam.shape) for v in vec]
+        vec = R.dir2vec(pi/2.-lat.flatten(),phi.flatten())
+        vec = [v.reshape(phi.shape) for v in vec]
 
         if not direct:
             return self.rotator.I(vec)
