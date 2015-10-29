@@ -916,10 +916,15 @@ class AzimuthalProj(SphericalProj):
             raise TypeError("No projection plane array information defined for"
                             " this projector")
         flip = self._flip
+        lamb = self.arrayinfo['lamb']
         # set phi in [-pi,pi]
         phi = flip*((phi+pi)%(2*pi)-pi)
         lat = pi/2. - theta
-        kprime = np.sqrt (2. / (1. + np.cos(lat) * np.cos(phi)))
+        if lamb:
+            kprime = np.sqrt (2. / (1. + np.cos(lat) * np.cos(phi)))
+        else:
+            c = np.arccos(np.cos(lat) * np.cos(phi))
+            kprime = c / np.sin(c)
         x = kprime * np.cos(lat) * np.sin(phi)
         y = kprime * np.sin(lat)
 
@@ -935,8 +940,11 @@ class AzimuthalProj(SphericalProj):
             raise TypeError("No projection plane array information defined for"
                             " this projector")
         flip = self._flip
-
-        mask = (np.asarray(x)**2+np.asarray(y)**2 > 4.)
+        lamb = self.arrayinfo['lamb']
+        if lamb:
+            mask = (np.asarray(x)**2+np.asarray(y)**2 > 4.)
+        else:
+            mask = (np.asarray(x)**2+np.asarray(y)**2 > pi**2)
         w=np.where(mask == False)
         if not mask.any(): mask = np.ma.nomask
         if not hasattr(x,'__len__'):
@@ -944,7 +952,10 @@ class AzimuthalProj(SphericalProj):
                 return np.nan,np.nan,np.nan
             else:
                 rho = np.sqrt(x**2 + y**2)
-                c = 2. * np.arcsin(rho/2.)
+                if lamb:
+                  c = 2. * np.arcsin(rho/2.)
+                else:
+                  c = rho
                 lat = np.arcsin(y * np.sin(c)/rho)
                 phi = np.arctan2(x * np.sin(c), (rho * np.cos(c)))
                 phi *= flip
@@ -958,7 +969,10 @@ class AzimuthalProj(SphericalProj):
                    np.zeros(x.shape)+np.nan,
                    np.zeros(x.shape)+np.nan)
             rho = np.sqrt(x[w]**2 + y[w]**2)
-            c = 2. * np.arcsin(rho/2.)
+            if lamb:
+              c = 2. * np.arcsin(rho/2.)
+            else:
+              c = rho
             lat = np.arcsin(y[w] * np.sin(c)/rho)
             phi = np.arctan2(x[w] * np.sin(c), (rho * np.cos(c)))
             phi *= flip
@@ -985,16 +999,19 @@ class AzimuthalProj(SphericalProj):
                             "this projector")
         xsize,ysize = self.arrayinfo['xsize'],self.arrayinfo['ysize']
         reso = self.arrayinfo['reso']
+        lamb = self.arrayinfo['lamb']
+        if lamb: r2max = 4.
+        else: r2max = pi**2
         if y is None: x,y = x
         dx = reso/60. * dtor
         xc,yc = 0.5*(xsize-1), 0.5*(ysize-1)
         if hasattr(x,'__len__'):
-            mask = (x**2+y**2>4.)
+            mask = (x**2+y**2>r2max)
             if not mask.any(): mask = np.ma.nomask
             j=np.ma.array(np.around(xc+x/dx).astype(np.long),mask=mask)
             i=np.ma.array(np.around(yc+y/dx).astype(np.long),mask=mask)
         else:
-            if (x**2+y**2>4.):
+            if (x**2+y**2>r2max):
                 i,j,=np.nan,np.nan
             else:
                 j = np.around(xc+x/dx).astype(np.long)
@@ -1008,8 +1025,11 @@ class AzimuthalProj(SphericalProj):
                             "this projector")
         xsize,ysize = self.arrayinfo['xsize'],self.arrayinfo['ysize']
         reso = self.arrayinfo['reso']
+        lamb = self.arrayinfo['lamb']
         dx = reso/60. * dtor
         xc,yc = 0.5*(xsize-1), 0.5*(ysize-1)
+        if lamb: r2max = 4.
+        else: r2max = pi**2
         if i is None and j is None:
             idx = np.outer(np.arange(ysize),np.ones(xsize))
             y = (idx-yc) * dx
@@ -1025,12 +1045,12 @@ class AzimuthalProj(SphericalProj):
         else:
             raise TypeError("i and j must be both given or both not given")
         if hasattr(x,'__len__'):
-            mask = (x**2+y**2 > 4.)
+            mask = (x**2+y**2 > r2max)
             if not mask.any(): mask=np.ma.nomask
             x = np.ma.array(x,mask=mask)
             y = np.ma.array(y,mask=mask)
         else:
-            if (x**2+y**2>4.): x,y=np.nan,np.nan
+            if (x**2+y**2>r2max): x,y=np.nan,np.nan
         return x,y
     ij2xy.__doc__ = SphericalProj.ij2xy.__doc__ % (name,name)
 
