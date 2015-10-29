@@ -897,9 +897,9 @@ class AzimuthalProj(SphericalProj):
     name = "Azimuthal"
 
     def __init__(self, rot=None, coord=None, xsize=None, ysize=None, reso=None, lamb=None, **kwds):
-        super(AzimuthalProj,self).__init__(rot=rot, coord=coord,xsize=xsize,ysize=ysize,reso=reso,lamb=lamb**kwds)
+        super(AzimuthalProj,self).__init__(rot=rot, coord=coord,xsize=xsize,ysize=ysize,reso=reso,lamb=lamb,**kwds)
 
-    def set_proj_plane_info(self, xsize=800,ysize=None,reso=1.5):
+    def set_proj_plane_info(self, xsize=800,ysize=None,reso=1.5,lamb=True):
         if xsize is None: xsize=800
         if ysize is None: ysize=xsize
         if reso is None: reso=1.5

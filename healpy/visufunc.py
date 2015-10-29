@@ -865,7 +865,7 @@ def lambview(map=None,fig=None,rot=None,zat=None,coord=None,unit='',
         if map is None:
             map = np.zeros(12)+np.inf
             cbar=False
-        ax=PA.HpxAzimuthalAxes(f,extent,coord=coord,rot=rot,lamb=True,
+        ax=PA.HpxAzimuthalAxes(f,extent,coord=coord,rot=rot,
                                format=format,flipconv=flip)
         f.add_axes(ax)
         if remove_dip:
@@ -1034,7 +1034,7 @@ def azeqview(map=None,fig=None,rot=None,zat=None,coord=None,unit='',
         if map is None:
             map = np.zeros(12)+np.inf
             cbar=False
-        ax=PA.HpxAzimuthalAxes(f,extent,coord=coord,rot=rot,lamb=False,
+        ax=PA.HpxAzimuthalAxes(f,extent,coord=coord,rot=rot,
                                format=format,flipconv=flip)
         f.add_axes(ax)
         if remove_dip:

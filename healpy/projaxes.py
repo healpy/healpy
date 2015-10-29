@@ -731,6 +731,7 @@ class HpxAzimuthalAxes(AzimuthalAxes):
         xsize = kwds.pop('xsize',800)
         ysize = kwds.pop('ysize',None)
         reso = kwds.pop('reso',1.5)
+        lamb = kwds.pop('lamb',True)
         return super(HpxAzimuthalAxes,self).projmap(map,f,xsize=xsize,
                                             ysize=ysize,reso=reso,lamb=lamb,**kwds)
 
