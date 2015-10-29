@@ -25,7 +25,7 @@ SphericalProj : a virtual class (do nothing). Just a template for derived
 
 GnomonicProj : Gnomonic projection
 
-LambertProj : Lambert azimuthal equal-area projection
+AzimuthalProj : Azimuthal equidistant or Lambert azimuthal equal-area projection
 """
 
 from . import rotator as R
@@ -889,23 +889,23 @@ class OrthographicProj(SphericalProj):
         return (-ratio,ratio,-1.0,1.0)
     get_extent.__doc__ = SphericalProj.get_extent.__doc__
 
-# JP Snyder, Map projections -- a working manual.  US Geological Survey, Washington, 1987.
-# http://pubs.usgs.gov/pp/1395/report.pdf pg. 186-187
-class LambertProj(SphericalProj):
-    """This class provides methods for Lambert azimuthal equal-area projection
+class AzimuthalProj(SphericalProj):
+    """This class provides methods for Lambert azimuthal equal-area projection and
+    azimuthal equidistant projection
     """
 
-    name = "Lambert"
+    name = "Azimuthal"
 
-    def __init__(self, rot=None, coord=None, xsize=None, ysize=None, reso=None, **kwds):
-        super(LambertProj,self).__init__(rot=rot, coord=coord,xsize=xsize,ysize=ysize,reso=reso,**kwds)
+    def __init__(self, rot=None, coord=None, xsize=None, ysize=None, reso=None, lamb=None, **kwds):
+        super(AzimuthalProj,self).__init__(rot=rot, coord=coord,xsize=xsize,ysize=ysize,reso=reso,lamb=lamb**kwds)
 
     def set_proj_plane_info(self, xsize=800,ysize=None,reso=1.5):
         if xsize is None: xsize=800
         if ysize is None: ysize=xsize
         if reso is None: reso=1.5
-        super(LambertProj,self).set_proj_plane_info(xsize=xsize,
-                                                    ysize=ysize,reso=reso)
+        if lamb is None: lamb=True
+        super(AzimuthalProj,self).set_proj_plane_info(xsize=xsize,
+                                                      ysize=ysize,reso=reso,lamb=lamb)
 
     def vec2xy(self, vx, vy=None, vz=None, direct=False):
         if not direct:

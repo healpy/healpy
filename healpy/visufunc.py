@@ -33,6 +33,7 @@ Map projections
 - :func:`cartview` displays a map using Cartesian projection
 - :func:`orthview` displays a map using Orthographic projection (full or half sky)
 - :func:`lambview` displays a map using Lambert azimuthal equal-area projection
+- :func:`azeqview` displays a map using Azimuthal equidistant projection
 
 Graticules
 ----------
@@ -48,7 +49,7 @@ Tracing lines or points
 - :func:`projtext` display a text on the current map
 """
 
-__all__ = ['mollview', 'gnomview', 'cartview', 'orthview', 'lambview',
+__all__ = ['mollview', 'gnomview', 'cartview', 'orthview', 'lambview', 'azeqview',
            'graticule', 'delgraticules',
            'projplot', 'projscatter', 'projtext']
 
@@ -750,7 +751,7 @@ def lambview(map=None,fig=None,rot=None,zat=None,coord=None,unit='',
              cmap=None, norm=None,aspect=None,
              hold=False,sub=None,margins=None,notext=False,
              return_projected_map=False):
-    """Plot an healpix map (given as an array) in Lambert azimuthal equal-area projection.
+    """Plot a healpix map (given as an array) in Lambert azimuthal equal-area projection.
 
     Parameters
     ----------
@@ -805,7 +806,7 @@ def lambview(map=None,fig=None,rot=None,zat=None,coord=None,unit='',
       Color normalization, hist= histogram equalized color mapping,
       log= logarithmic color mapping, default: None (linear color mapping)
     hold : bool, optional
-      If True, replace the current Axes by a LambertAxes.
+      If True, replace the current Axes by a Lambert AzimuthalAxes.
       use this if you want to have multiple maps on the same
       figure. Default: False
     sub : int, scalar or sequence, optional
@@ -864,8 +865,8 @@ def lambview(map=None,fig=None,rot=None,zat=None,coord=None,unit='',
         if map is None:
             map = np.zeros(12)+np.inf
             cbar=False
-        ax=PA.HpxLambertAxes(f,extent,coord=coord,rot=rot,
-                             format=format,flipconv=flip)
+        ax=PA.HpxAzimuthalAxes(f,extent,coord=coord,rot=rot,lamb=True,
+                               format=format,flipconv=flip)
         f.add_axes(ax)
         if remove_dip:
             map=pixelfunc.remove_dipole(map,gal_cut=gal_cut,
@@ -874,7 +875,7 @@ def lambview(map=None,fig=None,rot=None,zat=None,coord=None,unit='',
         elif remove_mono:
             map=pixelfunc.remove_monopole(map,gal_cut=gal_cut,nest=nest,
                                           copy=True,verbose=True)
-        img = ax.projmap(map,nest=nest,xsize=xsize,ysize=ysize,reso=reso,
+        img = ax.projmap(map,nest=nest,xsize=xsize,ysize=ysize,reso=reso,lamb=True,
                          coord=coord,vmin=min,vmax=max,
                          cmap=cmap,norm=norm)
         if cbar:
