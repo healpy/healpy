@@ -742,7 +742,7 @@ def orthview(map=None,fig=None,rot=None,coord=None,unit='',
         return img
 
 def azeqview(map=None,fig=None,rot=None,zat=None,coord=None,unit='',
-             xsize=800,ysize=None,reso=1.5,lamb=False,
+             xsize=800,ysize=None,reso=1.5,lamb=False,half_sky=False,
              title=None,nest=False,remove_dip=False,
              remove_mono=False,gal_cut=0,
              min=None,max=None,flip='astro',
@@ -781,6 +781,8 @@ def azeqview(map=None,fig=None,rot=None,zat=None,coord=None,unit='',
     lamb : bool, optional
       If True, plot Lambert azimuthal equal area instead of azimuthal
       equidistant. Default: False (az equidistant)
+    half_sky : bool, optional
+      Plot only one side of the sphere. Default: False
     title : str, optional
       The title of the plot. Default: 'Azimuthal equidistant view'
       or 'Lambert azimuthal equal-area view' (if lamb is True)
@@ -880,7 +882,7 @@ def azeqview(map=None,fig=None,rot=None,zat=None,coord=None,unit='',
             map=pixelfunc.remove_monopole(map,gal_cut=gal_cut,nest=nest,
                                           copy=True,verbose=True)
         img = ax.projmap(map,nest=nest,xsize=xsize,ysize=ysize,reso=reso,lamb=lamb,
-                         coord=coord,vmin=min,vmax=max,
+                         half_sky=half_sky,coord=coord,vmin=min,vmax=max,
                          cmap=cmap,norm=norm)
         if cbar:
             im = ax.get_images()[0]

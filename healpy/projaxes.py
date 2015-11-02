@@ -720,8 +720,8 @@ class AzimuthalAxes(SphericalProjAxes):
         super(AzimuthalAxes,self).__init__(P.AzimuthalProj, *args,**kwds)
         self._do_border = False
 
-    def projmap(self,map,vec2pix_func,xsize=200,ysize=None,reso=1.5,lamb=True,**kwds):
-        self.proj.set_proj_plane_info(xsize=xsize,ysize=ysize,reso=reso,lamb=lamb)
+    def projmap(self,map,vec2pix_func,xsize=200,ysize=None,reso=1.5,lamb=True,half_sky=False,**kwds):
+        self.proj.set_proj_plane_info(xsize=xsize,ysize=ysize,reso=reso,lamb=lamb,half_sky=half_sky)
         return super(AzimuthalAxes,self).projmap(map,vec2pix_func,**kwds)
 
 class HpxAzimuthalAxes(AzimuthalAxes):

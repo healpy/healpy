@@ -896,16 +896,17 @@ class AzimuthalProj(SphericalProj):
 
     name = "Azimuthal"
 
-    def __init__(self, rot=None, coord=None, xsize=None, ysize=None, reso=None, lamb=None, **kwds):
-        super(AzimuthalProj,self).__init__(rot=rot, coord=coord,xsize=xsize,ysize=ysize,reso=reso,lamb=lamb,**kwds)
+    def __init__(self, rot=None, coord=None, xsize=None, ysize=None, reso=None, lamb=None, half_sky=None, **kwds):
+        super(AzimuthalProj,self).__init__(rot=rot, coord=coord,xsize=xsize,ysize=ysize,reso=reso,lamb=lamb,half_sky=half_sky,**kwds)
 
-    def set_proj_plane_info(self, xsize=800,ysize=None,reso=1.5,lamb=True):
+    def set_proj_plane_info(self, xsize=800,ysize=None,reso=1.5,lamb=True,half_sky=False):
         if xsize is None: xsize=800
         if ysize is None: ysize=xsize
         if reso is None: reso=1.5
         if lamb is None: lamb=True
-        super(AzimuthalProj,self).set_proj_plane_info(xsize=xsize,
-                                                      ysize=ysize,reso=reso,lamb=lamb)
+        if half_sky is None: half_sky=False
+        super(AzimuthalProj,self).set_proj_plane_info(xsize=xsize,ysize=ysize,
+                                                      reso=reso,lamb=lamb,half_sky=half_sky)
 
     def vec2xy(self, vx, vy=None, vz=None, direct=False):
         if not direct:
@@ -917,6 +918,7 @@ class AzimuthalProj(SphericalProj):
                             " this projector")
         flip = self._flip
         lamb = self.arrayinfo['lamb']
+        half_sky = self.arrayinfo['half_sky']
         # set phi in [-pi,pi]
         phi = flip*((phi+pi)%(2*pi)-pi)
         lat = pi/2. - theta
@@ -927,7 +929,19 @@ class AzimuthalProj(SphericalProj):
             kprime = c / np.sin(c)
         x = kprime * np.cos(lat) * np.sin(phi)
         y = kprime * np.sin(lat)
-
+        if lamb: r2max = 4.
+        else: r2max = pi**2
+        if half_sky:
+            if lamb: r2max /= 2.
+            else: r2max /= 4.
+        mask = (np.asarray(x)**2+np.asarray(y)**2 > r2max)
+        if not hasattr(x,'__len__'):
+            if mask is not np.ma.nomask:
+                return np.nan,np.nan
+        else:
+            w = np.where(mask)
+            x[w] = np.nan
+            y[w] = np.nan 
         return x,y
     vec2xy.__doc__ = SphericalProj.vec2xy.__doc__ % (name,name)
 
@@ -941,10 +955,13 @@ class AzimuthalProj(SphericalProj):
                             " this projector")
         flip = self._flip
         lamb = self.arrayinfo['lamb']
-        if lamb:
-            mask = (np.asarray(x)**2+np.asarray(y)**2 > 4.)
-        else:
-            mask = (np.asarray(x)**2+np.asarray(y)**2 > pi**2)
+        half_sky = self.arrayinfo['half_sky']
+        if lamb: r2max = 4.
+        else: r2max = pi**2
+        if half_sky:
+            if lamb: r2max /= 2.
+            else: r2max /= 4.
+        mask = (np.asarray(x)**2+np.asarray(y)**2 > r2max)
         w=np.where(mask == False)
         if not mask.any(): mask = np.ma.nomask
         if not hasattr(x,'__len__'):
@@ -1000,8 +1017,12 @@ class AzimuthalProj(SphericalProj):
         xsize,ysize = self.arrayinfo['xsize'],self.arrayinfo['ysize']
         reso = self.arrayinfo['reso']
         lamb = self.arrayinfo['lamb']
+        half_sky = self.arrayinfo['half_sky']
         if lamb: r2max = 4.
         else: r2max = pi**2
+        if half_sky:
+            if lamb: r2max /= 2.
+            else: r2max /= 4.
         if y is None: x,y = x
         dx = reso/60. * dtor
         xc,yc = 0.5*(xsize-1), 0.5*(ysize-1)
@@ -1026,10 +1047,14 @@ class AzimuthalProj(SphericalProj):
         xsize,ysize = self.arrayinfo['xsize'],self.arrayinfo['ysize']
         reso = self.arrayinfo['reso']
         lamb = self.arrayinfo['lamb']
+        half_sky = self.arrayinfo['half_sky']
         dx = reso/60. * dtor
         xc,yc = 0.5*(xsize-1), 0.5*(ysize-1)
         if lamb: r2max = 4.
         else: r2max = pi**2
+        if half_sky:
+            if lamb: r2max /= 2.
+            else: r2max /= 4.
         if i is None and j is None:
             idx = np.outer(np.arange(ysize),np.ones(xsize))
             y = (idx-yc) * dx
@@ -1067,9 +1092,11 @@ class AzimuthalProj(SphericalProj):
     get_extent.__doc__ = SphericalProj.get_extent.__doc__
 
     def get_fov(self):
+        half_sky = self.arrayinfo['half_sky']
         vx,vy,vz = self.xy2vec(self.ij2xy(0,0), direct=True)
         a = np.arccos(vx)
         if np.isfinite(a):
           return 2.*a
         else:
-          return 2.*pi
+          if half_sky: return pi
+          else: return 2.*pi
