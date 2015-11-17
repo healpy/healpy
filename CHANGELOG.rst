@@ -1,3 +1,10 @@
+Release 1.9.1, 17 Nov 2015
+
+* Remove C++ 11 features <https://github.com/healpy/healpy/pull/297>
+* Streamlined setup.py <https://github.com/healpy/healpy/pull/298>
+* Plotting fixes for Python 3 <https://github.com/healpy/healpy/pull/303>, <https://github.com/healpy/healpy/pull/304>
+* Numpy 1.10 fix <https://github.com/healpy/healpy/pull/305>
+
 Release 1.9.0, 17 Sep 2015
 
 * updated healpix CXX to 786 (trunk) <https://github.com/healpy/healpy/pull/280>
