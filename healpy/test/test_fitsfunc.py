@@ -80,6 +80,10 @@ class TestFitsFunc(unittest.TestCase):
         for rm in read_m:
             np.testing.assert_array_almost_equal(m, rm)
 
+    def test_read_write_dtype(self):
+        write_map(self.filename, self.m, dtype=np.float64)
+        read_map(self.filename, dtype=np.float32)
+
     def tearDown(self):
         os.remove(self.filename)
 
