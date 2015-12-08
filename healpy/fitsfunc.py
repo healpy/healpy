@@ -153,15 +153,27 @@ def write_map(filename,m,nest=False,dtype=np.float32,fits_IDL=True,coord=None,pa
       Units for each column, or same units for all columns.
     extra_header : list
       Extra records to add to FITS header.
+    dtype: np.dtype or list of np.dtypes, optional
+      The datatype in which the columns will be stored. Will be converted
+      internally from the numpy datatype to the fits convention. If a list,
+      the length must correspond to the number of map arrays. 
+      Default: np.float32.
     """
     if not hasattr(m, '__len__'):
         raise TypeError('The map must be a sequence')
-    # check the dtype and convert it
-    fitsformat = getformat(dtype)
 
     m = pixelfunc.ma_to_array(m)
     if pixelfunc.maptype(m) == 0: # a single map is converted to a list
         m = [m]
+
+    # check the dtype and convert it
+    try:
+        fitsformat = []
+        for curr_dtype in dtype:
+            fitsformat.append(getformat(curr_dtype))
+    except TypeError:
+        #dtype is not iterable
+        fitsformat = [getformat(dtype)] * len(m)
 
     if column_names is None:
         column_names = standard_column_names.get(len(m), ["COLUMN_%d" % n for n in range(len(m))])
@@ -194,17 +206,18 @@ def write_map(filename,m,nest=False,dtype=np.float32,fits_IDL=True,coord=None,pa
                               array=pix,
                               unit=None))
 
-    for cn, cu, mm in zip(column_names, column_units, m):
+    for cn, cu, mm, curr_fitsformat in zip(column_names, column_units, m, 
+                                           fitsformat):
         if len(mm) > 1024 and fits_IDL:
             # I need an ndarray, for reshape:
             mm2 = np.asarray(mm)
             cols.append(pf.Column(name=cn,
-                                   format='1024%s' % fitsformat,
+                                   format='1024%s' % curr_fitsformat,
                                    array=mm2.reshape(mm2.size/1024,1024),
                                    unit=cu))
         else:
             cols.append(pf.Column(name=cn,
-                                   format='%s' % fitsformat,
+                                   format='%s' % curr_fitsformat,
                                    array=mm,
                                    unit=cu))
 
@@ -258,8 +271,10 @@ def read_map(filename,field=0,dtype=np.float64,nest=False,partial=False,hdu=1,h=
       If the fits file is a partial-sky file, field=0 corresponds to the
       first column after the pixel index column.
       If None, all columns are read in.
-    dtype : data type, optional
-      Force the conversion to some type. Default: np.float64
+    dtype : data type or list of data types, optional
+      Force the conversion to some type. Passing a list allows different 
+      types for each field. In that case, the length of the list must
+      correspond to the length of the field parameter. Default: np.float64
     nest : bool, optional
       If True return the map in NEST ordering, otherwise in RING ordering;
       use fits keyword ORDERING to decide whether conversion is needed or not
@@ -352,17 +367,22 @@ def read_map(filename,field=0,dtype=np.float64,nest=False,partial=False,hdu=1,h=
             fits_hdu.verify("fix")
             pix = fits_hdu.data.field(0).astype(int).ravel()
 
-    for ff in field:
+    try:
+        assert len(dtype) == len(field), "The number of dtypes are not equal to the number of fields"
+    except TypeError:
+        dtype = [dtype] * len(field)
+
+    for ff, curr_dtype in zip(field, dtype):
         try:
-            m=fits_hdu.data.field(ff).astype(dtype).ravel()
+            m=fits_hdu.data.field(ff).astype(curr_dtype).ravel()
         except pf.VerifyError as e:
             print(e)
             print("Trying to fix a badly formatted header")
             m=fits_hdu.verify("fix")
-            m=fits_hdu.data.field(ff).astype(dtype).ravel()
+            m=fits_hdu.data.field(ff).astype(curr_dtype).ravel()
 
         if partial:
-            mnew = UNSEEN * np.ones(sz, dtype=dtype)
+            mnew = UNSEEN * np.ones(sz, dtype=curr_dtype)
             mnew[pix] = m
             m = mnew
 
