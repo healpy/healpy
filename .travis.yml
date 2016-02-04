@@ -53,6 +53,7 @@ matrix:
       env: USE_ANACONDA=false USE_PIP=true  USE_EXTERNAL_CFITSIO=true
 
 before_install:
+  - sudo apt-get -qq update
   # Use Matplotlib backend appropriate for headless rendering
   - |
     mkdir -p $HOME/.config/matplotlib && \
