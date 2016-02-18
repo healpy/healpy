@@ -100,9 +100,9 @@ cdef extern from "healpix_base.h":
        void query_disc(pointing ptg, double radius, rangeset[I]& pixset) 
        void query_disc_inclusive(pointing ptg, double radius,
                                  rangeset[I]& pixset, int fact)
-       void query_polygon(vector[pointing] vert, rangeset[I]& pixset)
+       void query_polygon(vector[pointing] vert, rangeset[I]& pixset) except +
        void query_polygon_inclusive(vector[pointing] vert,
-                                    rangeset[I]& pixset, int fact)
+                                    rangeset[I]& pixset, int fact) except +
        void query_strip(double theta1, double theta2, bool inclusive,
                         rangeset[I]& pixset)
 
