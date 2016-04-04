@@ -27,12 +27,7 @@ import tempfile
 import shutil
 import os
 import warnings
-
-try:
-    import astropy.io.fits as pf
-except ImportError:
-    import pyfits as pf
-
+import astropy.io.fits as pf
 import numpy as np
 
 from . import pixelfunc

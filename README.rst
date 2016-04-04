@@ -45,7 +45,7 @@ Requirements
 * Python development package is required for some distribution (e.g.,
   python-dev package for Ubuntu)
 
-* `PyFITS <http://www.stsci.edu/resources/software_hardware/pyfits>`_
+* `Astropy <http://www.astropy.org>`_
 
 Quick installation with Pip
 ---------------------------
