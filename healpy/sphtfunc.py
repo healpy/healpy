@@ -22,11 +22,7 @@ import numpy as np
 import six
 pi = np.pi
 import warnings
-
-try:
-    import astropy.io.fits as pf
-except ImportError:
-    import pyfits as pf
+import astropy.io.fits as pf
 
 from . import _healpy_sph_transform_lib as sphtlib
 from . import _healpy_fitsio_lib as hfitslib

@@ -432,15 +432,6 @@ class PyTest(TestCommand):
 exec(open('healpy/version.py').read())
 
 
-# Determine dependencies.
-install_requires = ['matplotlib', 'numpy', 'six']
-# Add install dependency on astropy, unless pyfits is already installed.
-try:
-    import pyfits
-except ImportError:
-    install_requires.append('astropy')
-
-
 setup(name='healpy',
       version=__version__,
       description='Healpix tools package for Python',
@@ -505,7 +496,7 @@ setup(name='healpy',
                     cython_directives=dict(embedsignature=True))
       ],
       package_data = {'healpy': ['data/*.fits', 'data/totcls.dat', 'test/data/*.fits', 'test/data/*.sh']},
-      install_requires=install_requires,
+      install_requires=['matplotlib', 'numpy', 'six', 'astropy'],
       tests_require=['pytest'],
       test_suite='healpy',
       license='GPLv2'

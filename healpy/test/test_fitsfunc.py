@@ -1,8 +1,5 @@
 import os
-try:
-    import astropy.io.fits as pf
-except:
-    import pyfits as pf
+import astropy.io.fits as pf
 import unittest
 import numpy as np
 import gzip
