@@ -16,6 +16,7 @@ import fnmatch
 import sys
 import shlex
 from distutils.sysconfig import get_config_var, get_config_vars
+from subprocess import check_output, CalledProcessError, check_call
 from setuptools import setup
 from setuptools.dist import Distribution
 from setuptools.command.test import test as TestCommand
@@ -35,51 +36,6 @@ from distutils import log
 # This workaround fixes <https://github.com/healpy/healpy/issues/151>.
 if get_config_var('MACOSX_DEPLOYMENT_TARGET') and not 'MACOSX_DEPLOYMENT_TARGET' in os.environ:
     os.environ['MACOSX_DEPLOYMENT_TARGET'] = get_config_var('MACOSX_DEPLOYMENT_TARGET')
-
-
-#
-# FIXME: Copied from Python 2.7's subprocess.check_output,
-# but with the output= argument to CalledProcessError, which also
-# dates to Python 2.7, removed.
-#
-# When Python 2.6 becomes unsupported, replace this with:
-#   from subprocess import check_output, CalledProcessError, check_call
-#
-from subprocess import Popen, PIPE, CalledProcessError, check_call
-def check_output(*popenargs, **kwargs):
-    r"""Run command with arguments and return its output as a byte string.
-
-    If the exit code was non-zero it raises a CalledProcessError.  The
-    CalledProcessError object will have the return code in the returncode
-    attribute and output in the output attribute.
-
-    The arguments are the same as for the Popen constructor.  Example:
-
-    >>> check_output(["ls", "-l", "/dev/null"])
-    'crw-rw-rw- 1 root root 1, 3 Oct 18  2007 /dev/null\n'
-
-    The stdout argument is not allowed as it is used internally.
-    To capture standard error in the result, use stderr=STDOUT.
-
-    >>> check_output(["/bin/sh", "-c",
-    ...               "ls -l non_existent_file ; exit 0"],
-    ...              stderr=STDOUT)
-    'ls: non_existent_file: No such file or directory\n'
-    """
-    if 'stdout' in kwargs:
-        raise ValueError('stdout argument not allowed, it will be overridden.')
-    process = Popen(stdout=PIPE, *popenargs, **kwargs)
-    output, unused_err = process.communicate()
-    retcode = process.poll()
-    if retcode:
-        cmd = kwargs.get("args")
-        if cmd is None:
-            cmd = popenargs[0]
-        raise CalledProcessError(retcode, cmd)
-    return output
-#
-# FIXME: end section copied from Python 2.7's subprocess.check_output
-#
 
 
 # If the Cython-generated C++ files are absent, then fetch and install Cython
@@ -442,7 +398,6 @@ setup(name='healpy',
           'License :: OSI Approved :: GNU General Public License v2 or later (GPLv2+)',
           'Operating System :: POSIX',
           'Programming Language :: C++',
-          'Programming Language :: Python :: 2.6',
           'Programming Language :: Python :: 2.7',
           'Programming Language :: Python :: 3.2',
           'Programming Language :: Python :: 3.3',
