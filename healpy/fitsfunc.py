@@ -219,7 +219,7 @@ def write_map(filename,m,nest=False,dtype=np.float32,fits_IDL=True,coord=None,pa
 
     try:
         tbhdu = pf.BinTableHDU.from_columns( cols )
-    except:
+    except AttributeError:
         # Fall back to the old API
         tbhdu = pf.new_table(cols)
     # add needed keywords
