@@ -479,7 +479,7 @@ def write_alm(filename,alms,out_dtype=None,lmax=-1,mmax=-1,mmax_in=-1):
 
         tbhdu = pf.new_table([cindex,creal,cimag])
         hdulist.append(tbhdu)
-    writeto(tbhdu, filename)
+    writeto(hdulist, filename)
 
 def read_alm(filename,hdu=1,return_mmax=False):
     """Read alm from a fits file.
