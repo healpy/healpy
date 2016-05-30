@@ -732,8 +732,11 @@ def create_colormap(cmap):
     if cmap is not None:
         return cmap 
     cmap0 = matplotlib.cm.get_cmap(matplotlib.rcParams['image.cmap'])
-    newcm = matplotlib.colors.LinearSegmentedColormap('newcm',cmap0._segmentdata,
-                                               cmap0.N)
+    if hasattr(cmap0, '_segmentdata'):
+        newcm = matplotlib.colors.LinearSegmentedColormap('newcm',cmap0._segmentdata,
+                                                    cmap0.N)
+    else:
+        newcm = cmap0
     newcm.set_over(newcm(1.0))
     newcm.set_under('w')
     newcm.set_bad('gray')
