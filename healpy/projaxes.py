@@ -711,7 +711,7 @@ class HpxOrthographicAxes(OrthographicAxes):
 
 def get_color_table(vmin,vmax,val,cmap=None,norm=None):
     # Create color table
-    newjet = create_colormap(cmap)
+    newcmap = create_colormap(cmap)
     if type(norm) is str:
         if norm.lower().startswith('log'):
             norm = LogNorm2(clip=False)
@@ -726,12 +726,12 @@ def get_color_table(vmin,vmax,val,cmap=None,norm=None):
     norm.vmax = vmax
     norm.autoscale_None(val)
     
-    return newjet,norm
+    return newcmap,norm
 
 def create_colormap(cmap):
     if cmap is not None:
         return cmap 
-    cmap0 = matplotlib.cm.jet
+    cmap0 = matplotlib.cm.get_cmap(matplotlib.rcParams['image.cmap'])
     newcm = matplotlib.colors.LinearSegmentedColormap('newcm',cmap0._segmentdata,
                                                cmap0.N)
     newcm.set_over(newcm(1.0))
