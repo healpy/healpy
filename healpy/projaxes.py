@@ -707,7 +707,25 @@ class HpxOrthographicAxes(OrthographicAxes):
 
 ###################################################################
 #
-#   Table color for mollview and gnomview, ...
+#   Table color for mollview, gnomview, and orthview.
+#   Currently defined for so that the default colormap, found in 
+#   matplotlib.rcParams['image.cmap'], the data is displayed with
+#   values greater than vmax as the final element of the colormap,
+#   masked indices gray, and the background set to white.
+#
+#   With matplotlib.rcParams['image.cmap'] assigned to a string
+#   corresponding to a standard matplotlib colormap, one can call
+#   hp.mollview(m) and have the map projected in the standard way,
+#   whereas using just, e.g., hp.mollview(m, cmap='jet') will display
+#   the data with a non-white background.
+#
+#   One can set the default colormap in the matplotlibrc file, or set
+#   it in situ:
+#   >>> matplotlib.rcParam['image.cmap'] = 'coolwarm'
+#   >>> hp.mollview(m)
+#   Note that custom colormaps can also be used, but they need to be 
+#   registered ahead fo time, as shown in
+#   http://matplotlib.org/examples/pylab_examples/custom_cmap.html
 
 def get_color_table(vmin,vmax,val,cmap=None,norm=None):
     # Create color table
