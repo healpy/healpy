@@ -109,7 +109,7 @@ def write_cl(filename, cl, dtype=np.float64):
                                format='%s'%fitsformat,
                                array=cl)]
 
-    tbhdu = pf.new_table(cols)
+    tbhdu = pf.BinTableHDU.from_columns(cols)
     # add needed keywords
     tbhdu.header['CREATOR'] = 'healpy'
     writeto(tbhdu, filename)
@@ -216,7 +216,7 @@ def write_map(filename,m,nest=False,dtype=np.float32,fits_IDL=True,coord=None,pa
                                    array=mm,
                                    unit=cu))
 
-    tbhdu = pf.new_table(cols)
+    tbhdu = pf.BinTableHDU.from_columns(cols)
     # add needed keywords
     tbhdu.header['PIXTYPE'] = ('HEALPIX', 'HEALPIX pixelisation')
     if nest: ordering = 'NESTED'
@@ -477,7 +477,7 @@ def write_alm(filename,alms,out_dtype=None,lmax=-1,mmax=-1,mmax_in=-1):
         creal = pf.Column(name="real", format=getformat(out_dtype), unit="unknown", array=out_data['real'])
         cimag = pf.Column(name="imag", format=getformat(out_dtype), unit="unknown", array=out_data['imag'])
 
-        tbhdu = pf.new_table([cindex,creal,cimag])
+        tbhdu = pf.BinTableHDU.from_columns([cindex,creal,cimag])
         hdulist.append(tbhdu)
     writeto(hdulist, filename)
 
@@ -603,7 +603,7 @@ def mwrfits(filename,data,hdu=1,colnames=None,keys=None):
         cols.append(pf.Column(name=colnames[line],
                                format=getformat(data[line]),
                                array=data[line]))
-    tbhdu = pf.new_table(cols)
+    tbhdu = pf.BinTableHDU.from_columns(cols)
     if type(keys) is dict:
         for k,v in keys.items():
             tbhdu.header[k] = v
