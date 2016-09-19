@@ -5,8 +5,9 @@ Requirements
 ------------
 
 Healpy depends on the HEALPix C++ and cfitsio C libraries. Source code for both
-is include with Healpy and is built automatically, so you do not need to
+is included with Healpy and is built automatically, so you do not need to
 install them yourself.
+Only Linux and MAC OS X are supported, not Windows.
 
 Binary installation with conda
 -----------------------
