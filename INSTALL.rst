@@ -8,12 +8,19 @@ Healpy depends on the HEALPix C++ and cfitsio C libraries. Source code for both
 is include with Healpy and is built automatically, so you do not need to
 install them yourself.
 
-Quick installation with Pip
+Binary installation with conda
+-----------------------
+
+The `OpenAstronomy <https://github.com/OpenAstronomy>`_ collaboration provides a `conda
+channel <https://anaconda.org/openastronomy/repo>`_ with a pre-compiled version of ``healpy``
+for linux 64bit and MAC OS X platforms, you can install it in Anaconda with:
+
+    conda install -c openastronomy healpy
+
+Source installation with Pip
 ---------------------------
 
-The quickest way to install Healpy is with `pip <http://www.pip-installer.org>`_
-(>= 1.4.2), which automatically fetches the latest version of Healpy and any
-missing dependencies::
+It is possible to build the latest ``healpy`` with `pip <http://www.pip-installer.org>`_ ::
 
     pip install --user healpy
 
@@ -22,7 +29,7 @@ by upgrading from time to time::
 
     pip install --user --upgrade healpy
 
-Even quicker installation on Mac OS with MacPorts
+Installation on Mac OS with MacPorts
 -------------------------------------------------
 
 If you are using a Mac and have the `MacPorts <https://www.macports.org>`_
