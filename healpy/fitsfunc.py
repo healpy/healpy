@@ -27,12 +27,7 @@ import tempfile
 import shutil
 import os
 import warnings
-
-try:
-    import astropy.io.fits as pf
-except ImportError:
-    import pyfits as pf
-
+import astropy.io.fits as pf
 import numpy as np
 
 from . import pixelfunc
@@ -114,9 +109,9 @@ def write_cl(filename, cl, dtype=np.float64):
                                format='%s'%fitsformat,
                                array=cl)]
 
-    tbhdu = pf.new_table(cols)
+    tbhdu = pf.BinTableHDU.from_columns(cols)
     # add needed keywords
-    tbhdu.header.update('CREATOR','healpy')
+    tbhdu.header['CREATOR'] = 'healpy'
     writeto(tbhdu, filename)
 
 def write_map(filename,m,nest=False,dtype=np.float32,fits_IDL=True,coord=None,partial=False,column_names=None,column_units=None,extra_header=()):
@@ -153,15 +148,27 @@ def write_map(filename,m,nest=False,dtype=np.float32,fits_IDL=True,coord=None,pa
       Units for each column, or same units for all columns.
     extra_header : list
       Extra records to add to FITS header.
+    dtype: np.dtype or list of np.dtypes, optional
+      The datatype in which the columns will be stored. Will be converted
+      internally from the numpy datatype to the fits convention. If a list,
+      the length must correspond to the number of map arrays. 
+      Default: np.float32.
     """
     if not hasattr(m, '__len__'):
         raise TypeError('The map must be a sequence')
-    # check the dtype and convert it
-    fitsformat = getformat(dtype)
 
     m = pixelfunc.ma_to_array(m)
     if pixelfunc.maptype(m) == 0: # a single map is converted to a list
         m = [m]
+
+    # check the dtype and convert it
+    try:
+        fitsformat = []
+        for curr_dtype in dtype:
+            fitsformat.append(getformat(curr_dtype))
+    except TypeError:
+        #dtype is not iterable
+        fitsformat = [getformat(dtype)] * len(m)
 
     if column_names is None:
         column_names = standard_column_names.get(len(m), ["COLUMN_%d" % n for n in range(len(m))])
@@ -194,50 +201,48 @@ def write_map(filename,m,nest=False,dtype=np.float32,fits_IDL=True,coord=None,pa
                               array=pix,
                               unit=None))
 
-    for cn, cu, mm in zip(column_names, column_units, m):
+    for cn, cu, mm, curr_fitsformat in zip(column_names, column_units, m, 
+                                           fitsformat):
         if len(mm) > 1024 and fits_IDL:
             # I need an ndarray, for reshape:
             mm2 = np.asarray(mm)
             cols.append(pf.Column(name=cn,
-                                   format='1024%s' % fitsformat,
+                                   format='1024%s' % curr_fitsformat,
                                    array=mm2.reshape(mm2.size/1024,1024),
                                    unit=cu))
         else:
             cols.append(pf.Column(name=cn,
-                                   format='%s' % fitsformat,
+                                   format='%s' % curr_fitsformat,
                                    array=mm,
                                    unit=cu))
 
-    tbhdu = pf.new_table(cols)
+    tbhdu = pf.BinTableHDU.from_columns(cols)
     # add needed keywords
-    tbhdu.header.update('PIXTYPE','HEALPIX','HEALPIX pixelisation')
+    tbhdu.header['PIXTYPE'] = ('HEALPIX', 'HEALPIX pixelisation')
     if nest: ordering = 'NESTED'
     else:    ordering = 'RING'
-    tbhdu.header.update('ORDERING',ordering,
-                        'Pixel ordering scheme, either RING or NESTED')
+    tbhdu.header['ORDERING'] = (ordering,
+                                'Pixel ordering scheme, either RING or NESTED')
     if coord:
-        tbhdu.header.update('COORDSYS',coord,
-                            'Ecliptic, Galactic or Celestial (equatorial)')
-    tbhdu.header.update('EXTNAME','xtension',
-                        'name of this binary table extension')
-    tbhdu.header.update('NSIDE',nside,'Resolution parameter of HEALPIX')
+        tbhdu.header['COORDSYS'] = (coord,
+                                    'Ecliptic, Galactic or Celestial (equatorial)')
+    tbhdu.header['EXTNAME'] = ('xtension',
+                               'name of this binary table extension')
+    tbhdu.header['NSIDE'] = (nside,'Resolution parameter of HEALPIX')
     if not partial:
-        tbhdu.header.update('FIRSTPIX', 0, 'First pixel # (0 based)')
-        tbhdu.header.update('LASTPIX',pixelfunc.nside2npix(nside)-1,
-                            'Last pixel # (0 based)')
-    tbhdu.header.update('INDXSCHM', 'EXPLICIT' if partial else 'IMPLICIT',
-                        'Indexing: IMPLICIT or EXPLICIT')
-    tbhdu.header.update('OBJECT', 'PARTIAL' if partial else 'FULLSKY',
-                        'Sky coverage, either FULLSKY or PARTIAL')
+        tbhdu.header['FIRSTPIX'] = (0, 'First pixel # (0 based)')
+        tbhdu.header['LASTPIX'] = (pixelfunc.nside2npix(nside)-1,
+                                   'Last pixel # (0 based)')
+    tbhdu.header['INDXSCHM'] = ('EXPLICIT' if partial else 'IMPLICIT',
+                                'Indexing: IMPLICIT or EXPLICIT')
+    tbhdu.header['OBJECT'] = ('PARTIAL' if partial else 'FULLSKY',
+                              'Sky coverage, either FULLSKY or PARTIAL')
 
     # FIXME: In modern versions of Pyfits, header.update() understands a
     # header as an argument, and headers can be concatenated with the `+'
     # operator.
     for args in extra_header:
-        if args[0] == 'COMMENT':
-            tbhdu.header.add_comment(*args[1:])
-        else:
-            tbhdu.header.update(*args)
+        tbhdu.header[args[0]] = args[1:]
 
     writeto(tbhdu, filename)
 
@@ -258,8 +263,10 @@ def read_map(filename,field=0,dtype=np.float64,nest=False,partial=False,hdu=1,h=
       If the fits file is a partial-sky file, field=0 corresponds to the
       first column after the pixel index column.
       If None, all columns are read in.
-    dtype : data type, optional
-      Force the conversion to some type. Default: np.float64
+    dtype : data type or list of data types, optional
+      Force the conversion to some type. Passing a list allows different 
+      types for each field. In that case, the length of the list must
+      correspond to the length of the field parameter. Default: np.float64
     nest : bool, optional
       If True return the map in NEST ordering, otherwise in RING ordering;
       use fits keyword ORDERING to decide whether conversion is needed or not
@@ -352,17 +359,22 @@ def read_map(filename,field=0,dtype=np.float64,nest=False,partial=False,hdu=1,h=
             fits_hdu.verify("fix")
             pix = fits_hdu.data.field(0).astype(int).ravel()
 
-    for ff in field:
+    try:
+        assert len(dtype) == len(field), "The number of dtypes are not equal to the number of fields"
+    except TypeError:
+        dtype = [dtype] * len(field)
+
+    for ff, curr_dtype in zip(field, dtype):
         try:
-            m=fits_hdu.data.field(ff).astype(dtype).ravel()
+            m=fits_hdu.data.field(ff).astype(curr_dtype).ravel()
         except pf.VerifyError as e:
             print(e)
             print("Trying to fix a badly formatted header")
             m=fits_hdu.verify("fix")
-            m=fits_hdu.data.field(ff).astype(dtype).ravel()
+            m=fits_hdu.data.field(ff).astype(curr_dtype).ravel()
 
         if partial:
-            mnew = UNSEEN * np.ones(sz, dtype=dtype)
+            mnew = UNSEEN * np.ones(sz, dtype=curr_dtype)
             mnew[pix] = m
             m = mnew
 
@@ -465,9 +477,9 @@ def write_alm(filename,alms,out_dtype=None,lmax=-1,mmax=-1,mmax_in=-1):
         creal = pf.Column(name="real", format=getformat(out_dtype), unit="unknown", array=out_data['real'])
         cimag = pf.Column(name="imag", format=getformat(out_dtype), unit="unknown", array=out_data['imag'])
 
-        tbhdu = pf.new_table([cindex,creal,cimag])
+        tbhdu = pf.BinTableHDU.from_columns([cindex,creal,cimag])
         hdulist.append(tbhdu)
-    writeto(tbhdu, filename)
+    writeto(hdulist, filename)
 
 def read_alm(filename,hdu=1,return_mmax=False):
     """Read alm from a fits file.
@@ -591,10 +603,10 @@ def mwrfits(filename,data,hdu=1,colnames=None,keys=None):
         cols.append(pf.Column(name=colnames[line],
                                format=getformat(data[line]),
                                array=data[line]))
-    tbhdu = pf.new_table(cols)
+    tbhdu = pf.BinTableHDU.from_columns(cols)
     if type(keys) is dict:
         for k,v in keys.items():
-            tbhdu.header.update(k,v)
+            tbhdu.header[k] = v
     # write the file
     writeto(tbhdu, filename)
 

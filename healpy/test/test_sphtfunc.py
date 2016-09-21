@@ -1,7 +1,4 @@
-try:
-    import astropy.io.fits as pf
-except:
-    import pyfits as pf
+import astropy.io.fits as pf
 import os
 import numpy as np
 from copy import deepcopy

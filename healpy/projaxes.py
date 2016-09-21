@@ -737,11 +737,29 @@ class HpxAzimuthalAxes(AzimuthalAxes):
 
 ###################################################################
 #
-#   Table color for mollview and gnomview, ...
+#   Table color for mollview, gnomview, and orthview.
+#   Currently defined for so that the default colormap, found in 
+#   matplotlib.rcParams['image.cmap'], the data is displayed with
+#   values greater than vmax as the final element of the colormap,
+#   masked indices gray, and the background set to white.
+#
+#   With matplotlib.rcParams['image.cmap'] assigned to a string
+#   corresponding to a standard matplotlib colormap, one can call
+#   hp.mollview(m) and have the map projected in the standard way,
+#   whereas using just, e.g., hp.mollview(m, cmap='jet') will display
+#   the data with a non-white background.
+#
+#   One can set the default colormap in the matplotlibrc file, or set
+#   it in situ:
+#   >>> matplotlib.rcParam['image.cmap'] = 'coolwarm'
+#   >>> hp.mollview(m)
+#   Note that custom colormaps can also be used, but they need to be 
+#   registered ahead fo time, as shown in
+#   http://matplotlib.org/examples/pylab_examples/custom_cmap.html
 
 def get_color_table(vmin,vmax,val,cmap=None,norm=None):
     # Create color table
-    newjet = create_colormap(cmap)
+    newcmap = create_colormap(cmap)
     if type(norm) is str:
         if norm.lower().startswith('log'):
             norm = LogNorm2(clip=False)
@@ -756,14 +774,17 @@ def get_color_table(vmin,vmax,val,cmap=None,norm=None):
     norm.vmax = vmax
     norm.autoscale_None(val)
     
-    return newjet,norm
+    return newcmap,norm
 
 def create_colormap(cmap):
     if cmap is not None:
         return cmap 
-    cmap0 = matplotlib.cm.jet
-    newcm = matplotlib.colors.LinearSegmentedColormap('newcm',cmap0._segmentdata,
-                                               cmap0.N)
+    cmap0 = matplotlib.cm.get_cmap(matplotlib.rcParams['image.cmap'])
+    if hasattr(cmap0, '_segmentdata'):
+        newcm = matplotlib.colors.LinearSegmentedColormap('newcm',cmap0._segmentdata,
+                                                    cmap0.N)
+    else:
+        newcm = cmap0
     newcm.set_over(newcm(1.0))
     newcm.set_under('w')
     newcm.set_bad('gray')

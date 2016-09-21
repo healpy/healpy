@@ -36,7 +36,7 @@ Characteristics
 Requirements
 ------------
 
-* `Python <http://www.python.org>`_ 2.6, 2.7, 3.2, 3.3, or 3.4
+* `Python <http://www.python.org>`_ 2.7, 3.2, 3.3, 3.4 or 3.5
 
 * `Numpy <http://numpy.scipy.org/>`_ (tested with version >=1.5.0)
 
@@ -45,7 +45,7 @@ Requirements
 * Python development package is required for some distribution (e.g.,
   python-dev package for Ubuntu)
 
-* `PyFITS <http://www.stsci.edu/resources/software_hardware/pyfits>`_
+* `Astropy <http://www.astropy.org>`_
 
 Quick installation with Pip
 ---------------------------
