@@ -542,7 +542,7 @@ def _get_hdu(input_data, hdu=None, memmap=None):
 
     if isinstance(input_data, pf.HDUList):
         if isinstance(hdu, int) and hdu >= len(input_data):
-            raise ValueError('Available hdu in [0-%d]' % len(hdulist))
+            raise ValueError('Available hdu in [0-%d]' % len(input_data))
         else:
             fits_hdu = input_data[hdu]
     elif isinstance(input_data, (pf.PrimaryHDU, pf.ImageHDU, pf.BinTableHDU, pf.TableHDU, pf.GroupsHDU)):
