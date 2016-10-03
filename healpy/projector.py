@@ -24,6 +24,8 @@ SphericalProj : a virtual class (do nothing). Just a template for derived
                 (useful) classes
 
 GnomonicProj : Gnomonic projection
+
+AzimuthalProj : Azimuthal equidistant or Lambert azimuthal equal-area projection
 """
 
 from . import rotator as R
@@ -886,3 +888,215 @@ class OrthographicProj(SphericalProj):
         else: ratio = 2.0
         return (-ratio,ratio,-1.0,1.0)
     get_extent.__doc__ = SphericalProj.get_extent.__doc__
+
+class AzimuthalProj(SphericalProj):
+    """This class provides methods for Lambert azimuthal equal-area projection and
+    azimuthal equidistant projection
+    """
+
+    name = "Azimuthal"
+
+    def __init__(self, rot=None, coord=None, xsize=None, ysize=None, reso=None, lamb=None, half_sky=None, **kwds):
+        super(AzimuthalProj,self).__init__(rot=rot, coord=coord,xsize=xsize,ysize=ysize,reso=reso,lamb=lamb,half_sky=half_sky,**kwds)
+
+    def set_proj_plane_info(self, xsize=800,ysize=None,reso=1.5,lamb=True,half_sky=False):
+        if xsize is None: xsize=800
+        if ysize is None: ysize=xsize
+        if reso is None: reso=1.5
+        if lamb is None: lamb=True
+        if half_sky is None: half_sky=False
+        super(AzimuthalProj,self).set_proj_plane_info(xsize=xsize,ysize=ysize,
+                                                      reso=reso,lamb=lamb,half_sky=half_sky)
+
+    def vec2xy(self, vx, vy=None, vz=None, direct=False):
+        if not direct:
+            theta,phi=R.vec2dir(self.rotator(vx,vy,vz))
+        else:
+            theta,phi=R.vec2dir(vx,vy,vz)
+        if self.arrayinfo is None:
+            raise TypeError("No projection plane array information defined for"
+                            " this projector")
+        flip = self._flip
+        lamb = self.arrayinfo['lamb']
+        half_sky = self.arrayinfo['half_sky']
+        # set phi in [-pi,pi]
+        phi = flip*((phi+pi)%(2*pi)-pi)
+        lat = pi/2. - theta
+        if lamb:
+            kprime = np.sqrt (2. / (1. + np.cos(lat) * np.cos(phi)))
+        else:
+            c = np.arccos(np.cos(lat) * np.cos(phi))
+            kprime = c / np.sin(c)
+        x = kprime * np.cos(lat) * np.sin(phi)
+        y = kprime * np.sin(lat)
+        if lamb: r2max = 4.
+        else: r2max = pi**2
+        if half_sky:
+            if lamb: r2max /= 2.
+            else: r2max /= 4.
+        mask = (np.asarray(x)**2+np.asarray(y)**2 > r2max)
+        if not hasattr(x,'__len__'):
+            if mask is not np.ma.nomask:
+                return np.nan,np.nan
+        else:
+            w = np.where(mask)
+            x[w] = np.nan
+            y[w] = np.nan 
+        return x,y
+    vec2xy.__doc__ = SphericalProj.vec2xy.__doc__ % (name,name)
+
+    def xy2vec(self, x, y=None, direct=False):
+        if y is None:
+            x,y = x
+        if hasattr(x,'__len__'):
+            x,y = np.asarray(x),np.asarray(y)
+        if self.arrayinfo is None:
+            raise TypeError("No projection plane array information defined for"
+                            " this projector")
+        flip = self._flip
+        lamb = self.arrayinfo['lamb']
+        half_sky = self.arrayinfo['half_sky']
+        if lamb: r2max = 4.
+        else: r2max = pi**2
+        if half_sky:
+            if lamb: r2max /= 2.
+            else: r2max /= 4.
+        mask = (np.asarray(x)**2+np.asarray(y)**2 > r2max)
+        w=np.where(mask == False)
+        if not mask.any(): mask = np.ma.nomask
+        if not hasattr(x,'__len__'):
+            if mask is not np.ma.nomask:
+                return np.nan,np.nan,np.nan
+            else:
+                rho = np.sqrt(x**2 + y**2)
+                if lamb:
+                  c = 2. * np.arcsin(rho/2.)
+                else:
+                  c = rho
+                lat = np.arcsin(y * np.sin(c)/rho)
+                phi = np.arctan2(x * np.sin(c), (rho * np.cos(c)))
+                phi *= flip
+                vec = R.dir2vec(pi/2.-lat,phi)
+                if not direct:
+                    return self.rotator.I(vec)
+                else:
+                    return vec
+        else:
+            vec = (np.zeros(x.shape)+np.nan,
+                   np.zeros(x.shape)+np.nan,
+                   np.zeros(x.shape)+np.nan)
+            rho = np.sqrt(x[w]**2 + y[w]**2)
+            if lamb:
+              c = 2. * np.arcsin(rho/2.)
+            else:
+              c = rho
+            lat = np.arcsin(y[w] * np.sin(c)/rho)
+            phi = np.arctan2(x[w] * np.sin(c), (rho * np.cos(c)))
+            phi *= flip
+            vec[0][w] = np.cos(phi)*np.cos(lat)
+            vec[1][w] = np.sin(phi)*np.cos(lat)
+            vec[2][w] = np.sin(lat)
+            if not direct:
+                return self.rotator.I(vec)
+            else:
+                return vec
+    xy2vec.__doc__ = SphericalProj.xy2vec.__doc__ % (name,name)
+
+    def ang2xy(self, theta, phi=None, lonlat=False, direct=False):
+        return self.vec2xy(R.dir2vec(theta,phi,lonlat=lonlat),direct=direct)
+    ang2xy.__doc__ = SphericalProj.ang2xy.__doc__ % (name,name)
+
+    def xy2ang(self, x, y=None, lonlat=False, direct=False):
+        return R.vec2dir(self.xy2vec(x,y,direct=direct),lonlat=lonlat)
+    xy2ang.__doc__ = SphericalProj.xy2ang.__doc__ % (name,name)
+
+    def xy2ij(self, x, y=None):
+        if self.arrayinfo is None:
+            raise TypeError("No projection plane array information defined for "
+                            "this projector")
+        xsize,ysize = self.arrayinfo['xsize'],self.arrayinfo['ysize']
+        reso = self.arrayinfo['reso']
+        lamb = self.arrayinfo['lamb']
+        half_sky = self.arrayinfo['half_sky']
+        if lamb: r2max = 4.
+        else: r2max = pi**2
+        if half_sky:
+            if lamb: r2max /= 2.
+            else: r2max /= 4.
+        if y is None: x,y = x
+        dx = reso/60. * dtor
+        xc,yc = 0.5*(xsize-1), 0.5*(ysize-1)
+        if hasattr(x,'__len__'):
+            mask = (x**2+y**2>r2max)
+            if not mask.any(): mask = np.ma.nomask
+            j=np.ma.array(np.around(xc+x/dx).astype(np.long),mask=mask)
+            i=np.ma.array(np.around(yc+y/dx).astype(np.long),mask=mask)
+        else:
+            if (x**2+y**2>r2max):
+                i,j,=np.nan,np.nan
+            else:
+                j = np.around(xc+x/dx).astype(np.long)
+                i = np.around(yc+y/dx).astype(np.long)
+        return i,j
+    xy2ij.__doc__ = SphericalProj.xy2ij.__doc__ % (name,name)
+
+    def ij2xy(self, i=None, j=None):
+        if self.arrayinfo is None:
+            raise TypeError("No projection plane array information defined for "
+                            "this projector")
+        xsize,ysize = self.arrayinfo['xsize'],self.arrayinfo['ysize']
+        reso = self.arrayinfo['reso']
+        lamb = self.arrayinfo['lamb']
+        half_sky = self.arrayinfo['half_sky']
+        dx = reso/60. * dtor
+        xc,yc = 0.5*(xsize-1), 0.5*(ysize-1)
+        if lamb: r2max = 4.
+        else: r2max = pi**2
+        if half_sky:
+            if lamb: r2max /= 2.
+            else: r2max /= 4.
+        if i is None and j is None:
+            idx = np.outer(np.arange(ysize),np.ones(xsize))
+            y = (idx-yc) * dx
+            idx = np.outer(np.ones(ysize),np.arange(xsize))
+            x = (idx-xc) * dx
+        elif i is not None and j is not None:
+            y = (np.asarray(i)-yc) * dx
+            x = (np.asarray(j)-xc) * dx
+        elif i is not None and j is None:
+            i,j = i
+            y=(np.asarray(i)-yc) * dx
+            x=(np.asarray(j)-xc) * dx
+        else:
+            raise TypeError("i and j must be both given or both not given")
+        if hasattr(x,'__len__'):
+            mask = (x**2+y**2 > r2max)
+            if not mask.any(): mask=np.ma.nomask
+            x = np.ma.array(x,mask=mask)
+            y = np.ma.array(y,mask=mask)
+        else:
+            if (x**2+y**2>r2max): x,y=np.nan,np.nan
+        return x,y
+    ij2xy.__doc__ = SphericalProj.ij2xy.__doc__ % (name,name)
+
+    def get_extent(self):
+        xsize,ysize = self.arrayinfo['xsize'],self.arrayinfo['ysize']
+        reso = self.arrayinfo['reso']
+        dx = reso/60.0 * dtor
+        xc,yc = 0.5*(xsize-1), 0.5*(ysize-1)
+        left = -xc * dx
+        bottom = -yc * dx
+        right = (xsize-1-xc) * dx
+        top = (ysize-1-yc) * dx
+        return (left,right,bottom,top)
+    get_extent.__doc__ = SphericalProj.get_extent.__doc__
+
+    def get_fov(self):
+        half_sky = self.arrayinfo['half_sky']
+        vx,vy,vz = self.xy2vec(self.ij2xy(0,0), direct=True)
+        a = np.arccos(vx)
+        if np.isfinite(a):
+          return 2.*a
+        else:
+          if half_sky: return pi
+          else: return 2.*pi

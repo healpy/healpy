@@ -53,7 +53,7 @@ from ._sphtools import map2alm_spin_healpy as map2alm_spin
 from .rotator import Rotator, vec2dir, dir2vec
 from ._healpy_pixel_lib import UNSEEN
 from .visufunc import (mollview,graticule,delgraticules,gnomview,
-                      projplot,projscatter, projtext, cartview, orthview)
+                      projplot,projscatter, projtext, cartview, orthview, azeqview)
 from .zoomtool import mollzoom,set_g_clim
 from .fitsfunc import write_map,read_map,mrdfits,mwrfits,read_alm,write_alm,write_cl,read_cl
 

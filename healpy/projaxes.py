@@ -704,6 +704,36 @@ class HpxOrthographicAxes(OrthographicAxes):
         f = lambda x,y,z: pixelfunc.vec2pix(nside,x,y,z,nest=nest)
         return super(HpxOrthographicAxes,self).projmap(map,f,**kwds)
 
+class AzimuthalAxes(SphericalProjAxes):
+    """Define an Azimuthal Axes to handle azimuthal equidistant or
+       Lambert azimuthal equal-area projections.
+
+    Input:
+      - rot=, coord= : define rotation and coordinate system. See rotator.
+      - coordprec= : number of digit after floating point for coordinates display.
+      - format= : format string for value display.
+
+      Other keywords from Axes (see Axes).
+    """
+    def __init__(self,*args,**kwds):
+        kwds.setdefault('coordprec',3)
+        super(AzimuthalAxes,self).__init__(P.AzimuthalProj, *args,**kwds)
+        self._do_border = False
+
+    def projmap(self,map,vec2pix_func,xsize=200,ysize=None,reso=1.5,lamb=True,half_sky=False,**kwds):
+        self.proj.set_proj_plane_info(xsize=xsize,ysize=ysize,reso=reso,lamb=lamb,half_sky=half_sky)
+        return super(AzimuthalAxes,self).projmap(map,vec2pix_func,**kwds)
+
+class HpxAzimuthalAxes(AzimuthalAxes):
+    def projmap(self,map,nest=False,**kwds):
+        nside = pixelfunc.npix2nside(pixelfunc.get_map_size(map))
+        f = lambda x,y,z: pixelfunc.vec2pix(nside,x,y,z,nest=nest)
+        xsize = kwds.pop('xsize',800)
+        ysize = kwds.pop('ysize',None)
+        reso = kwds.pop('reso',1.5)
+        lamb = kwds.pop('lamb',True)
+        return super(HpxAzimuthalAxes,self).projmap(map,f,xsize=xsize,
+                                            ysize=ysize,reso=reso,lamb=lamb,**kwds)
 
 ###################################################################
 #
