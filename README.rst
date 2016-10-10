@@ -18,8 +18,8 @@ standard numeric and visualisation tools for Python, Numpy and matplotlib.
 To find more information about HEALPix, please visit its home page at
 http://healpix.sourceforge.net/.
 
-The documentation can be found at http://healpy.readthedocs.org, tutorial at
-http://healpy.readthedocs.org/en/latest/tutorial.html.
+The documentation can be found at https://healpy.readthedocs.io, tutorial at
+https://healpy.readthedocs.io/en/latest/tutorial.html.
 
 Characteristics
 ---------------

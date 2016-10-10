@@ -14,7 +14,7 @@ This will create the documentation in doc/.build/html.
 
 The documentation of the master branch is also available at readthedoc :
 
-    http://healpy.readthedocs.org/en/latest/index.html
+    https://healpy.readthedocs.io/en/latest/index.html
 
 It is rebuild from the master branch at each commit (so it is always the latest version). 
 
