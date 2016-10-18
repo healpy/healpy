@@ -94,11 +94,11 @@ class build_external_clib(build_clib):
             return None
 
         urls = [
-            'http://ftp.gnu.org/gnu/m4/m4-1.4.17.tar.gz',
-            'http://ftp.gnu.org/gnu/libtool/libtool-2.4.6.tar.gz',
-            'http://ftp.gnu.org/gnu/autoconf/autoconf-2.69.tar.gz',
-            'http://ftp.gnu.org/gnu/automake/automake-1.15.tar.gz',
-            'http://pkgconfig.freedesktop.org/releases/pkg-config-0.28.tar.gz'
+            'https://ftp.gnu.org/gnu/m4/m4-1.4.17.tar.gz',
+            'https://ftp.gnu.org/gnu/libtool/libtool-2.4.6.tar.gz',
+            'https://ftp.gnu.org/gnu/autoconf/autoconf-2.69.tar.gz',
+            'https://ftp.gnu.org/gnu/automake/automake-1.15.tar.gz',
+            'https://pkg-config.freedesktop.org/releases/pkg-config-0.29.1.tar.gz'
         ]
 
         # Use a subdirectory of build_temp as the build directory.
