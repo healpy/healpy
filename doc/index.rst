@@ -19,7 +19,7 @@ Installation
 
 .. toctree::
    :maxdepth: 1
-   
+
    install
 
 Reference
@@ -38,7 +38,6 @@ Reference
    healpy_projaxes
    healpy_zoomtool
 
-
 Indices and tables
 ==================
 
@@ -46,3 +45,10 @@ Indices and tables
 * :ref:`modindex`
 * :ref:`search`
 
+License
+-------
+
+.. toctree::
+   :maxdepth: 1
+
+   license
