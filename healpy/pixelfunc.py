@@ -398,8 +398,8 @@ def ang2pix(nside,theta,phi,nest=False,lonlat=False):
     else:
         return pixlib._ang2pix_ring(nside,theta,phi)
 
-def pix2ang(nside,ipix,nest=False):
-    """pix2ang : nside,ipix,nest=False -> theta[rad],phi[rad] (default RING)
+def pix2ang(nside,ipix,nest=False,lonlat=False):
+    """pix2ang : nside,ipix,nest=False,lonlat=False -> theta[rad],phi[rad] (default RING)
 
     Parameters
     ----------
@@ -409,6 +409,9 @@ def pix2ang(nside,ipix,nest=False):
       Pixel indices
     nest : bool, optional
       if True, assume NESTED pixel ordering, otherwise, RING pixel ordering
+    lonlat : bool, optional
+      If True, return angles will be longitude and latitude in degree,
+      otherwise, angles will be longitude and co-latitude in radians (default)
 
     Returns
     -------
@@ -431,12 +434,20 @@ def pix2ang(nside,ipix,nest=False):
 
     >>> hp.pix2ang([1, 2, 4, 8], 11)
     (array([ 2.30052398,  0.84106867,  0.41113786,  0.2044802 ]), array([ 5.49778714,  5.89048623,  5.89048623,  5.89048623]))
+
+    >>> hp.pix2ang([1, 2, 4, 8], 11)
+    (array([ 315. ,  337.5,  337.5,  337.5]), array([-41.8103149 ,  41.8103149 ,  66.44353569,  78.28414761]))
     """
     check_nside(nside)
     if nest:
-        return pixlib._pix2ang_nest(nside, ipix)
+        theta,phi = pixlib._pix2ang_nest(nside, ipix)
     else:
-        return pixlib._pix2ang_ring(nside,ipix)
+        theta,phi = pixlib._pix2ang_ring(nside,ipix)
+
+    if lonlat:
+        return np.degrees(phi), 90. - np.degrees(theta)
+    else:
+        return theta, phi
 
 def xyf2pix(nside,x,y,face,nest=False):
     """xyf2pix : nside,x,y,face,nest=False -> ipix (default:RING)
