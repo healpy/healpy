@@ -75,6 +75,12 @@ class TestPixelFunc(unittest.TestCase):
         np.testing.assert_array_almost_equal(theta1, self.theta0)
         np.testing.assert_array_almost_equal(phi1, self.phi0)
 
+    def test_vec2pix_lonlat(self):
+        # Need to decrease the precision of the check because deg not radians
+        vec = ang2vec(self.lon0, self.lat0, lonlat=True)
+        lon1, lat1 = vec2ang(vec, lonlat=True)
+        np.testing.assert_array_almost_equal(lon1, self.lon0,decimal=5)
+        np.testing.assert_array_almost_equal(lat1, self.lat0,decimal=5)
       
     def test_fit_dipole(self):
         nside = 32
