@@ -10,6 +10,8 @@ class TestPixelFunc(unittest.TestCase):
         # data fixture
         self.theta0 = [ 1.52911759,  0.78550497,  1.57079633,  0.05103658,  3.09055608] 
         self.phi0   = [ 0.        ,  0.78539816,  1.61988371,  0.78539816,  0.78539816]
+        self.lon0   = np.degrees(self.phi0)
+        self.lat0   = 90. - np.degrees(self.theta0)
     
     def test_nside2npix(self):
         self.assertEqual(nside2npix(512), 3145728) 
@@ -59,6 +61,20 @@ class TestPixelFunc(unittest.TestCase):
 
     def test_ang2pix_negative_theta(self):
         self.assertRaises(ValueError, ang2pix, 32, -1, 0)
+
+    def test_ang2pix_lonlat(self):
+        # Need to decrease the precision of the check because deg not radians
+        id = ang2pix(1048576 * 8, self.lon0, self.lat0, nest=False, lonlat=True)
+        lon1, lat1 = pix2ang(1048576 * 8, id, nest=False, lonlat=True)
+        np.testing.assert_array_almost_equal(lon1, self.lon0,decimal=5)
+        np.testing.assert_array_almost_equal(lat1, self.lat0,decimal=5)
+
+        # Now test nested
+        id = ang2pix(1048576 * 8, self.theta0, self.phi0, nest=True)
+        theta1, phi1 = pix2ang(1048576 * 8, id, nest=True)
+        np.testing.assert_array_almost_equal(theta1, self.theta0)
+        np.testing.assert_array_almost_equal(phi1, self.phi0)
+
       
     def test_fit_dipole(self):
         nside = 32
