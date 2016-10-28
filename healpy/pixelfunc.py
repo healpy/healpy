@@ -127,6 +127,40 @@ def check_theta_valid(theta):
     if not((theta >= 0).all() and (theta <= np.pi + 1e-5).all()):
         raise ValueError('THETA is out of range [0,pi]')
 
+def lonlat2thetaphi(lon,lat):
+    """ Transform longitude and latitude (deg) into co-latitude and longitude (rad)
+
+    Parameters
+    ----------
+    lon : int or array-like
+      Longitude in degrees
+    lat : int or array-like
+      Latitude in degrees
+
+    Returns
+    -------
+    theta, phi : float, scalar or array-like
+      The co-latitude and longitude in radians
+    """
+    return np.pi/2. - np.radians(lat),np.radians(lon)
+
+def thetaphi2lonlat(theta,phi):
+    """ Transform co-latitude and longitude (rad) into longitude and latitude (deg)
+
+    Parameters
+    ----------
+    theta : int or array-like
+      Co-latitude in radians
+    phi : int or array-like
+      Longitude in radians
+
+    Returns
+    -------
+    lon, lat : float, scalar or array-like
+      The longitude and latitude in degrees
+    """
+    return np.degrees(phi), 90. - np.degrees(theta)
+
 def maptype(m):
     """Describe the type of the map (valid, single, sequence of maps).
     Checks : the number of maps, that all maps have same length and that this
@@ -389,8 +423,7 @@ def ang2pix(nside,theta,phi,nest=False,lonlat=False):
     array([   4,   12,   72,  336, 1440])
     """
     if lonlat:
-        lon,lat=theta,phi
-        theta,phi = np.pi/2.-np.radians(lat),np.radians(lon)
+        theta,phi = lonlat2thetaphi(theta,phi)
     check_theta_valid(theta)
     check_nside(nside)
     if nest:
@@ -445,7 +478,7 @@ def pix2ang(nside,ipix,nest=False,lonlat=False):
         theta,phi = pixlib._pix2ang_ring(nside,ipix)
 
     if lonlat:
-        return np.degrees(phi), 90. - np.degrees(theta)
+        return thetaphi2lonlat(theta,phi)
     else:
         return theta, phi
 
