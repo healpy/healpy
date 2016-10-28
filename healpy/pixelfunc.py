@@ -1186,7 +1186,7 @@ def isnpixok(npix):
         nside = np.sqrt(npix/12.)
         return isnsideok(nside)
 
-def get_interp_val(m,theta,phi,nest=False):
+def get_interp_val(m,theta,phi,nest=False,lonlat=False):
     """Return the bi-linear interpolation value of a map using 4 nearest neighbours.
 
     Parameters
@@ -1197,6 +1197,9 @@ def get_interp_val(m,theta,phi,nest=False):
       angular coordinates of point at which to interpolate the map
     nest : bool
       if True, the is assumed to be in NESTED ordering.
+    lonlat : bool
+      If True, input angles are assumed to be longitude and latitude in degree,
+      otherwise, they are co-latitude and longitude in radians.
 
     Returns
     -------
@@ -1219,9 +1222,14 @@ def get_interp_val(m,theta,phi,nest=False):
     >>> hp.get_interp_val(np.arange(12.), np.linspace(0, np.pi, 10), 0)
     array([ 1.5       ,  1.5       ,  1.5       ,  2.20618428,  3.40206143,
             5.31546486,  7.94639458,  9.5       ,  9.5       ,  9.5       ])
+    >>> hp.get_interp_val(np.arange(12.), 0, np.linspace(90, -90, 10), lonlat=True)
+    array([ 1.5       ,  1.5       ,  1.5       ,  2.20618428,  3.40206143,
+            5.31546486,  7.94639458,  9.5       ,  9.5       ,  9.5       ])
     """
     m2=m.ravel()
     nside=npix2nside(m2.size)
+    if lonlat:
+        theta,phi = lonlat2thetaphi(theta,phi)
     if nest:
         r=pixlib._get_interpol_nest(nside,theta,phi)
     else:
