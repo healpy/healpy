@@ -345,8 +345,8 @@ def ma(m, badval = UNSEEN, rtol = 1e-5, atol = 1e-8, copy = True):
     else:
         return tuple([ma(mm) for mm in m])
 
-def ang2pix(nside,theta,phi,nest=False):
-    """ang2pix : nside,theta[rad],phi[rad],nest=False -> ipix (default:RING)
+def ang2pix(nside,theta,phi,nest=False,lonlat=False):
+    """ang2pix : nside,theta[rad],phi[rad],nest=False,lonlat=False -> ipix (default:RING)
 
     Parameters
     ----------
@@ -356,6 +356,9 @@ def ang2pix(nside,theta,phi,nest=False):
       Angular coordinates of a point on the sphere
     nest : bool, optional
       if True, assume NESTED pixel ordering, otherwise, RING pixel ordering
+    lonlat : bool
+      If True, input angles are assumed to be longitude and latitude in degree,
+      otherwise, they are co-latitude and longitude in radians.
 
     Returns
     -------
@@ -381,7 +384,13 @@ def ang2pix(nside,theta,phi,nest=False):
 
     >>> hp.ang2pix([1, 2, 4, 8, 16], np.pi/2, 0)
     array([   4,   12,   72,  336, 1440])
+
+    >>> hp.ang2pix([1, 2, 4, 8, 16], 0, 0, lonlat=True)
+    array([   4,   12,   72,  336, 1440])
     """
+    if lonlat:
+        lon,lat=theta,phi
+        theta,phi = np.pi/2.-np.radians(lat),np.radians(lon)
     check_theta_valid(theta)
     check_nside(nside)
     if nest:
