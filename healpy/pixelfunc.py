@@ -641,7 +641,7 @@ def pix2vec(nside,ipix,nest=False):
     else:
         return pixlib._pix2vec_ring(nside,ipix)
 
-def ang2vec(theta, phi):
+def ang2vec(theta, phi, lonlat=False):
     """ang2vec : convert angles to 3D position vector
 
     Parameters
@@ -650,6 +650,9 @@ def ang2vec(theta, phi):
       colatitude in radians measured southward from north pole (in [0,pi]). 
     phi : float, scalar or array-like
       longitude in radians measured eastward (in [0, 2*pi]). 
+    lonlat : bool
+      If True, input angles are assumed to be longitude and latitude in degree,
+      otherwise, they are co-latitude and longitude in radians.
 
     Returns
     -------
@@ -661,19 +664,24 @@ def ang2vec(theta, phi):
     --------
     vec2ang, rotator.dir2vec, rotator.vec2dir
     """
+    if lonlat:
+        theta,phi = lonlat2thetaphi(theta,phi)
     check_theta_valid(theta)
     sintheta = np.sin(theta)
     return np.array([sintheta*np.cos(phi),
                       sintheta*np.sin(phi),
                       np.cos(theta)]).T
 
-def vec2ang(vectors):
+def vec2ang(vectors, lonlat=False):
     """vec2ang: vectors [x, y, z] -> theta[rad], phi[rad]
 
     Parameters
     ----------
     vectors : float, array-like
       the vector(s) to convert, shape is (3,) or (N, 3)
+    lonlat : bool, optional
+      If True, return angles will be longitude and latitude in degree,
+      otherwise, angles will be longitude and co-latitude in radians (default)
 
     Returns
     -------
@@ -689,7 +697,10 @@ def vec2ang(vectors):
     theta = np.arccos(vectors[:,2]/dnorm)
     phi = np.arctan2(vectors[:,1],vectors[:,0])
     phi[phi < 0] += 2*np.pi
-    return theta, phi
+    if lonlat:
+        return thetaphi2lonlat(theta,phi)
+    else:
+        return theta, phi
 
 def ring2nest(nside, ipix):
     """Convert pixel number from RING ordering to NESTED ordering.
