@@ -81,6 +81,12 @@ class TestPixelFunc(unittest.TestCase):
         lon1, lat1 = vec2ang(vec, lonlat=True)
         np.testing.assert_array_almost_equal(lon1, self.lon0,decimal=5)
         np.testing.assert_array_almost_equal(lat1, self.lat0,decimal=5)
+
+    def test_get_interp_val_lonlat(self):
+        m = np.arange(12.)
+        val0 = get_interp_val(m, self.theta0, self.phi0)
+        val1 = get_interp_val(m, self.lon0, self.lat0, lonlat=True)
+        np.testing.assert_array_almost_equal(val0, val1)
       
     def test_fit_dipole(self):
         nside = 32
