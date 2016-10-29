@@ -1304,7 +1304,7 @@ def get_interp_weights(nside,theta,phi=None,nest=False,lonlat=False):
     w=np.array(r[4:8])
     return (p,w)
 
-def get_all_neighbours(nside, theta, phi=None, nest=False):
+def get_all_neighbours(nside, theta, phi=None, nest=False, lonlat=False):
     """Return the 8 nearest pixels.
 
     Parameters
@@ -1316,6 +1316,9 @@ def get_all_neighbours(nside, theta, phi=None, nest=False):
       otherwise, theta[rad],phi[rad] are angular coordinates
     nest : bool
       if ``True``, pixel number will be NESTED ordering, otherwise RING ordering.
+    lonlat : bool
+      If True, input angles are assumed to be longitude and latitude in degree,
+      otherwise, they are co-latitude and longitude in radians.
 
     Returns
     -------
@@ -1337,10 +1340,13 @@ def get_all_neighbours(nside, theta, phi=None, nest=False):
 
     >>> hp.get_all_neighbours(1, np.pi/2, np.pi/2)
     array([ 8,  4,  0, -1,  1,  6,  9, -1])
+
+    >>> hp.get_all_neighbours(1, 90, 0, lonlat=True)
+    array([ 8,  4,  0, -1,  1,  6,  9, -1])
     """
     check_nside(nside)
     if phi is not None:
-        theta = ang2pix(nside,theta, phi,nest=nest)
+        theta = ang2pix(nside, theta, phi, nest=nest, lonlat=lonlat)
     if nest:
         r=pixlib._get_neighbors_nest(nside,theta)
     else:
