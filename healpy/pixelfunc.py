@@ -1242,7 +1242,7 @@ def get_interp_val(m,theta,phi,nest=False,lonlat=False):
 def get_neighbours(nside, theta, phi=None, nest=False):
     raise NameError("get_neighbours has been renamed to get_interp_weights")
 
-def get_interp_weights(nside,theta,phi=None,nest=False):
+def get_interp_weights(nside,theta,phi=None,nest=False,lonlat=False):
     """Return the 4 closest pixels on the two rings above and below the
     location and corresponding weights.
     Weights are provided for bilinear interpolation along latitude and longitude
@@ -1256,6 +1256,9 @@ def get_interp_weights(nside,theta,phi=None,nest=False):
       otherwise theta[rad],phi[rad] are angular coordinates
     nest : bool
       if ``True``, NESTED ordering, otherwise RING ordering.
+    lonlat : bool
+      If True, input angles are assumed to be longitude and latitude in degree,
+      otherwise, they are co-latitude and longitude in radians.
 
     Returns
     -------
@@ -1276,6 +1279,9 @@ def get_interp_weights(nside,theta,phi=None,nest=False):
     >>> hp.get_interp_weights(1, 0, 0)
     (array([1, 2, 3, 0]), array([ 0.25,  0.25,  0.25,  0.25]))
 
+    >>> hp.get_interp_weights(1, 0, 90, lonlat=True)
+    (array([1, 2, 3, 0]), array([ 0.25,  0.25,  0.25,  0.25]))
+
     >>> hp.get_interp_weights(1, [0, np.pi/2], 0)
     (array([[ 1,  4],
            [ 2,  5],
@@ -1288,6 +1294,8 @@ def get_interp_weights(nside,theta,phi=None,nest=False):
     check_nside(nside)
     if phi == None:
         theta,phi = pix2ang(nside,theta,nest=nest)
+    elif lonlat:
+        theta,phi = lonlat2thetaphi(theta,phi)
     if nest:
         r=pixlib._get_interpol_nest(nside,theta,phi)
     else:
