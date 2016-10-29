@@ -87,7 +87,30 @@ class TestPixelFunc(unittest.TestCase):
         val0 = get_interp_val(m, self.theta0, self.phi0)
         val1 = get_interp_val(m, self.lon0, self.lat0, lonlat=True)
         np.testing.assert_array_almost_equal(val0, val1)
-      
+
+    def test_get_interp_weights(self):
+        p0,w0 = (np.array([0,1,4,5]), np.array([1.,0.,0.,0.]))
+
+        # phi not specified, theta assumed to be pixel
+        p1,w1 = get_interp_weights(1, 0)
+        np.testing.assert_array_almost_equal(p0,p1)
+        np.testing.assert_array_almost_equal(w0,w1)
+
+        # If phi is not specified, lonlat should do nothing
+        p1,w1 = get_interp_weights(1, 0, lonlat=True)
+        np.testing.assert_array_almost_equal(p0,p1)
+        np.testing.assert_array_almost_equal(w0,w1)
+
+        p0,w0 = (np.array([1,2,3,0]), np.array([ 0.25,0.25,0.25,0.25]))
+
+        p1,w1 = get_interp_weights(1, 0, 0)
+        np.testing.assert_array_almost_equal(p0,p1)
+        np.testing.assert_array_almost_equal(w0,w1)
+
+        p1,w1 = get_interp_weights(1, 0, 90, lonlat=True)
+        np.testing.assert_array_almost_equal(p0,p1)
+        np.testing.assert_array_almost_equal(w0,w1)
+        
     def test_fit_dipole(self):
         nside = 32
         npix = nside2npix(nside)
