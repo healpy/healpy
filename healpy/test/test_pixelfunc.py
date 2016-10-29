@@ -110,7 +110,14 @@ class TestPixelFunc(unittest.TestCase):
         p1,w1 = get_interp_weights(1, 0, 90, lonlat=True)
         np.testing.assert_array_almost_equal(p0,p1)
         np.testing.assert_array_almost_equal(w0,w1)
-        
+
+    def test_get_all_neighbours(self):
+        ipix0 = np.array([8, 4, 0, -1, 1, 6, 9, -1])
+        ipix1 = get_all_neighbours(1, np.pi/2, np.pi/2)
+        ipix2 = get_all_neighbours(1, 90, 0, lonlat=True)
+        np.testing.assert_array_almost_equal(ipix0,ipix1)
+        np.testing.assert_array_almost_equal(ipix0,ipix2)
+
     def test_fit_dipole(self):
         nside = 32
         npix = nside2npix(nside)
