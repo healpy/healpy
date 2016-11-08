@@ -1,4 +1,11 @@
-Release 1.9.1, 17 Nov 2015
+Release 1.10.1, 8 Nov 2016
+
+* Removed support for Python 2.6
+* Implemented Lambert azimuthal equal-area projection <https://github.com/healpy/healpy/pull/354>
+* Bugfix: write multiple alms <https://github.com/healpy/healpy/pull/342>
+* Depend on `astropy` instead of `pyfits` <https://github.com/healpy/healpy/pull/337>
+
+Release 1.9.1, 17 Nov 2015, Last version to support Python 2.6
 
 * Remove C++ 11 features <https://github.com/healpy/healpy/pull/297>
 * Streamlined setup.py <https://github.com/healpy/healpy/pull/298>
