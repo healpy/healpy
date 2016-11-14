@@ -127,6 +127,40 @@ def check_theta_valid(theta):
     if not((theta >= 0).all() and (theta <= np.pi + 1e-5).all()):
         raise ValueError('THETA is out of range [0,pi]')
 
+def lonlat2thetaphi(lon,lat):
+    """ Transform longitude and latitude (deg) into co-latitude and longitude (rad)
+
+    Parameters
+    ----------
+    lon : int or array-like
+      Longitude in degrees
+    lat : int or array-like
+      Latitude in degrees
+
+    Returns
+    -------
+    theta, phi : float, scalar or array-like
+      The co-latitude and longitude in radians
+    """
+    return np.pi/2. - np.radians(lat),np.radians(lon)
+
+def thetaphi2lonlat(theta,phi):
+    """ Transform co-latitude and longitude (rad) into longitude and latitude (deg)
+
+    Parameters
+    ----------
+    theta : int or array-like
+      Co-latitude in radians
+    phi : int or array-like
+      Longitude in radians
+
+    Returns
+    -------
+    lon, lat : float, scalar or array-like
+      The longitude and latitude in degrees
+    """
+    return np.degrees(phi), 90. - np.degrees(theta)
+
 def maptype(m):
     """Describe the type of the map (valid, single, sequence of maps).
     Checks : the number of maps, that all maps have same length and that this
@@ -345,8 +379,8 @@ def ma(m, badval = UNSEEN, rtol = 1e-5, atol = 1e-8, copy = True):
     else:
         return tuple([ma(mm) for mm in m])
 
-def ang2pix(nside,theta,phi,nest=False):
-    """ang2pix : nside,theta[rad],phi[rad],nest=False -> ipix (default:RING)
+def ang2pix(nside,theta,phi,nest=False,lonlat=False):
+    """ang2pix : nside,theta[rad],phi[rad],nest=False,lonlat=False -> ipix (default:RING)
 
     Parameters
     ----------
@@ -356,6 +390,9 @@ def ang2pix(nside,theta,phi,nest=False):
       Angular coordinates of a point on the sphere
     nest : bool, optional
       if True, assume NESTED pixel ordering, otherwise, RING pixel ordering
+    lonlat : bool
+      If True, input angles are assumed to be longitude and latitude in degree,
+      otherwise, they are co-latitude and longitude in radians.
 
     Returns
     -------
@@ -381,7 +418,12 @@ def ang2pix(nside,theta,phi,nest=False):
 
     >>> hp.ang2pix([1, 2, 4, 8, 16], np.pi/2, 0)
     array([   4,   12,   72,  336, 1440])
+
+    >>> hp.ang2pix([1, 2, 4, 8, 16], 0, 0, lonlat=True)
+    array([   4,   12,   72,  336, 1440])
     """
+    if lonlat:
+        theta,phi = lonlat2thetaphi(theta,phi)
     check_theta_valid(theta)
     check_nside(nside)
     if nest:
@@ -389,8 +431,8 @@ def ang2pix(nside,theta,phi,nest=False):
     else:
         return pixlib._ang2pix_ring(nside,theta,phi)
 
-def pix2ang(nside,ipix,nest=False):
-    """pix2ang : nside,ipix,nest=False -> theta[rad],phi[rad] (default RING)
+def pix2ang(nside,ipix,nest=False,lonlat=False):
+    """pix2ang : nside,ipix,nest=False,lonlat=False -> theta[rad],phi[rad] (default RING)
 
     Parameters
     ----------
@@ -400,6 +442,9 @@ def pix2ang(nside,ipix,nest=False):
       Pixel indices
     nest : bool, optional
       if True, assume NESTED pixel ordering, otherwise, RING pixel ordering
+    lonlat : bool, optional
+      If True, return angles will be longitude and latitude in degree,
+      otherwise, angles will be longitude and co-latitude in radians (default)
 
     Returns
     -------
@@ -422,12 +467,20 @@ def pix2ang(nside,ipix,nest=False):
 
     >>> hp.pix2ang([1, 2, 4, 8], 11)
     (array([ 2.30052398,  0.84106867,  0.41113786,  0.2044802 ]), array([ 5.49778714,  5.89048623,  5.89048623,  5.89048623]))
+
+    >>> hp.pix2ang([1, 2, 4, 8], 11)
+    (array([ 315. ,  337.5,  337.5,  337.5]), array([-41.8103149 ,  41.8103149 ,  66.44353569,  78.28414761]))
     """
     check_nside(nside)
     if nest:
-        return pixlib._pix2ang_nest(nside, ipix)
+        theta,phi = pixlib._pix2ang_nest(nside, ipix)
     else:
-        return pixlib._pix2ang_ring(nside,ipix)
+        theta,phi = pixlib._pix2ang_ring(nside,ipix)
+
+    if lonlat:
+        return thetaphi2lonlat(theta,phi)
+    else:
+        return theta, phi
 
 def xyf2pix(nside,x,y,face,nest=False):
     """xyf2pix : nside,x,y,face,nest=False -> ipix (default:RING)
@@ -588,7 +641,7 @@ def pix2vec(nside,ipix,nest=False):
     else:
         return pixlib._pix2vec_ring(nside,ipix)
 
-def ang2vec(theta, phi):
+def ang2vec(theta, phi, lonlat=False):
     """ang2vec : convert angles to 3D position vector
 
     Parameters
@@ -597,6 +650,9 @@ def ang2vec(theta, phi):
       colatitude in radians measured southward from north pole (in [0,pi]). 
     phi : float, scalar or array-like
       longitude in radians measured eastward (in [0, 2*pi]). 
+    lonlat : bool
+      If True, input angles are assumed to be longitude and latitude in degree,
+      otherwise, they are co-latitude and longitude in radians.
 
     Returns
     -------
@@ -608,19 +664,24 @@ def ang2vec(theta, phi):
     --------
     vec2ang, rotator.dir2vec, rotator.vec2dir
     """
+    if lonlat:
+        theta,phi = lonlat2thetaphi(theta,phi)
     check_theta_valid(theta)
     sintheta = np.sin(theta)
     return np.array([sintheta*np.cos(phi),
                       sintheta*np.sin(phi),
                       np.cos(theta)]).T
 
-def vec2ang(vectors):
+def vec2ang(vectors, lonlat=False):
     """vec2ang: vectors [x, y, z] -> theta[rad], phi[rad]
 
     Parameters
     ----------
     vectors : float, array-like
       the vector(s) to convert, shape is (3,) or (N, 3)
+    lonlat : bool, optional
+      If True, return angles will be longitude and latitude in degree,
+      otherwise, angles will be longitude and co-latitude in radians (default)
 
     Returns
     -------
@@ -636,7 +697,10 @@ def vec2ang(vectors):
     theta = np.arccos(vectors[:,2]/dnorm)
     phi = np.arctan2(vectors[:,1],vectors[:,0])
     phi[phi < 0] += 2*np.pi
-    return theta, phi
+    if lonlat:
+        return thetaphi2lonlat(theta,phi)
+    else:
+        return theta, phi
 
 def ring2nest(nside, ipix):
     """Convert pixel number from RING ordering to NESTED ordering.
@@ -1122,7 +1186,7 @@ def isnpixok(npix):
         nside = np.sqrt(npix/12.)
         return isnsideok(nside)
 
-def get_interp_val(m,theta,phi,nest=False):
+def get_interp_val(m,theta,phi,nest=False,lonlat=False):
     """Return the bi-linear interpolation value of a map using 4 nearest neighbours.
 
     Parameters
@@ -1133,6 +1197,9 @@ def get_interp_val(m,theta,phi,nest=False):
       angular coordinates of point at which to interpolate the map
     nest : bool
       if True, the is assumed to be in NESTED ordering.
+    lonlat : bool
+      If True, input angles are assumed to be longitude and latitude in degree,
+      otherwise, they are co-latitude and longitude in radians.
 
     Returns
     -------
@@ -1155,9 +1222,14 @@ def get_interp_val(m,theta,phi,nest=False):
     >>> hp.get_interp_val(np.arange(12.), np.linspace(0, np.pi, 10), 0)
     array([ 1.5       ,  1.5       ,  1.5       ,  2.20618428,  3.40206143,
             5.31546486,  7.94639458,  9.5       ,  9.5       ,  9.5       ])
+    >>> hp.get_interp_val(np.arange(12.), 0, np.linspace(90, -90, 10), lonlat=True)
+    array([ 1.5       ,  1.5       ,  1.5       ,  2.20618428,  3.40206143,
+            5.31546486,  7.94639458,  9.5       ,  9.5       ,  9.5       ])
     """
     m2=m.ravel()
     nside=npix2nside(m2.size)
+    if lonlat:
+        theta,phi = lonlat2thetaphi(theta,phi)
     if nest:
         r=pixlib._get_interpol_nest(nside,theta,phi)
     else:
@@ -1170,7 +1242,7 @@ def get_interp_val(m,theta,phi,nest=False):
 def get_neighbours(nside, theta, phi=None, nest=False):
     raise NameError("get_neighbours has been renamed to get_interp_weights")
 
-def get_interp_weights(nside,theta,phi=None,nest=False):
+def get_interp_weights(nside,theta,phi=None,nest=False,lonlat=False):
     """Return the 4 closest pixels on the two rings above and below the
     location and corresponding weights.
     Weights are provided for bilinear interpolation along latitude and longitude
@@ -1184,6 +1256,9 @@ def get_interp_weights(nside,theta,phi=None,nest=False):
       otherwise theta[rad],phi[rad] are angular coordinates
     nest : bool
       if ``True``, NESTED ordering, otherwise RING ordering.
+    lonlat : bool
+      If True, input angles are assumed to be longitude and latitude in degree,
+      otherwise, they are co-latitude and longitude in radians.
 
     Returns
     -------
@@ -1204,6 +1279,9 @@ def get_interp_weights(nside,theta,phi=None,nest=False):
     >>> hp.get_interp_weights(1, 0, 0)
     (array([1, 2, 3, 0]), array([ 0.25,  0.25,  0.25,  0.25]))
 
+    >>> hp.get_interp_weights(1, 0, 90, lonlat=True)
+    (array([1, 2, 3, 0]), array([ 0.25,  0.25,  0.25,  0.25]))
+
     >>> hp.get_interp_weights(1, [0, np.pi/2], 0)
     (array([[ 1,  4],
            [ 2,  5],
@@ -1216,6 +1294,8 @@ def get_interp_weights(nside,theta,phi=None,nest=False):
     check_nside(nside)
     if phi == None:
         theta,phi = pix2ang(nside,theta,nest=nest)
+    elif lonlat:
+        theta,phi = lonlat2thetaphi(theta,phi)
     if nest:
         r=pixlib._get_interpol_nest(nside,theta,phi)
     else:
@@ -1224,7 +1304,7 @@ def get_interp_weights(nside,theta,phi=None,nest=False):
     w=np.array(r[4:8])
     return (p,w)
 
-def get_all_neighbours(nside, theta, phi=None, nest=False):
+def get_all_neighbours(nside, theta, phi=None, nest=False, lonlat=False):
     """Return the 8 nearest pixels.
 
     Parameters
@@ -1236,6 +1316,9 @@ def get_all_neighbours(nside, theta, phi=None, nest=False):
       otherwise, theta[rad],phi[rad] are angular coordinates
     nest : bool
       if ``True``, pixel number will be NESTED ordering, otherwise RING ordering.
+    lonlat : bool
+      If True, input angles are assumed to be longitude and latitude in degree,
+      otherwise, they are co-latitude and longitude in radians.
 
     Returns
     -------
@@ -1257,10 +1340,13 @@ def get_all_neighbours(nside, theta, phi=None, nest=False):
 
     >>> hp.get_all_neighbours(1, np.pi/2, np.pi/2)
     array([ 8,  4,  0, -1,  1,  6,  9, -1])
+
+    >>> hp.get_all_neighbours(1, 90, 0, lonlat=True)
+    array([ 8,  4,  0, -1,  1,  6,  9, -1])
     """
     check_nside(nside)
     if phi is not None:
-        theta = ang2pix(nside,theta, phi,nest=nest)
+        theta = ang2pix(nside, theta, phi, nest=nest, lonlat=lonlat)
     if nest:
         r=pixlib._get_neighbors_nest(nside,theta)
     else:

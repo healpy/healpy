@@ -10,6 +10,8 @@ class TestPixelFunc(unittest.TestCase):
         # data fixture
         self.theta0 = [ 1.52911759,  0.78550497,  1.57079633,  0.05103658,  3.09055608] 
         self.phi0   = [ 0.        ,  0.78539816,  1.61988371,  0.78539816,  0.78539816]
+        self.lon0   = np.degrees(self.phi0)
+        self.lat0   = 90. - np.degrees(self.theta0)
     
     def test_nside2npix(self):
         self.assertEqual(nside2npix(512), 3145728) 
@@ -59,7 +61,63 @@ class TestPixelFunc(unittest.TestCase):
 
     def test_ang2pix_negative_theta(self):
         self.assertRaises(ValueError, ang2pix, 32, -1, 0)
-      
+
+    def test_ang2pix_lonlat(self):
+        # Need to decrease the precision of the check because deg not radians
+        id = ang2pix(1048576 * 8, self.lon0, self.lat0, nest=False, lonlat=True)
+        lon1, lat1 = pix2ang(1048576 * 8, id, nest=False, lonlat=True)
+        np.testing.assert_array_almost_equal(lon1, self.lon0,decimal=5)
+        np.testing.assert_array_almost_equal(lat1, self.lat0,decimal=5)
+
+        # Now test nested
+        id = ang2pix(1048576 * 8, self.theta0, self.phi0, nest=True)
+        theta1, phi1 = pix2ang(1048576 * 8, id, nest=True)
+        np.testing.assert_array_almost_equal(theta1, self.theta0)
+        np.testing.assert_array_almost_equal(phi1, self.phi0)
+
+    def test_vec2pix_lonlat(self):
+        # Need to decrease the precision of the check because deg not radians
+        vec = ang2vec(self.lon0, self.lat0, lonlat=True)
+        lon1, lat1 = vec2ang(vec, lonlat=True)
+        np.testing.assert_array_almost_equal(lon1, self.lon0,decimal=5)
+        np.testing.assert_array_almost_equal(lat1, self.lat0,decimal=5)
+
+    def test_get_interp_val_lonlat(self):
+        m = np.arange(12.)
+        val0 = get_interp_val(m, self.theta0, self.phi0)
+        val1 = get_interp_val(m, self.lon0, self.lat0, lonlat=True)
+        np.testing.assert_array_almost_equal(val0, val1)
+
+    def test_get_interp_weights(self):
+        p0,w0 = (np.array([0,1,4,5]), np.array([1.,0.,0.,0.]))
+
+        # phi not specified, theta assumed to be pixel
+        p1,w1 = get_interp_weights(1, 0)
+        np.testing.assert_array_almost_equal(p0,p1)
+        np.testing.assert_array_almost_equal(w0,w1)
+
+        # If phi is not specified, lonlat should do nothing
+        p1,w1 = get_interp_weights(1, 0, lonlat=True)
+        np.testing.assert_array_almost_equal(p0,p1)
+        np.testing.assert_array_almost_equal(w0,w1)
+
+        p0,w0 = (np.array([1,2,3,0]), np.array([ 0.25,0.25,0.25,0.25]))
+
+        p1,w1 = get_interp_weights(1, 0, 0)
+        np.testing.assert_array_almost_equal(p0,p1)
+        np.testing.assert_array_almost_equal(w0,w1)
+
+        p1,w1 = get_interp_weights(1, 0, 90, lonlat=True)
+        np.testing.assert_array_almost_equal(p0,p1)
+        np.testing.assert_array_almost_equal(w0,w1)
+
+    def test_get_all_neighbours(self):
+        ipix0 = np.array([8, 4, 0, -1, 1, 6, 9, -1])
+        ipix1 = get_all_neighbours(1, np.pi/2, np.pi/2)
+        ipix2 = get_all_neighbours(1, 90, 0, lonlat=True)
+        np.testing.assert_array_almost_equal(ipix0,ipix1)
+        np.testing.assert_array_almost_equal(ipix0,ipix2)
+
     def test_fit_dipole(self):
         nside = 32
         npix = nside2npix(nside)
