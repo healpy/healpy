@@ -320,7 +320,8 @@ class GnomonicProj(SphericalProj):
         if self.arrayinfo is None:
             raise TypeError("No projection plane array information defined for "
                             "this projector")
-        xsize,ysize = self.arrayinfo['xsize'],self.arrayinfo['ysize']
+        xsize = int(self.arrayinfo['xsize'])
+        ysize = int(self.arrayinfo['ysize'])
         reso = self.arrayinfo['reso']
         if y is None: x,y = x
         dx = reso/60. * dtor
@@ -334,7 +335,8 @@ class GnomonicProj(SphericalProj):
         if self.arrayinfo is None:
             raise TypeError("No projection plane array information defined for "
                             "this projector")
-        xsize,ysize = self.arrayinfo['xsize'],self.arrayinfo['ysize']
+        xsize = int(self.arrayinfo['xsize'])
+        ysize = int(self.arrayinfo['ysize'])
         reso = self.arrayinfo['reso']
         dx = reso/60. * dtor
         xc,yc = 0.5*(xsize-1), 0.5*(ysize-1)
@@ -448,8 +450,8 @@ class MollweideProj(SphericalProj):
         if self.arrayinfo is None:
             raise TypeError("No projection plane array information defined for "
                             "this projector")
-        xsize = self.arrayinfo['xsize']
-        ysize=xsize/2
+        xsize = int(self.arrayinfo['xsize'])
+        ysize = xsize // 2
         if y is None: x,y = x
         xc,yc = (xsize-1.)/2., (ysize-1.)/2.
         if hasattr(x,'__len__'):
@@ -472,8 +474,8 @@ class MollweideProj(SphericalProj):
         if self.arrayinfo is None:
             raise TypeError("No projection plane array information defined for "
                             "this projector")
-        xsize = self.arrayinfo['xsize']
-        ysize=xsize/2
+        xsize = int(self.arrayinfo['xsize'])
+        ysize = xsize // 2
         xc,yc=(xsize-1.)/2.,(ysize-1.)/2.
         if i is None and j is None:
             idx = np.outer(np.arange(ysize),np.ones(xsize))
@@ -616,8 +618,8 @@ class CartesianProj(SphericalProj):
         if self.arrayinfo is None:
             raise TypeError("No projection plane array information defined for "
                             "this projector")
-        xsize = self.arrayinfo['xsize']
-        ysize = self.arrayinfo['ysize']
+        xsize = int(self.arrayinfo['xsize'])
+        ysize = int(self.arrayinfo['ysize'])
         lonra = self.arrayinfo['lonra']
         latra = self.arrayinfo['latra']
         if y is None: x,y = np.asarray(x)
@@ -638,8 +640,8 @@ class CartesianProj(SphericalProj):
         if self.arrayinfo is None:
             raise TypeError("No projection plane array information defined for "
                             "this projector")
-        xsize = self.arrayinfo['xsize']
-        ysize = self.arrayinfo['ysize']
+        xsize = int(self.arrayinfo['xsize'])
+        ysize = int(self.arrayinfo['ysize'])
         lonra = self.arrayinfo['lonra']
         latra = self.arrayinfo['latra']
         if i is not None and j is None: i,j = np.asarray(i)
@@ -679,8 +681,8 @@ class CartesianProj(SphericalProj):
     get_extent.__doc__ = SphericalProj.get_extent.__doc__
 
     def get_fov(self):
-        xsize = self.arrayinfo['xsize']
-        ysize = self.arrayinfo['ysize']
+        xsize = int(self.arrayinfo['xsize'])
+        ysize = int(self.arrayinfo['ysize'])
         v1 = np.asarray(self.xy2vec(self.ij2xy(0,0), direct=True))
         v2 = np.asarray(self.xy2vec(self.ij2xy(ysize-1,xsize-1), direct=True))
         a = np.arccos((v1*v2).sum())
@@ -815,11 +817,11 @@ class OrthographicProj(SphericalProj):
         if self.arrayinfo is None:
             raise TypeError("No projection plane array information defined for"
                             " this projector")
-        xsize = self.arrayinfo['xsize']
+        xsize = int(self.arrayinfo['xsize'])
         half_sky = self.arrayinfo['half_sky']
-        if half_sky: ratio = 1.0
-        else: ratio = 2.0
-        ysize = xsize/ratio
+        if half_sky: ratio = 1
+        else: ratio = 2
+        ysize = xsize // ratio
         if y is None: x,y = np.asarray(x)
         else: x,y = np.asarray(x), np.asarray(y)
         xc,yc = (xsize-1.)/2., (ysize-1.)/2.
@@ -845,11 +847,11 @@ class OrthographicProj(SphericalProj):
         if self.arrayinfo is None:
             raise TypeError("No projection plane array information defined for"
                             " this projector")
-        xsize = self.arrayinfo['xsize']
+        xsize = int(self.arrayinfo['xsize'])
         half_sky = self.arrayinfo['half_sky']
-        if half_sky: ratio = 1.0
-        else: ratio = 2.0
-        ysize=xsize/ratio
+        if half_sky: ratio = 1
+        else: ratio = 2
+        ysize = xsize // ratio
         xc,yc=(xsize-1.)/2.,(ysize-1.)/2.
         if i is None and j is None:
             idx = np.outer(np.arange(ysize),np.ones(xsize))
@@ -1014,7 +1016,8 @@ class AzimuthalProj(SphericalProj):
         if self.arrayinfo is None:
             raise TypeError("No projection plane array information defined for "
                             "this projector")
-        xsize,ysize = self.arrayinfo['xsize'],self.arrayinfo['ysize']
+        xsize = int(self.arrayinfo['xsize'])
+        ysize = int(self.arrayinfo['ysize'])
         reso = self.arrayinfo['reso']
         lamb = self.arrayinfo['lamb']
         half_sky = self.arrayinfo['half_sky']
@@ -1044,7 +1047,8 @@ class AzimuthalProj(SphericalProj):
         if self.arrayinfo is None:
             raise TypeError("No projection plane array information defined for "
                             "this projector")
-        xsize,ysize = self.arrayinfo['xsize'],self.arrayinfo['ysize']
+        xsize = int(self.arrayinfo['xsize'])
+        ysize = int(self.arrayinfo['ysize'])
         reso = self.arrayinfo['reso']
         lamb = self.arrayinfo['lamb']
         half_sky = self.arrayinfo['half_sky']
@@ -1080,7 +1084,8 @@ class AzimuthalProj(SphericalProj):
     ij2xy.__doc__ = SphericalProj.ij2xy.__doc__ % (name,name)
 
     def get_extent(self):
-        xsize,ysize = self.arrayinfo['xsize'],self.arrayinfo['ysize']
+        xsize = int(self.arrayinfo['xsize'])
+        ysize = int(self.arrayinfo['ysize'])
         reso = self.arrayinfo['reso']
         dx = reso/60.0 * dtor
         xc,yc = 0.5*(xsize-1), 0.5*(ysize-1)
