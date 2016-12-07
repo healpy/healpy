@@ -97,6 +97,17 @@ class TestFitsFunc(unittest.TestCase):
         for rm, dtype in zip(read_m, [np.float32, np.int32, np.float64]):
             np.testing.assert_almost_equal(dtype(self.m), rm)
 
+    def test_read_write_dtype_multiarr(self):
+        write_map(self.filename, [self.m, self.m, self.m], dtype=np.float64)
+        read_map(self.filename, dtype=np.float32)
+
+    def test_read_write_iterable_dtype(self):
+        write_map(self.filename, [self.m, self.m, self.m], dtype=[np.float64,
+                                                                  np.float32,
+                                                                  np.int32])
+        read_map(self.filename, field=(0, 1, 2), 
+                 dtype=[np.float32, np.int32, np.float64])
+
     def tearDown(self):
         os.remove(self.filename)
 
