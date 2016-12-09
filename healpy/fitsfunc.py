@@ -20,6 +20,7 @@
 """Provides input and output functions for Healpix maps, alm, and cl.
 """
 from __future__ import with_statement
+from __future__ import division
 
 import six
 import gzip
@@ -208,7 +209,7 @@ def write_map(filename,m,nest=False,dtype=np.float32,fits_IDL=True,coord=None,pa
             mm2 = np.asarray(mm)
             cols.append(pf.Column(name=cn,
                                    format='1024%s' % curr_fitsformat,
-                                   array=mm2.reshape(mm2.size/1024,1024),
+                                   array=mm2.reshape(mm2.size//1024,1024),
                                    unit=cu))
         else:
             cols.append(pf.Column(name=cn,
