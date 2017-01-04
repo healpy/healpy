@@ -101,7 +101,7 @@ def mollview(map=None,fig=None,rot=None,coord=None,unit='',
       The maximum range value
     flip : {'astro', 'geo'}, optional
       Defines the convention of projection : 'astro' (default, east towards left, west towards right)
-      or 'geo' (east towards roght, west towards left)
+      or 'geo' (east towards right, west towards left)
     remove_dip : bool, optional
       If :const:`True`, remove the dipole+monopole
     remove_mono : bool, optional
