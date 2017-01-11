@@ -110,10 +110,11 @@ class TestSphtFunc(unittest.TestCase):
         tmp = np.empty(orig.size * 2)
         tmp[::2] = orig
         maps = [orig, orig.astype(np.float32), tmp[::2]]
-        for input in maps:
-            alm = hp.map2alm(input, iter=10)
-            output = hp.alm2map(alm, nside)
-            np.testing.assert_allclose(input, output, atol=1e-4)
+        for use_weights in [False, True]:
+            for input in maps:
+                alm = hp.map2alm(input, iter=10, use_weights=use_weights)
+                output = hp.alm2map(alm, nside)
+                np.testing.assert_allclose(input, output, atol=1e-4)
 
     def test_map2alm_pol(self):
         tmp = [np.empty(o.size*2) for o in self.mapiqu]
@@ -121,11 +122,12 @@ class TestSphtFunc(unittest.TestCase):
             t[::2] = o
         maps = [self.mapiqu, [o.astype(np.float32) for o in self.mapiqu],
                 [t[::2] for t in tmp]]
-        for input in maps:
-            alm = hp.map2alm(input, iter=10)
-            output = hp.alm2map(alm, 32)
-            for i, o in zip(input, output):
-                np.testing.assert_allclose(i, o, atol=1e-4)
+        for use_weights in [False, True]:
+            for input in maps:
+                alm = hp.map2alm(input, iter=10, use_weights=use_weights)
+                output = hp.alm2map(alm, 32)
+                for i, o in zip(input, output):
+                    np.testing.assert_allclose(i, o, atol=1e-4)
 
     def test_rotate_alm(self):
         almigc = hp.map2alm(self.mapiqu)
