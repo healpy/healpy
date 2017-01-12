@@ -275,7 +275,13 @@ def map2alm(m, lmax = None, mmax = None, niter = 3, use_weights = False,
     if use_weights:
         if datapath is None:
             datapath = get_datapath()
-        c_datapath = datapath
+        # For Python3: datapath must be a str, bdatapath must be bytes
+        if isinstance(datapath, unicode) :
+            bdatapath = datapath.encode('UTF-8')
+        else :
+            bdatapath = datapath
+            datapath = datapath.decode('UTF-8')
+        c_datapath = bdatapath
         weightfile = 'weight_ring_n%05d.fits' % (nside)
         if not os.path.isfile(os.path.join(datapath, weightfile)):
             raise IOError('Weight file not found in %s' % (datapath))
