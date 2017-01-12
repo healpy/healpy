@@ -32,6 +32,7 @@ Reference
    healpy_spht
    healpy_visu
    healpy_fits
+   healpy_query
 
    healpy_rotator
    healpy_projector
