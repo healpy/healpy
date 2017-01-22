@@ -733,7 +733,7 @@ def ring2nest(nside, ipix):
     >>> hp.ring2nest([1, 2, 4, 8], 11)
     array([ 11,  13,  61, 253])
     """
-    check_nside(nside, nest=False)
+    check_nside(nside, nest=True)
     return pixlib._ring2nest(nside, ipix)
 
 def nest2ring(nside, ipix):
