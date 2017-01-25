@@ -1169,7 +1169,7 @@ def isnpixok(npix):
     >>> hp.isnpixok([12, 768, 1002])
     array([ True,  True, False], dtype=bool)
     """
-    nside = np.sqrt(npix/12.)
+    nside = np.sqrt(np.asarray(npix)/12.)
     return nside == np.floor(nside)
 
 def get_interp_val(m,theta,phi,nest=False,lonlat=False):
