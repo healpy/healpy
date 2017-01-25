@@ -941,8 +941,11 @@ def nside2order(nside):
     True
 
     >>> hp.nside2order(7)
-    2
+    Traceback (most recent call last):
+        ...
+    ValueError: 7 is not a valid nside parameter (must be a power of 2, less than 2**30)
     """
+    check_nside(nside, nest=True)
     return len('{0:b}'.format(nside)) - 1
 
 def nside2resol(nside, arcmin=False):
@@ -978,7 +981,6 @@ def nside2resol(nside, arcmin=False):
 
     >>> hp.nside2resol(7)
     0.1461895297066412
-
     """
     
     resol = np.sqrt(nside2pixarea(nside))
