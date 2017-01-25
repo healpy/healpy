@@ -425,7 +425,7 @@ def ang2pix(nside,theta,phi,nest=False,lonlat=False):
     if lonlat:
         theta,phi = lonlat2thetaphi(theta,phi)
     check_theta_valid(theta)
-    check_nside(nside)
+    check_nside(nside, nest=nest)
     if nest:
         return pixlib._ang2pix_nest(nside,theta,phi)
     else:
@@ -471,7 +471,7 @@ def pix2ang(nside,ipix,nest=False,lonlat=False):
     >>> hp.pix2ang([1, 2, 4, 8], 11, lonlat=True)
     (array([ 315. ,  337.5,  337.5,  337.5]), array([-41.8103149 ,  41.8103149 ,  66.44353569,  78.28414761]))
     """
-    check_nside(nside)
+    check_nside(nside, nest=nest)
     if nest:
         theta,phi = pixlib._pix2ang_nest(nside, ipix)
     else:
@@ -515,7 +515,7 @@ def xyf2pix(nside,x,y,face,nest=False):
     >>> hp.xyf2pix(16, [8, 8, 8, 15, 0], [8, 8, 7, 15, 0], [4, 0, 5, 0, 8])
     array([1440,  427, 1520,    0, 3068])
     """
-    check_nside(nside)
+    check_nside(nside, nest=nest)
     if nest:
         return pixlib._xyf2pix_nest(nside,x,y,face)
     else:
@@ -556,7 +556,7 @@ def pix2xyf(nside,ipix,nest=False):
     >>> hp.pix2xyf([1, 2, 4, 8], 11)
     (array([0, 1, 3, 7]), array([0, 0, 2, 6]), array([11,  3,  3,  3]))
     """
-    check_nside(nside)
+    check_nside(nside, nest=nest)
     if nest:
         return pixlib._pix2xyf_nest(nside, ipix)
     else:
@@ -635,7 +635,7 @@ def pix2vec(nside,ipix,nest=False):
     >>> hp.pix2vec([1, 2], 11)
     (array([ 0.52704628,  0.68861915]), array([-0.52704628, -0.28523539]), array([-0.66666667,  0.66666667]))
     """
-    check_nside(nside)
+    check_nside(nside, nest=nest)
     if nest:
         return pixlib._pix2vec_nest(nside,ipix)
     else:
@@ -733,7 +733,7 @@ def ring2nest(nside, ipix):
     >>> hp.ring2nest([1, 2, 4, 8], 11)
     array([ 11,  13,  61, 253])
     """
-    check_nside(nside)
+    check_nside(nside, nest=True)
     return pixlib._ring2nest(nside, ipix)
 
 def nest2ring(nside, ipix):
@@ -767,7 +767,7 @@ def nest2ring(nside, ipix):
     >>> hp.nest2ring([1, 2, 4, 8], 11)
     array([ 11,   2,  12, 211])
     """
-    check_nside(nside)
+    check_nside(nside, nest=True)
     return pixlib._nest2ring(nside, ipix)
 
 @accept_ma
@@ -908,11 +908,8 @@ def nside2npix(nside):
     True
 
     >>> hp.nside2npix(7)
-    Traceback (most recent call last):
-        ...
-    ValueError: 7 is not a valid nside parameter (must be a power of 2, less than 2**30)
+    588
     """
-    check_nside(nside)
     return 12*nside**2
 
 def nside2order(nside):
@@ -948,7 +945,7 @@ def nside2order(nside):
         ...
     ValueError: 7 is not a valid nside parameter (must be a power of 2, less than 2**30)
     """
-    check_nside(nside)
+    check_nside(nside, nest=True)
     return len('{0:b}'.format(nside)) - 1
 
 def nside2resol(nside, arcmin=False):
@@ -983,11 +980,8 @@ def nside2resol(nside, arcmin=False):
     0.0039973699529159707
 
     >>> hp.nside2resol(7)
-    Traceback (most recent call last):
-       ...
-    ValueError: 7 is not a valid nside parameter (must be a power of 2, less than 2**30)
+    0.1461895297066412
     """
-    check_nside(nside)
     
     resol = np.sqrt(nside2pixarea(nside))
 
@@ -1026,11 +1020,8 @@ def nside2pixarea(nside, degrees=False):
     1.5978966540475428e-05
 
     >>> hp.nside2pixarea(7)
-    Traceback (most recent call last):
-       ...
-    ValueError: 7 is not a valid nside parameter (must be a power of 2, less than 2**30)
+    0.021371378595848933
     """
-    check_nside(nside)
     
     pixarea = 4*np.pi/nside2npix(nside)
 
@@ -1071,12 +1062,9 @@ def npix2nside(npix):
         ...
     ValueError: Wrong pixel number (it is not 12*nside**2)
     """
-    nside = np.sqrt(npix/12.)
-    if nside != np.floor(nside):
+    if not isnpixok(npix):
         raise ValueError("Wrong pixel number (it is not 12*nside**2)")
-    nside=int(np.floor(nside))
-    check_nside(nside)
-    return nside
+    return int(np.sqrt(npix/12.))
 
 def order2nside(order):
     """Give the nside parameter for the given resolution order.
@@ -1110,11 +1098,13 @@ def order2nside(order):
     ValueError: 2147483648 is not a valid nside parameter (must be a power of 2, less than 2**30)
     """
     nside = 1<<order
-    check_nside(nside)
+    check_nside(nside, nest=True)
     return nside
 
-def isnsideok(nside):
+def isnsideok(nside, nest=False):
     """Returns :const:`True` if nside is a valid nside parameter, :const:`False` otherwise.
+
+    NSIDE needs to be a power of 2 only for nested ordering
 
     Parameters
     ----------
@@ -1129,29 +1119,34 @@ def isnsideok(nside):
     Examples
     --------
     >>> import healpy as hp
-    >>> hp.isnsideok(13)
+    >>> hp.isnsideok(13, nest=True)
     False
-    
+
+    >>> hp.isnsideok(13, nest=False)
+    True
+
     >>> hp.isnsideok(32)
     True
 
-    >>> hp.isnsideok([1, 2, 3, 4, 8, 16])
+    >>> hp.isnsideok([1, 2, 3, 4, 8, 16], nest=True)
     array([ True,  True, False,  True,  True,  True], dtype=bool)
     """
     # we use standard bithacks from http://graphics.stanford.edu/~seander/bithacks.html#DetermineIfPowerOf2
     if hasattr(nside, '__len__'):
         if not isinstance(nside, np.ndarray):
             nside = np.asarray(nside)
-        return ((nside == nside.astype(np.int)) & (0 < nside) &
-                (nside <= max_nside) &
-                ((nside.astype(np.int) & (nside.astype(np.int) - 1)) == 0))
+        is_nside_ok = (nside == nside.astype(np.int)) & (nside > 0) & (nside <= max_nside)
+        if nest:
+            is_nside_ok &= (nside.astype(np.int) & (nside.astype(np.int) - 1)) == 0
     else:
-        return (nside == int(nside) and 0 < nside <= max_nside and
-               (int(nside) & (int(nside) - 1)) == 0)
+        is_nside_ok = nside == int(nside) and 0 < nside <= max_nside
+        if nest:
+            is_nside_ok = is_nside_ok and (int(nside) & (int(nside) - 1)) == 0
+    return is_nside_ok
 
-def check_nside(nside):
+def check_nside(nside, nest=False):
     """Raises exception is nside is not valid"""
-    if not np.all(isnsideok(nside)):
+    if not np.all(isnsideok(nside, nest=nest)):
         raise ValueError("%s is not a valid nside parameter (must be a power of 2, less than 2**30)" % str(nside))
 
 def isnpixok(npix):
@@ -1179,12 +1174,8 @@ def isnpixok(npix):
     >>> hp.isnpixok([12, 768, 1002])
     array([ True,  True, False], dtype=bool)
     """
-    if hasattr(npix,'__len__'):
-        nside = np.sqrt(np.asarray(npix)/12.)
-        return isnsideok(nside)
-    else:
-        nside = np.sqrt(npix/12.)
-        return isnsideok(nside)
+    nside = np.sqrt(np.asarray(npix)/12.)
+    return nside == np.floor(nside)
 
 def get_interp_val(m,theta,phi,nest=False,lonlat=False):
     """Return the bi-linear interpolation value of a map using 4 nearest neighbours.
@@ -1288,7 +1279,7 @@ def get_interp_weights(nside,theta,phi=None,nest=False,lonlat=False):
            [ 0.25,  0.  ],
            [ 0.25,  0.  ]]))
     """
-    check_nside(nside)
+    check_nside(nside, nest=nest)
     if phi == None:
         theta,phi = pix2ang(nside,theta,nest=nest)
     elif lonlat:
@@ -1341,7 +1332,7 @@ def get_all_neighbours(nside, theta, phi=None, nest=False, lonlat=False):
     >>> hp.get_all_neighbours(1, 90, 0, lonlat=True)
     array([ 8,  4,  0, -1,  1,  6,  9, -1])
     """
-    check_nside(nside)
+    check_nside(nside, nest=nest)
     if phi is not None:
         theta = ang2pix(nside, theta, phi, nest=nest, lonlat=lonlat)
     if nest:
@@ -1371,7 +1362,7 @@ def max_pixrad(nside):
     >>> '%.15f' % max_pixrad(16)
     '0.066014761432513'
     """
-    check_nside(nside)
+    check_nside(nside, nest=False)
     return pixlib._max_pixrad(nside)
 
 def fit_dipole(m, nest=False, bad=UNSEEN, gal_cut=0):
@@ -1754,7 +1745,7 @@ def ud_grade(map_in,nside_out,pess=False,order_in='RING',order_out=None,
     array([  5.5 ,   7.25,   9.  ,  10.75,  21.75,  21.75,  23.75,  25.75,
             36.5 ,  38.25,  40.  ,  41.75])
     """
-    check_nside(nside_out)
+    check_nside(nside_out, nest=order_in!='RING')
     typ = maptype(map_in)
     if typ<0:
         raise TypeError('Invalid map')
@@ -1785,7 +1776,7 @@ def _ud_grade_core(m,nside_out,pess=False,power=None, dtype=None):
         type_out = dtype
     else:
         type_out = type(m[0])
-    check_nside(nside_out)
+    check_nside(nside_out, nest=True)
     npix_in = nside2npix(nside_in)
     npix_out = nside2npix(nside_out)
 
