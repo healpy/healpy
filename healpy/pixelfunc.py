@@ -906,6 +906,9 @@ def nside2npix(nside):
 
     >>> np.all([hp.nside2npix(nside) == 12 * nside**2 for nside in [2**n for n in range(12)]])
     True
+
+    >>> hp.nside2npix(7)
+    588
     """
     return 12*nside**2
 
@@ -936,6 +939,9 @@ def nside2order(nside):
 
     >>> np.all([hp.nside2order(2**o) == o for o in range(30)])
     True
+
+    >>> hp.nside2order(7)
+    2
     """
     return len('{0:b}'.format(nside)) - 1
 
@@ -969,6 +975,9 @@ def nside2resol(nside, arcmin=False):
 
     >>> hp.nside2resol(256)
     0.0039973699529159707
+
+    >>> hp.nside2resol(7)
+    0.1461895297066412
 
     """
     
