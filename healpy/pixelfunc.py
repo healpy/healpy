@@ -1018,6 +1018,9 @@ def nside2pixarea(nside, degrees=False):
 
     >>> hp.nside2pixarea(256)
     1.5978966540475428e-05
+
+    >>> hp.nside2pixarea(7)
+    0.021371378595848933
     """
     
     pixarea = 4*np.pi/nside2npix(nside)
