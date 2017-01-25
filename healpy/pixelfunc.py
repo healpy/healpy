@@ -1061,7 +1061,7 @@ def npix2nside(npix):
         raise ValueError("Wrong pixel number (it is not 12*nside**2)")
     return int(np.sqrt(npix/12.))
 
-def order2nside(order, nest=False):
+def order2nside(order):
     """Give the nside parameter for the given resolution order.
 
     Parameters
@@ -1093,7 +1093,7 @@ def order2nside(order, nest=False):
     ValueError: 2147483648 is not a valid nside parameter (must be a power of 2, less than 2**30)
     """
     nside = 1<<order
-    check_nside(nside, nside=nside)
+    check_nside(nside, nest=True)
     return nside
 
 def isnsideok(nside, nest=False):
