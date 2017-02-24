@@ -1,20 +1,20 @@
-# 
+#
 #  This file is part of Healpy.
-# 
+#
 #  Healpy is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation; either version 2 of the License, or
 #  (at your option) any later version.
-# 
+#
 #  Healpy is distributed in the hope that it will be useful,
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU General Public License for more details.
-# 
+#
 #  You should have received a copy of the GNU General Public License
 #  along with Healpy; if not, write to the Free Software
 #  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-# 
+#
 #  For more information about Healpy, see http://code.google.com/p/healpy
 #
 """
@@ -30,7 +30,7 @@ conversion from/to sky coordinates
 - :func:`pix2ang` converts pixel number to angular coordinates
 - :func:`pix2vec` converts pixel number to unit 3-vector direction
 - :func:`ang2pix` converts angular coordinates to pixel number
-- :func:`vec2pix` converts 3-vector to pixel number 
+- :func:`vec2pix` converts 3-vector to pixel number
 - :func:`vec2ang` converts 3-vector to angular coordinates
 - :func:`ang2vec` converts angular coordinates to unit 3-vector
 - :func:`pix2xyf` converts pixel number to coordinates within face
@@ -356,7 +356,7 @@ def ma(m, badval = UNSEEN, rtol = 1e-5, atol = 1e-8, copy = True):
 
     Returns
     -------
-    a masked array with the same shape as the input map, 
+    a masked array with the same shape as the input map,
     masked where input map is close to badval.
 
     See Also
@@ -647,9 +647,9 @@ def ang2vec(theta, phi, lonlat=False):
     Parameters
     ----------
     theta : float, scalar or arry-like
-      colatitude in radians measured southward from north pole (in [0,pi]). 
+      colatitude in radians measured southward from north pole (in [0,pi]).
     phi : float, scalar or array-like
-      longitude in radians measured eastward (in [0, 2*pi]). 
+      longitude in radians measured eastward (in [0, 2*pi]).
     lonlat : bool
       If True, input angles are assumed to be longitude and latitude in degree,
       otherwise, they are co-latitude and longitude in radians.
@@ -720,7 +720,7 @@ def ring2nest(nside, ipix):
     See Also
     --------
     nest2ring, reorder
-    
+
     Examples
     --------
     >>> import healpy as hp
@@ -729,7 +729,7 @@ def ring2nest(nside, ipix):
 
     >>> hp.ring2nest(2, np.arange(10))
     array([ 3,  7, 11, 15,  2,  1,  6,  5, 10,  9])
-    
+
     >>> hp.ring2nest([1, 2, 4, 8], 11)
     array([ 11,  13,  61, 253])
     """
@@ -754,7 +754,7 @@ def nest2ring(nside, ipix):
     See Also
     --------
     ring2nest, reorder
-    
+
     Examples
     --------
     >>> import healpy as hp
@@ -763,7 +763,7 @@ def nest2ring(nside, ipix):
 
     >>> hp.nest2ring(2, np.arange(10))
     array([13,  5,  4,  0, 15,  7,  6,  1, 17,  9])
-    
+
     >>> hp.nest2ring([1, 2, 4, 8], 11)
     array([ 11,   2,  12, 211])
     """
@@ -788,7 +788,7 @@ def reorder(map_in, inp=None, out=None, r2n=None, n2r=None):
     Returns
     -------
     map_out : array-like
-      the reordered map, as masked array if the input was a 
+      the reordered map, as masked array if the input was a
       masked array
 
     Notes
@@ -892,7 +892,7 @@ def nside2npix(nside):
     -------
     npix : int
       corresponding number of pixels
-    
+
     Notes
     -----
     Raise a ValueError exception if nside is not valid.
@@ -910,7 +910,7 @@ def nside2npix(nside):
     >>> hp.nside2npix(7)
     588
     """
-    return 12*nside**2
+    return 12*nside*nside
 
 def nside2order(nside):
     """Give the resolution order for a given nside.
@@ -982,12 +982,12 @@ def nside2resol(nside, arcmin=False):
     >>> hp.nside2resol(7)
     0.1461895297066412
     """
-    
+
     resol = np.sqrt(nside2pixarea(nside))
 
     if arcmin:
         resol = np.rad2deg(resol) * 60
-        
+
     return resol
 
 
@@ -1022,12 +1022,12 @@ def nside2pixarea(nside, degrees=False):
     >>> hp.nside2pixarea(7)
     0.021371378595848933
     """
-    
+
     pixarea = 4*np.pi/nside2npix(nside)
 
     if degrees:
         pixarea = np.rad2deg(np.rad2deg(pixarea))
-        
+
     return pixarea
 
 def npix2nside(npix):
@@ -1037,7 +1037,7 @@ def npix2nside(npix):
     ----------
     npix : int
       the number of pixels
-    
+
     Returns
     -------
     nside : int
@@ -1167,7 +1167,7 @@ def isnpixok(npix):
     >>> import healpy as hp
     >>> hp.isnpixok(12)
     True
-    
+
     >>> hp.isnpixok(768)
     True
 
@@ -1460,7 +1460,7 @@ def remove_dipole(m,nest=False,bad=UNSEEN,gal_cut=0,fitval=False,
     -------
     res : array or tuple of length 3
       if fitval is False, returns map with monopole and dipole subtracted,
-      otherwise, returns map (array, in res[0]), monopole (float, in res[1]), 
+      otherwise, returns map (array, in res[0]), monopole (float, in res[1]),
       dipole_vector (array, in res[2])
 
     See Also
@@ -1489,7 +1489,7 @@ def remove_dipole(m,nest=False,bad=UNSEEN,gal_cut=0,fitval=False,
     if verbose:
         from . import rotator as R
         lon,lat = R.vec2dir(dipole,lonlat=True)
-        amp = np.sqrt((dipole**2).sum())
+        amp = np.sqrt((dipole*dipole).sum())
         print(
             'monopole: {0:g}  dipole: lon: {1:g}, lat: {2:g}, amp: {3:g}'
             .format(mono, lon, lat, amp))
@@ -1608,7 +1608,7 @@ def remove_monopole(m,nest=False,bad=UNSEEN,gal_cut=0,fitval=False,
 def get_map_size(m):
     """Returns the npix of a given map (implicit or explicit pixelization).
 
-     If map is a dict type, assumes explicit pixelization: use nside key if present, or use 
+     If map is a dict type, assumes explicit pixelization: use nside key if present, or use
      nside attribute if present, otherwise use the smallest valid npix given the maximum key value.
      otherwise assumes implicit pixelization and returns len(m).
 
@@ -1677,7 +1677,7 @@ def get_min_valid_nside(npix):
     8
     """
     order = 0.5 * np.log2(npix / 12.)
-    return 2**int(np.ceil(order))
+    return 1<<int(np.ceil(order))
 
 
 def get_nside(m):
@@ -1785,7 +1785,7 @@ def _ud_grade_core(m,nside_out,pess=False,power=None, dtype=None):
         ratio = (float(nside_out)/float(nside_in))**power
     else:
         ratio = 1
-    
+
     if nside_out > nside_in:
         rat2 = npix_out//npix_in
         fact = np.ones(rat2, dtype=type_out)*ratio
