@@ -1,22 +1,22 @@
-# 
+#
 #  This file is part of Healpy.
-# 
+#
 #  Healpy is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation; either version 2 of the License, or
 #  (at your option) any later version.
-# 
+#
 #  Healpy is distributed in the hope that it will be useful,
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU General Public License for more details.
-# 
+#
 #  You should have received a copy of the GNU General Public License
 #  along with Healpy; if not, write to the Free Software
 #  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-# 
+#
 #  For more information about Healpy, see http://code.google.com/p/healpy
-# 
+#
 import warnings
 import numpy as np
 import six
@@ -25,7 +25,6 @@ import warnings
 import astropy.io.fits as pf
 
 from . import _healpy_sph_transform_lib as sphtlib
-from . import _healpy_fitsio_lib as hfitslib
 from . import _sphtools as _sphtools
 from . import cookbook as cb
 
@@ -40,7 +39,7 @@ class FutureChangeWarning(UserWarning):
 DATAPATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data')
 
 # Spherical harmonics transformation
-def anafast(map1, map2 = None, nspec = None, lmax = None, mmax = None, 
+def anafast(map1, map2 = None, nspec = None, lmax = None, mmax = None,
             iter = 3, alm = False, pol = True, use_weights = False,
             datapath = None):
     """Computes the power spectrum of an Healpix map, or the cross-spectrum
@@ -86,17 +85,17 @@ def anafast(map1, map2 = None, nspec = None, lmax = None, mmax = None,
     """
 
     map1 = ma_to_array(map1)
-    alms1 = map2alm(map1, lmax = lmax, mmax = mmax, pol = pol, iter = iter, 
+    alms1 = map2alm(map1, lmax = lmax, mmax = mmax, pol = pol, iter = iter,
                     use_weights = use_weights,
                     datapath = datapath)
     if map2 is not None:
         map2 = ma_to_array(map2)
         alms2 = map2alm(map2, lmax = lmax, mmax = mmax, pol = pol,
-                        iter = iter, use_weights = use_weights, 
+                        iter = iter, use_weights = use_weights,
                         datapath = datapath)
     else:
         alms2 = None
-    
+
     cls = alm2cl(alms1, alms2 = alms2, lmax = lmax, mmax = mmax,
                  lmax_out = lmax, nspec = nspec)
 
@@ -108,10 +107,10 @@ def anafast(map1, map2 = None, nspec = None, lmax = None, mmax = None,
     else:
         return cls
 
-def map2alm(maps, lmax = None, mmax = None, iter = 3, pol = True, 
+def map2alm(maps, lmax = None, mmax = None, iter = 3, pol = True,
             use_weights = False, datapath = None):
     """Computes the alm of an Healpix map.
-    
+
     Parameters
     ----------
     maps : array-like, shape (Npix,) or (n, Npix)
@@ -132,23 +131,23 @@ def map2alm(maps, lmax = None, mmax = None, iter = 3, pol = True,
       If True, use the ring weighting. Default: False.
     datapath : None or str, optional
       If given, the directory where to find the weights data.
-    
+
     Returns
     -------
     alms : array or tuple of array
       alm or a tuple of 3 alm (almT, almE, almB) if polarized input.
-    
+
     Notes
     -----
     The pixels which have the special `UNSEEN` value are replaced by zeros
     before spherical harmonic transform. They are converted back to `UNSEEN`
-    value, so that the input maps are not modified. Each map have its own, 
+    value, so that the input maps are not modified. Each map have its own,
     independent mask.
     """
     maps = ma_to_array(maps)
     info = maptype(maps)
     if pol or info in (0, 1):
-        alms = _sphtools.map2alm(maps, niter = iter, 
+        alms = _sphtools.map2alm(maps, niter = iter,
                                  datapath = datapath, use_weights = use_weights,
                                  lmax = lmax, mmax = mmax)
     else:
@@ -198,7 +197,7 @@ def alm2map(alms, nside, lmax = None, mmax = None, pixwin = False,
       smoothing (if alm(s) are complex128 contiguous arrays).
       Otherwise, input alms are not modified. A copy is made if needed to
       apply beam smoothing or pixel window.
-      
+
     Returns
     -------
     maps : array or list of arrays
@@ -208,7 +207,7 @@ def alm2map(alms, nside, lmax = None, mmax = None, pixwin = False,
     if not cb.is_seq(alms):
         raise TypeError("alms must be a sequence")
 
-    alms = smoothalm(alms, fwhm = fwhm, sigma = sigma,  
+    alms = smoothalm(alms, fwhm = fwhm, sigma = sigma,
                      pol = pol, inplace = inplace, verbose=verbose)
 
     if not cb.is_seq_of_seq(alms):
@@ -216,7 +215,7 @@ def alm2map(alms, nside, lmax = None, mmax = None, pixwin = False,
         lonely = True
     else:
         lonely = False
-    
+
     if pixwin:
         pw = globals()['pixwin'](nside,True)
         alms_new = []
@@ -264,12 +263,12 @@ def synalm(cls, lmax = None, mmax = None, new = False, verbose=True):
       If True, use the new ordering of cl's, ie by diagonal
       (e.g. TT, EE, BB, TE, EB, TB or TT, EE, BB, TE if 4 cl as input).
       If False, use the old ordering, ie by row
-      (e.g. TT, TE, TB, EE, EB, BB or TT, TE, EE, BB if 4 cl as input).      
+      (e.g. TT, TE, TB, EE, EB, BB or TT, TE, EE, BB if 4 cl as input).
 
     Returns
     -------
     alms : array or list of arrays
-      the generated alm if one spectrum is given, or a list of n alms 
+      the generated alm if one spectrum is given, or a list of n alms
       (with n(n+1)/2 the number of input cl, or n=3 if there are 4 input cl).
 
     Notes
@@ -311,14 +310,14 @@ def synalm(cls, lmax = None, mmax = None, new = False, verbose=True):
     # From here, we interpret cls as a list of spectra
     cls_list = list(cls)
     maxsize = max([len(c) for c in cls])
-    
+
     if lmax is None or lmax < 0:
         lmax = maxsize-1
     if mmax is None or mmax < 0:
         mmax = lmax
-    
+
     Nspec = sphtlib._getn(len(cls_list))
-    
+
     if Nspec <= 0:
         if len(cls_list) == 4:
             if new: ## new input order: TT EE BB TE -> TT EE BB TE 0 0
@@ -329,7 +328,7 @@ def synalm(cls, lmax = None, mmax = None, new = False, verbose=True):
         else:
             raise TypeError("The sequence of arrays must have either 4 elements "
                             "or n(n+1)/2 elements (some may be None)")
-    
+
     szalm = Alm.getsize(lmax,mmax)
     alms_list = []
     for i in six.moves.xrange(Nspec):
@@ -408,7 +407,7 @@ def synfast(cls, nside, lmax = None, mmax = None, alm = False,
         return maps, alms
     else:
         return maps
-    
+
 class Alm(object):
     """This class provides some static methods for alm index computation.
 
@@ -425,7 +424,7 @@ class Alm(object):
     @staticmethod
     def getlm(lmax,i=None):
         """Get the l and m from index and lmax.
-        
+
         Parameters
         ----------
         lmax : int
@@ -443,7 +442,7 @@ class Alm(object):
     @staticmethod
     def getidx(lmax,l,m):
         """Returns index corresponding to (l,m) in an array describing alm up to lmax.
-        
+
         Parameters
         ----------
         lmax : int
@@ -483,7 +482,7 @@ class Alm(object):
     @staticmethod
     def getlmax(s, mmax = None):
         """Returns the lmax corresponding to a given array size.
-        
+
         Parameters
         ----------
         s : int
@@ -534,7 +533,7 @@ def alm2cl(alms1, alms2 = None, lmax = None, mmax = None,
     Returns
     -------
     cl : array or tuple of n(n+1)/2 arrays
-      the spectrum <*alm* x *alm2*> if *alm* (and *alm2*) is one alm, or 
+      the spectrum <*alm* x *alm2*> if *alm* (and *alm2*) is one alm, or
       the auto- and cross-spectra <*alm*[i] x *alm2*[j]> if alm (and alm2)
       contains more than one spectra.
       If more than one spectrum is returned, they are ordered by diagonal.
@@ -548,7 +547,7 @@ def alm2cl(alms1, alms2 = None, lmax = None, mmax = None,
     else:
         return cls[:nspec]
 
-    
+
 def almxfl(alm, fl, mmax = None, inplace = False):
     """Multiply alm by a function of l. The function is assumed
     to be zero where not defined.
@@ -567,7 +566,7 @@ def almxfl(alm, fl, mmax = None, inplace = False):
     Returns
     -------
     alm : array
-      The modified alm, either a new array or a reference to input alm, 
+      The modified alm, either a new array or a reference to input alm,
       if inplace is True.
     """
     almout = _sphtools.almxfl(alm, fl, mmax = mmax, inplace = inplace)
@@ -628,7 +627,7 @@ def smoothalm(alms, fwhm = 0.0, sigma = None,  pol = True,
     if not cb.is_seq_of_seq(alms):
         alms = [alms]
         lonely = True
-    
+
     # we have 3 alms -> apply smoothing to each map.
     # polarization has different B_l from temperature
     # exp{-[ell(ell+1) - s**2] * sigma**2/2}
@@ -676,14 +675,14 @@ def smoothing(map_in, fwhm = 0.0, sigma = None,  pol = True,
       Either an array representing one map, or a sequence of
       3 arrays representing 3 maps, accepts masked arrays
     fwhm : float, optional
-      The full width half max parameter of the Gaussian [in 
+      The full width half max parameter of the Gaussian [in
       radians]. Default:0.0
     sigma : float, optional
       The sigma of the Gaussian [in radians]. Override fwhm.
     pol : bool, optional
       If True, assumes input maps are TQU. Output will be TQU maps.
       (input must be 1 or 3 alms)
-      If False, each map is assumed to be a spin 0 map and is 
+      If False, each map is assumed to be a spin 0 map and is
       treated independently (input can be any number of alms).
       If there is only one input map, it has no effect. Default: True.
     iter : int, scalar, optional
@@ -709,7 +708,7 @@ def smoothing(map_in, fwhm = 0.0, sigma = None,  pol = True,
         raise TypeError("map_in must be a sequence")
 
     # save the masks of inputs
-    masks = pixelfunc.mask_bad(map_in) 
+    masks = pixelfunc.mask_bad(map_in)
 
     if cb.is_seq_of_seq(map_in):
         nside = pixelfunc.npix2nside(len(map_in[0]))
@@ -723,7 +722,7 @@ def smoothing(map_in, fwhm = 0.0, sigma = None,  pol = True,
         alms = map2alm(map_in, lmax = lmax, mmax = mmax, iter = iter,
                        pol = pol, use_weights = use_weights,
                        datapath = datapath)
-        smoothalm(alms, fwhm = fwhm, sigma = sigma, 
+        smoothalm(alms, fwhm = fwhm, sigma = sigma,
                   inplace = True, verbose = verbose)
         output_map = alm2map(alms, nside, pixwin = False, verbose=verbose)
     else:
@@ -732,7 +731,7 @@ def smoothing(map_in, fwhm = 0.0, sigma = None,  pol = True,
         for m in map_in:
             alm = map2alm(m, lmax = lmax, mmax = mmax, iter = iter, pol = pol,
                           use_weights = use_weights, datapath = datapath)
-            smoothalm(alm, fwhm = fwhm, sigma = sigma, 
+            smoothalm(alm, fwhm = fwhm, sigma = sigma,
                       inplace = True, verbose = verbose)
             output_map.append(alm2map(alm, nside, pixwin = False, verbose=verbose))
     if pixelfunc.maptype(output_map) == 0:
@@ -740,7 +739,7 @@ def smoothing(map_in, fwhm = 0.0, sigma = None,  pol = True,
     else:
         for m, mask in zip(output_map, masks):
             m[mask] = UNSEEN
-        
+
     return output_map
 
 def pixwin(nside, pol = False):
@@ -842,12 +841,12 @@ def gauss_beam(fwhm, lmax=512, pol=False):
 
     Computes the spherical transform of an axisimmetric gaussian beam
 
-    For a sky of underlying power spectrum C(l) observed with beam of  
-    given FWHM, the measured power spectrum will be 
+    For a sky of underlying power spectrum C(l) observed with beam of
+    given FWHM, the measured power spectrum will be
     C(l)_meas = C(l) B(l)^2
-    where B(l) is given by gaussbeam(Fwhm,Lmax). 
-    The polarization beam is also provided (when pol = True ) assuming 
-    a perfectly co-polarized beam 
+    where B(l) is given by gaussbeam(Fwhm,Lmax).
+    The polarization beam is also provided (when pol = True ) assuming
+    a perfectly co-polarized beam
     (e.g., Challinor et al 2000, astro-ph/0008228)
 
     Parameters
@@ -881,4 +880,4 @@ def gauss_beam(fwhm, lmax=512, pol=False):
     else: # polarization beam
         # polarization factors [1, 2 sigma^2, 2 sigma^2, sigma^2]
         pol_factor = np.exp([0., 2*sigma2, 2*sigma2, sigma2])
-        return g[:, np.newaxis] * pol_factor 
+        return g[:, np.newaxis] * pol_factor

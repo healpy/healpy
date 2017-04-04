@@ -87,12 +87,7 @@ def pix2ring(nside, np.ndarray[int64, ndim=1] pix not None, nest=False):
 
     if not isnsideok(nside, nest=nest):
         raise ValueError('Wrong nside value, must be a power of 2 (for nested), less than 2**30')
-    cdef Healpix_Ordering_Scheme scheme
-    if nest:
-        scheme = NEST
-    else:
-        scheme = RING
-    cdef T_Healpix_Base[int64] hb = T_Healpix_Base[int64](nside, scheme, SET_NSIDE)
+    cdef T_Healpix_Base[int64] hb = T_Healpix_Base[int64](nside, NEST if nest else RING, SET_NSIDE)
     num = pix.shape[0]
     cdef np.ndarray[int64, ndim=1] ring = np.empty(num, dtype=np.int64)
     for i in range(num):
@@ -101,4 +96,4 @@ def pix2ring(nside, np.ndarray[int64, ndim=1] pix not None, nest=False):
 
 
 cdef bool isnsideok(int nside, bool nest=False):
-    return (nside > 0) and ((not nest) or (nside == 2**int(round(np.log2(nside)))))
+    return (nside > 0) and ((not nest) or ((nside&(nside-1))==0))
