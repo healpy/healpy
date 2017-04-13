@@ -130,7 +130,7 @@ def write_map(filename,m,nest=False,dtype=np.float32,fits_IDL=True,coord=None,pa
       Default: np.float32.
     overwrite : bool, optional
       If True, existing file is silently overwritten. Otherwise trying to write
-      an existing file causes an IOError to be raised.
+      an existing file raises an OSError (IOError for Python 2).
     """
     if not hasattr(m, '__len__'):
         raise TypeError('The map must be a sequence')

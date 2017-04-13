@@ -1,3 +1,7 @@
+Next Release Candidate
+
+* Change in write_map default behavior: <https://github.com/healpy/healpy/pull/379> and <https://github.com/healpy/healpy/pull/386>
+
 Release 1.10.1, 8 Nov 2016
 
 * Removed support for Python 2.6
@@ -68,7 +72,7 @@ Release 1.7.1, 23 Jan 2014
 
 Release 1.7.0, 14 Jan 2014 
 
-* rewritten spherical armonics unit tests, now it uses low res maps included in the repository
+* rewritten spherical harmonics unit tests, now it uses low res maps included in the repository
 * fix in HEALPix C++ build flags allows easier install on MAC-OSX and other python environments (e.g. anaconda)
 * orthview: orthografic projection
 * fixed bug in monopole removal in anafast
