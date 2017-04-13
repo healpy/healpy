@@ -89,7 +89,7 @@ def write_cl(filename, cl, dtype=np.float64):
     tbhdu.header['CREATOR'] = 'healpy'
     tbhdu.writeto(filename)
 
-def write_map(filename,m,nest=False,dtype=np.float32,fits_IDL=True,coord=None,partial=False,column_names=None,column_units=None,extra_header=()):
+def write_map(filename,m,nest=False,dtype=np.float32,fits_IDL=True,coord=None,partial=False,column_names=None,column_units=None,extra_header=(),overwrite=False):
     """Writes an healpix map into an healpix file.
 
     Parameters
@@ -128,6 +128,9 @@ def write_map(filename,m,nest=False,dtype=np.float32,fits_IDL=True,coord=None,pa
       internally from the numpy datatype to the fits convention. If a list,
       the length must correspond to the number of map arrays. 
       Default: np.float32.
+    overwrite : bool, optional
+      If True, existing file is silently overwritten. Otherwise trying to write
+      an existing file causes an IOError to be raised.
     """
     if not hasattr(m, '__len__'):
         raise TypeError('The map must be a sequence')
@@ -219,7 +222,7 @@ def write_map(filename,m,nest=False,dtype=np.float32,fits_IDL=True,coord=None,pa
     for args in extra_header:
         tbhdu.header[args[0]] = args[1:]
 
-    tbhdu.writeto(filename)
+    tbhdu.writeto(filename, overwrite=overwrite)
 
 
 def read_map(filename,field=0,dtype=np.float64,nest=False,partial=False,hdu=1,h=False,
