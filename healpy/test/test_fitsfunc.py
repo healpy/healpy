@@ -57,7 +57,7 @@ class TestFitsFunc(unittest.TestCase):
         read_map(hdu)
 
     def test_read_map_all(self):
-        write_map(self.filename, [self.m, self.m, self.m])
+        write_map(self.filename, [self.m, self.m, self.m], overwrite=True)
         read_m = read_map(self.filename, None)
         for rm in read_m:
             np.testing.assert_array_almost_equal(self.m, rm)
