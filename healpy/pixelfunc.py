@@ -1280,7 +1280,7 @@ def get_interp_weights(nside,theta,phi=None,nest=False,lonlat=False):
            [ 0.25,  0.  ]]))
     """
     check_nside(nside, nest=nest)
-    if phi == None:
+    if phi is None:
         theta,phi = pix2ang(nside,theta,nest=nest)
     elif lonlat:
         theta,phi = lonlat2thetaphi(theta,phi)
