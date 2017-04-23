@@ -554,12 +554,19 @@ class CartesianProj(SphericalProj):
                                            xsize=xsize, ysize=ysize, lonra=lonra, latra=latra, **kwds)
         
     def set_proj_plane_info(self,xsize,ysize,lonra,latra):
-        if lonra is None: lonra = [-180.,180.]
+        if lonra is None:
+            lonra = [-180.,180.]
+        else:
+            # shift lonra[1] into the range [lonra[0], lonra[0]+360]
+            lonra_span = np.mod(lonra[1]-lonra[0], 360)
+            if lonra_span == 0:
+                lonra_span = 360
+            lonra[1] = lonra[0] + lonra_span
         if latra is None: latra = [-90.,90.]
-        if (len(lonra)!=2 or len(latra)!=2 or lonra[0]<-180. or lonra[1]>180.
-            or latra[0]<-90 or latra[1]>90 or lonra[0]>=lonra[1] or latra[0]>=latra[1]):
+        if (len(lonra)!=2 or len(latra)!=2
+            or latra[0]<-90 or latra[1]>90 or latra[0]>=latra[1]):
             raise TypeError("Wrong argument lonra or latra. Must be lonra=[a,b],latra=[c,d] "
-                            "with a<b, c<d, a>=-180, b<=180, c>=-90, d<=+90")
+                            "c<d, c>=-90, d<=+90")
         lonra = self._flip*np.float64(lonra)[::self._flip]
         latra = np.float64(latra)
         xsize = np.long(xsize)
