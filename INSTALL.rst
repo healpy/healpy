@@ -9,15 +9,16 @@ is included with Healpy and is built automatically, so you do not need to
 install them yourself.
 Only Linux and MAC OS X are supported, not Windows.
 
-Binary installation with conda
+Binary installation with conda (RECOMMENDED)
 -----------------------
 
-The `OpenAstronomy <https://github.com/OpenAstronomy>`_ collaboration provides a `conda
-channel <https://anaconda.org/openastronomy/repo>`_ with a pre-compiled version of ``healpy``
+Conda forge provides a `conda
+channel <https://anaconda.org/conda-forge/healpy>`_ with a pre-compiled version of ``healpy``
 for linux 64bit and MAC OS X platforms, you can install it in Anaconda with:
 
-    conda install -c openastronomy healpy
-
+    conda config --add channels conda-forge 
+    conda install healpy
+    
 Source installation with Pip
 ---------------------------
 
