@@ -14,7 +14,7 @@ Binary installation with conda (RECOMMENDED)
 
 Conda forge provides a `conda
 channel <https://anaconda.org/conda-forge/healpy>`_ with a pre-compiled version of ``healpy``
-for linux 64bit and MAC OS X platforms, you can install it in Anaconda with:
+for linux 64bit and MAC OS X platforms, you can install it in Anaconda with::
 
     conda config --add channels conda-forge 
     conda install healpy
