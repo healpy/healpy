@@ -330,12 +330,12 @@ def read_map(filename,field=0,dtype=np.float64,nest=False,partial=False,hdu=1,h=
         # increment field counters
         field = tuple(f if isinstance(f, str) else f+1 for f in field)
         try:
-            pix = fits_hdu.data.field(0).astype(int).ravel()
+            pix = fits_hdu.data.field(0).astype(int,copy=False).ravel()
         except pf.VerifyError as e:
             print(e)
             print("Trying to fix a badly formatted header")
             fits_hdu.verify("fix")
-            pix = fits_hdu.data.field(0).astype(int).ravel()
+            pix = fits_hdu.data.field(0).astype(int,copy=False).ravel()
 
     try:
         assert len(dtype) == len(field), "The number of dtypes are not equal to the number of fields"
@@ -344,12 +344,12 @@ def read_map(filename,field=0,dtype=np.float64,nest=False,partial=False,hdu=1,h=
 
     for ff, curr_dtype in zip(field, dtype):
         try:
-            m=fits_hdu.data.field(ff).astype(curr_dtype).ravel()
+            m=fits_hdu.data.field(ff).astype(curr_dtype,copy=False).ravel()
         except pf.VerifyError as e:
             print(e)
             print("Trying to fix a badly formatted header")
             m=fits_hdu.verify("fix")
-            m=fits_hdu.data.field(ff).astype(curr_dtype).ravel()
+            m=fits_hdu.data.field(ff).astype(curr_dtype,copy=False).ravel()
 
         if partial:
             mnew = UNSEEN * np.ones(sz, dtype=curr_dtype)
