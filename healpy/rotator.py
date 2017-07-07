@@ -1022,6 +1022,15 @@ def coordsys2euler_zyz(coord):
     psi, theta, phi :  floats
        The Euler angles defining a ZYZ rotation between the coordinate
         systems.
+
+    Examples
+    --------
+    >>> np.array(coordsys2euler_zyz('GE'))
+    array([ 1.45937485,  1.05047962, -3.14119347])
+    >>> np.array(coordsys2euler_zyz('CG'))
+    array([-0.22443941,  1.09730866,  2.14556934])
+    >>> np.array(coordsys2euler_zyz('E'))
+    array([ 0.,  0.,  0.])
     """
 
     coord_norm = normalise_coord(coord)
