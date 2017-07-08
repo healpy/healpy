@@ -62,7 +62,7 @@ def read_cl(filename, dtype=np.float64, h=False):
     else:
         return cl
 
-def write_cl(filename, cl, dtype=np.float64):
+def write_cl(filename, cl, dtype=np.float64, overwrite=False):
     """Writes Cl into an healpix file, as IDL cl2fits.
 
     Parameters
@@ -70,24 +70,30 @@ def write_cl(filename, cl, dtype=np.float64):
     filename : str
       the fits file name
     cl : array
-      the cl array to write to file, currently TT only
+      the cl array to write to file
+    overwrite : bool, optional
+      If True, existing file is silently overwritten. Otherwise trying to write
+      an existing file raises an OSError (IOError for Python 2).
     """
     # check the dtype and convert it
     fitsformat = getformat(dtype)
     column_names = ['TEMPERATURE','GRADIENT','CURL','G-T','C-T','C-G']
-    if isinstance(cl, list):
+    if len(np.shape(cl)) == 2:
         cols = [pf.Column(name=column_name,
                                format='%s'%fitsformat,
                                array=column_cl) for column_name, column_cl in zip(column_names[:len(cl)], cl)]
-    else: # we write only one TT
+    elif len(np.shape(cl)) == 1:
+        # we write only TT
         cols = [pf.Column(name='TEMPERATURE',
                                format='%s'%fitsformat,
                                array=cl)]
+    else:
+        raise RuntimeError('write_cl: Expected one or more vectors of equal length')
 
     tbhdu = pf.BinTableHDU.from_columns(cols)
     # add needed keywords
     tbhdu.header['CREATOR'] = 'healpy'
-    tbhdu.writeto(filename)
+    tbhdu.writeto(filename, overwrite=overwrite)
 
 def write_map(filename,m,nest=False,dtype=np.float32,fits_IDL=True,coord=None,partial=False,column_names=None,column_units=None,extra_header=(),overwrite=False):
     """Writes an healpix map into an healpix file.
@@ -126,7 +132,7 @@ def write_map(filename,m,nest=False,dtype=np.float32,fits_IDL=True,coord=None,pa
     dtype: np.dtype or list of np.dtypes, optional
       The datatype in which the columns will be stored. Will be converted
       internally from the numpy datatype to the fits convention. If a list,
-      the length must correspond to the number of map arrays. 
+      the length must correspond to the number of map arrays.
       Default: np.float32.
     overwrite : bool, optional
       If True, existing file is silently overwritten. Otherwise trying to write
@@ -179,7 +185,7 @@ def write_map(filename,m,nest=False,dtype=np.float32,fits_IDL=True,coord=None,pa
                               array=pix,
                               unit=None))
 
-    for cn, cu, mm, curr_fitsformat in zip(column_names, column_units, m, 
+    for cn, cu, mm, curr_fitsformat in zip(column_names, column_units, m,
                                            fitsformat):
         if len(mm) > 1024 and fits_IDL:
             # I need an ndarray, for reshape:
@@ -242,7 +248,7 @@ def read_map(filename,field=0,dtype=np.float64,nest=False,partial=False,hdu=1,h=
       first column after the pixel index column.
       If None, all columns are read in.
     dtype : data type or list of data types, optional
-      Force the conversion to some type. Passing a list allows different 
+      Force the conversion to some type. Passing a list allows different
       types for each field. In that case, the length of the list must
       correspond to the length of the field parameter. Default: np.float64
     nest : bool, optional

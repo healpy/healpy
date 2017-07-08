@@ -1,22 +1,22 @@
-# 
+#
 #  This file is part of Healpy.
-# 
+#
 #  Healpy is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation; either version 2 of the License, or
 #  (at your option) any later version.
-# 
+#
 #  Healpy is distributed in the hope that it will be useful,
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU General Public License for more details.
-# 
+#
 #  You should have received a copy of the GNU General Public License
 #  along with Healpy; if not, write to the Free Software
 #  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-# 
+#
 #  For more information about Healpy, see http://code.google.com/p/healpy
-# 
+#
 import numpy as np
 import six
 import warnings
@@ -34,7 +34,7 @@ if __name__ != '__main__':
 class Rotator(object):
     """Rotation operator, including astronomical coordinate systems.
 
-    This class provides tools for spherical rotations. It is meant to be used 
+    This class provides tools for spherical rotations. It is meant to be used
     in the healpy library for plotting, and for this reason reflects the
     convention used in the Healpix IDL library.
 
@@ -61,7 +61,7 @@ class Rotator(object):
     coordoutstr
     rots
     coords
-      
+
     Examples
     --------
     >>> r = Rotator(coord=['G','E'])  # Transforms galactic to ecliptic coordinates
@@ -96,9 +96,9 @@ class Rotator(object):
         - eulertype: the convention for Euler angles in rot.
         Note: the coord system conversion is applied first, then the rotation.
         """
-        rot_is_seq = (hasattr(rot,'__len__') 
+        rot_is_seq = (hasattr(rot,'__len__')
                       and hasattr(rot[0], '__len__'))
-        coord_is_seq = (hasattr(coord,'__len__') 
+        coord_is_seq = (hasattr(coord,'__len__')
                         and hasattr(coord[0],'__len__')
                         and type(coord[0]) is not str)
         if rot_is_seq and coord_is_seq:
@@ -134,7 +134,7 @@ class Rotator(object):
 #                rn[1] = -rn[1]
             cn = normalise_coord(c)
             self._rots.append(rn)   # append(rn) or insert(0, rn) ?
-            self._coords.append(cn) # append(cn) or insert(0, cn) ? 
+            self._coords.append(cn) # append(cn) or insert(0, cn) ?
             self._invs.append(bool(i))
         if not self.consistent:
             warnings.warn("The chain of coord system rotations is not consistent",
@@ -171,17 +171,17 @@ class Rotator(object):
         return ( np.array(v).all() and
                  (self._coords == a._coords) and
                  (self._invs == a._invs) )
-    
+
     def __call__(self,*args,**kwds):
         """Use the rotator to rotate either spherical coordinates (theta, phi)
         or a vector (x,y,z). You can use lonla keyword to use longitude, latitude
-        (in degree) instead of theta, phi (in radian). In this case, returns 
+        (in degree) instead of theta, phi (in radian). In this case, returns
         longitude, latitude in degree.
 
         Accepted forms:
 
         r(x,y,z)  # x,y,z either scalars or arrays
-        r(theta,phi) # theta, phi scalars or arrays 
+        r(theta,phi) # theta, phi scalars or arrays
         r(lon,lat,lonlat=True)  # lon, lat scalars or arrays
         r(vec) # vec 1-D array with 3 elements, or 2-D array 3xN
         r(direction) # direction 1-D array with 2 elements, or 2xN array
@@ -229,7 +229,7 @@ class Rotator(object):
         coords = self._coords + a._coords
         invs = self._invs + a._invs
         return Rotator(rot=rots,coord=coords,inv=invs,deg=False)
-    
+
     def __rmul__(self,b):
         if not isinstance(b,Rotator):
             raise TypeError("A Rotator can only be multiplied by another Rotator "
@@ -256,7 +256,7 @@ class Rotator(object):
         """
         kwds['inv'] = True
         return self.__call__(*args,**kwds)
-    
+
     @property
     def mat(self):
         """The matrix representing the rotation.
@@ -298,13 +298,13 @@ class Rotator(object):
         """The sequence of rots defining the rotation.
         """
         return self._rots
-    
+
     @property
     def coords(self):
         """The sequence of coords defining the rotation.
         """
         return self._coords
-    
+
     def do_rot(self,i):
         """Returns True if rotation is not (close to) identity.
         """
@@ -371,7 +371,7 @@ class Rotator(object):
 def rotateVector(rotmat,vec,vy=None,vz=None, do_rot=True):
     """Rotate a vector (or a list of vectors) using the rotation matrix
     given as first argument.
-    
+
     Parameters
     ----------
     rotmat : float, array-like shape (3,3)
@@ -408,13 +408,13 @@ def rotateVector(rotmat,vec,vy=None,vz=None, do_rot=True):
 def rotateDirection(rotmat,theta,phi=None,do_rot=True,lonlat=False):
     """Rotate the vector described by angles theta,phi using the rotation matrix
     given as first argument.
-   
+
     Parameters
     ----------
     rotmat : float, array-like shape (3,3)
       The rotation matrix
     theta : float, scalar or array-like
-      The angle theta (scalar or shape (N,)) 
+      The angle theta (scalar or shape (N,))
       or both angles (scalar or shape (2, N)) if phi is not given.
     phi : float, scalar or array-like, optionnal
       The angle phi (scalar or shape (N,)).
@@ -423,7 +423,7 @@ def rotateDirection(rotmat,theta,phi=None,do_rot=True,lonlat=False):
     lonlat : bool
       If True, input angles are assumed to be longitude and latitude in degree,
       otherwise, they are co-latitude and longitude in radians.
-  
+
     Returns
     -------
     angles : float, array
@@ -438,7 +438,7 @@ def rotateDirection(rotmat,theta,phi=None,do_rot=True,lonlat=False):
 
 def vec2dir(vec,vy=None,vz=None,lonlat=False):
     """Transform a vector to angle given by theta,phi.
-    
+
     Parameters
     ----------
     vec : float, scalar or array-like
@@ -455,7 +455,7 @@ def vec2dir(vec,vy=None,vz=None,lonlat=False):
     Returns
     -------
     angles : float, array
-      The angles (unit depending on *lonlat*) in an array of 
+      The angles (unit depending on *lonlat*) in an array of
       shape (2,) (if scalar input) or (2, N)
 
     See Also
@@ -484,23 +484,23 @@ def vec2dir(vec,vy=None,vz=None,lonlat=False):
 
 def dir2vec(theta,phi=None,lonlat=False):
     """Transform a direction theta,phi to a unit vector.
-    
+
     Parameters
     ----------
     theta : float, scalar or array-like
-      The angle theta (scalar or shape (N,)) 
+      The angle theta (scalar or shape (N,))
       or both angles (scalar or shape (2, N)) if phi is not given.
     phi : float, scalar or array-like, optionnal
       The angle phi (scalar or shape (N,)).
     lonlat : bool
       If True, input angles are assumed to be longitude and latitude in degree,
       otherwise, they are co-latitude and longitude in radians.
-    
+
     Returns
     -------
     vec : array
       The vector(s) corresponding to given angles, shape is (3,) or (3, N).
- 
+
     See Also
     --------
     :func:`vec2dir`, :func:`pixelfunc.ang2vec`, :func:`pixelfunc.vec2ang`
@@ -630,7 +630,7 @@ def normalise_coord(coord):
     Coord sys are either 'E','G', 'C' or 'X' if undefined.
 
     Input: either a string or a sequence of string.
-           
+
     Output: a tuple of two strings, each being one of the norm coord sys name
             above.
 
@@ -668,9 +668,9 @@ def normalise_rot(rot,deg=False):
 
 def get_rotation_matrix(rot, deg=False, eulertype='ZYX'):
    """Return the rotation matrix corresponding to angles given in rot.
-   
+
    Usage: matrot,do_rot,normrot = get_rotation_matrix(rot)
-   
+
    Input:
       - rot: either None, an angle or a tuple of 1,2 or 3 angles
              corresponding to Euler angles.
@@ -690,9 +690,9 @@ def get_rotation_matrix(rot, deg=False, eulertype='ZYX'):
        matrot=euler_matrix_new(rot[0],-rot[1],rot[2],Y=True)
    else:
        matrot=euler_matrix_new(rot[0],-rot[1],rot[2],ZYX=True)
-       
+
    return matrot,do_rot,rot
-    
+
 def get_coordconv_matrix(coord):
    """Return the rotation matrix corresponding to coord systems given
    in coord.
@@ -709,38 +709,38 @@ def get_coordconv_matrix(coord):
 
    History: adapted from CGIS IDL library.
    """
-   
+
    coord_norm = normalise_coord(coord)
-   
+
    if coord_norm[0] == coord_norm[1]:
       matconv = np.identity(3)
-      do_conv = False        
+      do_conv = False
    else:
       eps = 23.452294 - 0.0130125 - 1.63889E-6 + 5.02778E-7
       eps = eps * np.pi / 180.
-      
+
       # ecliptic to galactic
       e2g = np.array([[-0.054882486, -0.993821033, -0.096476249],
                    [ 0.494116468, -0.110993846,  0.862281440],
                    [-0.867661702, -0.000346354,  0.497154957]])
-      
+
       # ecliptic to equatorial
       e2q = np.array([[1.,     0.    ,      0.         ],
                    [0., np.cos( eps ), -1. * np.sin( eps )],
                    [0., np.sin( eps ),    np.cos( eps )   ]])
-      
+
       # galactic to ecliptic
       g2e = np.linalg.inv(e2g)
-      
-      # galactic to equatorial                   
+
+      # galactic to equatorial
       g2q = np.dot(e2q , g2e)
-      
+
       # equatorial to ecliptic
       q2e = np.linalg.inv(e2q)
-      
+
       # equatorial to galactic
       q2g = np.dot(e2g , q2e)
-   
+
       if coord_norm == ('E','G'):
          matconv = e2g
       elif coord_norm == ('G','E'):
@@ -756,13 +756,13 @@ def get_coordconv_matrix(coord):
       else:
          raise ValueError('Wrong coord transform :',coord_norm)
       do_conv = True
-      
+
    return matconv,do_conv,coord_norm
 
 
 ###################################################
 ##                                               ##
-##                euler functions                ## 
+##                euler functions                ##
 ##                                               ##
 ######                                      #######
 
@@ -774,35 +774,35 @@ def euler(ai, bi, select, FK4 = 0):
        Transform between Galactic, celestial, and ecliptic coordinates.
    EXPLANATION:
        Use the procedure ASTRO to use this routine interactively
-   
+
    CALLING SEQUENCE:
-        EULER, AI, BI, AO, BO, [ SELECT, /FK4, SELECT = ] 
-   
+        EULER, AI, BI, AO, BO, [ SELECT, /FK4, SELECT = ]
+
    INPUTS:
-         AI - Input Longitude in DEGREES, scalar or vector.  If only two 
+         AI - Input Longitude in DEGREES, scalar or vector.  If only two
                  parameters are supplied, then  AI and BI will be modified
                  to contain the output longitude and latitude.
          BI - Input Latitude in DEGREES
-   
+
    OPTIONAL INPUT:
          SELECT - Integer (1-6) specifying type of coordinate
                   transformation.
-   
+
         SELECT   From          To        |   SELECT      From         To
          1     RA-Dec (2000)  Galactic   |     4       Ecliptic     RA-Dec
          2     Galactic       RA-DEC     |     5       Ecliptic    Galactic
          3     RA-Dec         Ecliptic   |     6       Galactic    Ecliptic
-   
+
         If not supplied as a parameter or keyword, then EULER will prompt
         for the value of SELECT
-        Celestial coordinates (RA, Dec) should be given in equinox J2000 
+        Celestial coordinates (RA, Dec) should be given in equinox J2000
         unless the /FK4 keyword is set.
    OUTPUTS:
          AO - Output Longitude in DEGREES
          BO - Output Latitude in DEGREES
-   
+
    INPUT KEYWORD:
-         /FK4 - If this keyword is set and non-zero, then input and output 
+         /FK4 - If this keyword is set and non-zero, then input and output
                celestial and ecliptic coordinates should be given in
                equinox B1950.
          /SELECT  - The coordinate conversion integer (1-6) may
@@ -833,48 +833,48 @@ def euler(ai, bi, select, FK4 = 0):
    twopi   =   2.0*PI
    fourpi  =   4.0*PI
    deg_to_rad = 180.0/PI
-   # 
+   #
    # ;   J2000 coordinate conversions are based on the following constants
    # ;   (see the Hipparcos explanatory supplement).
    # ;  eps = 23.4392911111 # Obliquity of the ecliptic
    # ;  alphaG = 192.85948d           Right Ascension of Galactic North Pole
    # ;  deltaG = 27.12825d            Declination of Galactic North Pole
-   # ;  lomega = 32.93192d            Galactic longitude of celestial equator  
+   # ;  lomega = 32.93192d            Galactic longitude of celestial equator
    # ;  alphaE = 180.02322d           Ecliptic longitude of Galactic North Pole
    # ;  deltaE = 29.811438523d        Ecliptic latitude of Galactic North Pole
    # ;  Eomega  = 6.3839743d          Galactic longitude of ecliptic equator
-   # 
+   #
    if FK4 == 1:
-      
-      equinox = '(B1950)' 
+
+      equinox = '(B1950)'
       psi   = [ 0.57595865315, 4.9261918136,
                 0.00000000000, 0.0000000000,
-                0.11129056012, 4.7005372834]     
+                0.11129056012, 4.7005372834]
       stheta =[ 0.88781538514,-0.88781538514,
                 0.39788119938,-0.39788119938,
-                0.86766174755,-0.86766174755]    
+                0.86766174755,-0.86766174755]
       ctheta =[ 0.46019978478, 0.46019978478,
                 0.91743694670, 0.91743694670,
-                0.49715499774, 0.49715499774]    
+                0.49715499774, 0.49715499774]
       phi  = [ 4.9261918136,  0.57595865315,
                0.0000000000, 0.00000000000,
                4.7005372834, 0.11129056012]
    else:
-      
+
       equinox = '(J2000)'
-      psi   = [ 0.57477043300, 4.9368292465,  
-                0.00000000000, 0.0000000000,  
-                0.11142137093, 4.71279419371]     
-      stheta =[ 0.88998808748,-0.88998808748, 
-                0.39777715593,-0.39777715593, 
-                0.86766622025,-0.86766622025]    
-      ctheta =[ 0.45598377618, 0.45598377618, 
-                0.91748206207, 0.91748206207, 
-                0.49714719172, 0.49714719172]    
-      phi  = [ 4.9368292465,  0.57477043300, 
-               0.0000000000, 0.00000000000, 
+      psi   = [ 0.57477043300, 4.9368292465,
+                0.00000000000, 0.0000000000,
+                0.11142137093, 4.71279419371]
+      stheta =[ 0.88998808748,-0.88998808748,
+                0.39777715593,-0.39777715593,
+                0.86766622025,-0.86766622025]
+      ctheta =[ 0.45598377618, 0.45598377618,
+                0.91748206207, 0.91748206207,
+                0.49714719172, 0.49714719172]
+      phi  = [ 4.9368292465,  0.57477043300,
+               0.0000000000, 0.00000000000,
                4.71279419371, 0.11142137093]
-   # 
+   #
    i  = select - 1                         # IDL offset
    a  = ai/deg_to_rad - phi[i]
    b = bi/deg_to_rad
@@ -899,7 +899,7 @@ def euler_matrix_new(a1,a2,a3,X=True,Y=False,ZYX=False,deg=False):
      computes the Euler matrix of an arbitrary rotation described
      by 3 Euler angles
      correct bugs present in Euler_Matrix
-       
+
    CALLING SEQUENCE:
      result = euler_matrix_new (a1, a2, a3 [,X, Y, ZYX, DEG ])
 
@@ -913,21 +913,21 @@ def euler_matrix_new(a1,a2,a3,X=True,Y=False,ZYX=False,deg=False):
    KEYWORD PARAMETERS:
       DEG : if set the angle are measured in degree
 
-      X : 	rotation a1 around original Z 
-    		rotation a2 around interm   X 
-    		rotation a3 around final    Z
+      X :       rotation a1 around original Z
+                rotation a2 around interm   X
+                rotation a3 around final    Z
                 DEFAULT,  classical mechanics convention
 
-      Y : 	rotation a1 around original Z
-    		rotation a2 around interm   Y
-    		rotation a3 around final    Z
+      Y :       rotation a1 around original Z
+                rotation a2 around interm   Y
+                rotation a3 around final    Z
                 quantum mechanics convention (override X)
 
-      ZYX : 	rotation a1 around original Z
-    		rotation a2 around interm   Y
-    		rotation a3 around final    X
+      ZYX :     rotation a1 around original Z
+                rotation a2 around interm   Y
+                rotation a3 around final    X
                 aeronautics convention (override X)
-                
+
       * these last three keywords are obviously mutually exclusive *
 
    OUTPUTS:
@@ -946,25 +946,25 @@ def euler_matrix_new(a1,a2,a3,X=True,Y=False,ZYX=False,deg=False):
      Y:       M_new(a,b,c,/Y)  =  M_old(-a, b,-c,/Y) = Transpose( M_old(c,-b, a,/Y))
    ZYX:       M_new(a,b,c,/Z)  =  M_old(-a, b,-c,/Z)
    """
-   
+
    t_k = 0
    if ZYX: t_k = t_k + 1
    #if X:   t_k = t_k + 1
    if Y:   t_k = t_k + 1
    if t_k > 1:
       raise ValueError('Choose either X, Y or ZYX convention')
-   
+
    convert = 1.0
    if deg:
       convert = np.pi/180.
-      
+
    c1 = np.cos(a1*convert)
    s1 = np.sin(a1*convert)
    c2 = np.cos(a2*convert)
    s2 = np.sin(a2*convert)
    c3 = np.cos(a3*convert)
    s3 = np.sin(a3*convert)
-        
+
    if ZYX:
       m1 = np.array([[ c1,-s1,  0],
                   [ s1, c1,  0],
@@ -1004,7 +1004,56 @@ def euler_matrix_new(a1,a2,a3,X=True,Y=False,ZYX=False,deg=False):
                   [ s3, c3,  0],
                   [  0,  0,  1]]) # around   z
 
-   M = np.dot(m3.T,np.dot(m2.T,m1.T)) 
+   M = np.dot(m3.T,np.dot(m2.T,m1.T))
 
    return M
 
+def coordsys2euler_zyz(coord):
+    """Return the ZYZ Euler angles corresponding to a rotation between
+    the two coordinate systems.  The angles can be used in rotate_alm.
+
+    Parameters
+    ----------
+    coord : a tuple with initial and final coord systems.
+      See normalise_coord.
+
+    Returns
+    -------
+    psi, theta, phi :  floats
+       The Euler angles defining a ZYZ rotation between the coordinate
+        systems.
+
+    Examples
+    --------
+    >>> np.array(coordsys2euler_zyz('GE'))
+    array([ 1.45937485,  1.05047962, -3.14119347])
+    >>> np.array(coordsys2euler_zyz('CG'))
+    array([-0.22443941,  1.09730866,  2.14556934])
+    >>> np.array(coordsys2euler_zyz('E'))
+    array([ 0.,  0.,  0.])
+    """
+
+    coord_norm = normalise_coord(coord)
+
+    if coord_norm[0] == coord_norm[1]:
+        psi, theta, phi = np.zeros(3)
+    else:
+        # Convert basis vectors
+
+        xin, yin, zin = np.eye(3)
+        rot = Rotator(coord=coord_norm)
+        xout, yout, zout = rot([xin, yin, zin]).T
+
+        # Normalize
+
+        xout /= np.sqrt(np.dot(xout, xout))
+        yout /= np.sqrt(np.dot(yout, yout))
+        zout /= np.sqrt(np.dot(zout, zout))
+
+        # Get the angles
+
+        psi = np.arctan2(yout[2], -xout[2])
+        theta = np.arccos(np.dot(zin, zout))
+        phi = np.arctan2(zout[1], zout[0])
+
+    return psi, theta, phi
