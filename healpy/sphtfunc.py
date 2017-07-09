@@ -156,7 +156,7 @@ def map2alm(maps, lmax = None, mmax = None, iter = 3, pol = True,
                                   datapath = datapath, use_weights = use_weights,
                                   lmax = lmax, mmax = mmax)
                for mm in maps]
-    return alms
+    return np.array(alms)
 
 def alm2map(alms, nside, lmax = None, mmax = None, pixwin = False,
             fwhm = 0.0, sigma = None,  pol = True,
@@ -230,7 +230,7 @@ def alm2map(alms, nside, lmax = None, mmax = None, pixwin = False,
     if mmax is None:
         mmax = -1
     if pol:
-        output = sphtlib._alm2map(alms_new[0] if lonely else alms_new,
+        output = sphtlib._alm2map(alms_new[0] if lonely else tuple(alms_new),
                                   nside, lmax = lmax, mmax = mmax)
         if lonely:
             output = [output]
@@ -240,7 +240,7 @@ def alm2map(alms, nside, lmax = None, mmax = None, pixwin = False,
     if lonely:
         return output[0]
     else:
-        return output
+        return np.array(output)
 
 def synalm(cls, lmax = None, mmax = None, new = False, verbose=True):
     """Generate a set of alm given cl.
@@ -342,7 +342,7 @@ def synalm(cls, lmax = None, mmax = None, new = False, verbose=True):
     cls_list = [(np.asarray(cl, dtype = np.float64) if cl is not None else None)
                 for cl in cls_list]
     sphtlib._synalm(cls_list, alms_list, lmax, mmax)
-    return alms_list
+    return np.array(alms_list)
 
 def synfast(cls, nside, lmax = None, mmax = None, alm = False,
             pol = True, pixwin = False, fwhm = 0.0, sigma = None,
@@ -404,9 +404,9 @@ def synfast(cls, nside, lmax = None, mmax = None, alm = False,
     maps = alm2map(alms, nside, lmax = lmax, mmax = mmax, pixwin = pixwin,
                    pol = pol, fwhm = fwhm, sigma = sigma, inplace = True, verbose=verbose)
     if alm:
-        return maps, alms
+        return np.array(maps), np.array(alms)
     else:
-        return maps
+        return np.array(maps)
 
 class Alm(object):
     """This class provides some static methods for alm index computation.
@@ -543,9 +543,9 @@ def alm2cl(alms1, alms2 = None, lmax = None, mmax = None,
     cls = _sphtools.alm2cl(alms1, alms2 = alms2, lmax = lmax,
                            mmax = mmax, lmax_out = lmax_out)
     if nspec is None:
-        return cls
+        return np.array(cls)
     else:
-        return cls[:nspec]
+        return np.array(cls[:nspec])
 
 
 def almxfl(alm, fl, mmax = None, inplace = False):
@@ -569,6 +569,7 @@ def almxfl(alm, fl, mmax = None, inplace = False):
       The modified alm, either a new array or a reference to input alm,
       if inplace is True.
     """
+    # FIXME: Should handle multidimensional input
     almout = _sphtools.almxfl(alm, fl, mmax = mmax, inplace = inplace)
     return almout
 
@@ -655,10 +656,10 @@ def smoothalm(alms, fwhm = 0.0, sigma = None,  pol = True,
             # Case 2a:
             # at least one of the alm could not be smoothed in place:
             # return the list of alm
-            return retalm
+            return np.array(retalm)
     # Case 2b:
     # all smoothing have been performed in place:
-    # return the input alms
+    # return the input alms.  If the input was a tuple, so will the output be.
     return alms
 
 @accept_ma
@@ -711,10 +712,10 @@ def smoothing(map_in, fwhm = 0.0, sigma = None,  pol = True,
     masks = pixelfunc.mask_bad(map_in)
 
     if cb.is_seq_of_seq(map_in):
-        nside = pixelfunc.npix2nside(len(map_in[0]))
+        nside = pixelfunc.get_nside(map_in)
         n_maps = len(map_in)
     else:
-        nside = pixelfunc.npix2nside(len(map_in))
+        nside = pixelfunc.get_nside(map_in)
         n_maps = 0
 
     if pol or n_maps in (0, 1):
@@ -734,11 +735,8 @@ def smoothing(map_in, fwhm = 0.0, sigma = None,  pol = True,
             smoothalm(alm, fwhm = fwhm, sigma = sigma,
                       inplace = True, verbose = verbose)
             output_map.append(alm2map(alm, nside, pixwin = False, verbose=verbose))
-    if pixelfunc.maptype(output_map) == 0:
-        output_map[masks.flatten()] = UNSEEN
-    else:
-        for m, mask in zip(output_map, masks):
-            m[mask] = UNSEEN
+        output_map = np.array(output_map)
+    output_map[masks] = UNSEEN
 
     return output_map
 
@@ -801,7 +799,7 @@ def alm2map_der1(alm, nside, lmax = None, mmax = None):
        lmax = -1
    if mmax is None:
        mmax = -1
-   return sphtlib._alm2map_der1(alm,nside,lmax=lmax,mmax=mmax)
+   return np.array(sphtlib._alm2map_der1(alm,nside,lmax=lmax,mmax=mmax))
 
 def new_to_old_spectra_order(cls_new_order):
     """Reorder the cls from new order (by diagonal) to old order (by row).
