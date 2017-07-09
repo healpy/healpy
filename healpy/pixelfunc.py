@@ -233,7 +233,7 @@ def ma_to_array(m):
         return m.filled()
     except AttributeError:
         try:
-            return tuple([mm.filled() for mm in m])
+            return np.array([mm.filled() for mm in m])
         except AttributeError:
             pass
     return m
@@ -374,10 +374,7 @@ def ma(m, badval = UNSEEN, rtol = 1e-5, atol = 1e-8, copy = True):
            fill_value = -1.6375e+30)
     <BLANKLINE>
     """
-    if maptype(m) == 0:
-        return np.ma.masked_values(m, badval, rtol = rtol, atol = atol, copy = copy)
-    else:
-        return tuple([ma(mm) for mm in m])
+    return np.ma.masked_values(np.array(m), badval, rtol = rtol, atol = atol, copy = copy)
 
 def ang2pix(nside,theta,phi,nest=False,lonlat=False):
     """ang2pix : nside,theta[rad],phi[rad],nest=False,lonlat=False -> ipix (default:RING)
@@ -819,16 +816,16 @@ def reorder(map_in, inp=None, out=None, r2n=None, n2r=None):
     >>> m[2][2] = hp.UNSEEN
     >>> m = hp.ma(m)
     >>> hp.reorder(m, n2r = True)
-    (masked_array(data = [0.0 1.0 -- 3.0 4.0 5.0 6.0 7.0 8.0 9.0 10.0 11.0],
-                 mask = [False False  True False False False False False False False False False],
+    masked_array(data =
+     [[0.0 1.0 -- 3.0 4.0 5.0 6.0 7.0 8.0 9.0 10.0 11.0]
+     [0.0 1.0 -- 3.0 4.0 5.0 6.0 7.0 8.0 9.0 10.0 11.0]
+     [0.0 1.0 -- 3.0 4.0 5.0 6.0 7.0 8.0 9.0 10.0 11.0]],
+                 mask =
+     [[False False  True False False False False False False False False False]
+     [False False  True False False False False False False False False False]
+     [False False  True False False False False False False False False False]],
            fill_value = -1.6375e+30)
-    , masked_array(data = [0.0 1.0 -- 3.0 4.0 5.0 6.0 7.0 8.0 9.0 10.0 11.0],
-                 mask = [False False  True False False False False False False False False False],
-           fill_value = -1.6375e+30)
-    , masked_array(data = [0.0 1.0 -- 3.0 4.0 5.0 6.0 7.0 8.0 9.0 10.0 11.0],
-                 mask = [False False  True False False False False False False False False False],
-           fill_value = -1.6375e+30)
-    )
+    <BLANKLINE>
     """
     typ = maptype(map_in)
     if typ == 0:
@@ -877,7 +874,7 @@ def reorder(map_in, inp=None, out=None, r2n=None, n2r=None):
     if typ == 0:
         return mapout[0]
     else:
-        return mapout
+        return np.array(mapout)
 
 def nside2npix(nside):
     """Give the number of pixels for the given nside.
@@ -1765,7 +1762,7 @@ def ud_grade(map_in,nside_out,pess=False,order_in='RING',order_out=None,
     if typ == 0:
         return mapout[0]
     else:
-        return mapout
+        return np.array(mapout)
 
 def _ud_grade_core(m,nside_out,pess=False,power=None, dtype=None):
     """Internal routine used by ud_grade. It assumes that the map is NESTED

@@ -89,10 +89,8 @@ class TestSphtFunc(unittest.TestCase):
         smoothed_f90 = hp.ma(hp.read_map(os.path.join(self.path, 'data',
                   'wmap_band_iqumap_r9_7yr_W_v4_udgraded32_masked_smoothed10deg_fortran.fits'), (0,1,2)))
         # fortran does not restore the mask
-        for mm in smoothed_f90:
-            mm.mask = smoothed[0].mask
-        for i in range(3):
-            np.testing.assert_array_almost_equal(smoothed[i].filled(), smoothed_f90[i].filled(), decimal=6)
+        smoothed_f90.mask = smoothed.mask
+        np.testing.assert_array_almost_equal(smoothed.filled(), smoothed_f90.filled(), decimal=6)
 
     def test_gauss_beam(self):
         idl_gauss_beam = np.array(pf.open(os.path.join(self.path, 'data', 'gaussbeam_10arcmin_lmax512_pol.fits'))[0].data).T
