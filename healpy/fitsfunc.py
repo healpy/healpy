@@ -391,7 +391,8 @@ def read_map(filename,field=0,dtype=np.float64,nest=False,partial=False,hdu=1,h=
         else:
             return ret[0]
     else:
-        ret = np.array(ret)
+        if all(dt == dtype[0] for dt in dtype):
+            ret = np.array(ret)
         if h:
             return ret, header
         else:

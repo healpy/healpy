@@ -68,6 +68,26 @@ class TestFitsFunc(unittest.TestCase):
         for rm in read_m:
             np.testing.assert_array_almost_equal(self.m, rm)
 
+    def test_read_map_multiple_dtype(self):
+        dtypes = [np.int32, np.float32, np.float64]
+        m = []
+        for dtype in dtypes:
+            m.append(self.m.astype(dtype))
+        write_map(self.filename, m, overwrite=True)
+        read_m = read_map(self.filename, None, dtype=dtypes)
+        for rm, dtype in zip(read_m, dtypes):
+            self.assertEqual(rm.dtype, dtype)
+
+    def test_read_map_single_dtype(self):
+        dtypes = [np.int32, np.float32, np.float64]
+        m = []
+        for dtype in dtypes:
+            m.append(self.m.astype(dtype))
+        write_map(self.filename, m, overwrite=True)
+        dtype = np.float32
+        read_m = read_map(self.filename, None, dtype=dtype)
+        self.assertEqual(read_m.dtype, dtype)
+
     def test_read_map_all_with_header(self):
         write_map(self.filename, [self.m, self.m, self.m], overwrite=True)
         read_m, h = read_map(self.filename, None, h=True)
