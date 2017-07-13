@@ -46,6 +46,12 @@ class TestFitsFunc(unittest.TestCase):
         write_map(self.filename, self.m)
         read_map(self.filename)
 
+    def test_read_map_filename_with_header(self):
+        write_map(self.filename, self.m)
+        m, h = read_map(self.filename, h=True)
+        header = dict(h)
+        self.assertEqual(header['NSIDE'], 512)
+
     def test_read_map_hdulist(self):
         write_map(self.filename, self.m)
         hdulist = pf.open(self.filename)
@@ -59,6 +65,34 @@ class TestFitsFunc(unittest.TestCase):
     def test_read_map_all(self):
         write_map(self.filename, [self.m, self.m, self.m], overwrite=True)
         read_m = read_map(self.filename, None)
+        for rm in read_m:
+            np.testing.assert_array_almost_equal(self.m, rm)
+
+    def test_read_map_multiple_dtype(self):
+        dtypes = [np.int32, np.float32, np.float64]
+        m = []
+        for dtype in dtypes:
+            m.append(self.m.astype(dtype))
+        write_map(self.filename, m, overwrite=True)
+        read_m = read_map(self.filename, None, dtype=dtypes)
+        for rm, dtype in zip(read_m, dtypes):
+            self.assertEqual(rm.dtype, dtype)
+
+    def test_read_map_single_dtype(self):
+        dtypes = [np.int32, np.float32, np.float64]
+        m = []
+        for dtype in dtypes:
+            m.append(self.m.astype(dtype))
+        write_map(self.filename, m, overwrite=True)
+        dtype = np.float32
+        read_m = read_map(self.filename, None, dtype=dtype)
+        self.assertEqual(read_m.dtype, dtype)
+
+    def test_read_map_all_with_header(self):
+        write_map(self.filename, [self.m, self.m, self.m], overwrite=True)
+        read_m, h = read_map(self.filename, None, h=True)
+        header = dict(h)
+        self.assertEqual(header['NSIDE'], 512)
         for rm in read_m:
             np.testing.assert_array_almost_equal(self.m, rm)
 
@@ -92,7 +126,7 @@ class TestFitsFunc(unittest.TestCase):
         write_map(self.filename, [self.m, self.m, self.m], dtype=[np.float64,
                                                                   np.float32,
                                                                   np.int32])
-        read_m = read_map(self.filename, field=(0, 1, 2), 
+        read_m = read_map(self.filename, field=(0, 1, 2),
                           dtype=[np.float32, np.int32, np.float64])
         for rm, dtype in zip(read_m, [np.float32, np.int32, np.float64]):
             np.testing.assert_almost_equal(dtype(self.m), rm)
@@ -168,6 +202,12 @@ class TestReadWriteAlm(unittest.TestCase):
     def test_read_alm_filename(self):
         write_alm('testalm_128.fits',self.alms,lmax=128,mmax=128)
         read_alm('testalm_128.fits')
+
+    def test_read_alm_filename_array(self):
+        write_alm('testalm_256.fits',self.alms,overwrite=True)
+        testalm1 = np.array(self.alms)
+        testalm2 = read_alm('testalm_256.fits', [1,2,3])
+        np.testing.assert_array_almost_equal(testalm1, testalm2)
 
     def test_read_alm_hdulist(self):
         write_alm('testalm_128.fits',self.alms,lmax=128,mmax=128)

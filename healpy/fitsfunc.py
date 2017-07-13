@@ -56,7 +56,7 @@ def read_cl(filename, dtype=np.float64, h=False):
       the cl array
     """
     fits_hdu = _get_hdu(filename, hdu=1)
-    cl = [fits_hdu.data.field(n) for n in range(len(fits_hdu.columns))]
+    cl = np.array([fits_hdu.data.field(n) for n in range(len(fits_hdu.columns))])
     if len(cl) == 1:
         return cl[0]
     else:
@@ -380,20 +380,26 @@ def read_map(filename,field=0,dtype=np.float64,nest=False,partial=False,hdu=1,h=
             pass
         ret.append(m)
 
+    if h:
+        header = []
+        for (key, value) in fits_hdu.header.items():
+            header.append((key, value))
+
     if len(ret) == 1:
         if h:
-            return ret[0],fits_hdu.header.items()
+            return ret[0], header
         else:
             return ret[0]
     else:
+        if all(dt == dtype[0] for dt in dtype):
+            ret = np.array(ret)
         if h:
-            ret.append(fits_hdu.header.items())
-            return tuple(ret)
+            return ret, header
         else:
-            return tuple(ret)
+            return ret
 
 
-def write_alm(filename,alms,out_dtype=None,lmax=-1,mmax=-1,mmax_in=-1):
+def write_alm(filename,alms,out_dtype=None,lmax=-1,mmax=-1,mmax_in=-1,overwrite=False):
     """Write alms to a fits file.
 
     In the fits file the alms are written
@@ -463,7 +469,7 @@ def write_alm(filename,alms,out_dtype=None,lmax=-1,mmax=-1,mmax_in=-1):
 
         tbhdu = pf.BinTableHDU.from_columns([cindex,creal,cimag])
         hdulist.append(tbhdu)
-    hdulist.writeto(filename)
+    hdulist.writeto(filename, overwrite=overwrite)
 
 def read_alm(filename,hdu=1,return_mmax=False):
     """Read alm from a fits file.
@@ -477,7 +483,7 @@ def read_alm(filename,hdu=1,return_mmax=False):
     ----------
     filename : str or HDUList or HDU
       The name of the fits file to read
-    hdu : int, optional
+    hdu : int, or tuple of int, optional
       The header to read. Start at 0. Default: hdu=1
     return_mmax : bool, optional
       If true, both the alms and mmax is returned in a tuple. Default: return_mmax=False
@@ -487,17 +493,34 @@ def read_alm(filename,hdu=1,return_mmax=False):
     alms[, mmax] : complex array or tuple of a complex array and an int
       The alms read from the file and optionally mmax read from the file
     """
-    idx, almr, almi = mrdfits(filename,hdu=hdu)
-    l = np.floor(np.sqrt(idx-1)).astype(np.long)
-    m = idx - l**2 - l - 1
-    if (m<0).any():
-        raise ValueError('Negative m value encountered !')
-    lmax = l.max()
-    mmax = m.max()
-    alm = almr*(0+0j)
-    i = Alm.getidx(lmax,l,m)
-    alm.real[i] = almr
-    alm.imag[i] = almi
+    alms = []
+    lmaxtot = None
+    mmaxtot = None
+    for unit in np.atleast_1d(hdu):
+        idx, almr, almi = mrdfits(filename,hdu=unit)
+        l = np.floor(np.sqrt(idx-1)).astype(np.long)
+        m = idx - l**2 - l - 1
+        if (m<0).any():
+            raise ValueError('Negative m value encountered !')
+        lmax = l.max()
+        mmax = m.max()
+        if lmaxtot is None:
+            lmaxtot = lmax
+            mmaxtot = mmax
+        else:
+            if lmaxtot != lmax or mmaxtot != mmax:
+                raise RuntimeError(
+                    'read_alm: harmonic expansion order in {} HDUs {} does not '
+                    'match'.format(filename, unit, hdu))
+        alm = almr*(0+0j)
+        i = Alm.getidx(lmax,l,m)
+        alm.real[i] = almr
+        alm.imag[i] = almi
+        alms.append(alm)
+    if len(alms) == 1:
+        alm = alms[0]
+    else:
+        alm = np.array(alms)
     if return_mmax:
         return alm, mmax
     else:
