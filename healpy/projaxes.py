@@ -1,22 +1,22 @@
-# 
+#
 #  This file is part of Healpy.
-# 
+#
 #  Healpy is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation; either version 2 of the License, or
 #  (at your option) any later version.
-# 
+#
 #  Healpy is distributed in the hope that it will be useful,
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU General Public License for more details.
-# 
+#
 #  You should have received a copy of the GNU General Public License
 #  along with Healpy; if not, write to the Free Software
 #  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-# 
+#
 #  For more information about Healpy, see http://code.google.com/p/healpy
-# 
+#
 from . import projector as P
 from . import rotator as R
 from . import pixelfunc
@@ -43,7 +43,7 @@ class SphericalProjAxes(matplotlib.axes.Axes):
         define coordinate system. See rotator.
     coordprec : number of digit after floating point for coordinates display.
     format : format string for value display.
-      
+
     Notes
     -----
     Other keywords from Axes (see Axes).
@@ -72,13 +72,13 @@ class SphericalProjAxes(matplotlib.axes.Axes):
         self._gratdef = {}
         self._gratdef['local'] = False
         self._gratdef['dpar'] = 30.
-        
+
     def set_format(self,f):
         """Set the format string for value display
         """
         self._format=f
         return f
-    
+
     def set_coordprec(self,n):
         """Set the number of digits after floating point for coord display.
         """
@@ -148,14 +148,14 @@ class SphericalProjAxes(matplotlib.axes.Axes):
         coord : {'G', 'E', 'C', None}
           The coordinate system of the map ('G','E' or 'C'), rotate
           the map if different from the axes coord syst.
-        
+
         Notes
         -----
         Other keywords are transmitted to :func:`matplotlib.Axes.imshow`
         """
         img = self.proj.projmap(map,vec2pix_func,rot=rot,coord=coord)
-        w = ~( np.isnan(img) | 
-               np.isinf(img) | 
+        w = ~( np.isnan(img) |
+               np.isinf(img) |
                pixelfunc.mask_bad(img, badval = badval) )
         try:
             if vmin is None: vmin = img[w].min()
@@ -186,12 +186,12 @@ class SphericalProjAxes(matplotlib.axes.Axes):
         spherical projection.
 
         You can call this function as::
-        
+
            projplot(theta, phi)        # plot a line going through points at coord (theta, phi)
            projplot(theta, phi, 'bo')  # plot 'o' in blue at coord (theta, phi)
            projplot(thetaphi)          # plot a line going through points at coord (thetaphi[0], thetaphi[1])
            projplot(thetaphi, 'bx')    # idem but with blue 'x'
-        
+
         Parameters
         ----------
         theta, phi : float, array-like
@@ -271,9 +271,9 @@ class SphericalProjAxes(matplotlib.axes.Axes):
     def projscatter(self,theta, phi=None,*args,**kwds):
         """Projscatter is a wrapper around :func:`matplotlib.Axes.scatter` to take into account the
         spherical projection.
-        
+
         You can call this function as::
-        
+
            projscatter(theta, phi)     # plot points at coord (theta, phi)
            projplot(thetaphi)          # plot points at coord (thetaphi[0], thetaphi[1])
 
@@ -454,7 +454,7 @@ class SphericalProjAxes(matplotlib.axes.Axes):
 
     def graticule(self,dpar=None,dmer=None,coord=None,local=None,verbose=True,**kwds):
         """Draw a graticule.
-        
+
         Input:
          - dpar: angular separation between parallels in degree
          - dmer: angular separation between meridians in degree
@@ -508,10 +508,10 @@ class SphericalProjAxes(matplotlib.axes.Axes):
                 fmt = '-'
                 equator=True
             elif abs(t) < 1.e-10: # special case: north pole
-                t = 1.e-10 
+                t = 1.e-10
                 fmt = '-'
             elif abs(t-pi) < 1.e-10: # special case: south pole
-                t = pi-1.e-10 
+                t = pi-1.e-10
                 fmt = '-'
             else:
                 fmt =':'
@@ -545,14 +545,14 @@ class SphericalProjAxes(matplotlib.axes.Axes):
         else:
             self._graticules = [(gratargs,gratkwds,gratlines)]
         return dpar,dmer
-    
+
     def delgraticules(self):
         """Delete all graticules previously created on the Axes.
         """
         if hasattr(self,'_graticules'):
             for dum1,dum2,g in self._graticules:
                 for gl in g:
-                    for l in gl: 
+                    for l in gl:
                         if l in self.lines:
                             self.lines.remove(l)
                         else:
@@ -590,7 +590,7 @@ class SphericalProjAxes(matplotlib.axes.Axes):
         varcmin = (dmer/dtor-vdeg)*60.
         if verbose: print("The interval between meridians is {0:d} deg {1:.2f}'.".format(vdeg,varcmin))
         return dpar,dmer
-        
+
 class GnomonicAxes(SphericalProjAxes):
     """Define a gnomonic Axes to handle gnomonic projection.
 
@@ -598,7 +598,7 @@ class GnomonicAxes(SphericalProjAxes):
       - rot=, coord= : define rotation and coordinate system. See rotator.
       - coordprec= : number of digit after floating point for coordinates display.
       - format= : format string for value display.
-      
+
       Other keywords from Axes (see Axes).
     """
     def __init__(self,*args,**kwds):
@@ -611,7 +611,7 @@ class GnomonicAxes(SphericalProjAxes):
     def projmap(self,map,vec2pix_func,xsize=200,ysize=None,reso=1.5,**kwds):
         self.proj.set_proj_plane_info(xsize=xsize,ysize=ysize,reso=reso)
         return super(GnomonicAxes,self).projmap(map,vec2pix_func,**kwds)
-        
+
 class HpxGnomonicAxes(GnomonicAxes):
     def projmap(self,map,nest=False,**kwds):
         nside = pixelfunc.npix2nside(pixelfunc.get_map_size(map))
@@ -630,7 +630,7 @@ class MollweideAxes(SphericalProjAxes):
       - rot=, coord= : define rotation and coordinate system. See rotator.
       - coordprec= : number of digit after floating point for coordinates display.
       - format= : format string for value display.
-      
+
       Other keywords from Axes (see Axes).
     """
     def __init__(self,*args,**kwds):
@@ -645,7 +645,7 @@ class MollweideAxes(SphericalProjAxes):
         self.set_xlim(-2.01,2.01)
         self.set_ylim(-1.01,1.01)
         return img
-        
+
 class HpxMollweideAxes(MollweideAxes):
     def projmap(self,map,nest=False,**kwds):
         nside = pixelfunc.npix2nside(pixelfunc.get_map_size(map))
@@ -661,26 +661,26 @@ class CartesianAxes(SphericalProjAxes):
         self._segment_threshold = 180
         self._segment_step_rad = 0.1*pi/180
         self._do_border = True
-        
+
     def projmap(self,map,vec2pix_func,xsize=800,ysize=None,lonra=None,latra=None,**kwds):
         self.proj.set_proj_plane_info(xsize=xsize,ysize=ysize,lonra=lonra,latra=latra)
         return super(CartesianAxes,self).projmap(map,vec2pix_func,**kwds)
-        
+
 class HpxCartesianAxes(CartesianAxes):
     def projmap(self,map,nest=False,**kwds):
         nside = pixelfunc.npix2nside(pixelfunc.get_map_size(map))
         f = lambda x,y,z: pixelfunc.vec2pix(nside,x,y,z,nest=nest)
         return super(HpxCartesianAxes,self).projmap(map,f,**kwds)
 
-        
+
 class OrthographicAxes(SphericalProjAxes):
     """Define an orthographic Axes to handle orthographic projection.
-    
+
     Input:
     - rot=, coord= : define rotation and coordinate system. See rotator.
     - coordprec= : num of digits after floating point for coordinates display.
     - format= : format string for value display.
-    
+
     Other keywords from Axes (see Axes).
     """
     def __init__(self,*args,**kwds):
@@ -688,7 +688,7 @@ class OrthographicAxes(SphericalProjAxes):
         super(OrthographicAxes,self).__init__(P.OrthographicProj, *args,**kwds)
         self._segment_threshold = 0.01
         self._do_border = False
-        
+
     def projmap(self,map,vec2pix_func,xsize=800,half_sky=False,**kwds):
         self.proj.set_proj_plane_info(xsize=xsize,half_sky=half_sky)
         img = super(OrthographicAxes,self).projmap(map,vec2pix_func,**kwds)
@@ -697,7 +697,7 @@ class OrthographicAxes(SphericalProjAxes):
         self.set_xlim(-ratio,ratio)
         self.set_ylim(-1.01,1.01)
         return img
-        
+
 class HpxOrthographicAxes(OrthographicAxes):
     def projmap(self,map,nest=False,**kwds):
         nside = pixelfunc.npix2nside(len(map))
@@ -738,7 +738,7 @@ class HpxAzimuthalAxes(AzimuthalAxes):
 ###################################################################
 #
 #   Table color for mollview, gnomview, and orthview.
-#   Currently defined for so that the default colormap, found in 
+#   Currently defined for so that the default colormap, found in
 #   matplotlib.rcParams['image.cmap'], the data is displayed with
 #   values greater than vmax as the final element of the colormap,
 #   masked indices gray, and the background set to white.
@@ -753,7 +753,7 @@ class HpxAzimuthalAxes(AzimuthalAxes):
 #   it in situ:
 #   >>> matplotlib.rcParam['image.cmap'] = 'coolwarm'
 #   >>> hp.mollview(m)
-#   Note that custom colormaps can also be used, but they need to be 
+#   Note that custom colormaps can also be used, but they need to be
 #   registered ahead fo time, as shown in
 #   http://matplotlib.org/examples/pylab_examples/custom_cmap.html
 
@@ -773,12 +773,12 @@ def get_color_table(vmin,vmax,val,cmap=None,norm=None):
     norm.vmin = vmin
     norm.vmax = vmax
     norm.autoscale_None(val)
-    
+
     return newcmap,norm
 
 def create_colormap(cmap):
     if cmap is not None:
-        return cmap 
+        return cmap
     cmap0 = matplotlib.cm.get_cmap(matplotlib.rcParams['image.cmap'])
     if hasattr(cmap0, '_segmentdata'):
         newcm = matplotlib.colors.LinearSegmentedColormap('newcm',cmap0._segmentdata,
@@ -877,7 +877,7 @@ class HistEqNorm(matplotlib.colors.Normalize):
         if vtype == 'scalar':
             result = result[0]
         return result
-        
+
     def autoscale_None(self, val):
         changed = False
         if self.vmin is None:
@@ -888,7 +888,7 @@ class HistEqNorm(matplotlib.colors.Normalize):
             changed = True
         if changed or self.xval is None or self.yval is None:
             self._set_xyvals(val)
-            
+
     def autoscale(self, val):
         self.vmin = val.min()
         self.vmax = val.max()
@@ -900,6 +900,10 @@ class HistEqNorm(matplotlib.colors.Normalize):
         if data.mask is not np.ma.nomask:
             w = w|data.mask
         data2 = data.data[~w]
+        if data2.size < 3:
+            self.yval = np.array([0, 1], dtype=np.float)
+            self.xval = np.array([self.vmin, self.vmax], dtype=np.float)
+            return
         bins = min(data2.size//20, 5000)
         if bins < 3: bins=data2.size
         try:
@@ -1010,7 +1014,7 @@ class LogNorm2(matplotlib.colors.Normalize):
 
 
 
-        
+
 ##################################################################
 #
 #   A normalization class to get linear color table
