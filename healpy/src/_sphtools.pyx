@@ -217,10 +217,16 @@ def map2alm(m, lmax = None, mmax = None, niter = 3, use_weights = False,
                          "or a sequence of 1 or 3 maps)")
 
     # replace UNSEEN pixels with zeros
-    mi[mkmask(mi)] = 0
+    mask = mkmask(mi)
+    if mask is not False:
+        mi[mask] = 0
     if polarization:
-        mq[mkmask(mq)] = 0
-        mu[mkmask(mu)] = 0
+        mask = mkmask(mq)
+        if mask is not False:
+            mq[mask] = 0
+        mask = mkmask(mu)
+        if mask is not False:
+            mu[mask] = 0
 
     cdef int nside, npix
     npix = mi.size
