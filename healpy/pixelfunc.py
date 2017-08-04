@@ -1373,7 +1373,7 @@ def fit_dipole(m, nest=False, bad=UNSEEN, gal_cut=0):
       if ``False`` m is assumed in RING scheme, otherwise map is NESTED
     bad : float
       bad values of pixel, default to :const:`UNSEEN`.
-    gal_cut : float
+    gal_cut : float [degrees]
       pixels at latitude in [-gal_cut;+gal_cut] degrees are not taken into account
 
     Returns
@@ -1444,7 +1444,7 @@ def remove_dipole(m,nest=False,bad=UNSEEN,gal_cut=0,fitval=False,
       if ``False`` m is assumed in RING scheme, otherwise map is NESTED
     bad : float
       bad values of pixel, default to :const:`UNSEEN`.
-    gal_cut : float
+    gal_cut : float [degrees]
       pixels at latitude in [-gal_cut;+gal_cut] are not taken into account
     fitval : bool
       whether to return or not the fitted values of monopole and dipole
@@ -1508,7 +1508,7 @@ def fit_monopole(m,nest=False,bad=UNSEEN,gal_cut=0):
       if ``False`` m is assumed in RING scheme, otherwise map is NESTED
     bad : float
       bad values of pixel, default to :const:`UNSEEN`.
-    gal_cut : float
+    gal_cut : float [degrees]
       pixels at latitude in [-gal_cut;+gal_cut] degrees are not taken into account
 
     Returns
@@ -1558,7 +1558,7 @@ def remove_monopole(m,nest=False,bad=UNSEEN,gal_cut=0,fitval=False,
       if ``False`` m is assumed in RING scheme, otherwise map is NESTED
     bad : float
       bad values of pixel, default to :const:`UNSEEN`.
-    gal_cut : float
+    gal_cut : float [degrees]
       pixels at latitude in [-gal_cut;+gal_cut] are not taken into account
     fitval : bool
       whether to return or not the fitted value of monopole

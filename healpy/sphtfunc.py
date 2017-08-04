@@ -41,7 +41,7 @@ DATAPATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data')
 # Spherical harmonics transformation
 def anafast(map1, map2 = None, nspec = None, lmax = None, mmax = None,
             iter = 3, alm = False, pol = True, use_weights = False,
-            datapath = None):
+            datapath = None, gal_cut = 0):
     """Computes the power spectrum of an Healpix map, or the cross-spectrum
     between two maps if *map2* is given.
     No removal of monopole or dipole is performed.
@@ -73,6 +73,8 @@ def anafast(map1, map2 = None, nspec = None, lmax = None, mmax = None,
       If there is only one input map, it has no effect. Default: True.
     datapath : None or str, optional
       If given, the directory where to find the weights data.
+    gal_cut : float [degrees]
+      pixels at latitude in [-gal_cut;+gal_cut] are not taken into account
 
     Returns
     -------
@@ -87,12 +89,12 @@ def anafast(map1, map2 = None, nspec = None, lmax = None, mmax = None,
     map1 = ma_to_array(map1)
     alms1 = map2alm(map1, lmax = lmax, mmax = mmax, pol = pol, iter = iter,
                     use_weights = use_weights,
-                    datapath = datapath)
+                    datapath = datapath, gal_cut = gal_cut)
     if map2 is not None:
         map2 = ma_to_array(map2)
         alms2 = map2alm(map2, lmax = lmax, mmax = mmax, pol = pol,
                         iter = iter, use_weights = use_weights,
-                        datapath = datapath)
+                        datapath = datapath, gal_cut = gal_cut)
     else:
         alms2 = None
 
@@ -108,7 +110,7 @@ def anafast(map1, map2 = None, nspec = None, lmax = None, mmax = None,
         return cls
 
 def map2alm(maps, lmax = None, mmax = None, iter = 3, pol = True,
-            use_weights = False, datapath = None):
+            use_weights = False, datapath = None, gal_cut = 0):
     """Computes the alm of an Healpix map.
 
     Parameters
@@ -131,6 +133,8 @@ def map2alm(maps, lmax = None, mmax = None, iter = 3, pol = True,
       If True, use the ring weighting. Default: False.
     datapath : None or str, optional
       If given, the directory where to find the weights data.
+    gal_cut : float [degrees]
+      pixels at latitude in [-gal_cut;+gal_cut] are not taken into account
 
     Returns
     -------
@@ -149,12 +153,12 @@ def map2alm(maps, lmax = None, mmax = None, iter = 3, pol = True,
     if pol or info in (0, 1):
         alms = _sphtools.map2alm(maps, niter = iter,
                                  datapath = datapath, use_weights = use_weights,
-                                 lmax = lmax, mmax = mmax)
+                                 lmax = lmax, mmax = mmax, gal_cut = gal_cut)
     else:
         # info >= 2 and pol is False : spin 0 spht for each map
         alms = [_sphtools.map2alm(mm, niter = iter,
                                   datapath = datapath, use_weights = use_weights,
-                                  lmax = lmax, mmax = mmax)
+                                  lmax = lmax, mmax = mmax, gal_cut = gal_cut)
                for mm in maps]
     return np.array(alms)
 
