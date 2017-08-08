@@ -60,6 +60,11 @@ else:
     log.info('%s is installed; using Cython')
     from Cython.Distutils import build_ext, Extension
 
+def set_builtin(name, value):
+    if isinstance(__builtins__, dict):
+        __builtins__[name] = value
+    else:
+        setattr(__builtins__, name, value)
 
 class build_external_clib(build_clib):
     """Subclass of Distutils' standard build_clib subcommand. Adds support for
@@ -349,7 +354,7 @@ class custom_build_ext(build_ext):
         self.distribution.fetch_build_eggs('numpy')
         # Prevent numpy from thinking it is still in its setup process:
         # See http://stackoverflow.com/questions/19919905
-        __builtins__.__NUMPY_SETUP__ = False
+        set_builtin('__NUMPY_SETUP__', False)
 
         # Add Numpy header search path path
         import numpy
