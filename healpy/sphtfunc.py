@@ -42,7 +42,7 @@ DATAPATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data')
 def anafast(map1, map2 = None, nspec = None, lmax = None, mmax = None,
             iter = 3, alm = False, pol = True, use_weights = False,
             datapath = None, gal_cut = 0):
-    """Computes the power spectrum of an Healpix map, or the cross-spectrum
+    """Computes the power spectrum of a Healpix map, or the cross-spectrum
     between two maps if *map2* is given.
     No removal of monopole or dipole is performed.
 
@@ -111,7 +111,7 @@ def anafast(map1, map2 = None, nspec = None, lmax = None, mmax = None,
 
 def map2alm(maps, lmax = None, mmax = None, iter = 3, pol = True,
             use_weights = False, datapath = None, gal_cut = 0):
-    """Computes the alm of an Healpix map.
+    """Computes the alm of a Healpix map.
 
     Parameters
     ----------
@@ -165,7 +165,7 @@ def map2alm(maps, lmax = None, mmax = None, iter = 3, pol = True,
 def alm2map(alms, nside, lmax = None, mmax = None, pixwin = False,
             fwhm = 0.0, sigma = None,  pol = True,
             inplace = False, verbose=True):
-    """Computes an Healpix map given the alm.
+    """Computes a Healpix map given the alm.
 
     The alm are given as a complex array. You can specify lmax
     and mmax, or they will be computed from array size (assuming
@@ -205,7 +205,7 @@ def alm2map(alms, nside, lmax = None, mmax = None, pixwin = False,
     Returns
     -------
     maps : array or list of arrays
-      An Healpix map in RING scheme at nside or a list of T,Q,U maps (if
+      A Healpix map in RING scheme at nside or a list of T,Q,U maps (if
       polarized input)
     """
     if not cb.is_seq(alms):
@@ -776,7 +776,7 @@ def pixwin(nside, pol = False):
         return pw_temp
 
 def alm2map_der1(alm, nside, lmax = None, mmax = None):
-   """Computes an Healpix map and its first derivatives given the alm.
+   """Computes a Healpix map and its first derivatives given the alm.
 
    The alm are given as a complex array. You can specify lmax
    and mmax, or they will be computed from array size (assuming

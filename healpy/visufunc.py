@@ -69,7 +69,7 @@ def mollview(map=None,fig=None,rot=None,coord=None,unit='',
              cbar=True,cmap=None, notext=False,
              norm=None,hold=False,margins=None,sub=None,
              return_projected_map=False):
-    """Plot an healpix map (given as an array) in Mollweide projection.
+    """Plot a healpix map (given as an array) in Mollweide projection.
     
     Parameters
     ----------
@@ -235,7 +235,7 @@ def gnomview(map=None,fig=None,rot=None,coord=None,unit='',
              cmap=None, norm=None,
              hold=False,sub=None,margins=None,notext=False,
              return_projected_map=False):
-    """Plot an healpix map (given as an array) in Gnomonic projection.
+    """Plot a healpix map (given as an array) in Gnomonic projection.
 
     Parameters
     ----------
@@ -407,7 +407,7 @@ def cartview(map=None,fig=None,rot=None,zat=None,coord=None,unit='',
              cmap=None, norm=None,aspect=None,
              hold=False,sub=None,margins=None,notext=False,
              return_projected_map=False):
-    """Plot an healpix map (given as an array) in Cartesian projection.
+    """Plot a healpix map (given as an array) in Cartesian projection.
 
     Parameters
     ----------
@@ -582,7 +582,7 @@ def orthview(map=None,fig=None,rot=None,coord=None,unit='',
              cbar=True,cmap=None, notext=False,
              norm=None,hold=False,margins=None,sub=None,
              return_projected_map=False):
-    """Plot an healpix map (given as an array) in Orthographic projection.
+    """Plot a healpix map (given as an array) in Orthographic projection.
     
     Parameters
     ----------

@@ -41,7 +41,7 @@ class HealpixFitsWarning(Warning):
     pass
 
 def read_cl(filename, dtype=np.float64, h=False):
-    """Reads Cl from an healpix file, as IDL fits2cl.
+    """Reads Cl from a healpix file, as IDL fits2cl.
 
     Parameters
     ----------
@@ -63,7 +63,7 @@ def read_cl(filename, dtype=np.float64, h=False):
         return cl
 
 def write_cl(filename, cl, dtype=np.float64, overwrite=False):
-    """Writes Cl into an healpix file, as IDL cl2fits.
+    """Writes Cl into a healpix file, as IDL cl2fits.
 
     Parameters
     ----------
@@ -96,7 +96,7 @@ def write_cl(filename, cl, dtype=np.float64, overwrite=False):
     tbhdu.writeto(filename, overwrite=overwrite)
 
 def write_map(filename,m,nest=False,dtype=np.float32,fits_IDL=True,coord=None,partial=False,column_names=None,column_units=None,extra_header=(),overwrite=False):
-    """Writes an healpix map into an healpix file.
+    """Writes a healpix map into a healpix file.
 
     Parameters
     ----------
@@ -233,7 +233,7 @@ def write_map(filename,m,nest=False,dtype=np.float32,fits_IDL=True,coord=None,pa
 
 def read_map(filename,field=0,dtype=np.float64,nest=False,partial=False,hdu=1,h=False,
              verbose=True,memmap=False):
-    """Read an healpix map from a fits file.  Partial-sky files,
+    """Read a healpix map from a fits file.  Partial-sky files,
     if properly identified, are expanded to full size and filled with UNSEEN.
 
     Parameters
