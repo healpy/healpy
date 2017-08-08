@@ -127,6 +127,28 @@ class TestSphtFunc(unittest.TestCase):
                 for i, o in zip(input, output):
                     np.testing.assert_allclose(i, o, atol=1e-4)
 
+    def test_map2alm_pol_gal_cut(self):
+        tmp = [np.empty(o.size*2) for o in self.mapiqu]
+        for t, o in zip(tmp, self.mapiqu):
+            t[::2] = o
+        maps = [self.mapiqu, [o.astype(np.float32) for o in self.mapiqu],
+                [t[::2] for t in tmp]]
+        for use_weights in [False, True]:
+            for input in maps:
+                gal_cut = 30
+                nside = hp.get_nside(input)
+                npix = hp.nside2npix(nside)
+                gal_mask = np.abs(hp.pix2ang(
+                    nside, np.arange(npix), lonlat=True)[1]) < gal_cut
+                alm = hp.map2alm(
+                    input, iter=10, use_weights=use_weights, gal_cut=gal_cut)
+                output = hp.alm2map(alm, 32)
+                for i, o in zip(input, output):
+                    # Testing requires low tolerances because of the
+                    # mask boundary
+                    i[gal_mask] = 0
+                    np.testing.assert_allclose(i, o, atol=1e-2)
+
     def test_rotate_alm(self):
         almigc = hp.map2alm(self.mapiqu)
         alms = [almigc[0], almigc[0:2], almigc, np.vstack(almigc)]

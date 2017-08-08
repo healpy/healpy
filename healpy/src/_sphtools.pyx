@@ -7,7 +7,7 @@ from libcpp.string cimport string
 from libc.math cimport sqrt, floor, fabs
 cimport libc
 from healpy import npix2nside, nside2npix
-from healpy.pixelfunc import maptype
+from healpy.pixelfunc import maptype, pix2ang
 import os
 import cython
 from libcpp cimport bool as cbool
@@ -176,7 +176,7 @@ def alm2map_spin_healpy(alms, nside, spin, lmax, mmax=None):
     return maps
 
 def map2alm(m, lmax = None, mmax = None, niter = 3, use_weights = False,
-            datapath = None):
+            datapath = None, gal_cut = 0):
     """Computes the alm of a Healpix map.
 
     Parameters
@@ -191,6 +191,8 @@ def map2alm(m, lmax = None, mmax = None, niter = 3, use_weights = False,
       Number of iteration (default: 1)
     use_weights: bool, scalar, optional
       If True, use the ring weighting. Default: False.
+    gal_cut : float [degrees]
+      pixels at latitude in [-gal_cut;+gal_cut] are not taken into account
 
     Returns
     -------
@@ -201,30 +203,47 @@ def map2alm(m, lmax = None, mmax = None, niter = 3, use_weights = False,
     info = maptype(m)
     if info == 0:
         polarization = False
-        mi = np.ascontiguousarray(m, dtype=np.float64)
+        mi = m.astype(np.float64, order='C', copy=True)
     elif info == 1:
         polarization = False
-        mi = np.ascontiguousarray(m[0], dtype=np.float64)
+        mi = m[0].astype(np.float64, order='C', copy=True)
     elif info == 3:
         polarization = True
-        mi = np.ascontiguousarray(m[0], dtype=np.float64)
-        mq = np.ascontiguousarray(m[1], dtype=np.float64)
-        mu = np.ascontiguousarray(m[2], dtype=np.float64)
+        mi = m[0].astype(np.float64, order='C', copy=True)
+        mq = m[1].astype(np.float64, order='C', copy=True)
+        mu = m[2].astype(np.float64, order='C', copy=True)
     else:
         raise ValueError("Wrong input map (must be a valid healpix map "
                          "or a sequence of 1 or 3 maps)")
 
-    # create UNSEEN mask for I map
-    mask_mi = False if count_bad(mi) == 0 else mkmask(mi)
-    # same for polarization maps if needed
+    # replace UNSEEN pixels with zeros
+    mask = mkmask(mi)
+    if mask is not False:
+        mi[mask] = 0
     if polarization:
-        mask_mq = False if count_bad(mq) == 0 else mkmask(mq)
-        mask_mu = False if count_bad(mu) == 0 else mkmask(mu)
+        mask = mkmask(mq)
+        if mask is not False:
+            mq[mask] = 0
+        mask = mkmask(mu)
+        if mask is not False:
+            mu[mask] = 0
 
-    # Adjust lmax and mmax
-    cdef int lmax_, mmax_, nside, npix
+    cdef int nside, npix
     npix = mi.size
     nside = npix2nside(npix)
+
+    # Optionally apply a galactic cut
+    if gal_cut is not None and gal_cut > 0:
+        mask_gal = pix2ang(nside, np.arange(npix), lonlat=True)[1]
+        mask_gal = np.abs(mask_gal) < gal_cut
+        mi[mask_gal] = 0
+        if polarization:
+            mq[mask_gal] = 0
+            mu[mask_gal] = 0
+        del mask_gal
+
+    # Adjust lmax and mmax
+    cdef int lmax_, mmax_
     if lmax is None:
         lmax_ = 3 * nside - 1
     else:
@@ -244,15 +263,6 @@ def map2alm(m, lmax = None, mmax = None, niter = 3, use_weights = False,
     if polarization:
         MQ = ndarray2map(mq, RING)
         MU = ndarray2map(mu, RING)
-
-    # replace UNSEEN pixels with zeros
-    if mask_mi is not False:
-        mi[mask_mi] = 0.0
-    if polarization:
-        if mask_mq is not False:
-            mq[mask_mq] = 0.0
-        if mask_mu is not False:
-            mu[mask_mu] = 0.0
 
 
     # Create an ndarray object that will contain the alm for output (to be returned)
@@ -295,15 +305,6 @@ def map2alm(m, lmax = None, mmax = None, niter = 3, use_weights = False,
         map2alm_pol_iter(MI[0], MQ[0], MU[0], AI[0], AG[0], AC[0], niter, w_arr[0])
     else:
         map2alm_iter(MI[0], AI[0], niter, w_arr[0])
-
-    # restore input map with UNSEEN pixels
-    if mask_mi is not False:
-        mi[mask_mi] = UNSEEN
-    if polarization:
-        if mask_mq is not False:
-            mq[mask_mq] = UNSEEN
-        if mask_mu is not False:
-            mu[mask_mu] = UNSEEN
 
     del w_arr
     if polarization:
