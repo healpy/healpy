@@ -38,7 +38,7 @@ def mollview(m=None, rot=None, coord=None, unit='',
              norm=None, 
              graticule=False, graticule_labels=False,
              **kwargs):
-    """Plot an healpix map (given as an array) in Mollweide projection.
+    """Plot a healpix map (given as an array) in Mollweide projection.
     
     Parameters
     ----------

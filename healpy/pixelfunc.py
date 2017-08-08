@@ -769,7 +769,7 @@ def nest2ring(nside, ipix):
 
 @accept_ma
 def reorder(map_in, inp=None, out=None, r2n=None, n2r=None):
-    """Reorder an healpix map from RING/NESTED ordering to NESTED/RING
+    """Reorder a healpix map from RING/NESTED ordering to NESTED/RING
 
     Parameters
     ----------
@@ -1043,7 +1043,7 @@ def npix2nside(npix):
     Notes
     -----
     Raise a ValueError exception if number of pixel does not correspond to
-    the number of pixel of an healpix map.
+    the number of pixel of a healpix map.
 
     Examples
     --------
@@ -1180,7 +1180,7 @@ def get_interp_val(m,theta,phi,nest=False,lonlat=False):
     Parameters
     ----------
     m : array-like
-      an healpix map, accepts masked arrays
+      a healpix map, accepts masked arrays
     theta, phi : float, scalar or array-like
       angular coordinates of point at which to interpolate the map
     nest : bool
