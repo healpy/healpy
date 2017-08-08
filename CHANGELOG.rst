@@ -1,5 +1,9 @@
-Next Release Candidate
+Release 1.11.0, 8 Aug 2017
 
+* Remove NSIDE restriction to be a power of 2 for RING <https://github.com/healpy/healpy/pull/377>
+* Implement Coordsys2euler zyz <https://github.com/healpy/healpy/pull/399>
+* Return multiple maps as a single 2D array instead of a tuple of 1D arrays <https://github.com/healpy/healpy/pull/400>
+* Support for galactic cut in anafast and map2alm <https://github.com/healpy/healpy/pull/406>
 * Change in write_map default behavior: <https://github.com/healpy/healpy/pull/379> and <https://github.com/healpy/healpy/pull/386>
 
 Release 1.10.1, 8 Nov 2016
