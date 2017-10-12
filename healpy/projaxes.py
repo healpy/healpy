@@ -795,17 +795,23 @@ def create_colormap(cmap):
 #   A Locator that gives the bounds of the interval
 #
 class BoundaryLocator(matplotlib.ticker.Locator):
-    def __init__(self,N=2):
+    def __init__(self,N=2,norm=None):
         if N < 2:
             raise ValueError("Number of locs must be greater than 1")
         self.Nlocs=N
+        self.norm=norm
 
     def __call__(self):
         if matplotlib.__version__ < '0.98':
             vmin,vmax = self.viewInterval.get_bounds()
         else:
             vmin, vmax = self.axis.get_view_interval()
-        locs = vmin + np.arange(self.Nlocs)*(vmax-vmin)/(self.Nlocs-1.)
+        if self.norm=='log':
+            locs = np.log10(vmin) + np.arange(self.Nlocs)*(
+                np.log10(vmax)-np.log10(vmin))/(self.Nlocs-1.)
+            locs = 10**(locs)
+        else:
+            locs = vmin + np.arange(self.Nlocs)*(vmax-vmin)/(self.Nlocs-1.)
         return locs
 
     def autoscale(self):
