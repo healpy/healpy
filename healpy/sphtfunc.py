@@ -44,16 +44,17 @@ def anafast(map1, map2 = None, nspec = None, lmax = None, mmax = None,
             datapath = None, gal_cut = 0):
     """Computes the power spectrum of a Healpix map, or the cross-spectrum
     between two maps if *map2* is given.
-    No removal of monopole or dipole is performed.
+    No removal of monopole or dipole is performed. The input maps must be
+    in ring-ordering.
 
     Parameters
     ----------
     map1 : float, array-like shape (Npix,) or (3, Npix)
       Either an array representing a map, or a sequence of 3 arrays
-      representing I, Q, U maps
+      representing I, Q, U maps. Must be in ring ordering.
     map2 : float, array-like shape (Npix,) or (3, Npix)
       Either an array representing a map, or a sequence of 3 arrays
-      representing I, Q, U maps
+      representing I, Q, U maps. Must be in ring ordering.
     nspec : None or int, optional
       The number of spectra to return. If None, returns all, otherwise
       returns cls[:nspec]
@@ -111,12 +112,13 @@ def anafast(map1, map2 = None, nspec = None, lmax = None, mmax = None,
 
 def map2alm(maps, lmax = None, mmax = None, iter = 3, pol = True,
             use_weights = False, datapath = None, gal_cut = 0):
-    """Computes the alm of a Healpix map.
+    """Computes the alm of a Healpix map. The input maps must all be
+    in ring ordering.
 
     Parameters
     ----------
     maps : array-like, shape (Npix,) or (n, Npix)
-      The input map or a list of n input maps.
+      The input map or a list of n input maps. Must be in ring ordering.
     lmax : int, scalar, optional
       Maximum l of the power spectrum. Default: 3*nside-1
     mmax : int, scalar, optional
