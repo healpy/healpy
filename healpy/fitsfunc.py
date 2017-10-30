@@ -441,7 +441,7 @@ def write_alm(filename,alms,out_dtype=None,lmax=-1,mmax=-1,mmax_in=-1,overwrite=
     if mmax > mmax_in:
         mmax = mmax_in
 
-    if (out_dtype == None):
+    if out_dtype is None:
         out_dtype = alms[0].real.dtype
 
     l,m = Alm.getlm(lmax)
