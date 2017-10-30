@@ -67,7 +67,7 @@ def mollview(map=None,fig=None,rot=None,coord=None,unit='',
              gal_cut=0,
              format='%g',format2='%g',
              cbar=True,cmap=None, notext=False,
-             norm=None,hold=False,margins=None,sub=None,
+             norm=None,hold=False,margins=None,sub=None,nlocs=2,
              return_projected_map=False):
     """Plot a healpix map (given as an array) in Mollweide projection.
     
@@ -200,13 +200,13 @@ def mollview(map=None,fig=None,rot=None,coord=None,unit='',
             if matplotlib.__version__ >= '0.91.0':
                 cb=f.colorbar(im,ax=ax,
                               orientation='horizontal',
-                              shrink=0.5,aspect=25,ticks=PA.BoundaryLocator(),
+                              shrink=0.5,aspect=25,ticks=PA.BoundaryLocator(nlocs, norm),
                               pad=0.05,fraction=0.1,boundaries=b,values=v,
                               format=format)
             else:
                 # for older matplotlib versions, no ax kwarg
                 cb=f.colorbar(im,orientation='horizontal',
-                              shrink=0.5,aspect=25,ticks=PA.BoundaryLocator(),
+                              shrink=0.5,aspect=25,ticks=PA.BoundaryLocator(nlocs, norm),
                               pad=0.05,fraction=0.1,boundaries=b,values=v,
                               format=format)
             cb.solids.set_rasterized(True)
