@@ -419,6 +419,9 @@ def ang2pix(nside,theta,phi,nest=False,lonlat=False):
     >>> hp.ang2pix([1, 2, 4, 8, 16], 0, 0, lonlat=True)
     array([   4,   12,   72,  336, 1440])
     """
+
+    check_nside(nside, nest=nest)
+
     if lonlat:
         theta,phi = lonlat2thetaphi(theta,phi)
     check_theta_valid(theta)
