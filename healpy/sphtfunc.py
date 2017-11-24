@@ -209,6 +209,10 @@ def alm2map(alms, nside, lmax = None, mmax = None, pixwin = False,
     maps : array or list of arrays
       A Healpix map in RING scheme at nside or a list of T,Q,U maps (if
       polarized input)
+
+    Notes
+    -----
+    Running map2alm then alm2map will not return exactly the same map if the discretized field you construct on the sphere is not band-limited (for example, if you have a map containing pixel-based noise rather than beam-smoothed noise). If you need a band-limited map, you have to start with random numbers in lm space and transform these via alm2map. With such an input, the accuracy of map2alm->alm2map should be quite good, depending on your choices of lmax, mmax and nside (for some typical values, see e.g., section 5.1 of https://arxiv.org/pdf/1010.2084).
     """
     if not cb.is_seq(alms):
         raise TypeError("alms must be a sequence")
