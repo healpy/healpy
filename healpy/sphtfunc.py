@@ -23,6 +23,7 @@ import six
 pi = np.pi
 import warnings
 import astropy.io.fits as pf
+from scipy.integrate import simps
 
 from . import _healpy_sph_transform_lib as sphtlib
 from . import _sphtools as _sphtools
@@ -899,3 +900,86 @@ def gauss_beam(fwhm, lmax=512, pol=False):
         # polarization factors [1, 2 sigma^2, 2 sigma^2, sigma^2]
         pol_factor = np.exp([0., 2*sigma2, 2*sigma2, sigma2])
         return g[:, np.newaxis] * pol_factor
+
+    
+def bl2beam(bl, theta):
+    """Computes a circular beam profile b(theta) from its 
+    transfer (or window) function b(l)
+
+    Parameters
+    ----------
+    bl : array
+        b(l) window function of beam        
+    theta : array
+        angle at which the beam profile will be computed
+        Has to be given in radians
+
+    Returns
+    -------
+    beam : array
+        (circular) beam profile value at radius theta
+    """
+    lmax = len(bl)-1
+    nx = len(theta)
+    x = np.cos(theta)
+    p0 = np.zeros(nx)+1
+    p1 = x
+    
+    beam = bl[0]*p0 + bl[1]*p1*3
+    
+    for l in np.arange(2,lmax):
+        p2 = x * p1 * (2*l-1)/l - p0 * (l-1)/l
+        p0 = p1
+        p1 = p2
+        beam += bl[l] * p2 * (2*l+1)
+    
+    beam /=  (4*pi)
+    
+    return(beam)
+
+
+def beam2bl(beam, theta, lmax):
+    """Computes a transfer (or window) function from its 
+    circular beam profile b(theta)
+
+    Parameters
+    ----------
+    beam : array
+        Circular beam profile in theta       
+    theta : array
+        Radius at which the beam profile is given
+        Has to be given in radians with same size
+        as beam
+    lmax : integer
+        Maximum multipole of bl
+
+    Returns
+    -------
+    bl : array
+        beam window function B(l)
+    """
+    
+    nx = len(theta)
+    nb = len(beam)
+    if (nb != nx):
+        print('beam and theta must have same size!')
+
+    x = np.cos(theta)
+    st = np.sin(theta)
+    window = np.zeros(lmax+1)
+
+    p0 = np.ones(nx)
+    p1 = np.copy(x)
+
+    window[0] = simps(beam*p0*st,theta)
+    window[1] = simps(beam*p1*st,theta)
+
+    for l in np.arange(2, lmax):
+        p2 = x * p1 * (2*l-1)/l - p0 * (l-1)/l
+        window[l] = simps(beam*p2*st,theta)
+        p0 = p1
+        p1 = p2
+
+    window *= (2*pi)
+
+    return(window)
