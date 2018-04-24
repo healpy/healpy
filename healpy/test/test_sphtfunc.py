@@ -223,7 +223,7 @@ class TestSphtFunc(unittest.TestCase):
             self.fail()
 
     def test_beam2bl(self):
-		""" Test beam2bl against analytical transform of Gaussian beam. """
+        """ Test beam2bl against analytical transform of Gaussian beam. """
 
         theta = np.linspace(0, np.radians(1.), 1000)
         sigma = np.radians(10./60.) / np.sqrt(8. * np.log(2.))
@@ -236,7 +236,7 @@ class TestSphtFunc(unittest.TestCase):
         np.testing.assert_allclose(gaussian_window, bl, rtol = 1e-5)
 
     def test_bl2beam(self):
-		""" Test bl2beam against analytical transform of Gaussian beam. """
+        """ Test bl2beam against analytical transform of Gaussian beam. """
 
         theta = np.linspace(0, np.radians(3.), 1000)
         sigma = np.radians(1.) / np.sqrt(8. * np.log(2.))
