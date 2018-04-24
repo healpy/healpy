@@ -600,7 +600,7 @@ def smoothalm(alms, fwhm = 0.0, sigma = None, beam_window = None,
       The sigma of the Gaussian. Override fwhm.
       [in radians]
     beam_window: array, optional
-      Custom beam window function. Override fwhm and sigma
+      Custom beam window function. Override fwhm and sigma.
     pol : bool, optional
       If True, assumes input alms are TEB. Output will be TQU maps.
       (input must be 1 or 3 alms)
@@ -700,7 +700,7 @@ def smoothing(map_in, fwhm = 0.0, sigma = None, beam_window = None, pol = True,
     sigma : float, optional
       The sigma of the Gaussian [in radians]. Override fwhm.
     beam_window: array, optional
-      Custom beam window function. Override fwhm and sigma
+      Custom beam window function. Override fwhm and sigma.
     pol : bool, optional
       If True, assumes input maps are TQU. Output will be TQU maps.
       (input must be 1 or 3 alms)
@@ -904,20 +904,20 @@ def gauss_beam(fwhm, lmax=512, pol=False):
     
 def bl2beam(bl, theta):
     """Computes a circular beam profile b(theta) from its 
-    transfer (or window) function b(l)
+    transfer (or window) function b(l).
 
     Parameters
     ----------
     bl : array
-        b(l) window function of beam        
+        b(l) window function of beam.        
     theta : array
-        angle at which the beam profile will be computed
-        Has to be given in radians
+        Angle at which the beam profile will be computed.
+        Has to be given in radians.
 
     Returns
     -------
     beam : array
-        (circular) beam profile value at radius theta
+        (Circular) Beam profile value at radius theta.
     """
     lmax = len(bl)-1
     nx = len(theta)
@@ -940,23 +940,23 @@ def bl2beam(bl, theta):
 
 def beam2bl(beam, theta, lmax):
     """Computes a transfer (or window) function from its 
-    circular beam profile b(theta)
+    circular beam profile b(theta).
 
     Parameters
     ----------
     beam : array
-        Circular beam profile in theta       
+        Circular beam profile in theta.       
     theta : array
-        Radius at which the beam profile is given
+        Radius at which the beam profile is given.
         Has to be given in radians with same size
-        as beam
+        as beam.
     lmax : integer
-        Maximum multipole of bl
+        Maximum multipole of bl.
 
     Returns
     -------
     bl : array
-        beam window function B(l)
+        Beam window function B(l).
     """
     
     nx = len(theta)
@@ -974,7 +974,7 @@ def beam2bl(beam, theta, lmax):
     window[0] = simps(beam*p0*st,theta)
     window[1] = simps(beam*p1*st,theta)
 
-    for l in np.arange(2, lmax):
+    for l in np.arange(2, lmax+1):
         p2 = x * p1 * (2*l-1)/l - p0 * (l-1)/l
         window[l] = simps(beam*p2*st,theta)
         p0 = p1
