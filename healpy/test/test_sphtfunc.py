@@ -222,5 +222,31 @@ class TestSphtFunc(unittest.TestCase):
         except IndexError:
             self.fail()
 
+    def test_beam2bl(self):
+		""" Test beam2bl against analytical transform of Gaussian beam. """
+
+        theta = np.linspace(0, np.radians(1.), 1000)
+        sigma = np.radians(10./60.) / np.sqrt(8. * np.log(2.))
+        gaussian_beam = np.exp(-.5 * (theta/sigma)**2) / (2*np.pi*sigma**2)    
+
+        ell = np.arange(512 + 1.)
+        gaussian_window = np.exp(-.5 * ell * (ell + 1) * sigma**2)
+
+        bl = hp.beam2bl(gaussian_beam, theta, 512)
+        np.testing.assert_allclose(gaussian_window, bl, rtol = 1e-5)
+
+    def test_bl2beam(self):
+		""" Test bl2beam against analytical transform of Gaussian beam. """
+
+        theta = np.linspace(0, np.radians(3.), 1000)
+        sigma = np.radians(1.) / np.sqrt(8. * np.log(2.))
+        gaussian_beam = np.exp(-.5 * (theta/sigma)**2) / (2*np.pi*sigma**2)    
+
+        ell = np.arange(2048 + 1.)
+        gaussian_window = np.exp(-.5 * ell * (ell + 1) * sigma**2)
+
+        beam = hp.bl2beam(gaussian_window, theta)
+        np.testing.assert_allclose(gaussian_beam, beam, rtol = 1e-3)            
+            
 if __name__ == '__main__':
     unittest.main()
