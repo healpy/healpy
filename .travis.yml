@@ -83,6 +83,7 @@ install:
   # Then make source distribution
   # Uninstall things that are only needed when building from git
   # Finally, install from the source distribution using pip
+  pip install scipy
   - |
     if $USE_PIP; then
       python setup.py build && \
