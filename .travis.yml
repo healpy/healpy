@@ -6,7 +6,6 @@ language: python
 
 python:
   - 2.7
-  - 3.4
   - 3.5
   - 3.6
 
@@ -27,14 +26,6 @@ env:
 
 matrix:
   exclude:
-    - python: 3.4
-      env: USE_ANACONDA=false USE_PIP=false USE_EXTERNAL_CFITSIO=false
-    - python: 3.4
-      env: USE_ANACONDA=false USE_PIP=false USE_EXTERNAL_CFITSIO=true
-    - python: 3.4
-      env: USE_ANACONDA=false USE_PIP=true  USE_EXTERNAL_CFITSIO=false
-    - python: 3.4
-      env: USE_ANACONDA=false USE_PIP=true  USE_EXTERNAL_CFITSIO=true
     - python: 3.5
       env: USE_ANACONDA=false USE_PIP=false USE_EXTERNAL_CFITSIO=false
     - python: 3.5
