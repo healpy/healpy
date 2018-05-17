@@ -23,6 +23,7 @@ import six
 pi = np.pi
 import warnings
 import astropy.io.fits as pf
+from scipy.integrate import simps
 
 from . import _healpy_sph_transform_lib as sphtlib
 from . import _sphtools as _sphtools
@@ -583,8 +584,8 @@ def almxfl(alm, fl, mmax = None, inplace = False):
     almout = _sphtools.almxfl(alm, fl, mmax = mmax, inplace = inplace)
     return almout
 
-def smoothalm(alms, fwhm = 0.0, sigma = None,  pol = True,
-              mmax = None, verbose = True, inplace = True):
+def smoothalm(alms, fwhm = 0.0, sigma = None, beam_window = None,  
+              pol = True, mmax = None, verbose = True, inplace = True):
     """Smooth alm with a Gaussian symmetric beam function.
 
     Parameters
@@ -598,6 +599,8 @@ def smoothalm(alms, fwhm = 0.0, sigma = None,  pol = True,
     sigma : float, optional
       The sigma of the Gaussian. Override fwhm.
       [in radians]
+    beam_window: array, optional
+      Custom beam window function. Override fwhm and sigma.
     pol : bool, optional
       If True, assumes input alms are TEB. Output will be TQU maps.
       (input must be 1 or 3 alms)
@@ -619,18 +622,21 @@ def smoothalm(alms, fwhm = 0.0, sigma = None,  pol = True,
       and *inplace* is True the smoothing is applied inplace.
       Otherwise, a copy is made.
     """
-    if sigma is None:
+    if (sigma is None) & (beam_window is None):
         sigma = fwhm / (2.*np.sqrt(2.*np.log(2.)))
 
     if verbose:
-        print("Sigma is {0:f} arcmin ({1:f} rad) ".format(sigma*60*180/pi,sigma))
-        print("-> fwhm is {0:f} arcmin".format(sigma*60*180/pi*(2.*np.sqrt(2.*np.log(2.)))))
+        if beam_window is None:
+            print("Sigma is {0:f} arcmin ({1:f} rad) ".format(sigma*60*180/pi,sigma))
+            print("-> fwhm is {0:f} arcmin".format(sigma*60*180/pi*(2.*np.sqrt(2.*np.log(2.)))))
+        else:
+            print("Using provided beam window function")
 
     # Check alms
     if not cb.is_seq(alms):
         raise ValueError("alm must be a sequence")
 
-    if sigma == 0:
+    if (sigma == 0) & (beam_window is None):
         # nothing to be done
         return alms
 
@@ -652,7 +658,10 @@ def smoothalm(alms, fwhm = 0.0, sigma = None,  pol = True,
                             'mmax (len(alms[%d]) = %d).'%(ialm, len(alm)))
         ell = np.arange(lmax + 1.)
         s = 2 if ialm >= 1 and pol else 0
-        fact = np.exp(-0.5 * (ell * (ell + 1) - s ** 2) * sigma ** 2)
+        if beam_window is None:
+            fact = np.exp(-0.5 * (ell * (ell + 1) - s ** 2) * sigma ** 2)
+        else:
+            fact = np.copy(beam_window)
         res = almxfl(alm, fact, mmax = mmax, inplace = inplace)
         retalm.append(res)
     # Test what to return (inplace/not inplace...)
@@ -673,7 +682,7 @@ def smoothalm(alms, fwhm = 0.0, sigma = None,  pol = True,
     return alms
 
 @accept_ma
-def smoothing(map_in, fwhm = 0.0, sigma = None,  pol = True,
+def smoothing(map_in, fwhm = 0.0, sigma = None, beam_window = None, pol = True,
               iter = 3, lmax = None, mmax = None, use_weights = False,
               datapath = None, verbose = True):
     """Smooth a map with a Gaussian symmetric beam.
@@ -690,6 +699,8 @@ def smoothing(map_in, fwhm = 0.0, sigma = None,  pol = True,
       radians]. Default:0.0
     sigma : float, optional
       The sigma of the Gaussian [in radians]. Override fwhm.
+    beam_window: array, optional
+      Custom beam window function. Override fwhm and sigma.
     pol : bool, optional
       If True, assumes input maps are TQU. Output will be TQU maps.
       (input must be 1 or 3 alms)
@@ -733,7 +744,7 @@ def smoothing(map_in, fwhm = 0.0, sigma = None,  pol = True,
         alms = map2alm(map_in, lmax = lmax, mmax = mmax, iter = iter,
                        pol = pol, use_weights = use_weights,
                        datapath = datapath)
-        smoothalm(alms, fwhm = fwhm, sigma = sigma,
+        smoothalm(alms, fwhm = fwhm, sigma = sigma, beam_window = beam_window,
                   inplace = True, verbose = verbose)
         output_map = alm2map(alms, nside, pixwin = False, verbose=verbose)
     else:
@@ -742,7 +753,7 @@ def smoothing(map_in, fwhm = 0.0, sigma = None,  pol = True,
         for m in map_in:
             alm = map2alm(m, lmax = lmax, mmax = mmax, iter = iter, pol = pol,
                           use_weights = use_weights, datapath = datapath)
-            smoothalm(alm, fwhm = fwhm, sigma = sigma,
+            smoothalm(alm, fwhm = fwhm, sigma = sigma, beam_window = beam_window,
                       inplace = True, verbose = verbose)
             output_map.append(alm2map(alm, nside, pixwin = False, verbose=verbose))
         output_map = np.array(output_map)
@@ -889,3 +900,86 @@ def gauss_beam(fwhm, lmax=512, pol=False):
         # polarization factors [1, 2 sigma^2, 2 sigma^2, sigma^2]
         pol_factor = np.exp([0., 2*sigma2, 2*sigma2, sigma2])
         return g[:, np.newaxis] * pol_factor
+
+    
+def bl2beam(bl, theta):
+    """Computes a circular beam profile b(theta) from its 
+    transfer (or window) function b(l).
+
+    Parameters
+    ----------
+    bl : array
+        b(l) window function of beam.        
+    theta : array
+        Angle at which the beam profile will be computed.
+        Has to be given in radians.
+
+    Returns
+    -------
+    beam : array
+        (Circular) Beam profile value at radius theta.
+    """
+    lmax = len(bl)-1
+    nx = len(theta)
+    x = np.cos(theta)
+    p0 = np.zeros(nx)+1
+    p1 = x
+    
+    beam = bl[0]*p0 + bl[1]*p1*3
+    
+    for l in np.arange(2,lmax):
+        p2 = x * p1 * (2*l-1)/l - p0 * (l-1)/l
+        p0 = p1
+        p1 = p2
+        beam += bl[l] * p2 * (2*l+1)
+    
+    beam /=  (4*pi)
+    
+    return(beam)
+
+
+def beam2bl(beam, theta, lmax):
+    """Computes a transfer (or window) function from its 
+    circular beam profile b(theta).
+
+    Parameters
+    ----------
+    beam : array
+        Circular beam profile in theta.       
+    theta : array
+        Radius at which the beam profile is given.
+        Has to be given in radians with same size
+        as beam.
+    lmax : integer
+        Maximum multipole of bl.
+
+    Returns
+    -------
+    bl : array
+        Beam window function B(l).
+    """
+    
+    nx = len(theta)
+    nb = len(beam)
+    if (nb != nx):
+        print('beam and theta must have same size!')
+
+    x = np.cos(theta)
+    st = np.sin(theta)
+    window = np.zeros(lmax+1)
+
+    p0 = np.ones(nx)
+    p1 = np.copy(x)
+
+    window[0] = simps(beam*p0*st,theta)
+    window[1] = simps(beam*p1*st,theta)
+
+    for l in np.arange(2, lmax+1):
+        p2 = x * p1 * (2*l-1)/l - p0 * (l-1)/l
+        window[l] = simps(beam*p2*st,theta)
+        p0 = p1
+        p1 = p2
+
+    window *= (2*pi)
+
+    return(window)
