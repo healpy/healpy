@@ -313,7 +313,8 @@ def map2alm(m, lmax = None, mmax = None, niter = 3, use_weights = False,
     if pixel_weights_filename is not None:
 
         full_weights = read_fullweights_from_fits(pixel_weights_filename.encode("UTF-8"), nside)
-
+        # pixel weighting requires 0 iterations
+        niter = 0
         apply_fullweights(MI[0], full_weights)
         if polarization:
             apply_fullweights(MQ[0], full_weights)
