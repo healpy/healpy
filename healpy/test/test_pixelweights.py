@@ -14,9 +14,9 @@ class TestMap2Alm(unittest.TestCase):
         self.lmax = 96
         self.nside = 32
         self.input_alm = np.ones(4753, dtype=np.complex)
-        self.m = hp.alm2map(self.input_alm, nside=self.nside)
+        self.m = hp.alm2map(self.input_alm, nside=self.nside, lmax=self.lmax)
 
 
     def test_pixelweights(self):
-        alm = hp.map2alm(self.m, lmax=self.lmax)
-        np.testing.assert_allclose(self.input_alm, alm)
+        alm = hp.map2alm(self.m, lmax=self.lmax, use_pixel_weights=True)
+        np.testing.assert_allclose(self.input_alm, alm, rtol=1e-4)
