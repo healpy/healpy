@@ -11,9 +11,11 @@ warnings.filterwarnings('ignore')
 class TestMap2Alm(unittest.TestCase):
 
     def setUp(self):
-        self.nside = 32
-        self.lmax = 32
-        self.input_alm = np.ones(561, dtype=np.complex)
+        self.nside = 64
+        self.lmax = 96
+        alm_size = 4753
+        np.random.seed(123)
+        self.input_alm = np.random.normal(size=alm_size) + 1j * np.random.normal(size=alm_size)
         self.m = hp.alm2map(self.input_alm, nside=self.nside, lmax=self.lmax)
 
 
