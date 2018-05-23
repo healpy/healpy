@@ -22,3 +22,6 @@ class TestMap2Alm(unittest.TestCase):
     def test_pixelweights(self):
         alm = hp.map2alm(self.m, lmax=self.lmax, use_pixel_weights=True)
         np.testing.assert_allclose(self.input_alm, alm, rtol=1e-7)
+
+if __name__ == '__main__':
+    unittest.main()
