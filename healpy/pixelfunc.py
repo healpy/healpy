@@ -1357,10 +1357,10 @@ def max_pixrad(nside):
 
     Examples
     --------
-    >>> '%.15f' % max_pixrad(1)
-    '0.841068670567930'
-    >>> '%.15f' % max_pixrad(16)
-    '0.066014761432513'
+    >>> '%.14f' % max_pixrad(1)
+    '0.84106867056793'
+    >>> '%.14f' % max_pixrad(16)
+    '0.06601476143251'
     """
     check_nside(nside, nest=False)
     return pixlib._max_pixrad(nside)
