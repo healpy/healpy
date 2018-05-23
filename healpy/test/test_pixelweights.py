@@ -22,7 +22,7 @@ class TestMap2Alm(unittest.TestCase):
 
     def test_astropy_download_file(self):
         data.conf.dataurl = "https://healpy.github.io/healpy-data/"
-        print(data.get_pkg_data_filename("full_weights/healpix_full_weights_nside_0032.fits"))
+        print(data.get_pkg_data_filename("full_weights/healpix_full_weights_nside_0032.fits", package="healpy"))
 
 if __name__ == '__main__':
     unittest.main()
