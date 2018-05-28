@@ -32,8 +32,8 @@ from .pixelfunc import UNSEEN
 from . import cookbook as cb
 
 standard_column_names = {
-    1 : "I_STOKES",
-    3 : ["%s_STOKES" % comp for comp in "IQU"],
+    1 : "TEMPERATURE",
+    3 : ["TEMPERATURE", "Q_POLARISATION", "U_POLARISATION"],
     6 : ["II", "IQ", "IU", "QQ", "QU", "UU"]
 }
 
