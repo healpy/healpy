@@ -33,6 +33,7 @@ from . import cookbook as cb
 
 standard_column_names = {
     1 : "TEMPERATURE",
+    2 : ["Q_POLARISATION", "U_POLARISATION"],
     3 : ["TEMPERATURE", "Q_POLARISATION", "U_POLARISATION"],
     6 : ["II", "IQ", "IU", "QQ", "QU", "UU"]
 }
