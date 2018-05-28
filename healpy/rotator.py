@@ -20,6 +20,7 @@
 import numpy as np
 import six
 import warnings
+from . import pixelfunc
 
 coordname = {'G': 'Galactic', 'E': 'Ecliptic', 'C': 'Equatorial'}
 
@@ -354,6 +355,53 @@ class Rotator(object):
         sinalpha = north_pole[0]*vp[1]-north_pole[1]*vp[0]
         cosalpha = north_pole[2] - vp[2]*np.dot(north_pole,vp)
         return np.arctan2(sinalpha,cosalpha)
+
+    def rotate_map(self, m):
+        """Rotate a HEALPix map to a new reference frame
+
+        This function first rotates the pixels centers of the new reference
+        frame to the original reference frame, then uses hp.get_interp_val
+        to interpolate bilinearly the pixel values, finally fixes Q and U
+        polarization by the modification to the psi angle caused by
+        the Rotator using Rotator.angle_ref.
+
+        Parameters
+        ----------
+        m : np.ndarray
+            Input map, 1 map is considered I, 2 maps:[Q,U], 3 maps:[I,Q,U]
+
+        Returns
+        -------
+        m_rotated : np.ndarray
+            Map in the new reference frame
+
+        """
+        if pixelfunc.maptype(m) == 0: # a single map is converted to a list
+            m = [m]
+        npix = len(m[0])
+        nside = pixelfunc.npix2nside(npix)
+        theta_pix_center, phi_pix_center = pixelfunc.pix2ang(nside=nside, ipix=np.arange(npix))
+
+        # Rotate the pixels center of the new reference frame to the original frame
+        theta_pix_center_rot, phi_pix_center_rot = self.I(theta_pix_center, phi_pix_center)
+
+        # Interpolate the original map to the pixels centers in the new ref frame
+        m_rotated = [pixelfunc.get_interp_val(each, theta_pix_center_rot, phi_pix_center_rot) for each in m]
+
+        # Rotate polarization
+        if len(m_rotated) > 1:
+            # Create a complex map from QU  and apply the rotation in psi due to the rotation
+            # Slice from the end of the array so that it works both for QU and IQU
+            L_map = (m_rotated[-2] + m_rotated[-1] * 1j) * \
+                np.exp(1j * 2 * self.angle_ref(theta_pix_center, phi_pix_center))
+
+            # Overwrite the Q and U maps with the correct values
+            m_rotated[-2] = np.real(L_map)
+            m_rotated[-1] = np.imag(L_map)
+        else:
+            m_rotated = m_rotated[0]
+
+        return m_rotated
 
     def __repr__(self):
         return '[ '+', '.join([str(self._coords),
