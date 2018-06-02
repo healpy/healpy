@@ -44,7 +44,7 @@ DATAPATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data')
 # Spherical harmonics transformation
 def anafast(map1, map2 = None, nspec = None, lmax = None, mmax = None,
             iter = 3, alm = False, pol = True, use_weights = False,
-            datapath = None, gal_cut = 0):
+            datapath = None, gal_cut = 0, use_pixel_weights = False):
     """Computes the power spectrum of a Healpix map, or the cross-spectrum
     between two maps if *map2* is given.
     No removal of monopole or dipole is performed. The input maps must be
@@ -79,6 +79,8 @@ def anafast(map1, map2 = None, nspec = None, lmax = None, mmax = None,
       If given, the directory where to find the weights data.
     gal_cut : float [degrees]
       pixels at latitude in [-gal_cut;+gal_cut] are not taken into account
+    use_pixel_weights: bool, optional
+      If True, use pixel by pixel weighting, healpy will automatically download the weights, if needed
 
     Returns
     -------
@@ -93,12 +95,12 @@ def anafast(map1, map2 = None, nspec = None, lmax = None, mmax = None,
     map1 = ma_to_array(map1)
     alms1 = map2alm(map1, lmax = lmax, mmax = mmax, pol = pol, iter = iter,
                     use_weights = use_weights,
-                    datapath = datapath, gal_cut = gal_cut)
+                    datapath = datapath, gal_cut = gal_cut, use_pixel_weights=use_pixel_weights)
     if map2 is not None:
         map2 = ma_to_array(map2)
         alms2 = map2alm(map2, lmax = lmax, mmax = mmax, pol = pol,
                         iter = iter, use_weights = use_weights,
-                        datapath = datapath, gal_cut = gal_cut)
+                        datapath = datapath, gal_cut = gal_cut, use_pixel_weights=use_pixel_weights)
     else:
         alms2 = None
 
