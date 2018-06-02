@@ -156,7 +156,7 @@ def write_map(filename,m,nest=False,dtype=np.float32,fits_IDL=True,coord=None,pa
         fitsformat = [getformat(dtype)] * len(m)
 
     if column_names is None:
-        column_names = standard_column_names.get(len(m), ["COLUMN_%d" % n for n in range(len(m))])
+        column_names = standard_column_names.get(len(m), ["COLUMN_%d" % n for n in range(1, len(m)+1)])
     else:
         assert len(column_names) == len(m), "Length column_names != number of maps"
 
