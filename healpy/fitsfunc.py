@@ -32,8 +32,9 @@ from .pixelfunc import UNSEEN
 from . import cookbook as cb
 
 standard_column_names = {
-    1 : "I_STOKES",
-    3 : ["%s_STOKES" % comp for comp in "IQU"],
+    1 : "TEMPERATURE",
+    2 : ["Q_POLARISATION", "U_POLARISATION"],
+    3 : ["TEMPERATURE", "Q_POLARISATION", "U_POLARISATION"],
     6 : ["II", "IQ", "IU", "QQ", "QU", "UU"]
 }
 
@@ -120,11 +121,13 @@ def write_map(filename,m,nest=False,dtype=np.float32,fits_IDL=True,coord=None,pa
       If True, fits file is written as a partial-sky file with explicit indexing.
       Otherwise, implicit indexing is used.  Default: False.
     column_names : str or list
-      Column name or list of column names, if None we use:
-      I_STOKES for 1 component,
-      I/Q/U_STOKES for 3 components,
-      II, IQ, IU, QQ, QU, UU for 6 components,
-      COLUMN_0, COLUMN_1... otherwise
+      Column name or list of column names, if None here the default column names based on
+      the number of columns:
+      1 : "TEMPERATURE",
+      2 : ["Q_POLARISATION", "U_POLARISATION"],
+      3 : ["TEMPERATURE", "Q_POLARISATION", "U_POLARISATION"],
+      6 : ["II", "IQ", "IU", "QQ", "QU", "UU"]
+      COLUMN_1, COLUMN_2... otherwise (FITS is 1-based)
     column_units : str or list
       Units for each column, or same units for all columns.
     extra_header : list
@@ -155,7 +158,7 @@ def write_map(filename,m,nest=False,dtype=np.float32,fits_IDL=True,coord=None,pa
         fitsformat = [getformat(dtype)] * len(m)
 
     if column_names is None:
-        column_names = standard_column_names.get(len(m), ["COLUMN_%d" % n for n in range(len(m))])
+        column_names = standard_column_names.get(len(m), ["COLUMN_%d" % n for n in range(1, len(m)+1)])
     else:
         assert len(column_names) == len(m), "Length column_names != number of maps"
 
