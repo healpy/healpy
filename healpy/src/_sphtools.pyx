@@ -4,6 +4,7 @@
 import numpy as np
 cimport numpy as np
 from libcpp.string cimport string
+from libcpp.vector cimport vector
 from libc.math cimport sqrt, floor, fabs
 cimport libc
 from healpy import npix2nside, nside2npix
@@ -48,6 +49,11 @@ cdef extern from "alm_powspec_tools.h":
 
 cdef extern from "healpix_data_io.h":
     cdef void read_weight_ring (string &dir, int nside, arr[double] &weight)
+    cdef vector[double] read_fullweights_from_fits(string &weightfile, int nside)
+
+cdef extern from "weight_utils.h":
+    cdef void apply_fullweights (Healpix_Map[double] &map,
+            vector[double] &wgt)
 
 DATAPATH = None
 
@@ -176,7 +182,7 @@ def alm2map_spin_healpy(alms, nside, spin, lmax, mmax=None):
     return maps
 
 def map2alm(m, lmax = None, mmax = None, niter = 3, use_weights = False,
-            datapath = None, gal_cut = 0):
+            datapath = None, gal_cut = 0, pixel_weights_filename=None):
     """Computes the alm of a Healpix map.
 
     Parameters
@@ -193,6 +199,8 @@ def map2alm(m, lmax = None, mmax = None, niter = 3, use_weights = False,
       If True, use the ring weighting. Default: False.
     gal_cut : float [degrees]
       pixels at latitude in [-gal_cut;+gal_cut] are not taken into account
+    pixel_weights_filename : str
+      filename of the pixel by pixel weights
 
     Returns
     -------
@@ -300,6 +308,17 @@ def map2alm(m, lmax = None, mmax = None, niter = 3, use_weights = False,
             w_arr[0][i] += 1
     else:
         w_arr.allocAndFill(2 * nside, 1.)
+
+    cdef vector[double] full_weights
+    if pixel_weights_filename is not None:
+
+        full_weights = read_fullweights_from_fits(pixel_weights_filename.encode("UTF-8"), nside)
+        # pixel weighting requires 0 iterations
+        niter = 0
+        apply_fullweights(MI[0], full_weights)
+        if polarization:
+            apply_fullweights(MQ[0], full_weights)
+            apply_fullweights(MU[0], full_weights)
 
     if polarization:
         map2alm_pol_iter(MI[0], MQ[0], MU[0], AI[0], AG[0], AC[0], niter, w_arr[0])

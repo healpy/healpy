@@ -24,6 +24,8 @@ pi = np.pi
 import warnings
 import astropy.io.fits as pf
 from scipy.integrate import simps
+from astropy.utils import data
+data.conf.dataurl = "https://healpy.github.io/healpy-data/"
 
 from . import _healpy_sph_transform_lib as sphtlib
 from . import _sphtools as _sphtools
@@ -42,7 +44,7 @@ DATAPATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data')
 # Spherical harmonics transformation
 def anafast(map1, map2 = None, nspec = None, lmax = None, mmax = None,
             iter = 3, alm = False, pol = True, use_weights = False,
-            datapath = None, gal_cut = 0):
+            datapath = None, gal_cut = 0, use_pixel_weights = False):
     """Computes the power spectrum of a Healpix map, or the cross-spectrum
     between two maps if *map2* is given.
     No removal of monopole or dipole is performed. The input maps must be
@@ -77,6 +79,8 @@ def anafast(map1, map2 = None, nspec = None, lmax = None, mmax = None,
       If given, the directory where to find the weights data.
     gal_cut : float [degrees]
       pixels at latitude in [-gal_cut;+gal_cut] are not taken into account
+    use_pixel_weights: bool, optional
+      If True, use pixel by pixel weighting, healpy will automatically download the weights, if needed
 
     Returns
     -------
@@ -91,12 +95,12 @@ def anafast(map1, map2 = None, nspec = None, lmax = None, mmax = None,
     map1 = ma_to_array(map1)
     alms1 = map2alm(map1, lmax = lmax, mmax = mmax, pol = pol, iter = iter,
                     use_weights = use_weights,
-                    datapath = datapath, gal_cut = gal_cut)
+                    datapath = datapath, gal_cut = gal_cut, use_pixel_weights=use_pixel_weights)
     if map2 is not None:
         map2 = ma_to_array(map2)
         alms2 = map2alm(map2, lmax = lmax, mmax = mmax, pol = pol,
                         iter = iter, use_weights = use_weights,
-                        datapath = datapath, gal_cut = gal_cut)
+                        datapath = datapath, gal_cut = gal_cut, use_pixel_weights=use_pixel_weights)
     else:
         alms2 = None
 
@@ -112,7 +116,8 @@ def anafast(map1, map2 = None, nspec = None, lmax = None, mmax = None,
         return cls
 
 def map2alm(maps, lmax = None, mmax = None, iter = 3, pol = True,
-            use_weights = False, datapath = None, gal_cut = 0):
+            use_weights = False, datapath = None, gal_cut = 0,
+            use_pixel_weights = False):
     """Computes the alm of a Healpix map. The input maps must all be
     in ring ordering.
 
@@ -138,6 +143,8 @@ def map2alm(maps, lmax = None, mmax = None, iter = 3, pol = True,
       If given, the directory where to find the weights data.
     gal_cut : float [degrees]
       pixels at latitude in [-gal_cut;+gal_cut] are not taken into account
+    use_pixel_weights: bool, optional
+      If True, use pixel by pixel weighting, healpy will automatically download the weights, if needed
 
     Returns
     -------
@@ -153,15 +160,26 @@ def map2alm(maps, lmax = None, mmax = None, iter = 3, pol = True,
     """
     maps = ma_to_array(maps)
     info = maptype(maps)
+    if use_pixel_weights:
+        if use_weights:
+            raise RuntimeError("Either use pixel or ring weights")
+        nside = pixelfunc.get_nside(maps)
+        pixel_weights_filename = data.get_pkg_data_filename(
+                "full_weights/healpix_full_weights_nside_%04d.fits" % nside,
+                package="healpy")
+    else:
+        pixel_weights_filename = None
+
+
     if pol or info in (0, 1):
         alms = _sphtools.map2alm(maps, niter = iter,
                                  datapath = datapath, use_weights = use_weights,
-                                 lmax = lmax, mmax = mmax, gal_cut = gal_cut)
+                                 lmax = lmax, mmax = mmax, gal_cut = gal_cut, pixel_weights_filename=pixel_weights_filename)
     else:
         # info >= 2 and pol is False : spin 0 spht for each map
         alms = [_sphtools.map2alm(mm, niter = iter,
                                   datapath = datapath, use_weights = use_weights,
-                                  lmax = lmax, mmax = mmax, gal_cut = gal_cut)
+                                  lmax = lmax, mmax = mmax, gal_cut = gal_cut, pixel_weights_filename=pixel_weights_filename)
                for mm in maps]
     return np.array(alms)
 
