@@ -21,6 +21,10 @@ class TestPixelFunc(unittest.TestCase):
         self.assertAlmostEqual(nside2resol(512,arcmin=True), 6.87097282363) 
         self.assertAlmostEqual(nside2resol(1024,arcmin=True), 3.43548641181) 
 
+    def test_max_pixrad(self):
+        self.assertAlmostEqual(max_pixrad(512),2.0870552355e-03)
+        self.assertAlmostEqual(max_pixrad(512,degrees=True),np.rad2deg(2.0870552355e-03))
+
     def test_nside2pixarea(self):
         self.assertAlmostEqual(nside2pixarea(512), 3.9947416351188569e-06)
 

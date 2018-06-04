@@ -1342,18 +1342,20 @@ def get_all_neighbours(nside, theta, phi=None, nest=False, lonlat=False):
     res=np.array(r[0:8])
     return res
 
-def max_pixrad(nside):
+def max_pixrad(nside, degrees=False):
     """Maximum angular distance between any pixel center and its corners
 
     Parameters
     ----------
     nside : int
       the nside to work with
+    degrees : bool
+      if True, returns pixel radius in degrees, in radians otherwise
 
     Returns
     -------
     rads: double
-       angular distance (in radians)
+       angular distance (in radians or degrees)
 
     Examples
     --------
@@ -1363,6 +1365,10 @@ def max_pixrad(nside):
     '0.06601476143251'
     """
     check_nside(nside, nest=False)
+
+    if degrees:
+        return np.rad2deg(pixlib._max_pixrad(nside))
+
     return pixlib._max_pixrad(nside)
 
 def fit_dipole(m, nest=False, bad=UNSEEN, gal_cut=0):
