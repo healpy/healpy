@@ -2,7 +2,7 @@ Release 1.12.0, 12 Giu 2018
 
 * Implementation of pixel weights for map2alm that makes transform exact <https://github.com/healpy/healpy/pull/442>
 * Change default output FITS column names to agree with other HEALPix packages <https://github.com/healpy/healpy/pull/446>
-* Reformatted the Python code with black, this made a huge changeset  <https://github.com/healpy/healpy/pull/453>
+* Reformatted the Python code with black, this made a huge changeset  <https://github.com/healpy/healpy/pull/454>
 
 Release 1.11.0, 8 Aug 2017
 
