@@ -1,4 +1,4 @@
-__all__ = ['mollview', 'projplot']
+__all__ = ["mollview", "projplot"]
 
 import numpy as np
 from .pixelfunc import ang2pix, npix2nside
@@ -10,34 +10,48 @@ from matplotlib.projections.geo import GeoAxes
 # plot functions using the new features of matplotlib and remove most
 # of the custom projection code
 
+
 class ThetaFormatterShiftPi(GeoAxes.ThetaFormatter):
     """Shifts labelling by pi
 
     Shifts labelling from -180,180 to 0-360"""
+
     def __call__(self, x, pos=None):
         if x != 0:
             x *= -1
         if x < 0:
-            x += 2*np.pi
+            x += 2 * np.pi
         return super(ThetaFormatterShiftPi, self).__call__(x, pos)
+
 
 def lonlat(theta, phi):
     """Converts theta and phi to longitude and latitude
 
     From colatitude to latitude and from astro longitude to geo longitude"""
 
-    longitude = -1*np.asarray(phi)
-    latitude = np.pi/2 - np.asarray(theta)
-    return longitude, latitude 
+    longitude = -1 * np.asarray(phi)
+    latitude = np.pi / 2 - np.asarray(theta)
+    return longitude, latitude
 
-def mollview(m=None, rot=None, coord=None, unit='',
-             xsize=1000, nest=False,
-             min=None, max=None, flip='astro',
-             format='%g',
-             cbar=True, cmap=None,
-             norm=None, 
-             graticule=False, graticule_labels=False,
-             **kwargs):
+
+def mollview(
+    m=None,
+    rot=None,
+    coord=None,
+    unit="",
+    xsize=1000,
+    nest=False,
+    min=None,
+    max=None,
+    flip="astro",
+    format="%g",
+    cbar=True,
+    cmap=None,
+    norm=None,
+    graticule=False,
+    graticule_labels=False,
+    **kwargs
+):
     """Plot a healpix map (given as an array) in Mollweide projection.
     
     Parameters
@@ -90,10 +104,10 @@ def mollview(m=None, rot=None, coord=None, unit='',
     import matplotlib.pyplot as plt
 
     width = 8.5
-    fig = plt.figure(figsize=(width,width*.63))
+    fig = plt.figure(figsize=(width, width * .63))
     ax = fig.add_subplot(111, projection="mollweide")
     # FIXME: make a more general axes creation that works also with subplots
-    #ax = plt.gcf().add_axes((.125, .1, .9, .9), projection="mollweide")
+    # ax = plt.gcf().add_axes((.125, .1, .9, .9), projection="mollweide")
 
     # remove white space around the image
     plt.subplots_adjust(left=0.02, right=0.98, top=0.95, bottom=0.05)
@@ -109,14 +123,14 @@ def mollview(m=None, rot=None, coord=None, unit='',
 
     # allow callers to override the hold state by passing hold=True|False
     washold = ax.ishold()
-    hold = kwargs.pop('hold', None)
+    hold = kwargs.pop("hold", None)
     if hold is not None:
         ax.hold(hold)
 
     try:
-        ysize = xsize/2
+        ysize = xsize / 2
         theta = np.linspace(np.pi, 0, ysize)
-        phi   = np.linspace(-np.pi, np.pi, xsize)
+        phi = np.linspace(-np.pi, np.pi, xsize)
 
         longitude = np.radians(np.linspace(-180, 180, xsize))
         if flip == "astro":
@@ -136,12 +150,20 @@ def mollview(m=None, rot=None, coord=None, unit='',
             grid_map = m[grid_pix]
 
             # plot
-            ret = plt.pcolormesh(longitude, latitude, grid_map, vmin=min, vmax=max, rasterized=True, **kwargs)
+            ret = plt.pcolormesh(
+                longitude,
+                latitude,
+                grid_map,
+                vmin=min,
+                vmax=max,
+                rasterized=True,
+                **kwargs
+            )
 
         # graticule
         plt.grid(graticule)
         if graticule:
-            longitude_grid_spacing = 60 # deg
+            longitude_grid_spacing = 60  # deg
             ax.set_longitude_grid(longitude_grid_spacing)
             if width < 10:
                 ax.set_latitude_grid(45)
@@ -156,7 +178,9 @@ def mollview(m=None, rot=None, coord=None, unit='',
 
         # colorbar
         if cbar and not m is None:
-            cb = fig.colorbar(ret, orientation='horizontal', shrink=.4, pad=0.05, ticks=[min, max])
+            cb = fig.colorbar(
+                ret, orientation="horizontal", shrink=.4, pad=0.05, ticks=[min, max]
+            )
             cb.ax.xaxis.set_label_text(unit)
             cb.ax.xaxis.labelpad = -8
             # workaround for issue with viewers, see colorbar docstring
@@ -167,7 +191,8 @@ def mollview(m=None, rot=None, coord=None, unit='',
         ax.hold(washold)
 
     return ret
-    
+
+
 def projplot(theta, phi, fmt=None, **kwargs):
     """projplot is a wrapper around :func:`matplotlib.Axes.plot` to take into account the
     spherical projection.
@@ -193,6 +218,7 @@ def projplot(theta, phi, fmt=None, **kwargs):
     projscatter, projtext
     """
     import matplotlib.pyplot as plt
+
     longitude, latitude = lonlat(theta, phi)
     if fmt is None:
         ret = plt.plot(longitude, latitude, **kwargs)
