@@ -98,36 +98,65 @@ UNSEEN = None
 
 try:
     from . import _healpy_pixel_lib as pixlib
+
     #: Special value used for masked pixels
     UNSEEN = pixlib.UNSEEN
 except:
     import warnings
-    warnings.warn('Warning: cannot import _healpy_pixel_lib module')
+
+    warnings.warn("Warning: cannot import _healpy_pixel_lib module")
 
 # We are using 64-bit integer types.
 # nside > 2**29 requires extended integer types.
 max_nside = 1 << 29
 
-__all__ = ['pix2ang', 'pix2vec', 'ang2pix', 'vec2pix',
-           'ang2vec', 'vec2ang',
-           'get_interp_weights', 'get_interp_val', 'get_all_neighbours',
-           'max_pixrad',
-           'nest2ring', 'ring2nest', 'reorder', 'ud_grade',
-           'UNSEEN', 'mask_good', 'mask_bad', 'ma',
-           'fit_dipole', 'remove_dipole', 'fit_monopole', 'remove_monopole',
-           'nside2npix', 'npix2nside', 'nside2order', 'order2nside',
-           'nside2resol', 'nside2pixarea',
-           'isnsideok', 'isnpixok',
-           'get_map_size', 'get_min_valid_nside',
-           'get_nside', 'maptype', 'ma_to_array']
+__all__ = [
+    "pix2ang",
+    "pix2vec",
+    "ang2pix",
+    "vec2pix",
+    "ang2vec",
+    "vec2ang",
+    "get_interp_weights",
+    "get_interp_val",
+    "get_all_neighbours",
+    "max_pixrad",
+    "nest2ring",
+    "ring2nest",
+    "reorder",
+    "ud_grade",
+    "UNSEEN",
+    "mask_good",
+    "mask_bad",
+    "ma",
+    "fit_dipole",
+    "remove_dipole",
+    "fit_monopole",
+    "remove_monopole",
+    "nside2npix",
+    "npix2nside",
+    "nside2order",
+    "order2nside",
+    "nside2resol",
+    "nside2pixarea",
+    "isnsideok",
+    "isnpixok",
+    "get_map_size",
+    "get_min_valid_nside",
+    "get_nside",
+    "maptype",
+    "ma_to_array",
+]
+
 
 def check_theta_valid(theta):
     """Raises exception if theta is not within 0 and pi"""
     theta = np.asarray(theta)
-    if not((theta >= 0).all() and (theta <= np.pi + 1e-5).all()):
-        raise ValueError('THETA is out of range [0,pi]')
+    if not ((theta >= 0).all() and (theta <= np.pi + 1e-5).all()):
+        raise ValueError("THETA is out of range [0,pi]")
 
-def lonlat2thetaphi(lon,lat):
+
+def lonlat2thetaphi(lon, lat):
     """ Transform longitude and latitude (deg) into co-latitude and longitude (rad)
 
     Parameters
@@ -142,9 +171,10 @@ def lonlat2thetaphi(lon,lat):
     theta, phi : float, scalar or array-like
       The co-latitude and longitude in radians
     """
-    return np.pi/2. - np.radians(lat),np.radians(lon)
+    return np.pi / 2. - np.radians(lat), np.radians(lon)
 
-def thetaphi2lonlat(theta,phi):
+
+def thetaphi2lonlat(theta, phi):
     """ Transform co-latitude and longitude (rad) into longitude and latitude (deg)
 
     Parameters
@@ -160,6 +190,7 @@ def thetaphi2lonlat(theta,phi):
       The longitude and latitude in degrees
     """
     return np.degrees(phi), 90. - np.degrees(theta)
+
 
 def maptype(m):
     """Describe the type of the map (valid, single, sequence of maps).
@@ -186,24 +217,25 @@ def maptype(m):
     >>> hp.pixelfunc.maptype([np.arange(12), np.arange(12)])
     2
     """
-    if not hasattr(m, '__len__'):
-        raise TypeError('input map is a scalar')
+    if not hasattr(m, "__len__"):
+        raise TypeError("input map is a scalar")
     if len(m) == 0:
-        raise TypeError('input map has length zero')
-    if hasattr(m[0], '__len__'):
-        npix=len(m[0])
+        raise TypeError("input map has length zero")
+    if hasattr(m[0], "__len__"):
+        npix = len(m[0])
         for mm in m[1:]:
             if len(mm) != npix:
-                raise TypeError('input maps have different npix')
+                raise TypeError("input maps have different npix")
         if isnpixok(len(m[0])):
             return len(m)
         else:
-            raise TypeError('bad number of pixels')
+            raise TypeError("bad number of pixels")
     else:
         if isnpixok(len(m)):
             return 0
         else:
-            raise TypeError('bad number of pixels')
+            raise TypeError("bad number of pixels")
+
 
 def ma_to_array(m):
     """Converts a masked array or a list of masked arrays to filled numpy arrays
@@ -238,6 +270,7 @@ def ma_to_array(m):
             pass
     return m
 
+
 def is_ma(m):
     """Converts a masked array or a list of masked arrays to filled numpy arrays
 
@@ -250,12 +283,14 @@ def is_ma(m):
     is_ma : bool
         whether the input map was a ma or not
     """
-    return hasattr(m, 'filled') or hasattr(m[0], 'filled')
+    return hasattr(m, "filled") or hasattr(m[0], "filled")
+
 
 def accept_ma(f):
     """Wraps a function in order to convert the input map from
     a masked to a regular numpy array, and convert back the
     output from a regular array to a masked array"""
+
     @wraps(f)
     def wrapper(map_in, *args, **kwds):
         return_ma = is_ma(map_in)
@@ -265,7 +300,8 @@ def accept_ma(f):
 
     return wrapper
 
-def mask_bad(m, badval = UNSEEN, rtol = 1.e-5, atol = 1.e-8):
+
+def mask_bad(m, badval=UNSEEN, rtol=1.e-5, atol=1.e-8):
     """Returns a bool array with ``True`` where m is close to badval.
 
     Parameters
@@ -303,7 +339,8 @@ def mask_bad(m, badval = UNSEEN, rtol = 1.e-5, atol = 1.e-8):
     rtol = np.absolute(rtol)
     return np.absolute(m - badval) <= atol + rtol * np.absolute(badval)
 
-def mask_good(m, badval = UNSEEN, rtol = 1.e-5, atol = 1.e-8):
+
+def mask_good(m, badval=UNSEEN, rtol=1.e-5, atol=1.e-8):
     """Returns a bool array with ``False`` where m is close to badval.
 
     Parameters
@@ -339,7 +376,8 @@ def mask_good(m, badval = UNSEEN, rtol = 1.e-5, atol = 1.e-8):
     rtol = np.absolute(rtol)
     return np.absolute(m - badval) > atol + rtol * np.absolute(badval)
 
-def ma(m, badval = UNSEEN, rtol = 1e-5, atol = 1e-8, copy = True):
+
+def ma(m, badval=UNSEEN, rtol=1e-5, atol=1e-8, copy=True):
     """Return map as a masked array, with ``badval`` pixels masked.
 
     Parameters
@@ -374,9 +412,10 @@ def ma(m, badval = UNSEEN, rtol = 1e-5, atol = 1e-8, copy = True):
            fill_value = -1.6375e+30)
     <BLANKLINE>
     """
-    return np.ma.masked_values(np.array(m), badval, rtol = rtol, atol = atol, copy = copy)
+    return np.ma.masked_values(np.array(m), badval, rtol=rtol, atol=atol, copy=copy)
 
-def ang2pix(nside,theta,phi,nest=False,lonlat=False):
+
+def ang2pix(nside, theta, phi, nest=False, lonlat=False):
     """ang2pix : nside,theta[rad],phi[rad],nest=False,lonlat=False -> ipix (default:RING)
 
     Parameters
@@ -423,15 +462,16 @@ def ang2pix(nside,theta,phi,nest=False,lonlat=False):
     check_nside(nside, nest=nest)
 
     if lonlat:
-        theta,phi = lonlat2thetaphi(theta,phi)
+        theta, phi = lonlat2thetaphi(theta, phi)
     check_theta_valid(theta)
     check_nside(nside, nest=nest)
     if nest:
-        return pixlib._ang2pix_nest(nside,theta,phi)
+        return pixlib._ang2pix_nest(nside, theta, phi)
     else:
-        return pixlib._ang2pix_ring(nside,theta,phi)
+        return pixlib._ang2pix_ring(nside, theta, phi)
 
-def pix2ang(nside,ipix,nest=False,lonlat=False):
+
+def pix2ang(nside, ipix, nest=False, lonlat=False):
     """pix2ang : nside,ipix,nest=False,lonlat=False -> theta[rad],phi[rad] (default RING)
 
     Parameters
@@ -473,16 +513,17 @@ def pix2ang(nside,ipix,nest=False,lonlat=False):
     """
     check_nside(nside, nest=nest)
     if nest:
-        theta,phi = pixlib._pix2ang_nest(nside, ipix)
+        theta, phi = pixlib._pix2ang_nest(nside, ipix)
     else:
-        theta,phi = pixlib._pix2ang_ring(nside,ipix)
+        theta, phi = pixlib._pix2ang_ring(nside, ipix)
 
     if lonlat:
-        return thetaphi2lonlat(theta,phi)
+        return thetaphi2lonlat(theta, phi)
     else:
         return theta, phi
 
-def xyf2pix(nside,x,y,face,nest=False):
+
+def xyf2pix(nside, x, y, face, nest=False):
     """xyf2pix : nside,x,y,face,nest=False -> ipix (default:RING)
 
     Parameters
@@ -517,11 +558,12 @@ def xyf2pix(nside,x,y,face,nest=False):
     """
     check_nside(nside, nest=nest)
     if nest:
-        return pixlib._xyf2pix_nest(nside,x,y,face)
+        return pixlib._xyf2pix_nest(nside, x, y, face)
     else:
-        return pixlib._xyf2pix_ring(nside,x,y,face)
+        return pixlib._xyf2pix_ring(nside, x, y, face)
 
-def pix2xyf(nside,ipix,nest=False):
+
+def pix2xyf(nside, ipix, nest=False):
     """pix2xyf : nside,ipix,nest=False -> x,y,face (default RING)
 
     Parameters
@@ -560,9 +602,10 @@ def pix2xyf(nside,ipix,nest=False):
     if nest:
         return pixlib._pix2xyf_nest(nside, ipix)
     else:
-        return pixlib._pix2xyf_ring(nside,ipix)
+        return pixlib._pix2xyf_ring(nside, ipix)
 
-def vec2pix(nside,x,y,z,nest=False):
+
+def vec2pix(nside, x, y, z, nest=False):
     """vec2pix : nside,x,y,z,nest=False -> ipix (default:RING)
 
     Parameters
@@ -597,11 +640,12 @@ def vec2pix(nside,x,y,z,nest=False):
     array([  4,  20,  88, 368])
     """
     if nest:
-        return pixlib._vec2pix_nest(nside,x,y,z)
+        return pixlib._vec2pix_nest(nside, x, y, z)
     else:
-        return pixlib._vec2pix_ring(nside,x,y,z)
+        return pixlib._vec2pix_ring(nside, x, y, z)
 
-def pix2vec(nside,ipix,nest=False):
+
+def pix2vec(nside, ipix, nest=False):
     """pix2vec : nside,ipix,nest=False -> x,y,z (default RING)
 
     Parameters
@@ -637,9 +681,10 @@ def pix2vec(nside,ipix,nest=False):
     """
     check_nside(nside, nest=nest)
     if nest:
-        return pixlib._pix2vec_nest(nside,ipix)
+        return pixlib._pix2vec_nest(nside, ipix)
     else:
-        return pixlib._pix2vec_ring(nside,ipix)
+        return pixlib._pix2vec_ring(nside, ipix)
+
 
 def ang2vec(theta, phi, lonlat=False):
     """ang2vec : convert angles to 3D position vector
@@ -665,12 +710,11 @@ def ang2vec(theta, phi, lonlat=False):
     vec2ang, rotator.dir2vec, rotator.vec2dir
     """
     if lonlat:
-        theta,phi = lonlat2thetaphi(theta,phi)
+        theta, phi = lonlat2thetaphi(theta, phi)
     check_theta_valid(theta)
     sintheta = np.sin(theta)
-    return np.array([sintheta*np.cos(phi),
-                      sintheta*np.sin(phi),
-                      np.cos(theta)]).T
+    return np.array([sintheta * np.cos(phi), sintheta * np.sin(phi), np.cos(theta)]).T
+
 
 def vec2ang(vectors, lonlat=False):
     """vec2ang: vectors [x, y, z] -> theta[rad], phi[rad]
@@ -692,15 +736,16 @@ def vec2ang(vectors, lonlat=False):
     --------
     ang2vec, rotator.vec2dir, rotator.dir2vec
     """
-    vectors = vectors.reshape(-1,3)
-    dnorm = np.sqrt(np.sum(np.square(vectors),axis=1))
-    theta = np.arccos(vectors[:,2]/dnorm)
-    phi = np.arctan2(vectors[:,1],vectors[:,0])
-    phi[phi < 0] += 2*np.pi
+    vectors = vectors.reshape(-1, 3)
+    dnorm = np.sqrt(np.sum(np.square(vectors), axis=1))
+    theta = np.arccos(vectors[:, 2] / dnorm)
+    phi = np.arctan2(vectors[:, 1], vectors[:, 0])
+    phi[phi < 0] += 2 * np.pi
     if lonlat:
-        return thetaphi2lonlat(theta,phi)
+        return thetaphi2lonlat(theta, phi)
     else:
         return theta, phi
+
 
 def ring2nest(nside, ipix):
     """Convert pixel number from RING ordering to NESTED ordering.
@@ -736,6 +781,7 @@ def ring2nest(nside, ipix):
     check_nside(nside, nest=True)
     return pixlib._ring2nest(nside, ipix)
 
+
 def nest2ring(nside, ipix):
     """Convert pixel number from NESTED ordering to RING ordering.
 
@@ -769,6 +815,7 @@ def nest2ring(nside, ipix):
     """
     check_nside(nside, nest=True)
     return pixlib._nest2ring(nside, ipix)
+
 
 @accept_ma
 def reorder(map_in, inp=None, out=None, r2n=None, n2r=None):
@@ -836,20 +883,20 @@ def reorder(map_in, inp=None, out=None, r2n=None, n2r=None):
     else:
         npix = len(map_in[0])
     nside = npix2nside(npix)
-    if nside>128:
-        bunchsize = npix//24
+    if nside > 128:
+        bunchsize = npix // 24
     else:
         bunchsize = npix
     if r2n:
-        inp='RING'
-        out='NEST'
+        inp = "RING"
+        out = "NEST"
     if n2r:
-        inp='NEST'
-        out='RING'
+        inp = "NEST"
+        out = "RING"
     inp = str(inp).upper()[0:4]
     out = str(out).upper()[0:4]
-    if inp not in ['RING','NEST'] or out not in ['RING','NEST']:
-        raise ValueError('inp and out must be either RING or NEST')
+    if inp not in ["RING", "NEST"] or out not in ["RING", "NEST"]:
+        raise ValueError("inp and out must be either RING or NEST")
     if typ == 0:
         mapin = [map_in]
     else:
@@ -858,19 +905,17 @@ def reorder(map_in, inp=None, out=None, r2n=None, n2r=None):
     for m_in in mapin:
         if inp == out:
             mapout.append(m_in)
-        elif inp == 'RING':
-            m_out = np.zeros(npix,dtype=type(m_in[0]))
-            for ibunch in range(npix//bunchsize):
-                ipix_n = np.arange(ibunch*bunchsize,
-                                    (ibunch+1)*bunchsize)
+        elif inp == "RING":
+            m_out = np.zeros(npix, dtype=type(m_in[0]))
+            for ibunch in range(npix // bunchsize):
+                ipix_n = np.arange(ibunch * bunchsize, (ibunch + 1) * bunchsize)
                 ipix_r = nest2ring(nside, ipix_n)
                 m_out[ipix_n] = np.asarray(m_in)[ipix_r]
             mapout.append(m_out)
-        elif inp == 'NEST':
-            m_out = np.zeros(npix,dtype=type(m_in[0]))
-            for ibunch in range(npix//bunchsize):
-                ipix_r = np.arange(ibunch*bunchsize,
-                                    (ibunch+1)*bunchsize)
+        elif inp == "NEST":
+            m_out = np.zeros(npix, dtype=type(m_in[0]))
+            for ibunch in range(npix // bunchsize):
+                ipix_r = np.arange(ibunch * bunchsize, (ibunch + 1) * bunchsize)
                 ipix_n = ring2nest(nside, ipix_r)
                 m_out[ipix_r] = np.asarray(m_in)[ipix_n]
             mapout.append(m_out)
@@ -878,6 +923,7 @@ def reorder(map_in, inp=None, out=None, r2n=None, n2r=None):
         return mapout[0]
     else:
         return np.array(mapout)
+
 
 def nside2npix(nside):
     """Give the number of pixels for the given nside.
@@ -910,7 +956,8 @@ def nside2npix(nside):
     >>> hp.nside2npix(7)
     588
     """
-    return 12*nside*nside
+    return 12 * nside * nside
+
 
 def nside2order(nside):
     """Give the resolution order for a given nside.
@@ -946,7 +993,8 @@ def nside2order(nside):
     ValueError: 7 is not a valid nside parameter (must be a power of 2, less than 2**30)
     """
     check_nside(nside, nest=True)
-    return len('{0:b}'.format(nside)) - 1
+    return len("{0:b}".format(nside)) - 1
+
 
 def nside2resol(nside, arcmin=False):
     """Give approximate resolution (pixel size in radian or arcmin) for nside.
@@ -1023,12 +1071,13 @@ def nside2pixarea(nside, degrees=False):
     0.021371378595848933
     """
 
-    pixarea = 4*np.pi/nside2npix(nside)
+    pixarea = 4 * np.pi / nside2npix(nside)
 
     if degrees:
         pixarea = np.rad2deg(np.rad2deg(pixarea))
 
     return pixarea
+
 
 def npix2nside(npix):
     """Give the nside parameter for the given number of pixels.
@@ -1064,7 +1113,8 @@ def npix2nside(npix):
     """
     if not isnpixok(npix):
         raise ValueError("Wrong pixel number (it is not 12*nside**2)")
-    return int(np.sqrt(npix/12.))
+    return int(np.sqrt(npix / 12.))
+
 
 def order2nside(order):
     """Give the nside parameter for the given resolution order.
@@ -1097,9 +1147,10 @@ def order2nside(order):
         ...
     ValueError: 2147483648 is not a valid nside parameter (must be a power of 2, less than 2**30)
     """
-    nside = 1<<order
+    nside = 1 << order
     check_nside(nside, nest=True)
     return nside
+
 
 def isnsideok(nside, nest=False):
     """Returns :const:`True` if nside is a valid nside parameter, :const:`False` otherwise.
@@ -1132,10 +1183,12 @@ def isnsideok(nside, nest=False):
     array([ True,  True, False,  True,  True,  True], dtype=bool)
     """
     # we use standard bithacks from http://graphics.stanford.edu/~seander/bithacks.html#DetermineIfPowerOf2
-    if hasattr(nside, '__len__'):
+    if hasattr(nside, "__len__"):
         if not isinstance(nside, np.ndarray):
             nside = np.asarray(nside)
-        is_nside_ok = (nside == nside.astype(np.int)) & (nside > 0) & (nside <= max_nside)
+        is_nside_ok = (
+            (nside == nside.astype(np.int)) & (nside > 0) & (nside <= max_nside)
+        )
         if nest:
             is_nside_ok &= (nside.astype(np.int) & (nside.astype(np.int) - 1)) == 0
     else:
@@ -1144,10 +1197,15 @@ def isnsideok(nside, nest=False):
             is_nside_ok = is_nside_ok and (int(nside) & (int(nside) - 1)) == 0
     return is_nside_ok
 
+
 def check_nside(nside, nest=False):
     """Raises exception is nside is not valid"""
     if not np.all(isnsideok(nside, nest=nest)):
-        raise ValueError("%s is not a valid nside parameter (must be a power of 2, less than 2**30)" % str(nside))
+        raise ValueError(
+            "%s is not a valid nside parameter (must be a power of 2, less than 2**30)"
+            % str(nside)
+        )
+
 
 def isnpixok(npix):
     """Return :const:`True` if npix is a valid value for healpix map size, :const:`False` otherwise.
@@ -1174,10 +1232,11 @@ def isnpixok(npix):
     >>> hp.isnpixok([12, 768, 1002])
     array([ True,  True, False], dtype=bool)
     """
-    nside = np.sqrt(np.asarray(npix)/12.)
+    nside = np.sqrt(np.asarray(npix) / 12.)
     return nside == np.floor(nside)
 
-def get_interp_val(m,theta,phi,nest=False,lonlat=False):
+
+def get_interp_val(m, theta, phi, nest=False, lonlat=False):
     """Return the bi-linear interpolation value of a map using 4 nearest neighbours.
 
     Parameters
@@ -1217,20 +1276,21 @@ def get_interp_val(m,theta,phi,nest=False,lonlat=False):
     array([ 1.5       ,  1.5       ,  1.5       ,  2.20618428,  3.40206143,
             5.31546486,  7.94639458,  9.5       ,  9.5       ,  9.5       ])
     """
-    m2=m.ravel()
-    nside=npix2nside(m2.size)
+    m2 = m.ravel()
+    nside = npix2nside(m2.size)
     if lonlat:
-        theta,phi = lonlat2thetaphi(theta,phi)
+        theta, phi = lonlat2thetaphi(theta, phi)
     if nest:
-        r=pixlib._get_interpol_nest(nside,theta,phi)
+        r = pixlib._get_interpol_nest(nside, theta, phi)
     else:
-        r=pixlib._get_interpol_ring(nside,theta,phi)
-    p=np.array(r[0:4])
-    w=np.array(r[4:8])
+        r = pixlib._get_interpol_ring(nside, theta, phi)
+    p = np.array(r[0:4])
+    w = np.array(r[4:8])
     del r
-    return np.sum(m2[p]*w,0)
+    return np.sum(m2[p] * w, 0)
 
-def get_interp_weights(nside,theta,phi=None,nest=False,lonlat=False):
+
+def get_interp_weights(nside, theta, phi=None, nest=False, lonlat=False):
     """Return the 4 closest pixels on the two rings above and below the
     location and corresponding weights.
     Weights are provided for bilinear interpolation along latitude and longitude
@@ -1281,16 +1341,17 @@ def get_interp_weights(nside,theta,phi=None,nest=False,lonlat=False):
     """
     check_nside(nside, nest=nest)
     if phi is None:
-        theta,phi = pix2ang(nside,theta,nest=nest)
+        theta, phi = pix2ang(nside, theta, nest=nest)
     elif lonlat:
-        theta,phi = lonlat2thetaphi(theta,phi)
+        theta, phi = lonlat2thetaphi(theta, phi)
     if nest:
-        r=pixlib._get_interpol_nest(nside,theta,phi)
+        r = pixlib._get_interpol_nest(nside, theta, phi)
     else:
-        r=pixlib._get_interpol_ring(nside,theta,phi)
-    p=np.array(r[0:4])
-    w=np.array(r[4:8])
-    return (p,w)
+        r = pixlib._get_interpol_ring(nside, theta, phi)
+    p = np.array(r[0:4])
+    w = np.array(r[4:8])
+    return (p, w)
+
 
 def get_all_neighbours(nside, theta, phi=None, nest=False, lonlat=False):
     """Return the 8 nearest pixels.
@@ -1336,11 +1397,12 @@ def get_all_neighbours(nside, theta, phi=None, nest=False, lonlat=False):
     if phi is not None:
         theta = ang2pix(nside, theta, phi, nest=nest, lonlat=lonlat)
     if nest:
-        r=pixlib._get_neighbors_nest(nside,theta)
+        r = pixlib._get_neighbors_nest(nside, theta)
     else:
-        r=pixlib._get_neighbors_ring(nside,theta)
-    res=np.array(r[0:8])
+        r = pixlib._get_neighbors_ring(nside, theta)
+    res = np.array(r[0:8])
     return res
+
 
 def max_pixrad(nside, degrees=False):
     """Maximum angular distance between any pixel center and its corners
@@ -1371,6 +1433,7 @@ def max_pixrad(nside, degrees=False):
 
     return pixlib._max_pixrad(nside)
 
+
 def fit_dipole(m, nest=False, bad=UNSEEN, gal_cut=0):
     """Fit a dipole and a monopole to the map, excluding bad pixels.
 
@@ -1394,55 +1457,56 @@ def fit_dipole(m, nest=False, bad=UNSEEN, gal_cut=0):
     --------
     remove_dipole, fit_monopole, remove_monopole
     """
-    m=ma_to_array(m)
-    m=np.asarray(m)
+    m = ma_to_array(m)
+    m = np.asarray(m)
     npix = m.size
     nside = npix2nside(npix)
-    if nside>128:
-        bunchsize = npix//24
+    if nside > 128:
+        bunchsize = npix // 24
     else:
         bunchsize = npix
-    aa = np.zeros((4,4),dtype=np.float64)
-    v = np.zeros(4,dtype=np.float64)
-    for ibunch in range(npix//bunchsize):
-        ipix = np.arange(ibunch*bunchsize,
-                          (ibunch+1)*bunchsize)
-        ipix = ipix[(m.flat[ipix]!=bad) & (np.isfinite(m.flat[ipix]))]
-        x,y,z = pix2vec(nside, ipix, nest)
-        if gal_cut>0:
-            w = (np.abs(z)>=np.sin(gal_cut*np.pi/180))
-            ipix=ipix[w]
-            x=x[w]
-            y=y[w]
-            z=z[w]
+    aa = np.zeros((4, 4), dtype=np.float64)
+    v = np.zeros(4, dtype=np.float64)
+    for ibunch in range(npix // bunchsize):
+        ipix = np.arange(ibunch * bunchsize, (ibunch + 1) * bunchsize)
+        ipix = ipix[(m.flat[ipix] != bad) & (np.isfinite(m.flat[ipix]))]
+        x, y, z = pix2vec(nside, ipix, nest)
+        if gal_cut > 0:
+            w = np.abs(z) >= np.sin(gal_cut * np.pi / 180)
+            ipix = ipix[w]
+            x = x[w]
+            y = y[w]
+            z = z[w]
             del w
-        aa[0,0] += ipix.size
-        aa[1,0] += x.sum()
-        aa[2,0] += y.sum()
-        aa[3,0] += z.sum()
-        aa[1,1] += (x**2).sum()
-        aa[2,1] += (x*y).sum()
-        aa[3,1] += (x*z).sum()
-        aa[2,2] += (y**2).sum()
-        aa[3,2] += (y*z).sum()
-        aa[3,3] += (z**2).sum()
+        aa[0, 0] += ipix.size
+        aa[1, 0] += x.sum()
+        aa[2, 0] += y.sum()
+        aa[3, 0] += z.sum()
+        aa[1, 1] += (x ** 2).sum()
+        aa[2, 1] += (x * y).sum()
+        aa[3, 1] += (x * z).sum()
+        aa[2, 2] += (y ** 2).sum()
+        aa[3, 2] += (y * z).sum()
+        aa[3, 3] += (z ** 2).sum()
         v[0] += m.flat[ipix].sum()
-        v[1] += (m.flat[ipix]*x).sum()
-        v[2] += (m.flat[ipix]*y).sum()
-        v[3] += (m.flat[ipix]*z).sum()
-    aa[0,1] = aa[1,0]
-    aa[0,2] = aa[2,0]
-    aa[0,3] = aa[3,0]
-    aa[1,2] = aa[2,1]
-    aa[1,3] = aa[3,1]
-    aa[2,3] = aa[3,2]
-    res = np.dot(np.linalg.inv(aa),v)
+        v[1] += (m.flat[ipix] * x).sum()
+        v[2] += (m.flat[ipix] * y).sum()
+        v[3] += (m.flat[ipix] * z).sum()
+    aa[0, 1] = aa[1, 0]
+    aa[0, 2] = aa[2, 0]
+    aa[0, 3] = aa[3, 0]
+    aa[1, 2] = aa[2, 1]
+    aa[1, 3] = aa[3, 1]
+    aa[2, 3] = aa[3, 2]
+    res = np.dot(np.linalg.inv(aa), v)
     mono = res[0]
     dipole = res[1:4]
-    return mono,dipole
+    return mono, dipole
 
-def remove_dipole(m,nest=False,bad=UNSEEN,gal_cut=0,fitval=False,
-                  copy=True,verbose=True):
+
+def remove_dipole(
+    m, nest=False, bad=UNSEEN, gal_cut=0, fitval=False, copy=True, verbose=True
+):
     """Fit and subtract the dipole and the monopole from the given map m.
 
     Parameters
@@ -1474,39 +1538,42 @@ def remove_dipole(m,nest=False,bad=UNSEEN,gal_cut=0,fitval=False,
     fit_dipole, fit_monopole, remove_monopole
     """
     input_ma = is_ma(m)
-    m=ma_to_array(m)
-    m=np.array(m,copy=copy)
+    m = ma_to_array(m)
+    m = np.array(m, copy=copy)
     npix = m.size
     nside = npix2nside(npix)
-    if nside>128:
-        bunchsize = npix//24
+    if nside > 128:
+        bunchsize = npix // 24
     else:
         bunchsize = npix
-    mono,dipole = fit_dipole(m,nest=nest,bad=bad,gal_cut=gal_cut)
-    for ibunch in range(npix//bunchsize):
-        ipix = np.arange(ibunch*bunchsize,
-                          (ibunch+1)*bunchsize)
-        ipix = ipix[(m.flat[ipix]!=bad) & (np.isfinite(m.flat[ipix]))]
-        x,y,z = pix2vec(nside, ipix, nest)
-        m.flat[ipix] -= (dipole[0]*x)
-        m.flat[ipix] -= dipole[1]*y
-        m.flat[ipix] -= dipole[2]*z
+    mono, dipole = fit_dipole(m, nest=nest, bad=bad, gal_cut=gal_cut)
+    for ibunch in range(npix // bunchsize):
+        ipix = np.arange(ibunch * bunchsize, (ibunch + 1) * bunchsize)
+        ipix = ipix[(m.flat[ipix] != bad) & (np.isfinite(m.flat[ipix]))]
+        x, y, z = pix2vec(nside, ipix, nest)
+        m.flat[ipix] -= dipole[0] * x
+        m.flat[ipix] -= dipole[1] * y
+        m.flat[ipix] -= dipole[2] * z
         m.flat[ipix] -= mono
     if verbose:
         from . import rotator as R
-        lon,lat = R.vec2dir(dipole,lonlat=True)
-        amp = np.sqrt((dipole*dipole).sum())
+
+        lon, lat = R.vec2dir(dipole, lonlat=True)
+        amp = np.sqrt((dipole * dipole).sum())
         print(
-            'monopole: {0:g}  dipole: lon: {1:g}, lat: {2:g}, amp: {3:g}'
-            .format(mono, lon, lat, amp))
+            "monopole: {0:g}  dipole: lon: {1:g}, lat: {2:g}, amp: {3:g}".format(
+                mono, lon, lat, amp
+            )
+        )
     if is_ma:
         m = ma(m)
     if fitval:
-        return m,mono,dipole
+        return m, mono, dipole
     else:
         return m
 
-def fit_monopole(m,nest=False,bad=UNSEEN,gal_cut=0):
+
+def fit_monopole(m, nest=False, bad=UNSEEN, gal_cut=0):
     """Fit a monopole to the map, excluding unseen pixels.
 
     Parameters
@@ -1529,34 +1596,35 @@ def fit_monopole(m,nest=False,bad=UNSEEN,gal_cut=0):
     --------
     fit_dipole, remove_monopole, remove_monopole
     """
-    m=ma_to_array(m)
-    m=np.asarray(m)
-    npix=m.size
+    m = ma_to_array(m)
+    m = np.asarray(m)
+    npix = m.size
     nside = npix2nside(npix)
-    if nside>128:
-        bunchsize=npix//24
+    if nside > 128:
+        bunchsize = npix // 24
     else:
-        bunchsize=npix
+        bunchsize = npix
     aa = v = 0.0
-    for ibunch in range(npix//bunchsize):
-        ipix = np.arange(ibunch*bunchsize,
-                          (ibunch+1)*bunchsize)
-        ipix = ipix[(m.flat[ipix]!=bad) & (np.isfinite(m.flat[ipix]))]
-        x,y,z = pix2vec(nside, ipix, nest)
-        if gal_cut>0:
-            w = (np.abs(z)>=np.sin(gal_cut*np.pi/180))
-            ipix=ipix[w]
-            x=x[w]
-            y=y[w]
-            z=z[w]
+    for ibunch in range(npix // bunchsize):
+        ipix = np.arange(ibunch * bunchsize, (ibunch + 1) * bunchsize)
+        ipix = ipix[(m.flat[ipix] != bad) & (np.isfinite(m.flat[ipix]))]
+        x, y, z = pix2vec(nside, ipix, nest)
+        if gal_cut > 0:
+            w = np.abs(z) >= np.sin(gal_cut * np.pi / 180)
+            ipix = ipix[w]
+            x = x[w]
+            y = y[w]
+            z = z[w]
             del w
         aa += ipix.size
         v += m.flat[ipix].sum()
-    mono = v/aa
+    mono = v / aa
     return mono
 
-def remove_monopole(m,nest=False,bad=UNSEEN,gal_cut=0,fitval=False,
-                    copy=True,verbose=True):
+
+def remove_monopole(
+    m, nest=False, bad=UNSEEN, gal_cut=0, fitval=False, copy=True, verbose=True
+):
     """Fit and subtract the monopole from the given map m.
 
     Parameters
@@ -1587,29 +1655,29 @@ def remove_monopole(m,nest=False,bad=UNSEEN,gal_cut=0,fitval=False,
     fit_dipole, fit_monopole, remove_dipole
     """
     input_ma = is_ma(m)
-    m= ma_to_array(m)
-    m=np.array(m,copy=copy)
+    m = ma_to_array(m)
+    m = np.array(m, copy=copy)
     npix = m.size
     nside = npix2nside(npix)
-    if nside>128:
-        bunchsize = npix//24
+    if nside > 128:
+        bunchsize = npix // 24
     else:
         bunchsize = npix
-    mono = fit_monopole(m,nest=nest,bad=bad,gal_cut=gal_cut)
-    for ibunch in range(npix//bunchsize):
-        ipix = np.arange(ibunch*bunchsize,
-                          (ibunch+1)*bunchsize)
-        ipix = ipix[(m.flat[ipix]!=bad) & (np.isfinite(m.flat[ipix]))]
-        x,y,z = pix2vec(nside, ipix, nest)
+    mono = fit_monopole(m, nest=nest, bad=bad, gal_cut=gal_cut)
+    for ibunch in range(npix // bunchsize):
+        ipix = np.arange(ibunch * bunchsize, (ibunch + 1) * bunchsize)
+        ipix = ipix[(m.flat[ipix] != bad) & (np.isfinite(m.flat[ipix]))]
+        x, y, z = pix2vec(nside, ipix, nest)
         m.flat[ipix] -= mono
     if verbose:
-        print('monopole: {0:g}'.format(mono))
+        print("monopole: {0:g}".format(mono))
     if input_ma:
         m = ma(m)
     if fitval:
-        return m,mono
+        return m, mono
     else:
         return m
+
 
 def get_map_size(m):
     """Returns the npix of a given map (implicit or explicit pixelization).
@@ -1648,18 +1716,19 @@ def get_map_size(m):
      768
     """
     if isinstance(m, dict):
-        if 'nside' in m:
-            return nside2npix(m['nside'])
-        elif hasattr(ma, 'nside'):
+        if "nside" in m:
+            return nside2npix(m["nside"])
+        elif hasattr(ma, "nside"):
             return nside2npix(m.nside)
         else:
-            nside = get_min_valid_nside(max(m.keys())+1)
+            nside = get_min_valid_nside(max(m.keys()) + 1)
             return nside2npix(nside)
     else:
         if isnpixok(len(m)):
             return len(m)
         else:
             raise ValueError("Wrong pixel number (it is not 12*nside**2)")
+
 
 def get_min_valid_nside(npix):
     """Returns the minimum acceptable nside so that npix <= nside2npix(nside).
@@ -1683,7 +1752,7 @@ def get_min_valid_nside(npix):
     8
     """
     order = 0.5 * np.log2(npix / 12.)
-    return 1<<int(np.ceil(order))
+    return 1 << int(np.ceil(order))
 
 
 def get_nside(m):
@@ -1711,9 +1780,17 @@ def get_nside(m):
     else:
         return npix2nside(len(m[0]))
 
+
 @accept_ma
-def ud_grade(map_in,nside_out,pess=False,order_in='RING',order_out=None,
-             power=None, dtype=None):
+def ud_grade(
+    map_in,
+    nside_out,
+    pess=False,
+    order_in="RING",
+    order_out=None,
+    power=None,
+    dtype=None,
+):
     """Upgrade or degrade resolution of a map (or list of maps).
 
     in degrading the resolution, ud_grade sets the value of the superpixel
@@ -1751,29 +1828,31 @@ def ud_grade(map_in,nside_out,pess=False,order_in='RING',order_out=None,
     array([  5.5 ,   7.25,   9.  ,  10.75,  21.75,  21.75,  23.75,  25.75,
             36.5 ,  38.25,  40.  ,  41.75])
     """
-    check_nside(nside_out, nest=order_in!='RING')
+    check_nside(nside_out, nest=order_in != "RING")
     typ = maptype(map_in)
-    if typ<0:
-        raise TypeError('Invalid map')
+    if typ < 0:
+        raise TypeError("Invalid map")
     if typ == 0:
         m_in = [map_in]
     else:
         m_in = map_in
     mapout = []
-    if order_out is None: order_out = order_in
+    if order_out is None:
+        order_out = order_in
     for m in m_in:
-        if str(order_in).upper()[0:4] == 'RING':
-            m = reorder(m,r2n=True)
-        mout = _ud_grade_core(m,nside_out,pess=pess, power=power, dtype=dtype)
-        if str(order_out).upper()[0:4] == 'RING':
-            mout = reorder(mout,n2r=True)
+        if str(order_in).upper()[0:4] == "RING":
+            m = reorder(m, r2n=True)
+        mout = _ud_grade_core(m, nside_out, pess=pess, power=power, dtype=dtype)
+        if str(order_out).upper()[0:4] == "RING":
+            mout = reorder(mout, n2r=True)
         mapout.append(mout)
     if typ == 0:
         return mapout[0]
     else:
         return np.array(mapout)
 
-def _ud_grade_core(m,nside_out,pess=False,power=None, dtype=None):
+
+def _ud_grade_core(m, nside_out, pess=False, power=None, dtype=None):
     """Internal routine used by ud_grade. It assumes that the map is NESTED
     and single (not a list of maps)
     """
@@ -1788,19 +1867,19 @@ def _ud_grade_core(m,nside_out,pess=False,power=None, dtype=None):
 
     if power:
         power = float(power)
-        ratio = (float(nside_out)/float(nside_in))**power
+        ratio = (float(nside_out) / float(nside_in)) ** power
     else:
         ratio = 1
 
     if nside_out > nside_in:
-        rat2 = npix_out//npix_in
-        fact = np.ones(rat2, dtype=type_out)*ratio
-        map_out = np.outer(m,fact).reshape(npix_out)
+        rat2 = npix_out // npix_in
+        fact = np.ones(rat2, dtype=type_out) * ratio
+        map_out = np.outer(m, fact).reshape(npix_out)
     elif nside_out < nside_in:
-        rat2 = npix_in//npix_out
-        mr = m.reshape(npix_out,rat2)
+        rat2 = npix_in // npix_out
+        mr = m.reshape(npix_out, rat2)
         goods = ~(mask_bad(mr) | (~np.isfinite(mr)))
-        map_out = np.sum(mr*goods, axis=1).astype(type_out)
+        map_out = np.sum(mr * goods, axis=1).astype(type_out)
         nhit = goods.sum(axis=1)
         if pess:
             badout = np.where(nhit != rat2)
@@ -1808,7 +1887,7 @@ def _ud_grade_core(m,nside_out,pess=False,power=None, dtype=None):
             badout = np.where(nhit == 0)
         if power:
             nhit = nhit / ratio
-        map_out[nhit!=0] = map_out[nhit!=0] / nhit[nhit!=0]
+        map_out[nhit != 0] = map_out[nhit != 0] / nhit[nhit != 0]
         try:
             map_out[badout] = UNSEEN
         except OverflowError:

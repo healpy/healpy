@@ -1,6 +1,7 @@
 """Various generic useful functions 
 """
 
+
 def is_seq(o):
     """Check if the object is a sequence.
 
@@ -14,7 +15,8 @@ def is_seq(o):
     is_seq : bool, scalar
       True if *o* is a sequence, False otherwise
     """
-    return hasattr(o, '__len__')
+    return hasattr(o, "__len__")
+
 
 def is_seq_of_seq(o):
     """Check if the object is a sequence of sequences. No check is done on
@@ -36,6 +38,7 @@ def is_seq_of_seq(o):
         if not is_seq(s):
             return False
     return True
+
 
 def is_like2d(o):
     """Check if *o* is conformable to a 2d array.

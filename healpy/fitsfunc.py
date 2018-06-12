@@ -32,14 +32,16 @@ from .pixelfunc import UNSEEN
 from . import cookbook as cb
 
 standard_column_names = {
-    1 : "TEMPERATURE",
-    2 : ["Q_POLARISATION", "U_POLARISATION"],
-    3 : ["TEMPERATURE", "Q_POLARISATION", "U_POLARISATION"],
-    6 : ["II", "IQ", "IU", "QQ", "QU", "UU"]
+    1: "TEMPERATURE",
+    2: ["Q_POLARISATION", "U_POLARISATION"],
+    3: ["TEMPERATURE", "Q_POLARISATION", "U_POLARISATION"],
+    6: ["II", "IQ", "IU", "QQ", "QU", "UU"],
 }
+
 
 class HealpixFitsWarning(Warning):
     pass
+
 
 def read_cl(filename, dtype=np.float64, h=False):
     """Reads Cl from a healpix file, as IDL fits2cl.
@@ -63,6 +65,7 @@ def read_cl(filename, dtype=np.float64, h=False):
     else:
         return cl
 
+
 def write_cl(filename, cl, dtype=np.float64, overwrite=False):
     """Writes Cl into a healpix file, as IDL cl2fits.
 
@@ -78,25 +81,37 @@ def write_cl(filename, cl, dtype=np.float64, overwrite=False):
     """
     # check the dtype and convert it
     fitsformat = getformat(dtype)
-    column_names = ['TEMPERATURE','GRADIENT','CURL','G-T','C-T','C-G']
+    column_names = ["TEMPERATURE", "GRADIENT", "CURL", "G-T", "C-T", "C-G"]
     if len(np.shape(cl)) == 2:
-        cols = [pf.Column(name=column_name,
-                               format='%s'%fitsformat,
-                               array=column_cl) for column_name, column_cl in zip(column_names[:len(cl)], cl)]
+        cols = [
+            pf.Column(name=column_name, format="%s" % fitsformat, array=column_cl)
+            for column_name, column_cl in zip(column_names[: len(cl)], cl)
+        ]
     elif len(np.shape(cl)) == 1:
         # we write only TT
-        cols = [pf.Column(name='TEMPERATURE',
-                               format='%s'%fitsformat,
-                               array=cl)]
+        cols = [pf.Column(name="TEMPERATURE", format="%s" % fitsformat, array=cl)]
     else:
-        raise RuntimeError('write_cl: Expected one or more vectors of equal length')
+        raise RuntimeError("write_cl: Expected one or more vectors of equal length")
 
     tbhdu = pf.BinTableHDU.from_columns(cols)
     # add needed keywords
-    tbhdu.header['CREATOR'] = 'healpy'
+    tbhdu.header["CREATOR"] = "healpy"
     tbhdu.writeto(filename, overwrite=overwrite)
 
-def write_map(filename,m,nest=False,dtype=np.float32,fits_IDL=True,coord=None,partial=False,column_names=None,column_units=None,extra_header=(),overwrite=False):
+
+def write_map(
+    filename,
+    m,
+    nest=False,
+    dtype=np.float32,
+    fits_IDL=True,
+    coord=None,
+    partial=False,
+    column_names=None,
+    column_units=None,
+    extra_header=(),
+    overwrite=False,
+):
     """Writes a healpix map into a healpix file.
 
     Parameters
@@ -141,11 +156,11 @@ def write_map(filename,m,nest=False,dtype=np.float32,fits_IDL=True,coord=None,pa
       If True, existing file is silently overwritten. Otherwise trying to write
       an existing file raises an OSError (IOError for Python 2).
     """
-    if not hasattr(m, '__len__'):
-        raise TypeError('The map must be a sequence')
+    if not hasattr(m, "__len__"):
+        raise TypeError("The map must be a sequence")
 
     m = pixelfunc.ma_to_array(m)
-    if pixelfunc.maptype(m) == 0: # a single map is converted to a list
+    if pixelfunc.maptype(m) == 0:  # a single map is converted to a list
         m = [m]
 
     # check the dtype and convert it
@@ -154,11 +169,13 @@ def write_map(filename,m,nest=False,dtype=np.float32,fits_IDL=True,coord=None,pa
         for curr_dtype in dtype:
             fitsformat.append(getformat(curr_dtype))
     except TypeError:
-        #dtype is not iterable
+        # dtype is not iterable
         fitsformat = [getformat(dtype)] * len(m)
 
     if column_names is None:
-        column_names = standard_column_names.get(len(m), ["COLUMN_%d" % n for n in range(1, len(m)+1)])
+        column_names = standard_column_names.get(
+            len(m), ["COLUMN_%d" % n for n in range(1, len(m) + 1)]
+        )
     else:
         assert len(column_names) == len(m), "Length column_names != number of maps"
 
@@ -170,60 +187,70 @@ def write_map(filename,m,nest=False,dtype=np.float32,fits_IDL=True,coord=None,pa
     nside = pixelfunc.npix2nside(len(m[0]))
 
     if nside < 0:
-        raise ValueError('Invalid healpix map : wrong number of pixel')
+        raise ValueError("Invalid healpix map : wrong number of pixel")
 
-    cols=[]
+    cols = []
     if partial:
         fits_IDL = False
         mask = pixelfunc.mask_good(m[0])
         pix = np.where(mask)[0]
         if len(pix) == 0:
-            raise ValueError('Invalid healpix map : empty partial map')
+            raise ValueError("Invalid healpix map : empty partial map")
         m = [mm[mask] for mm in m]
         ff = getformat(np.min_scalar_type(-pix.max()))
         if ff is None:
-            ff = 'I'
-        cols.append(pf.Column(name='PIXEL',
-                              format=ff,
-                              array=pix,
-                              unit=None))
+            ff = "I"
+        cols.append(pf.Column(name="PIXEL", format=ff, array=pix, unit=None))
 
-    for cn, cu, mm, curr_fitsformat in zip(column_names, column_units, m,
-                                           fitsformat):
+    for cn, cu, mm, curr_fitsformat in zip(column_names, column_units, m, fitsformat):
         if len(mm) > 1024 and fits_IDL:
             # I need an ndarray, for reshape:
             mm2 = np.asarray(mm)
-            cols.append(pf.Column(name=cn,
-                                   format='1024%s' % curr_fitsformat,
-                                   array=mm2.reshape(mm2.size//1024,1024),
-                                   unit=cu))
+            cols.append(
+                pf.Column(
+                    name=cn,
+                    format="1024%s" % curr_fitsformat,
+                    array=mm2.reshape(mm2.size // 1024, 1024),
+                    unit=cu,
+                )
+            )
         else:
-            cols.append(pf.Column(name=cn,
-                                   format='%s' % curr_fitsformat,
-                                   array=mm,
-                                   unit=cu))
+            cols.append(
+                pf.Column(name=cn, format="%s" % curr_fitsformat, array=mm, unit=cu)
+            )
 
     tbhdu = pf.BinTableHDU.from_columns(cols)
     # add needed keywords
-    tbhdu.header['PIXTYPE'] = ('HEALPIX', 'HEALPIX pixelisation')
-    if nest: ordering = 'NESTED'
-    else:    ordering = 'RING'
-    tbhdu.header['ORDERING'] = (ordering,
-                                'Pixel ordering scheme, either RING or NESTED')
+    tbhdu.header["PIXTYPE"] = ("HEALPIX", "HEALPIX pixelisation")
+    if nest:
+        ordering = "NESTED"
+    else:
+        ordering = "RING"
+    tbhdu.header["ORDERING"] = (
+        ordering,
+        "Pixel ordering scheme, either RING or NESTED",
+    )
     if coord:
-        tbhdu.header['COORDSYS'] = (coord,
-                                    'Ecliptic, Galactic or Celestial (equatorial)')
-    tbhdu.header['EXTNAME'] = ('xtension',
-                               'name of this binary table extension')
-    tbhdu.header['NSIDE'] = (nside,'Resolution parameter of HEALPIX')
+        tbhdu.header["COORDSYS"] = (
+            coord,
+            "Ecliptic, Galactic or Celestial (equatorial)",
+        )
+    tbhdu.header["EXTNAME"] = ("xtension", "name of this binary table extension")
+    tbhdu.header["NSIDE"] = (nside, "Resolution parameter of HEALPIX")
     if not partial:
-        tbhdu.header['FIRSTPIX'] = (0, 'First pixel # (0 based)')
-        tbhdu.header['LASTPIX'] = (pixelfunc.nside2npix(nside)-1,
-                                   'Last pixel # (0 based)')
-    tbhdu.header['INDXSCHM'] = ('EXPLICIT' if partial else 'IMPLICIT',
-                                'Indexing: IMPLICIT or EXPLICIT')
-    tbhdu.header['OBJECT'] = ('PARTIAL' if partial else 'FULLSKY',
-                              'Sky coverage, either FULLSKY or PARTIAL')
+        tbhdu.header["FIRSTPIX"] = (0, "First pixel # (0 based)")
+        tbhdu.header["LASTPIX"] = (
+            pixelfunc.nside2npix(nside) - 1,
+            "Last pixel # (0 based)",
+        )
+    tbhdu.header["INDXSCHM"] = (
+        "EXPLICIT" if partial else "IMPLICIT",
+        "Indexing: IMPLICIT or EXPLICIT",
+    )
+    tbhdu.header["OBJECT"] = (
+        "PARTIAL" if partial else "FULLSKY",
+        "Sky coverage, either FULLSKY or PARTIAL",
+    )
 
     # FIXME: In modern versions of Pyfits, header.update() understands a
     # header as an argument, and headers can be concatenated with the `+'
@@ -234,8 +261,17 @@ def write_map(filename,m,nest=False,dtype=np.float32,fits_IDL=True,coord=None,pa
     tbhdu.writeto(filename, overwrite=overwrite)
 
 
-def read_map(filename,field=0,dtype=np.float64,nest=False,partial=False,hdu=1,h=False,
-             verbose=True,memmap=False):
+def read_map(
+    filename,
+    field=0,
+    dtype=np.float64,
+    nest=False,
+    partial=False,
+    hdu=1,
+    h=False,
+    verbose=True,
+    memmap=False,
+):
     """Read a healpix map from a fits file.  Partial-sky files,
     if properly identified, are expanded to full size and filled with UNSEEN.
 
@@ -285,98 +321,104 @@ def read_map(filename,field=0,dtype=np.float64,nest=False,partial=False,hdu=1,h=
 
     fits_hdu = _get_hdu(filename, hdu=hdu, memmap=memmap)
 
-    nside = fits_hdu.header.get('NSIDE')
+    nside = fits_hdu.header.get("NSIDE")
     if nside is None:
-        warnings.warn("No NSIDE in the header file : will use length of array", HealpixFitsWarning)
+        warnings.warn(
+            "No NSIDE in the header file : will use length of array", HealpixFitsWarning
+        )
     else:
         nside = int(nside)
-    if verbose: print('NSIDE = {0:d}'.format(nside))
+    if verbose:
+        print("NSIDE = {0:d}".format(nside))
 
     if not pixelfunc.isnsideok(nside):
-        raise ValueError('Wrong nside parameter.')
-    ordering = fits_hdu.header.get('ORDERING','UNDEF').strip()
-    if ordering == 'UNDEF':
-        ordering = (nest and 'NESTED' or 'RING')
-        warnings.warn("No ORDERING keyword in header file : "
-                      "assume %s"%ordering)
-    if verbose: print('ORDERING = {0:s} in fits file'.format(ordering))
+        raise ValueError("Wrong nside parameter.")
+    ordering = fits_hdu.header.get("ORDERING", "UNDEF").strip()
+    if ordering == "UNDEF":
+        ordering = nest and "NESTED" or "RING"
+        warnings.warn("No ORDERING keyword in header file : " "assume %s" % ordering)
+    if verbose:
+        print("ORDERING = {0:s} in fits file".format(ordering))
 
-    sz=pixelfunc.nside2npix(nside)
+    sz = pixelfunc.nside2npix(nside)
     ret = []
 
     # partial sky: check OBJECT, then INDXSCHM
-    obj = fits_hdu.header.get('OBJECT', 'UNDEF').strip()
-    if obj != 'UNDEF':
-        if obj == 'PARTIAL':
+    obj = fits_hdu.header.get("OBJECT", "UNDEF").strip()
+    if obj != "UNDEF":
+        if obj == "PARTIAL":
             partial = True
-        elif obj == 'FULLSKY':
+        elif obj == "FULLSKY":
             partial = False
 
-    schm = fits_hdu.header.get('INDXSCHM', 'UNDEF').strip()
-    if schm != 'UNDEF':
-        if schm == 'EXPLICIT':
-            if obj == 'FULLSKY':
-                raise ValueError('Incompatible INDXSCHM keyword')
+    schm = fits_hdu.header.get("INDXSCHM", "UNDEF").strip()
+    if schm != "UNDEF":
+        if schm == "EXPLICIT":
+            if obj == "FULLSKY":
+                raise ValueError("Incompatible INDXSCHM keyword")
             partial = True
-        elif schm == 'IMPLICIT':
-            if obj == 'PARTIAL':
-                raise ValueError('Incompatible INDXSCHM keyword')
+        elif schm == "IMPLICIT":
+            if obj == "PARTIAL":
+                raise ValueError("Incompatible INDXSCHM keyword")
             partial = False
 
-    if schm == 'UNDEF':
-        schm = (partial and 'EXPLICIT' or 'IMPLICIT')
-        warnings.warn("No INDXSCHM keyword in header file : "
-                       "assume {}".format(schm))
+    if schm == "UNDEF":
+        schm = partial and "EXPLICIT" or "IMPLICIT"
+        warnings.warn("No INDXSCHM keyword in header file : " "assume {}".format(schm))
     if verbose:
-        print('INDXSCHM = {0:s}'.format(schm))
+        print("INDXSCHM = {0:s}".format(schm))
 
     if field is None:
-        field = range(len(fits_hdu.data.columns) - 1*partial)
-    if not (hasattr(field, '__len__') or isinstance(field, str)):
+        field = range(len(fits_hdu.data.columns) - 1 * partial)
+    if not (hasattr(field, "__len__") or isinstance(field, str)):
         field = (field,)
 
     if partial:
         # increment field counters
-        field = tuple(f if isinstance(f, str) else f+1 for f in field)
+        field = tuple(f if isinstance(f, str) else f + 1 for f in field)
         try:
-            pix = fits_hdu.data.field(0).astype(int,copy=False).ravel()
+            pix = fits_hdu.data.field(0).astype(int, copy=False).ravel()
         except pf.VerifyError as e:
             print(e)
             print("Trying to fix a badly formatted header")
             fits_hdu.verify("fix")
-            pix = fits_hdu.data.field(0).astype(int,copy=False).ravel()
+            pix = fits_hdu.data.field(0).astype(int, copy=False).ravel()
 
     try:
-        assert len(dtype) == len(field), "The number of dtypes are not equal to the number of fields"
+        assert len(dtype) == len(
+            field
+        ), "The number of dtypes are not equal to the number of fields"
     except TypeError:
         dtype = [dtype] * len(field)
 
     for ff, curr_dtype in zip(field, dtype):
         try:
-            m=fits_hdu.data.field(ff).astype(curr_dtype,copy=False).ravel()
+            m = fits_hdu.data.field(ff).astype(curr_dtype, copy=False).ravel()
         except pf.VerifyError as e:
             print(e)
             print("Trying to fix a badly formatted header")
-            m=fits_hdu.verify("fix")
-            m=fits_hdu.data.field(ff).astype(curr_dtype,copy=False).ravel()
+            m = fits_hdu.verify("fix")
+            m = fits_hdu.data.field(ff).astype(curr_dtype, copy=False).ravel()
 
         if partial:
             mnew = UNSEEN * np.ones(sz, dtype=curr_dtype)
             mnew[pix] = m
             m = mnew
 
-        if (not pixelfunc.isnpixok(m.size) or (sz>0 and sz != m.size)) and verbose:
-            print('nside={0:d}, sz={1:d}, m.size={2:d}'.format(nside,sz,m.size))
-            raise ValueError('Wrong nside parameter.')
-        if not nest is None: # no conversion with None
-            if nest and ordering == 'RING':
-                idx = pixelfunc.nest2ring(nside,np.arange(m.size,dtype=np.int32))
+        if (not pixelfunc.isnpixok(m.size) or (sz > 0 and sz != m.size)) and verbose:
+            print("nside={0:d}, sz={1:d}, m.size={2:d}".format(nside, sz, m.size))
+            raise ValueError("Wrong nside parameter.")
+        if not nest is None:  # no conversion with None
+            if nest and ordering == "RING":
+                idx = pixelfunc.nest2ring(nside, np.arange(m.size, dtype=np.int32))
                 m = m[idx]
-                if verbose: print('Ordering converted to NEST')
-            elif (not nest) and ordering == 'NESTED':
-                idx = pixelfunc.ring2nest(nside,np.arange(m.size,dtype=np.int32))
+                if verbose:
+                    print("Ordering converted to NEST")
+            elif (not nest) and ordering == "NESTED":
+                idx = pixelfunc.ring2nest(nside, np.arange(m.size, dtype=np.int32))
                 m = m[idx]
-                if verbose: print('Ordering converted to RING')
+                if verbose:
+                    print("Ordering converted to RING")
         try:
             m[pixelfunc.mask_bad(m)] = UNSEEN
         except OverflowError:
@@ -402,7 +444,9 @@ def read_map(filename,field=0,dtype=np.float64,nest=False,partial=False,hdu=1,h=
             return ret
 
 
-def write_alm(filename,alms,out_dtype=None,lmax=-1,mmax=-1,mmax_in=-1,overwrite=False):
+def write_alm(
+    filename, alms, out_dtype=None, lmax=-1, mmax=-1, mmax_in=-1, overwrite=False
+):
     """Write alms to a fits file.
 
     In the fits file the alms are written
@@ -430,8 +474,8 @@ def write_alm(filename,alms,out_dtype=None,lmax=-1,mmax=-1,mmax_in=-1,overwrite=
     if not cb.is_seq_of_seq(alms):
         alms = [alms]
 
-    l2max = Alm.getlmax(len(alms[0]),mmax=mmax_in)
-    if (lmax != -1 and lmax > l2max):
+    l2max = Alm.getlmax(len(alms[0]), mmax=mmax_in)
+    if lmax != -1 and lmax > l2max:
         raise ValueError("Too big lmax in parameter")
     elif lmax == -1:
         lmax = l2max
@@ -447,34 +491,49 @@ def write_alm(filename,alms,out_dtype=None,lmax=-1,mmax=-1,mmax_in=-1,overwrite=
     if out_dtype is None:
         out_dtype = alms[0].real.dtype
 
-    l,m = Alm.getlm(lmax)
-    idx = np.where((l <= lmax)*(m <= mmax))
+    l, m = Alm.getlm(lmax)
+    idx = np.where((l <= lmax) * (m <= mmax))
     l = l[idx]
     m = m[idx]
 
     idx_in_original = Alm.getidx(l2max, l=l, m=m)
 
-    index = l**2 + l + m + 1
+    index = l ** 2 + l + m + 1
 
     hdulist = pf.HDUList()
     for alm in alms:
-        out_data = np.empty(len(index),
-                   dtype=[('index','i'),
-                          ('real',out_dtype),
-                          ('imag',out_dtype)])
-        out_data['index'] = index
-        out_data['real'] = alm.real[idx_in_original]
-        out_data['imag'] = alm.imag[idx_in_original]
+        out_data = np.empty(
+            len(index), dtype=[("index", "i"), ("real", out_dtype), ("imag", out_dtype)]
+        )
+        out_data["index"] = index
+        out_data["real"] = alm.real[idx_in_original]
+        out_data["imag"] = alm.imag[idx_in_original]
 
-        cindex = pf.Column(name="index", format=getformat(np.int32), unit="l*l+l+m+1", array=out_data['index'])
-        creal = pf.Column(name="real", format=getformat(out_dtype), unit="unknown", array=out_data['real'])
-        cimag = pf.Column(name="imag", format=getformat(out_dtype), unit="unknown", array=out_data['imag'])
+        cindex = pf.Column(
+            name="index",
+            format=getformat(np.int32),
+            unit="l*l+l+m+1",
+            array=out_data["index"],
+        )
+        creal = pf.Column(
+            name="real",
+            format=getformat(out_dtype),
+            unit="unknown",
+            array=out_data["real"],
+        )
+        cimag = pf.Column(
+            name="imag",
+            format=getformat(out_dtype),
+            unit="unknown",
+            array=out_data["imag"],
+        )
 
-        tbhdu = pf.BinTableHDU.from_columns([cindex,creal,cimag])
+        tbhdu = pf.BinTableHDU.from_columns([cindex, creal, cimag])
         hdulist.append(tbhdu)
     hdulist.writeto(filename, overwrite=overwrite)
 
-def read_alm(filename,hdu=1,return_mmax=False):
+
+def read_alm(filename, hdu=1, return_mmax=False):
     """Read alm from a fits file.
 
     In the fits file, the alm are written
@@ -500,11 +559,11 @@ def read_alm(filename,hdu=1,return_mmax=False):
     lmaxtot = None
     mmaxtot = None
     for unit in np.atleast_1d(hdu):
-        idx, almr, almi = mrdfits(filename,hdu=unit)
-        l = np.floor(np.sqrt(idx-1)).astype(np.long)
-        m = idx - l**2 - l - 1
-        if (m<0).any():
-            raise ValueError('Negative m value encountered !')
+        idx, almr, almi = mrdfits(filename, hdu=unit)
+        l = np.floor(np.sqrt(idx - 1)).astype(np.long)
+        m = idx - l ** 2 - l - 1
+        if (m < 0).any():
+            raise ValueError("Negative m value encountered !")
         lmax = l.max()
         mmax = m.max()
         if lmaxtot is None:
@@ -513,10 +572,11 @@ def read_alm(filename,hdu=1,return_mmax=False):
         else:
             if lmaxtot != lmax or mmaxtot != mmax:
                 raise RuntimeError(
-                    'read_alm: harmonic expansion order in {} HDUs {} does not '
-                    'match'.format(filename, unit, hdu))
-        alm = almr*(0+0j)
-        i = Alm.getidx(lmax,l,m)
+                    "read_alm: harmonic expansion order in {} HDUs {} does not "
+                    "match".format(filename, unit, hdu)
+                )
+        alm = almr * (0 + 0j)
+        i = Alm.getidx(lmax, l, m)
         alm.real[i] = almr
         alm.imag[i] = almi
         alms.append(alm)
@@ -529,7 +589,9 @@ def read_alm(filename,hdu=1,return_mmax=False):
     else:
         return alm
 
+
 ## Generic functions to read and write column of data in fits file
+
 
 def _get_hdu(input_data, hdu=None, memmap=None):
     """
@@ -552,13 +614,18 @@ def _get_hdu(input_data, hdu=None, memmap=None):
 
     if isinstance(input_data, pf.HDUList):
         if isinstance(hdu, int) and hdu >= len(input_data):
-            raise ValueError('Available hdu in [0-%d]' % len(input_data))
+            raise ValueError("Available hdu in [0-%d]" % len(input_data))
         else:
             fits_hdu = input_data[hdu]
-    elif isinstance(input_data, (pf.PrimaryHDU, pf.ImageHDU, pf.BinTableHDU, pf.TableHDU, pf.GroupsHDU)):
+    elif isinstance(
+        input_data,
+        (pf.PrimaryHDU, pf.ImageHDU, pf.BinTableHDU, pf.TableHDU, pf.GroupsHDU),
+    ):
         fits_hdu = input_data
     else:
-        raise TypeError("First argument should be a input_data, HDUList instance, or HDU instance")
+        raise TypeError(
+            "First argument should be a input_data, HDUList instance, or HDU instance"
+        )
 
     return fits_hdu
 
@@ -580,13 +647,13 @@ def mrdfits(filename, hdu=1):
       A list of column data in the given header
     """
     fits_hdu = _get_hdu(filename, hdu=hdu)
-    val=[]
+    val = []
     for i in range(len(fits_hdu.columns)):
         val.append(fits_hdu.data.field(i))
     return val
 
 
-def mwrfits(filename,data,hdu=1,colnames=None,keys=None):
+def mwrfits(filename, data, hdu=1, colnames=None, keys=None):
     """Write columns to a fits file in a table extension.
 
     Parameters
@@ -607,18 +674,21 @@ def mwrfits(filename,data,hdu=1,colnames=None,keys=None):
         if len(colnames) != len(data):
             raise ValueError("colnames and data must the same length")
     else:
-        colnames = ['']*len(data)
-    cols=[]
+        colnames = [""] * len(data)
+    cols = []
     for line in six.moves.xrange(len(data)):
-        cols.append(pf.Column(name=colnames[line],
-                               format=getformat(data[line]),
-                               array=data[line]))
+        cols.append(
+            pf.Column(
+                name=colnames[line], format=getformat(data[line]), array=data[line]
+            )
+        )
     tbhdu = pf.BinTableHDU.from_columns(cols)
     if type(keys) is dict:
-        for k,v in keys.items():
+        for k, v in keys.items():
             tbhdu.header[k] = v
     # write the file
     tbhdu.writeto(filename)
+
 
 def getformat(t):
     """Get the FITS convention format string of data type t.
@@ -634,16 +704,16 @@ def getformat(t):
       The FITS string code describing the data type, or None if unknown type.
     """
     conv = {
-        np.dtype(np.bool): 'L',
-        np.dtype(np.uint8): 'B',
-        np.dtype(np.int16): 'I',
-        np.dtype(np.int32): 'J',
-        np.dtype(np.int64): 'K',
-        np.dtype(np.float32): 'E',
-        np.dtype(np.float64): 'D',
-        np.dtype(np.complex64): 'C',
-        np.dtype(np.complex128): 'M'
-        }
+        np.dtype(np.bool): "L",
+        np.dtype(np.uint8): "B",
+        np.dtype(np.int16): "I",
+        np.dtype(np.int32): "J",
+        np.dtype(np.int64): "K",
+        np.dtype(np.float32): "E",
+        np.dtype(np.float64): "D",
+        np.dtype(np.complex64): "C",
+        np.dtype(np.complex128): "M",
+    }
     try:
         if t in conv:
             return conv[t]
@@ -666,17 +736,17 @@ def getformat(t):
         pass
     try:
         if t is str:
-            return 'A'
+            return "A"
     except:
         pass
     try:
         if type(t) is str:
-            return 'A%d'%(len(t))
+            return "A%d" % (len(t))
     except:
         pass
     try:
         if type(t[0]) is str:
-            l=max(len(s) for s in t)
-            return 'A%d'%(l)
+            l = max(len(s) for s in t)
+            return "A%d" % (l)
     except:
         pass
