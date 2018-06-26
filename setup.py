@@ -509,6 +509,7 @@ setup(
             "data/*.fits",
             "data/totcls.dat",
             "test/data/*.fits",
+            "test/data/*.fits.gz",
             "test/data/*.sh",
         ]
     },
