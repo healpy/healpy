@@ -513,7 +513,7 @@ setup(
         ]
     },
     install_requires=["matplotlib", "numpy", "six", "astropy"],
-    setup_requires=["pytest-runner"],
+    setup_requires=["pytest-runner", "six"],
     tests_require=["pytest", "pytest-cython"],
     test_suite="healpy",
     license="GPLv2",
