@@ -33,6 +33,25 @@ def test_rotate_map_polarization():
         ) > .9, (i_pol + " comparison failed in rotate_map")
 
 
+def test_rotate_map_polarization_with_spectrum():
+    """Rotation of reference frame should not change the angular power spectrum.
+    In this test we create a map from a spectrum with a pure EE signal and check
+    that the spectrum of this map and the spectrum of the same map rotated
+    from Galactic to Ecliptic agrees.
+    This test checks if the QU rotation is correct"""
+    nside = 32
+    cl = np.zeros((6, 96), dtype=np.double)
+    # Set ell=1 for EE to 1
+    cl[1][2] = 1
+    gal2ecl = Rotator(coord=["G", "E"])
+    m_original = hp.synfast(cl, nside=nside, new=True)
+    cl_from_m_original = hp.anafast(m_original)
+    m_rotated = gal2ecl.rotate_map(m_original)
+    cl_from_m_rotated = hp.anafast(m_rotated)
+
+    assert np.abs(cl_from_m_rotated - cl_from_m_original).sum() < 1e-2
+
+
 def test_rotate_dipole_and_back():
     """Rotate a smooth signal (dipole) from Galactic to Ecliptic and back"""
     nside = 64
