@@ -29,8 +29,8 @@ def test_rotate_map_polarization():
     for i_pol, pol in enumerate("QU"):
         assert (
             (np.abs(expected[i_pol] - QU_ecl[i_pol]) < .05).sum()
-            / (~expected[i_pol].mask).sum()
-        ) > .9, (i_pol + " comparison failed in rotate_map")
+            / np.logical_not(expected[i_pol].mask).sum()
+        ) > .9, (pol + " comparison failed in rotate_map")
 
 
 def test_rotate_map_polarization_with_spectrum():
