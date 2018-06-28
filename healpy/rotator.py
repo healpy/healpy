@@ -417,7 +417,7 @@ class Rotator(object):
             # Create a complex map from QU  and apply the rotation in psi due to the rotation
             # Slice from the end of the array so that it works both for QU and IQU
             L_map = (m_rotated[-2] + m_rotated[-1] * 1j) * np.exp(
-                1j * 2 * self.angle_ref(theta_pix_center, phi_pix_center)
+                1j * 2 * self.angle_ref(theta_pix_center_rot, phi_pix_center_rot)
             )
 
             # Overwrite the Q and U maps with the correct values
