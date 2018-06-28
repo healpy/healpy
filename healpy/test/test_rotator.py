@@ -13,16 +13,24 @@ def test_rotate_map_polarization():
     a map of pure Q polarization, the expected value was computed with HEALPix IDL:
     https://gist.github.com/zonca/401069e1c520e02eaff8cd86149d5900
     """
-    nside = 16
+    nside = 32
     npix = hp.nside2npix(nside)
-    QU_gal = [np.ones(npix, dtype=np.double), np.zeros(npix, dtype=np.double)]
+    QU_gal = np.zeros((2, npix), dtype=np.double)
+    QU_gal[0, : npix // 2] = 1
     gal2ecl = Rotator(coord=["G", "E"])
     QU_ecl = gal2ecl.rotate_map(QU_gal)
 
-    expected = hp.read_map(os.path.join(path, "data", "justq_gal2ecl.fits.gz"), [0, 1])
+    expected = hp.ma(
+        hp.read_map(os.path.join(path, "data", "justq_gal2ecl.fits.gz"), [0, 1])
+    )
 
-    np.testing.assert_allclose(QU_ecl[0], expected[0], rtol=1e-4)
-    np.testing.assert_allclose(QU_ecl[1], expected[1], rtol=1e-4)
+    expected.mask = expected == 0
+
+    for i_pol, pol in enumerate("QU"):
+        assert (
+            (np.abs(expected[i_pol] - QU_ecl[i_pol]) < .05).sum()
+            / (~expected[i_pol].mask).sum()
+        ) > .9, (i_pol + " comparison failed in rotate_map")
 
 
 def test_rotate_dipole_and_back():
