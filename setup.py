@@ -423,11 +423,16 @@ class custom_build_ext(build_ext):
 
 exec(open("healpy/version.py").read())
 
+def readme():
+    with open('README.rst') as f:
+        return f.read()
+
 
 setup(
     name="healpy",
     version=__version__,
     description="Healpix tools package for Python",
+    long_description=readme(),
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Environment :: Console",
