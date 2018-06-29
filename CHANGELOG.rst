@@ -1,3 +1,7 @@
+Release 1.12.2, 29 Giu 2018
+
+* No changes, just fixed upload issue to PyPI
+
 Release 1.12.1, 29 Giu 2018
 
 * Fixed bug in polarization rotation in `hp.Rotator.rotate_map` <https://github.com/healpy/healpy/pull/459>
