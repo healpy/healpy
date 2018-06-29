@@ -1,5 +1,11 @@
+Release 1.12.1, 29 Giu 2018
+
+* Fixed bug in polarization rotation in `hp.Rotator.rotate_map` <https://github.com/healpy/healpy/pull/459>
+* Fixed packaging issue: Add six to `setup_requires` <https://github.com/healpy/healpy/pull/457>
+
 Release 1.12.0, 12 Giu 2018
 
+* New `hp.Rotator.rotate_map` function to change reference frame of a full map <https://github.com/healpy/healpy/pull/450>
 * Implementation of pixel weights for map2alm that makes transform exact <https://github.com/healpy/healpy/pull/442>
 * Change default output FITS column names to agree with other HEALPix packages <https://github.com/healpy/healpy/pull/446>
 * Reformatted the Python code with black, this made a huge changeset  <https://github.com/healpy/healpy/pull/454>
