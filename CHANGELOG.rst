@@ -1,3 +1,7 @@
+Release 1.12.3, 30 Giu 2018
+
+* No changes, just fixed Unicode Error on README.rst
+
 Release 1.12.2, 29 Giu 2018
 
 * No changes, just fixed upload issue to PyPI
