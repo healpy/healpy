@@ -406,11 +406,18 @@ class Rotator(object):
             theta_pix_center, phi_pix_center
         )
 
-        # Interpolate the original map to the pixels centers in the new ref frame
+        # Apply rotation
         m_rotated = [
             pixelfunc.get_interp_val(each, theta_pix_center_rot, phi_pix_center_rot)
             for each in m
         ]
+
+        # Perform an interpolation over all the pixels of the maps
+        m_rotated = [each[pixelfunc.ang2pix(nside, theta_pix_center_rot, phi_pix_center_rot)]
+                     for each in m]
+        pixidx, w = pixelfunc.get_interp_weights(nside, theta_pix_center_rot, phi_pix_center_rot)
+        for idx in range(len(m_rotated)):
+            m_rotated[idx] = np.sum(m_rotated[idx] * w, axis=0)
 
         # Rotate polarization
         if len(m_rotated) > 1:
