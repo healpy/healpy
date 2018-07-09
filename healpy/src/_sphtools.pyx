@@ -46,6 +46,8 @@ cdef extern from "alm_healpix_tools.h":
 cdef extern from "alm_powspec_tools.h":
     cdef void c_rotate_alm "rotate_alm" (Alm[xcomplex[double]] &alm, double psi, double theta, double phi)
     cdef void c_rotate_alm "rotate_alm" (Alm[xcomplex[double]] &ai, Alm[xcomplex[double]] &ag, Alm[xcomplex[double]] &ac, double psi, double theta, double phi)
+    cdef void c_rotate_alm "rotate_alm" (Alm[xcomplex[double]] &alm, rotmatrix &mat)
+    cdef void c_rotate_alm "rotate_alm" (Alm[xcomplex[double]] &ai, Alm[xcomplex[double]] &ag, Alm[xcomplex[double]] &ac, rotmatrix &mat)
 
 cdef extern from "healpix_data_io.h":
     cdef void read_weight_ring (string &dir, int nside, arr[double] &weight)
@@ -518,6 +520,8 @@ def rotate_alm(alm not None, double psi, double theta, double phi, lmax=None,
         Second rotation: angle θ about the original (unrotated) y-axis
     phi : float.
         Third rotation: angle φ about the original (unrotated) z-axis.
+    rot : np.ndarray
+        Rotation matrix, for example created by 
     lmax : int
         Maximum multipole order l of the data set.
     mmax : int
