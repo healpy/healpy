@@ -373,6 +373,7 @@ class Rotator(object):
         cosalpha = north_pole[2] - vp[2] * np.dot(north_pole, vp)
         return np.arctan2(sinalpha, cosalpha)
 
+    #def rotate_alm(self, alm)
     def rotate_map(self, m):
         """Rotate a HEALPix map to a new reference frame
 
