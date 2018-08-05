@@ -8,6 +8,7 @@ python:
   - 2.7
   - 3.5
   - 3.6
+  - 3.7
 
 env:
   - USE_ANACONDA=false USE_PIP=false USE_EXTERNAL_CFITSIO=false
