@@ -182,6 +182,21 @@ class TestSphtFunc(unittest.TestCase):
         gauss_beam = hp.gauss_beam(np.radians(10. / 60.), lmax=512, pol=True)
         np.testing.assert_allclose(idl_gauss_beam, gauss_beam)
 
+    def test_alm2cl(self):
+        nside = 32
+        lmax = 64
+        lmax_out = 100
+        seed = 12345
+        np.random.seed(seed)
+
+        # Input power spectrum and alm
+        alm_syn = hp.synalm(self.cla, lmax=lmax)
+
+        cl_out = hp.alm2cl(alm_syn, lmax_out=lmax_out-1)
+
+        np.testing.assert_array_almost_equal(
+            cl_out, self.cla[:lmax_out], decimal=4)
+
     def test_map2alm(self):
         nside = 32
         lmax = 64
