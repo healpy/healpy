@@ -435,7 +435,7 @@ def alm2cl(alms, alms2 = None, lmax = None, mmax = None, lmax_out = None):
                     powspec_[l] += 2 * (alm1_[j].real * alm2_[j].real +
                                         alm1_[j].imag * alm2_[j].imag)
                 powspec_[l] /= (2 * l + 1)
-            spectra.append(powspec_)
+            spectra.append(powspec_[:lmax_out+1])
 
     # if only one alm was given, returns only cl and not a list with one cl
     if alms_lonely:
