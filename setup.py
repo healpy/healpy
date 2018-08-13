@@ -463,7 +463,7 @@ setup(
         (
             "healpix_cxx",
             {
-                "pkg_config_name": "healpix_cxx >= 3.30.0",
+                "pkg_config_name": "healpix_cxx >= 3.40.0",
                 "local_source": "healpixsubmodule/src/cxx/autotools",
             },
         ),
