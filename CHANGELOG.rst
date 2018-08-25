@@ -1,3 +1,8 @@
+Release 1.12.4, 25 Ago 2018
+
+* Support for Python 3.7 on PyPi
+* Update minimum `healpix-cxx` version required <https://github.com/healpy/healpy/pull/478>
+
 Release 1.12.3, 30 Giu 2018
 
 * No changes, just fixed Unicode Error on README.rst
