@@ -8,6 +8,10 @@ python:
   - 2.7
   - 3.5
   - 3.6
+  - 3.7
+
+sudo: true
+dist: xenial
 
 env:
   - USE_ANACONDA=false USE_PIP=false USE_EXTERNAL_CFITSIO=false
@@ -19,9 +23,6 @@ env:
   - USE_ANACONDA=true  USE_PIP=true  USE_EXTERNAL_CFITSIO=false
   - USE_ANACONDA=true  USE_PIP=true  USE_EXTERNAL_CFITSIO=true
 
-# FIXME: The Ubuntu Python 3.4 package may use different default compiler flags.
-# I think that Healpy needs to be built with the C compiler in C99 mode.
-#
 # For speed, only test internal cfitsio on certain versions of Python.
 
 matrix:
