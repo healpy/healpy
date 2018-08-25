@@ -10,6 +10,9 @@ python:
   - 3.6
   - 3.7
 
+sudo: true
+dist: xenial
+
 env:
   - USE_ANACONDA=false USE_PIP=false USE_EXTERNAL_CFITSIO=false
   - USE_ANACONDA=false USE_PIP=false USE_EXTERNAL_CFITSIO=true
