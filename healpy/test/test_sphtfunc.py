@@ -381,6 +381,18 @@ class TestSphtFunc(unittest.TestCase):
         beam = hp.bl2beam(gaussian_window, theta)
         np.testing.assert_allclose(gaussian_beam, beam, rtol=1e-3)
 
+    def test_max_nside_check(self):
+        """ Test whether the max_nside_check correctly raises ValueErrors for nsides
+        that are too large."""
+
+        # Test an nside that is too large
+        with self.assertRaises(ValueError):
+            hp.check_max_nside(16384)
+        
+        # Test an nside that is valid
+        # hp.check_max_nside will return 0 if no exceptions are raised
+        self.assertEqual(hp.check_max_nside(1024), 0)
+
 
 if __name__ == "__main__":
     unittest.main()

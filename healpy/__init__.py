@@ -76,6 +76,7 @@ from .sphtfunc import (
     gauss_beam,
     bl2beam,
     beam2bl,
+    check_max_nside,
 )
 
 from ._query_disc import query_disc, query_strip, query_polygon, boundaries
