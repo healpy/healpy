@@ -44,6 +44,7 @@ class FutureChangeWarning(UserWarning):
 
 
 DATAPATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
+MAX_NSIDE = 8192  # The maximum nside up to which most operations (e.g. map2alm) will work
 
 # Spherical harmonics transformation
 def anafast(
@@ -199,10 +200,12 @@ def map2alm(
     """
     maps = ma_to_array(maps)
     info = maptype(maps)
+    nside = pixelfunc.get_nside(maps)
+    check_max_nside(nside)
+
     if use_pixel_weights:
         if use_weights:
             raise RuntimeError("Either use pixel or ring weights")
-        nside = pixelfunc.get_nside(maps)
         pixel_weights_filename = data.get_pkg_data_filename(
             "full_weights/healpix_full_weights_nside_%04d.fits" % nside,
             package="healpy",
@@ -300,6 +303,8 @@ def alm2map(
     """
     if not cb.is_seq(alms):
         raise TypeError("alms must be a sequence")
+
+    check_max_nside(nside)
 
     alms = smoothalm(
         alms, fwhm=fwhm, sigma=sigma, pol=pol, inplace=inplace, verbose=verbose
@@ -512,6 +517,8 @@ def synfast(
     """
     if not pixelfunc.isnsideok(nside):
         raise ValueError("Wrong nside value (must be a power of two).")
+    check_max_nside(nside)
+
     cls_lmax = cb.len_array_or_arrays(cls) - 1
     if lmax is None or lmax < 0:
         lmax = min(cls_lmax, 3 * nside - 1)
@@ -887,6 +894,8 @@ def smoothing(
         nside = pixelfunc.get_nside(map_in)
         n_maps = 0
 
+    check_max_nside(nside)
+
     if pol or n_maps in (0, 1):
         # Treat the maps together (1 or 3 maps)
         alms = map2alm(
@@ -990,6 +999,7 @@ def alm2map_der1(alm, nside, lmax=None, mmax=None):
      The maps correponding to alm, and its derivatives with respect to
      theta and phi. d_phi is already divided by sin(theta)
    """
+    check_max_nside(nside)
     if lmax is None:
         lmax = -1
     if mmax is None:
@@ -1080,13 +1090,13 @@ def gauss_beam(fwhm, lmax=512, pol=False):
 
 
 def bl2beam(bl, theta):
-    """Computes a circular beam profile b(theta) from its 
+    """Computes a circular beam profile b(theta) from its
     transfer (or window) function b(l).
 
     Parameters
     ----------
     bl : array
-        b(l) window function of beam.        
+        b(l) window function of beam.
     theta : array
         Angle at which the beam profile will be computed.
         Has to be given in radians.
@@ -1116,13 +1126,13 @@ def bl2beam(bl, theta):
 
 
 def beam2bl(beam, theta, lmax):
-    """Computes a transfer (or window) function from its 
+    """Computes a transfer (or window) function from its
     circular beam profile b(theta).
 
     Parameters
     ----------
     beam : array
-        Circular beam profile in theta.       
+        Circular beam profile in theta.
     theta : array
         Radius at which the beam profile is given.
         Has to be given in radians with same size
@@ -1160,3 +1170,22 @@ def beam2bl(beam, theta, lmax):
     window *= 2 * pi
 
     return window
+
+
+def check_max_nside(nside):
+    """Checks whether the nside used in a certain operation does not exceed the
+    maximum supported nside. The maximum nside is saved in MAX_NSIDE.
+
+    Parameters
+    ----------
+    nside : int
+        nside of the map that is being checked
+    """
+
+    if nside > MAX_NSIDE:
+        raise ValueError(
+            'nside {nside} of map cannot be larger than '
+            'MAX_NSIDE {max_nside}'.format(
+                nside=nside, max_nside=MAX_NSIDE))
+
+    return 0
