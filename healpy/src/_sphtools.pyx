@@ -497,7 +497,7 @@ def almxfl(alm, fl, mmax = None, inplace = False):
     return alm_
 
 
-def rotate_alm(alm not None, double psi=None, double theta=None, double phi=None, matrix=None, lmax=None,
+def rotate_alm(alm not None, double psi=0, double theta=0, double phi=0, matrix=None, lmax=None,
                mmax=None):
     """
     This routine transforms the scalar (and tensor) a_lm coefficients
@@ -531,13 +531,13 @@ def rotate_alm(alm not None, double psi=None, double theta=None, double phi=None
     if isinstance(alm, np.ndarray) and alm.ndim == 1:
         alm = [alm]
 
-    assert (matrix is not None) or (psi is not None), "Either matrix or angles should be given, not both"
+    cdef rotmatrix rotation_matrix
+    if matrix is not None:
+        assert matrix.shape == (3,3), "Rotation matrix should be a 3x3 array"
 
-    assert matrix.shape == (3,3), "Rotation matrix should be a 3x3 array"
-
-    rotmatrix rotation_matrix = rotmatrix(matrix[0,0], matrix[0,1], matrix[0,2],
-                                matrix[1,0], matrix[1,1], matrix[1,2],
-                                matrix[2,0], matrix[2,1], matrix[2,2])
+        rotation_matrix = rotmatrix(matrix[0,0], matrix[0,1], matrix[0,2],
+                                    matrix[1,0], matrix[1,1], matrix[1,2],
+                                    matrix[2,0], matrix[2,1], matrix[2,2])
 
     if not isinstance(alm, (list, tuple, np.ndarray)) or len(alm) == 0:
         raise ValueError('Invalid input.')
@@ -550,7 +550,7 @@ def rotate_alm(alm not None, double psi=None, double theta=None, double phi=None
             if matrix is None:
                 rotate_alm(a, psi, theta, phi)
             else:
-                rotate_alm(a, rotation_matrix)
+                rotate_alm(a, matrix)
         return
 
     lmax, mmax = alm_getlmmax(alm[0], lmax, mmax)
