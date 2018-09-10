@@ -34,27 +34,27 @@ def test_rotate_map_polarization():
             / np.logical_not(expected[i_pol].mask).sum()
         ) > .9, (pol + " comparison failed in rotate_map")
 
+
 def test_rotate_map_polarization_alms():
     lmax = 64
     path = os.path.dirname(os.path.realpath(__file__))
     map1 = hp.read_map(
-            os.path.join(
-                path, "data", "wmap_band_iqumap_r9_7yr_W_v4_udgraded32.fits"
-            ),
-            (0, 1, 2),
-        )
+        os.path.join(path, "data", "wmap_band_iqumap_r9_7yr_W_v4_udgraded32.fits"),
+        (0, 1, 2),
+    )
 
     # do the rotation with hp.rotate_alm
-    angles = hp.rotator.coordsys2euler_zyz(coord = ["G", "E"])
+    angles = hp.rotator.coordsys2euler_zyz(coord=["G", "E"])
     alm = hp.map2alm(map1, lmax=lmax, use_pixel_weights=True)
     hp.rotate_alm(alm, *angles)
     rotated_map1 = hp.alm2map(alm, nside=hp.get_nside(map1), lmax=lmax)
 
     # do the rotation with hp.Rotator
-    gal2ecl = hp.Rotator(coord = ["G", "E"])
+    gal2ecl = hp.Rotator(coord=["G", "E"])
     rotate_map1_rotate_map_alms = gal2ecl.rotate_map_alms(map1, lmax=lmax)
 
     np.testing.assert_allclose(rotate_map1_rotate_map_alms, rotated_map1, rtol=1e-5)
+
 
 def test_rotate_map_polarization_with_spectrum():
     """Rotation of reference frame should not change the angular power spectrum.

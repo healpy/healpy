@@ -30,6 +30,7 @@ coordname = {"G": "Galactic", "E": "Ecliptic", "C": "Equatorial"}
 class ConsistencyWarning(Warning):
     """Warns for a problem in the consistency of data
     """
+
     pass
 
 
@@ -87,6 +88,7 @@ class Rotator(object):
     >>> print(vec_ecl)
     [-0.05488249 -0.99382103 -0.09647625]
     """
+
     ErrMessWrongPar = (
         "rot and coord must be single elements or " "sequence of same size."
     )
@@ -381,7 +383,7 @@ class Rotator(object):
         see hp.rotate_alm, this function **returns** the rotated alms,
         does not rotate in place"""
 
-        rotated_alm = alm.copy() # rotate_alm works inplace
+        rotated_alm = alm.copy()  # rotate_alm works inplace
         rotate_alm(rotated_alm, matrix=self.mat, lmax=lmax, mmax=mmax)
         return rotated_alm
 
@@ -400,10 +402,13 @@ class Rotator(object):
         m_rotated : np.ndarray
             Map in the new reference frame
         """
-        alm = sphtfunc.map2alm(m, use_pixel_weights=use_pixel_weights, lmax=lmax, mmax=mmax)
+        alm = sphtfunc.map2alm(
+            m, use_pixel_weights=use_pixel_weights, lmax=lmax, mmax=mmax
+        )
         rotated_alm = self.rotate_alm(alm, lmax=lmax, mmax=mmax)
-        return sphtfunc.alm2map(rotated_alm, lmax=lmax, mmax=mmax, nside=pixelfunc.get_nside(m))
-
+        return sphtfunc.alm2map(
+            rotated_alm, lmax=lmax, mmax=mmax, nside=pixelfunc.get_nside(m)
+        )
 
     def rotate_map_pixel(self, m):
         """Rotate a HEALPix map to a new reference frame in pixel space

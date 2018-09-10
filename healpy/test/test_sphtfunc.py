@@ -15,7 +15,6 @@ warnings.filterwarnings("ignore")
 
 
 class TestSphtFunc(unittest.TestCase):
-
     def setUp(self):
         self.lmax = 64
         self.path = os.path.dirname(os.path.realpath(__file__))
@@ -278,12 +277,12 @@ class TestSphtFunc(unittest.TestCase):
         lmax = 32
         nalm = hp.Alm.getsize(lmax)
         alm = np.zeros([3, nalm], dtype=np.complex)
-        alm[0,1] = 1
-        alm[1,2] = 1
+        alm[0, 1] = 1
+        alm[1, 2] = 1
         alm_rotated_angles = alm.copy()
-        angles = hp.rotator.coordsys2euler_zyz(coord = ["G", "E"])
+        angles = hp.rotator.coordsys2euler_zyz(coord=["G", "E"])
         hp.rotate_alm(alm_rotated_angles, *angles)
-        gal2ecl = hp.Rotator(coord = ["G", "E"])
+        gal2ecl = hp.Rotator(coord=["G", "E"])
         hp.rotate_alm(alm, matrix=gal2ecl.mat)
         np.testing.assert_allclose(alm_rotated_angles, alm)
 
