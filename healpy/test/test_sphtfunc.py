@@ -273,6 +273,20 @@ class TestSphtFunc(unittest.TestCase):
             # FIXME: rtol=1e-6 works here, except on Debian with Python 3.4.
             np.testing.assert_allclose(i, o, rtol=1e-5)
 
+    def test_rotate_alm_rotmatrix(self):
+        """rotate_alm also support rotation matrix instead of angles"""
+        lmax = 32
+        nalm = hp.Alm.getsize(lmax)
+        alm = np.zeros([3, nalm], dtype=np.complex)
+        alm[0,1] = 1
+        alm[1,2] = 1
+        alm_rotated_angles = alm.copy()
+        angles = hp.rotator.coordsys2euler_zyz(coord = ["G", "E"])
+        hp.rotate_alm(alm_rotated_angles, *angles)
+        gal2ecl = hp.Rotator(coord = ["G", "E"])
+        hp.rotate_alm(alm, matrix=gal2ecl.mat)
+        np.testing.assert_allclose(alm_rotated_angles, alm)
+
     def test_rotate_alm2(self):
         # Test rotate_alm against the Fortran library
         lmax = 64
