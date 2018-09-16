@@ -42,3 +42,5 @@ Other tools
    :toctree: generated/
    
    gauss_beam
+   beam2bl
+   bl2beam
