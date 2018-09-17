@@ -1092,22 +1092,23 @@ def gauss_beam(fwhm, lmax=512, pol=False):
 
 
 def bl2beam(bl, theta):
-    """Computes a circular beam profile b(theta) from its
-    transfer (or window) function b(l).
+    """Computes a circular beam profile b(theta) in real space from 
+    its transfer (or window) function b(l) in spherical harmonic space.
 
     Parameters
     ----------
     bl : array
-        b(l) window function of beam.
+        Window function b(l) of the beam.
     theta : array
-        Angle at which the beam profile will be computed.
+        Radius at which the beam profile will be computed.
         Has to be given in radians.
 
     Returns
     -------
     beam : array
-        (Circular) Beam profile value at radius theta.
+        (Circular) beam profile b(theta).
     """
+    
     lmax = len(bl) - 1
     nx = len(theta)
     x = np.cos(theta)
@@ -1128,24 +1129,24 @@ def bl2beam(bl, theta):
 
 
 def beam2bl(beam, theta, lmax):
-    """Computes a transfer (or window) function from its
-    circular beam profile b(theta).
+    """Computes a transfer (or window) function b(l) in spherical 
+    harmonic space from its circular beam profile b(theta) in real 
+    space.
 
     Parameters
     ----------
     beam : array
-        Circular beam profile in theta.
+        Circular beam profile b(theta).
     theta : array
-        Radius at which the beam profile is given.
-        Has to be given in radians with same size
-        as beam.
+        Radius at which the beam profile is given. Has to be given 
+        in radians with same size as beam.
     lmax : integer
-        Maximum multipole of bl.
+        Maximum multipole moment at which to compute b(l).
 
     Returns
     -------
     bl : array
-        Beam window function B(l).
+        Beam window function b(l).
     """
 
     nx = len(theta)
