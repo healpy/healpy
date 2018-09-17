@@ -170,6 +170,10 @@ def mollview(
     # Create the figure
     import pylab
 
+    # Ensure that the nside is valid
+    nside = pixelfunc.get_nside(map)
+    pixelfunc.check_nside(nside, nest=nest)
+
     if not (hold or sub):
         f = pylab.figure(fig, figsize=(8.5, 5.4))
         extent = (0.02, 0.05, 0.96, 0.9)
@@ -393,6 +397,10 @@ def gnomview(
     mollview, cartview, orthview, azeqview
     """
     import pylab
+
+    # Ensure that the nside is valid
+    nside = pixelfunc.get_nside(map)
+    pixelfunc.check_nside(nside, nest=nest)
 
     if not (hold or sub):
         f = pylab.figure(fig, figsize=(5.8, 6.4))
@@ -651,6 +659,10 @@ def cartview(
     """
     import pylab
 
+    # Ensure that the nside is valid
+    nside = pixelfunc.get_nside(map)
+    pixelfunc.check_nside(nside, nest=nest)
+
     if not (hold or sub):
         f = pylab.figure(fig, figsize=(8.5, 5.4))
         if not margins:
@@ -889,6 +901,10 @@ def orthview(
     """
     # Create the figure
     import pylab
+
+    # Ensure that the nside is valid
+    nside = pixelfunc.get_nside(map)
+    pixelfunc.check_nside(nside, nest=nest)
 
     if not (hold or sub):
         f = pylab.figure(fig, figsize=(8.5, 5.4))
@@ -1130,6 +1146,10 @@ def azeqview(
     """
     # Create the figure
     import pylab
+
+    # Ensure that the nside is valid
+    nside = pixelfunc.get_nside(map)
+    pixelfunc.check_nside(nside, nest=nest)
 
     if not (hold or sub):
         f = pylab.figure(fig, figsize=(8.5, 5.4))

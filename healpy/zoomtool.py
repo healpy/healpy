@@ -98,6 +98,10 @@ def mollzoom(
     """
     import pylab
 
+    # Ensure that the nside is valid
+    nside = pixelfunc.get_nside(map)
+    pixelfunc.check_nside(nside, nest=nest)
+
     # create the figure (if interactive, it will open the window now)
     f = pylab.figure(fig, figsize=(10.5, 5.4))
     extent = (0.02, 0.25, 0.56, 0.72)
