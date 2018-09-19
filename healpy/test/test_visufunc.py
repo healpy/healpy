@@ -10,12 +10,11 @@ from ..zoomtool import mollzoom
 
 
 class TestNoCrash(unittest.TestCase):
-
     def setUp(self):
         self.nside = 16
         self.npix = hp.nside2npix(self.nside)
         self.m = np.arange(self.npix, dtype=np.double)
-        self.m_wrong_npix = np.arange(self.npix+1, dtype=np.double)
+        self.m_wrong_npix = np.arange(self.npix + 1, dtype=np.double)
         self.ma = self.m.copy()
         self.ma[3] = hp.UNSEEN
         self.ma = hp.ma(self.ma)
@@ -57,7 +56,7 @@ class TestNoCrash(unittest.TestCase):
     def test_azeqview_crash(self):
         with self.assertRaises(TypeError):
             azeqview(self.m_wrong_npix)
-    
+
     def test_mollzoom_nocrash(self):
         mollzoom(self.m)
 
