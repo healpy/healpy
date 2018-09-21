@@ -386,9 +386,9 @@ def gnomview(
       Default: None
     notext: bool, optional
       If True: do not add resolution info text. Default=False
-    return_projected_map : bool
+    return_projected_map : bool, optional
       if True returns the projected map in a 2d numpy array
-    no_plot : bool
+    no_plot : bool, optional
       if True no figure will be created      
 
     See Also
@@ -545,7 +545,7 @@ def gnomview(
         if wasinteractive:
             pylab.ion()
             # pylab.show()
-        if no_plot is True:        
+        if no_plot:        
             pylab.close(f)  
             f.clf()
             ax.cla()
