@@ -323,6 +323,7 @@ def gnomview(
     margins=None,
     notext=False,
     return_projected_map=False,
+    no_plot=False,
 ):
     """Plot a healpix map (given as an array) in Gnomonic projection.
 
@@ -387,6 +388,8 @@ def gnomview(
       If True: do not add resolution info text. Default=False
     return_projected_map : bool
       if True returns the projected map in a 2d numpy array
+    no_plot : bool
+      if True no figure will be created      
 
     See Also
     --------
@@ -542,6 +545,10 @@ def gnomview(
         if wasinteractive:
             pylab.ion()
             # pylab.show()
+        if no_plot is True:        
+            pylab.close(f)  
+            f.clf()
+            ax.cla()
     if return_projected_map:
         return img
 
