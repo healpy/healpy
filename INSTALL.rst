@@ -34,7 +34,7 @@ by upgrading from time to time::
 On Linux with newer compilers many users reported compilation errors like ``configure: error: cannot run C compiled programs``,
 the solution is to specifiy the flags for the C and CXX compiler:
 
-    CC=gcc CXX=g++ CFLAGS='-fPIC' CXXFLAGS='-fPIC' pip install --use healpy
+    CC=gcc CXX=g++ CFLAGS='-fPIC' CXXFLAGS='-fPIC' pip install --user healpy
 
 Installation on Mac OS with MacPorts
 -------------------------------------------------
