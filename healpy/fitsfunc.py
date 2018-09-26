@@ -264,7 +264,7 @@ def write_map(
 def read_map(
     filename,
     field=0,
-    dtype=np.float64,
+    dtype=np.float32,
     nest=False,
     partial=False,
     hdu=1,
@@ -289,7 +289,7 @@ def read_map(
     dtype : data type or list of data types, optional
       Force the conversion to some type. Passing a list allows different
       types for each field. In that case, the length of the list must
-      correspond to the length of the field parameter. Default: np.float64
+      correspond to the length of the field parameter. Default: np.float32
     nest : bool, optional
       If True return the map in NEST ordering, otherwise in RING ordering;
       use fits keyword ORDERING to decide whether conversion is needed or not
