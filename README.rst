@@ -150,6 +150,7 @@ Core developers:
 * Andrea Zonca
 * Martin Reinecke
 * Leo Singer 
+* Daniel Lenz
 
 List of contributors: https://github.com/healpy/healpy/graphs/contributors
 
