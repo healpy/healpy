@@ -759,7 +759,7 @@ def normalise_rot(rot, deg=False):
         rot = np.zeros(3)
     else:
         rot = np.array(rot, np.float64).flatten() * convert
-        rot.resize(3)
+        rot.resize(3, refcheck=False)
     return rot
 
 
