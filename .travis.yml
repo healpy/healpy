@@ -53,7 +53,7 @@ before_install:
   # Install python and dependencies via system or anaconda
   - |
     if $USE_ANACONDA; then
-      travis_retry wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh \
+      travis_retry wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh \
         -O miniconda.sh && \
       bash miniconda.sh -b -p ~/miniconda && \
       ~/miniconda/bin/conda create --yes -n anaconda_env \
