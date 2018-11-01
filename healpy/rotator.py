@@ -395,7 +395,7 @@ class Rotator(object):
         ----------
         m : np.ndarray
             Input map, 1 map is considered I, 2 maps:[Q,U], 3 maps:[I,Q,U]
-        use_pixel_weights : bool, default True
+        use_pixel_weights : bool, optional
             Use pixel weights in map2alm
 
         Returns
