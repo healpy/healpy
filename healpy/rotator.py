@@ -413,8 +413,10 @@ class Rotator(object):
     def rotate_map_pixel(self, m):
         """Rotate a HEALPix map to a new reference frame in pixel space
 
-        It is always better to rotate in spherical harmonics space, see
-        the rotate_map_alms method.
+        It is generally better to rotate in spherical harmonics space, see
+        the rotate_map_alms method. A case where pixel space rotation is
+        better is for heavily masked maps where the spherical harmonics
+        transform is not well defined.
         This function first rotates the pixels centers of the new reference
         frame to the original reference frame, then uses hp.get_interp_val
         to interpolate bilinearly the pixel values, finally fixes Q and U
