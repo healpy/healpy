@@ -429,6 +429,8 @@ class Rotator(object):
         to interpolate bilinearly the pixel values, finally fixes Q and U
         polarization by the modification to the psi angle caused by
         the Rotator using Rotator.angle_ref.
+        Due to interpolation, this function generally suppresses the signal at
+        high angular scales.
 
         Parameters
         ----------
