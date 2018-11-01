@@ -391,6 +391,12 @@ class Rotator(object):
     def rotate_map_alms(self, m, use_pixel_weights=True, lmax=None, mmax=None):
         """Rotate a HEALPix map to a new reference frame in spherical harmonics space
 
+        This is generally the best strategy to rotate/change reference frame of maps.
+        If the input map is band-limited, i.e. it can be represented exactly by
+        a spherical harmonics transform under a specific lmax, the map rotation
+        will be invertible.
+
+
         Parameters
         ----------
         m : np.ndarray
