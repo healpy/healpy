@@ -378,9 +378,10 @@ class Rotator(object):
         return np.arctan2(sinalpha, cosalpha)
 
     def rotate_alm(self, alm, lmax=None, mmax=None):
-        """Rotate Alm to a new reference frame
+        """Rotate Alms with the transform defined in the Rotator object
 
-        see hp.rotate_alm, this function **returns** the rotated alms,
+        see the docstring of the rotate_alm function defined
+        in the healpy package, this function **returns** the rotated alms,
         does not rotate in place"""
 
         rotated_alm = alm.copy()  # rotate_alm works inplace
