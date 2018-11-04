@@ -1,4 +1,7 @@
 import os
+import sys
+if sys.version >= "3.4":
+    from pathlib import Path
 import astropy.io.fits as pf
 import unittest
 import numpy as np
@@ -27,6 +30,13 @@ class TestFitsFunc(unittest.TestCase):
         write_map(self.filename, self.m, column_units="K")
         read_m = pf.open(self.filename)[1].data.field(0)
 
+    def test_write_map_pathlib(self):
+        if sys.version < "3.4":
+            return
+        path = Path(self.filename)
+        write_map(path, self.m)
+        read_m = pf.open(path)[1].data.field(0)
+
     def test_write_map_units_list(self):
         write_map(self.filename, [self.m, self.m], column_units=["K", "K"])
         read_m = pf.open(self.filename)[1].data.field(0)
@@ -46,6 +56,13 @@ class TestFitsFunc(unittest.TestCase):
     def test_read_map_filename(self):
         write_map(self.filename, self.m)
         read_map(self.filename)
+
+    def test_read_map_filename_pathlib(self):
+        if sys.version < "3.4":
+            return
+        path = Path(self.filename)
+        write_map(path, self.m)
+        read_map(path)
 
     def test_read_map_filename_with_header(self):
         write_map(self.filename, self.m)
@@ -136,7 +153,8 @@ class TestFitsFunc(unittest.TestCase):
             np.testing.assert_almost_equal(dtype(self.m), rm)
 
     def tearDown(self):
-        os.remove(self.filename)
+        if os.path.exists(self.filename):
+            os.remove(self.filename)
 
 
 class TestFitsFuncGzip(unittest.TestCase):
@@ -155,7 +173,8 @@ class TestFitsFuncGzip(unittest.TestCase):
         read_m = pf.open(self.filename)[1].data.field(0)
 
     def tearDown(self):
-        os.remove(self.filename)
+        if os.path.exists(self.filename):
+            os.remove(self.filename)
 
 
 class TestReadWriteAlm(unittest.TestCase):
@@ -211,6 +230,13 @@ class TestReadWriteAlm(unittest.TestCase):
         write_alm("testalm_128.fits", self.alms, lmax=128, mmax=128)
         read_alm("testalm_128.fits")
 
+    def test_read_alm_pathlib(self):
+        if sys.version < "3.4":
+            return
+        path = Path("testalm_128.fits")
+        write_alm(path, self.alms, lmax=128, mmax=128)
+        read_alm(path)
+
     def test_read_alm_filename_array(self):
         write_alm("testalm_256.fits", self.alms, overwrite=True)
         testalm1 = np.array(self.alms)
@@ -230,33 +256,37 @@ class TestReadWriteAlm(unittest.TestCase):
 
 class TestReadWriteCl(unittest.TestCase):
 
+    def setUp(self):
+        self.filename = "test_cl.fits"
+
     def tearDown(self):
-        os.remove("test_cl.fits")
+        if os.path.exists(self.filename):
+            os.remove(self.filename)
 
     def test_write_read_cl_II(self):
         cl = np.arange(1025, dtype=np.double)
-        write_cl("test_cl.fits", cl)
-        cl_read = read_cl("test_cl.fits")
+        write_cl(self.filename, cl)
+        cl_read = read_cl(self.filename)
         np.testing.assert_array_almost_equal(cl, cl_read)
 
     def test_write_read_cl_4comp(self):
         cl = [np.arange(1025, dtype=np.double) for n in range(4)]
-        write_cl("test_cl.fits", cl)
-        cl_read = read_cl("test_cl.fits")
+        write_cl(self.filename, cl)
+        cl_read = read_cl(self.filename)
         for cl_column, cl_read_column in zip(cl, cl_read):
             np.testing.assert_array_almost_equal(cl_column, cl_read_column)
 
     def test_write_read_cl_6comp(self):
         cl = [np.arange(1025, dtype=np.double) for n in range(6)]
-        write_cl("test_cl.fits", cl)
-        cl_read = read_cl("test_cl.fits")
+        write_cl(self.filename, cl)
+        cl_read = read_cl(self.filename)
         for cl_column, cl_read_column in zip(cl, cl_read):
             np.testing.assert_array_almost_equal(cl_column, cl_read_column)
 
     def test_read_cl_filename(self):
         cl = np.arange(1025, dtype=np.double)
-        write_cl("test_cl.fits", cl)
-        read_cl("test_cl.fits")
+        write_cl(self.filename, cl)
+        read_cl(self.filename)
 
     def test_read_cl_hdulist(self):
         cl = np.arange(1025, dtype=np.double)
