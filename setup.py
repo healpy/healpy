@@ -518,7 +518,7 @@ setup(
             "test/data/*.sh",
         ]
     },
-    install_requires=["matplotlib", "numpy", "six", "astropy", "scipy"],
+    install_requires=["matplotlib", "numpy>=1.13", "six", "astropy", "scipy"],
     setup_requires=["pytest-runner", "six"],
     tests_require=["pytest", "pytest-cython"],
     test_suite="healpy",
