@@ -1,3 +1,8 @@
+Release 1.12.5 13 Nov 2018
+
+* Explicitely set Numpy version requirement to >= 1.13 <https://github.com/healpy/healpy/pull/506>
+* Implemented `hp.Rotator.rotate_map_alms` and `hp.Rotator.rotate_map_pixel` to rotate maps in spherical harmonics and pixel domain <https://github.com/healpy/healpy/pull/489>
+
 Release 1.12.4, 25 Ago 2018
 
 * Support for Python 3.7 on PyPi
