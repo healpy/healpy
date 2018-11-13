@@ -121,6 +121,11 @@ cdef extern from "alm.h":
         void Set (arr[T] &data, int lmax_, int mmax_)
         tsize Num_Alms (int l, int m)
 
+cdef extern from "rotmatrix.h":
+    cdef cppclass rotmatrix:
+        rotmatrix()
+        rotmatrix (double a00, double a01, double a02,double a10, double a11, double a12,double a20, double a21, double a22)
+
 cdef inline Healpix_Map[double]* ndarray2map(np.ndarray[np.float64_t, ndim=1, mode='c'] array, Healpix_Ordering_Scheme scheme) except *:
     """ View a contiguous ndarray as a Healpix Map. """
     # To ensure that the output map is a view of the input array, the latter

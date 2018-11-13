@@ -13,7 +13,7 @@ import os
 import cython
 from libcpp cimport bool as cbool
 
-from _common cimport tsize, arr, xcomplex, Healpix_Ordering_Scheme, RING, NEST, Healpix_Map, Alm, ndarray2map, ndarray2alm
+from _common cimport tsize, arr, xcomplex, Healpix_Ordering_Scheme, RING, NEST, Healpix_Map, Alm, ndarray2map, ndarray2alm, rotmatrix
 
 cdef double UNSEEN = -1.6375e30
 cdef double rtol_UNSEEN = 1.e-7 * 1.6375e30
@@ -46,6 +46,8 @@ cdef extern from "alm_healpix_tools.h":
 cdef extern from "alm_powspec_tools.h":
     cdef void c_rotate_alm "rotate_alm" (Alm[xcomplex[double]] &alm, double psi, double theta, double phi)
     cdef void c_rotate_alm "rotate_alm" (Alm[xcomplex[double]] &ai, Alm[xcomplex[double]] &ag, Alm[xcomplex[double]] &ac, double psi, double theta, double phi)
+    cdef void c_rotate_alm "rotate_alm" (Alm[xcomplex[double]] &alm, rotmatrix &mat)
+    cdef void c_rotate_alm "rotate_alm" (Alm[xcomplex[double]] &ai, Alm[xcomplex[double]] &ag, Alm[xcomplex[double]] &ac, rotmatrix &mat)
 
 cdef extern from "healpix_data_io.h":
     cdef void read_weight_ring (string &dir, int nside, arr[double] &weight)
@@ -495,7 +497,7 @@ def almxfl(alm, fl, mmax = None, inplace = False):
     return alm_
 
 
-def rotate_alm(alm not None, double psi, double theta, double phi, lmax=None,
+def rotate_alm(alm not None, double psi=0, double theta=0, double phi=0, matrix=None, lmax=None,
                mmax=None):
     """
     This routine transforms the scalar (and tensor) a_lm coefficients
@@ -518,6 +520,8 @@ def rotate_alm(alm not None, double psi, double theta, double phi, lmax=None,
         Second rotation: angle θ about the original (unrotated) y-axis
     phi : float.
         Third rotation: angle φ about the original (unrotated) z-axis.
+    matrix : np.ndarray
+        Rotation matrix instead of angles, for example the output of hp.Rotator.mat
     lmax : int
         Maximum multipole order l of the data set.
     mmax : int
@@ -527,6 +531,14 @@ def rotate_alm(alm not None, double psi, double theta, double phi, lmax=None,
     if isinstance(alm, np.ndarray) and alm.ndim == 1:
         alm = [alm]
 
+    cdef rotmatrix rotation_matrix
+    if matrix is not None:
+        assert matrix.shape == (3,3), "Rotation matrix should be a 3x3 array"
+
+        rotation_matrix = rotmatrix(matrix[0,0], matrix[0,1], matrix[0,2],
+                                    matrix[1,0], matrix[1,1], matrix[1,2],
+                                    matrix[2,0], matrix[2,1], matrix[2,2])
+
     if not isinstance(alm, (list, tuple, np.ndarray)) or len(alm) == 0:
         raise ValueError('Invalid input.')
 
@@ -535,21 +547,30 @@ def rotate_alm(alm not None, double psi, double theta, double phi, lmax=None,
     # results.
     if len(alm) not in (1, 3):
         for a in alm:
-            rotate_alm(a, psi, theta, phi)
+            if matrix is None:
+                rotate_alm(a, psi, theta, phi)
+            else:
+                rotate_alm(a, matrix)
         return
 
     lmax, mmax = alm_getlmmax(alm[0], lmax, mmax)
     ai = np.ascontiguousarray(alm[0], dtype=np.complex128)
     AI = ndarray2alm(ai, lmax, mmax)
     if len(alm) == 1:
-        c_rotate_alm(AI[0], psi, theta, phi)
+        if matrix is None:
+            c_rotate_alm(AI[0], psi, theta, phi)
+        else:
+            c_rotate_alm(AI[0], rotation_matrix)
         del AI
     else:
         ag = np.ascontiguousarray(alm[1], dtype=np.complex128)
         ac = np.ascontiguousarray(alm[2], dtype=np.complex128)
         AG = ndarray2alm(ag, lmax, mmax)
         AC = ndarray2alm(ac, lmax, mmax)
-        c_rotate_alm(AI[0], AG[0], AC[0], psi, theta, phi)
+        if matrix is None:
+            c_rotate_alm(AI[0], AG[0], AC[0], psi, theta, phi)
+        else:
+            c_rotate_alm(AI[0], AG[0], AC[0], rotation_matrix)
         del AI, AG, AC
 
 
