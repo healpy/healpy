@@ -8,8 +8,8 @@
 
 ## PyPI - source
 
-* python setup.py build sdist
-* twine upload dist/*
+* `python setup.py build sdist`
+* `twine upload dist/*`
 
 ## Conda packages
 
