@@ -522,8 +522,6 @@ def synfast(
     cls_lmax = cb.len_array_or_arrays(cls) - 1
     if lmax is None or lmax < 0:
         lmax = min(cls_lmax, 3 * nside - 1)
-    seed = 12345
-    np.random.seed(seed)
     alms = synalm(cls, lmax=lmax, mmax=mmax, new=new, verbose=verbose)
     maps = alm2map(
         alms,
