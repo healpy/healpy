@@ -2,6 +2,8 @@ from __future__ import division
 
 import os.path
 
+import pytest
+
 import numpy as np
 
 import healpy as hp
@@ -9,6 +11,12 @@ from healpy import Rotator
 
 path = os.path.dirname(os.path.realpath(__file__))
 
+# A pytest fixture with autouse=True is run before each of the other tests
+@pytest.fixture(autouse=True)
+def set_random_seed():
+    """Set same seed so tests are reproducible"""
+    seed = 12345
+    np.random.seed(seed)
 
 def test_rotate_map_polarization():
     """Compare to a rotation from Galactic to Ecliptic of
