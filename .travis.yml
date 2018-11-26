@@ -42,6 +42,10 @@ matrix:
       env: USE_ANACONDA=false USE_PIP=true  USE_EXTERNAL_CFITSIO=false
     - python: 3.6
       env: USE_ANACONDA=false USE_PIP=true  USE_EXTERNAL_CFITSIO=true
+    - python: 2.7
+      env: USE_ANACONDA=true  USE_PIP=true  USE_EXTERNAL_CFITSIO=false
+    - python: 2.7
+      env: USE_ANACONDA=true  USE_PIP=true  USE_EXTERNAL_CFITSIO=true
 
 before_install:
   - sudo apt-get -qq update
