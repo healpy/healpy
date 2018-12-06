@@ -1,3 +1,8 @@
+Release 1.12.6 5 Dec 2018
+
+* Important bugfix that affected only 1.12.5, synfast had a fixed seed <https://github.com/healpy/healpy/pull/510>
+* Updated HEALPix C++ to 3.5.0, dynamic AVX support <https://github.com/healpy/healpy/pull/514>
+
 Release 1.12.5 13 Nov 2018
 
 * Explicitely set Numpy version requirement to >= 1.13 <https://github.com/healpy/healpy/pull/506>
