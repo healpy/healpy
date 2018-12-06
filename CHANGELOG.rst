@@ -1,5 +1,10 @@
+Release 1.12.7 6 Dec 2018
+
+* Rebuild of broken release 1.12.6, it was built with Cython 0.26 instead of a newer version needed for Python 3.7 support
+
 Release 1.12.6 5 Dec 2018
 
+* Broken release due to a packaging issue
 * Important bugfix that affected only 1.12.5, synfast had a fixed seed <https://github.com/healpy/healpy/pull/510>
 * Updated HEALPix C++ to 3.5.0, dynamic AVX support <https://github.com/healpy/healpy/pull/514>
 
