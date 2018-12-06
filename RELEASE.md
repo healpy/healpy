@@ -24,7 +24,7 @@ review and merge the Pull Request at <https://github.com/conda-forge/healpy-feed
 
 ### macOS + MacPorts
 
-    sudo port -N install py{27,35,36,37}-{matplotlib,numpy,six,astropy,scipy,pytest-runner,six,setuptools,pip,wheel,virtualenv,gcc8}
+    sudo port -N install py{27,35,36,37}-{matplotlib,numpy,six,astropy,scipy,pytest-runner,six,setuptools,pip,wheel,virtualenv} gcc8
     export CC=gcc-mp-8
     export CXX=g++-mp-8
     for VERS in {2.7,3.5,3.6,3.7}; do rm -rf env && virtualenv-$VERS --system-site-packages env && env/bin/pip install --upgrade pip setuptools wheel && env/bin/pip install "numpy==1.13.3;python_version<'3.7'" "numpy==1.14.3;python_version>='3.7'" && env/bin/pip wheel --verbose --no-deps healpy==1.12.5; done
