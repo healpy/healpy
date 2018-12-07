@@ -1,3 +1,7 @@
+Release 1.12.8 7 Dec 2018, included in HEALPix 3.5.0
+
+* Update HEALPix C++ to latest 3.5.0 commits
+
 Release 1.12.7 6 Dec 2018
 
 * Rebuild of broken release 1.12.6, it was built with Cython 0.26 instead of a newer version needed for Python 3.7 support
