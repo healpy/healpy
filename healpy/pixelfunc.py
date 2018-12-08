@@ -484,7 +484,7 @@ def pix2ang(nside, ipix, nest=False, lonlat=False):
       if True, assume NESTED pixel ordering, otherwise, RING pixel ordering
     lonlat : bool, optional
       If True, return angles will be longitude and latitude in degree,
-      otherwise, angles will be longitude and co-latitude in radians (default)
+      otherwise, angles will be co-latitude and longitude in radians (default)
 
     Returns
     -------
@@ -725,7 +725,7 @@ def vec2ang(vectors, lonlat=False):
       the vector(s) to convert, shape is (3,) or (N, 3)
     lonlat : bool, optional
       If True, return angles will be longitude and latitude in degree,
-      otherwise, angles will be longitude and co-latitude in radians (default)
+      otherwise, angles will be co-latitude and longitude in radians (default)
 
     Returns
     -------
