@@ -172,6 +172,8 @@ class TestReadWriteAlm(unittest.TestCase):
     def tearDown(self):
         if os.path.exists("testalm_128.fits"):
             os.remove("testalm_128.fits")
+        if os.path.exists("testalm_256.fits"):
+            os.remove("testalm_256.fits")
         if os.path.exists("testalm_256_128.fits"):
             os.remove("testalm_256_128.fits")
 
