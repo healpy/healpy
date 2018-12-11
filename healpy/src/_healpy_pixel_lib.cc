@@ -33,23 +33,23 @@
 
 #include "numpy/arrayobject.h"
 #include "numpy/ufuncobject.h"
-#include "numpy/noprefix.h"
+#include "numpy/ndarrayobject.h"
 
 /*
    ang2pix
 */
 template<Healpix_Ordering_Scheme scheme>static void
-  ufunc_ang2pix(char **args, intp *dimensions, intp *steps, void *func)
+  ufunc_ang2pix(char **args, npy_intp *dimensions, npy_intp *steps, void *func)
 {
-  intp n=dimensions[0];
+  npy_intp n=dimensions[0];
 
-  intp is1=steps[0],is2=steps[1],is3=steps[2], os=steps[3];
+  npy_intp is1=steps[0],is2=steps[1],is3=steps[2], os=steps[3];
   char *ip1=args[0], *ip2=args[1], *ip3=args[2], *op=args[3];
 
   Healpix_Base2 hb;
   long oldnside=-1;
 
-  for(intp i=0; i<n; i++, ip1+=is1, ip2+=is2, ip3+=is3, op+=os)
+  for(npy_intp i=0; i<n; i++, ip1+=is1, ip2+=is2, ip3+=is3, op+=os)
     {
       long nside = *(long*)ip1;
       if (nside!=oldnside)
@@ -68,10 +68,10 @@ template<Healpix_Ordering_Scheme scheme>static void
    pix2ang
 */
 template<Healpix_Ordering_Scheme scheme> static void
-  ufunc_pix2ang(char **args, intp *dimensions, intp *steps, void *func)
+  ufunc_pix2ang(char **args, npy_intp *dimensions, npy_intp *steps, void *func)
 {
-  register intp i, n=dimensions[0];
-  register intp is1=steps[0],is2=steps[1],os1=steps[2],os2=steps[3];
+  register npy_intp i, n=dimensions[0];
+  register npy_intp is1=steps[0],is2=steps[1],os1=steps[2],os2=steps[3];
   char *ip1=args[0], *ip2=args[1], *op1=args[2], *op2=args[3];
 
   Healpix_Base2 hb;
@@ -97,17 +97,17 @@ template<Healpix_Ordering_Scheme scheme> static void
    xyf2pix
 */
 template<Healpix_Ordering_Scheme scheme>static void
-  ufunc_xyf2pix(char **args, intp *dimensions, intp *steps, void *func)
+  ufunc_xyf2pix(char **args, npy_intp *dimensions, npy_intp *steps, void *func)
 {
-  intp n=dimensions[0];
+  npy_intp n=dimensions[0];
 
-  intp is1=steps[0],is2=steps[1],is3=steps[2],is4=steps[3], os=steps[4];
+  npy_intp is1=steps[0],is2=steps[1],is3=steps[2],is4=steps[3], os=steps[4];
   char *ip1=args[0], *ip2=args[1], *ip3=args[2], *ip4=args[3], *op=args[4];
 
   Healpix_Base2 hb;
   long oldnside=-1;
 
-  for(intp i=0; i<n; i++, ip1+=is1, ip2+=is2, ip3+=is3, ip4+=is4, op+=os)
+  for(npy_intp i=0; i<n; i++, ip1+=is1, ip2+=is2, ip3+=is3, ip4+=is4, op+=os)
     {
       long nside = *(long*)ip1;
       if (nside!=oldnside)
@@ -124,10 +124,10 @@ template<Healpix_Ordering_Scheme scheme>static void
    pix2xyf
 */
 template<Healpix_Ordering_Scheme scheme> static void
-  ufunc_pix2xyf(char **args, intp *dimensions, intp *steps, void *func)
+  ufunc_pix2xyf(char **args, npy_intp *dimensions, npy_intp *steps, void *func)
 {
-  register intp i, n=dimensions[0];
-  register intp is1=steps[0],is2=steps[1],os1=steps[2],os2=steps[3],os3=steps[4];
+  register npy_intp i, n=dimensions[0];
+  register npy_intp is1=steps[0],is2=steps[1],os1=steps[2],os2=steps[3],os3=steps[4];
   char *ip1=args[0], *ip2=args[1], *op1=args[2], *op2=args[3], *op3=args[4];
 
   Healpix_Base2 hb;
@@ -156,10 +156,10 @@ template<Healpix_Ordering_Scheme scheme> static void
    ring2nest
 */
 static void
-ufunc_ring2nest(char **args, intp *dimensions, intp *steps, void *func)
+ufunc_ring2nest(char **args, npy_intp *dimensions, npy_intp *steps, void *func)
 {
-  register intp i, n=dimensions[0];
-  register intp is1=steps[0],is2=steps[1],os=steps[2];
+  register npy_intp i, n=dimensions[0];
+  register npy_intp is1=steps[0],is2=steps[1],os=steps[2];
   char *ip1=args[0], *ip2=args[1], *op=args[2];
 
   Healpix_Base2 hb;
@@ -182,10 +182,10 @@ ufunc_ring2nest(char **args, intp *dimensions, intp *steps, void *func)
    nest2ring
 */
 static void
- ufunc_nest2ring (char **args, intp *dimensions, intp *steps, void *func)
+ ufunc_nest2ring (char **args, npy_intp *dimensions, npy_intp *steps, void *func)
 {
-  register intp i, n=dimensions[0];
-  register intp is1=steps[0],is2=steps[1],os=steps[2];
+  register npy_intp i, n=dimensions[0];
+  register npy_intp is1=steps[0],is2=steps[1],os=steps[2];
   char *ip1=args[0], *ip2=args[1], *op=args[2];
 
   Healpix_Base2 hb;
@@ -209,10 +209,10 @@ static void
   pix2vec
 */
 template<Healpix_Ordering_Scheme scheme> static void
-  ufunc_pix2vec(char **args, intp *dimensions, intp *steps, void *func)
+  ufunc_pix2vec(char **args, npy_intp *dimensions, npy_intp *steps, void *func)
 {
-  register intp i, n=dimensions[0];
-  register intp is1=steps[0],is2=steps[1],os1=steps[2],os2=steps[3],os3=steps[4];
+  register npy_intp i, n=dimensions[0];
+  register npy_intp is1=steps[0],is2=steps[1],os1=steps[2],os2=steps[3],os3=steps[4];
   char *ip1=args[0], *ip2=args[1], *op1=args[2], *op2=args[3], *op3=args[4];
 
   Healpix_Base2 hb;
@@ -240,10 +240,10 @@ template<Healpix_Ordering_Scheme scheme> static void
   vec2pix
 */
 template<Healpix_Ordering_Scheme scheme> static void
-  ufunc_vec2pix(char **args, intp *dimensions, intp *steps, void *func)
+  ufunc_vec2pix(char **args, npy_intp *dimensions, npy_intp *steps, void *func)
 {
-  register intp i, n=dimensions[0];
-  register intp is1=steps[0],is2=steps[1],is3=steps[2],is4=steps[3],os1=steps[4];
+  register npy_intp i, n=dimensions[0];
+  register npy_intp is1=steps[0],is2=steps[1],is3=steps[2],is4=steps[3],os1=steps[4];
   char *ip1=args[0], *ip2=args[1], *ip3=args[2], *ip4=args[3], *op1=args[4];
 
   Healpix_Base2 hb;
@@ -269,10 +269,10 @@ template<Healpix_Ordering_Scheme scheme> static void
   get_interpol
 */
 template<Healpix_Ordering_Scheme scheme> static void
-  ufunc_get_interpol(char **args, intp *dimensions, intp *steps, void *func)
+  ufunc_get_interpol(char **args, npy_intp *dimensions, npy_intp *steps, void *func)
 {
-  register intp i, n=dimensions[0];
-  register intp is1=steps[0],is2=steps[1],is3=steps[2],
+  register npy_intp i, n=dimensions[0];
+  register npy_intp is1=steps[0],is2=steps[1],is3=steps[2],
     os1=steps[3],os2=steps[4],os3=steps[5],os4=steps[6],
     os5=steps[7],os6=steps[8],os7=steps[9],os8=steps[10];
   char *ip1=args[0], *ip2=args[1], *ip3=args[2],
@@ -321,10 +321,10 @@ template<Healpix_Ordering_Scheme scheme> static void
   get_neighbors
 */
 template<Healpix_Ordering_Scheme scheme> static void
-  ufunc_get_neighbors(char **args, intp *dimensions, intp *steps, void *func)
+  ufunc_get_neighbors(char **args, npy_intp *dimensions, npy_intp *steps, void *func)
 {
-  register intp i, n=dimensions[0];
-  register intp is1=steps[0],is2=steps[1],
+  register npy_intp i, n=dimensions[0];
+  register npy_intp is1=steps[0],is2=steps[1],
     os1=steps[2],os2=steps[3],os3=steps[4],os4=steps[5],
     os5=steps[6],os6=steps[7],os7=steps[8],os8=steps[9];
   char *ip1=args[0], *ip2=args[1],
@@ -365,10 +365,10 @@ template<Healpix_Ordering_Scheme scheme> static void
   max_pixrad
 */
 static void
-  ufunc_max_pixrad(char **args, intp *dimensions, intp *steps, void *func)
+  ufunc_max_pixrad(char **args, npy_intp *dimensions, npy_intp *steps, void *func)
 {
-  register intp i, n=dimensions[0];
-  register intp is1=steps[0],os1=steps[1];
+  register npy_intp i, n=dimensions[0];
+  register npy_intp is1=steps[0],os1=steps[1];
   char *ip1=args[0], *op1=args[1];
 
   Healpix_Base2 hb;
@@ -379,7 +379,7 @@ static void
       long nside = *(long*)ip1;
       if (nside!=oldnside)
         { oldnside=nside; hb.SetNside(nside, NEST);
-        	/* ring and nest should give the same result */ 
+        	/* ring and nest should give the same result */
         }
       double max_pixrad = hb.max_pixrad();
       *(double *)op1 = max_pixrad;
@@ -494,7 +494,7 @@ static char get_neighbors_nest_signatures[] = {
   PyArray_LONG, PyArray_LONG, PyArray_LONG, PyArray_LONG // output
 };
 static char max_pixrad_signatures[] = {
-  PyArray_LONG, PyArray_DOUBLE  
+  PyArray_LONG, PyArray_DOUBLE
 };
 
 #if PY_MAJOR_VERSION >= 3
