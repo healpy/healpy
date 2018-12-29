@@ -6,7 +6,6 @@ import unittest
 
 
 class TestPixelFunc(unittest.TestCase):
-
     def setUp(self):
         # data fixture
         self.theta0 = [1.52911759, 0.78550497, 1.57079633, 0.05103658, 3.09055608]

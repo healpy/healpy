@@ -1,5 +1,6 @@
 import os
 import sys
+
 if sys.version >= "3.4":
     from pathlib import Path
 import astropy.io.fits as pf
@@ -13,7 +14,6 @@ from ..sphtfunc import *
 
 
 class TestFitsFunc(unittest.TestCase):
-
     def setUp(self):
         self.nside = 512
         self.m = np.arange(healpy.nside2npix(self.nside))
@@ -158,7 +158,6 @@ class TestFitsFunc(unittest.TestCase):
 
 
 class TestFitsFuncGzip(unittest.TestCase):
-
     def setUp(self):
         self.nside = 4
         self.m = np.arange(healpy.nside2npix(self.nside))
@@ -178,7 +177,6 @@ class TestFitsFuncGzip(unittest.TestCase):
 
 
 class TestReadWriteAlm(unittest.TestCase):
-
     def setUp(self):
 
         s = Alm.getsize(256)
@@ -255,7 +253,6 @@ class TestReadWriteAlm(unittest.TestCase):
 
 
 class TestReadWriteCl(unittest.TestCase):
-
     def setUp(self):
         self.filename = "test_cl.fits"
 

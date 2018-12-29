@@ -553,8 +553,8 @@ def gnomview(
         if wasinteractive:
             pylab.ion()
             # pylab.show()
-        if no_plot:        
-            pylab.close(f)  
+        if no_plot:
+            pylab.close(f)
             f.clf()
             ax.cla()
     if return_projected_map:

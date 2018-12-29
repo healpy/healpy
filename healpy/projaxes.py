@@ -613,7 +613,6 @@ class SphericalProjAxes(matplotlib.axes.Axes):
             del self._graticules
 
     def _get_interv_graticule(self, pmin, pmax, dpar, mmin, mmax, dmer, verbose=True):
-
         def set_prec(d, n, nn=2):
             arcmin = False
             if d / n < 1.:
@@ -681,7 +680,6 @@ class GnomonicAxes(SphericalProjAxes):
 
 
 class HpxGnomonicAxes(GnomonicAxes):
-
     def projmap(self, map, nest=False, **kwds):
         nside = pixelfunc.npix2nside(pixelfunc.get_map_size(map))
         f = lambda x, y, z: pixelfunc.vec2pix(nside, x, y, z, nest=nest)
@@ -719,7 +717,6 @@ class MollweideAxes(SphericalProjAxes):
 
 
 class HpxMollweideAxes(MollweideAxes):
-
     def projmap(self, map, nest=False, **kwds):
         nside = pixelfunc.npix2nside(pixelfunc.get_map_size(map))
         f = lambda x, y, z: pixelfunc.vec2pix(nside, x, y, z, nest=nest)
@@ -747,7 +744,6 @@ class CartesianAxes(SphericalProjAxes):
 
 
 class HpxCartesianAxes(CartesianAxes):
-
     def projmap(self, map, nest=False, **kwds):
         nside = pixelfunc.npix2nside(pixelfunc.get_map_size(map))
         f = lambda x, y, z: pixelfunc.vec2pix(nside, x, y, z, nest=nest)
@@ -784,7 +780,6 @@ class OrthographicAxes(SphericalProjAxes):
 
 
 class HpxOrthographicAxes(OrthographicAxes):
-
     def projmap(self, map, nest=False, **kwds):
         nside = pixelfunc.npix2nside(len(map))
         f = lambda x, y, z: pixelfunc.vec2pix(nside, x, y, z, nest=nest)
@@ -826,7 +821,6 @@ class AzimuthalAxes(SphericalProjAxes):
 
 
 class HpxAzimuthalAxes(AzimuthalAxes):
-
     def projmap(self, map, nest=False, **kwds):
         nside = pixelfunc.npix2nside(pixelfunc.get_map_size(map))
         f = lambda x, y, z: pixelfunc.vec2pix(nside, x, y, z, nest=nest)
@@ -888,7 +882,7 @@ def create_colormap(cmap):
     elif type(cmap) == matplotlib.colors.LinearSegmentedColormap:
         cmap0 = cmap
     else:
-        cmap0 = matplotlib.cm.get_cmap(matplotlib.rcParams['image.cmap'])
+        cmap0 = matplotlib.cm.get_cmap(matplotlib.rcParams["image.cmap"])
     if hasattr(cmap0, "_segmentdata"):
         newcm = matplotlib.colors.LinearSegmentedColormap(
             "newcm", cmap0._segmentdata, cmap0.N
@@ -906,7 +900,6 @@ def create_colormap(cmap):
 #   A Locator that gives the bounds of the interval
 #
 class BoundaryLocator(matplotlib.ticker.Locator):
-
     def __init__(self, N=2, norm=None):
         if N < 2:
             raise ValueError("Number of locs must be greater than 1")
@@ -946,7 +939,6 @@ class BoundaryLocator(matplotlib.ticker.Locator):
 
 
 class HistEqNorm(matplotlib.colors.Normalize):
-
     def __init__(self, vmin=None, vmax=None, clip=False):
         matplotlib.colors.Normalize.__init__(self, vmin, vmax, clip)
         self.xval = None

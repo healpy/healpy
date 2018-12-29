@@ -10,7 +10,6 @@ except:
 
 
 class TestQueryDisc(unittest.TestCase):
-
     def setUp(self):
         self.NSIDE = 8
         self.vec = np.array([0.17101007, 0.03015369, 0.98480775])

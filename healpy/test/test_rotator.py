@@ -18,6 +18,7 @@ def set_random_seed():
     seed = 12345
     np.random.seed(seed)
 
+
 def test_rotate_map_polarization():
     """Compare to a rotation from Galactic to Ecliptic of
     a map of pure Q polarization, the expected value was computed with HEALPix IDL:

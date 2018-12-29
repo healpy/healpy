@@ -387,7 +387,6 @@ class build_external_clib(build_clib):
 
 
 class custom_build_ext(build_ext):
-
     def finalize_options(self):
         build_ext.finalize_options(self)
 
@@ -423,8 +422,9 @@ class custom_build_ext(build_ext):
 
 exec(open("healpy/version.py").read())
 
+
 def readme():
-    with open('README.rst') as f:
+    with open("README.rst") as f:
         return f.read()
 
 
