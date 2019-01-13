@@ -191,10 +191,9 @@ class TestSphtFunc(unittest.TestCase):
         # Input power spectrum and alm
         alm_syn = hp.synalm(self.cla, lmax=lmax)
 
-        cl_out = hp.alm2cl(alm_syn, lmax_out=lmax_out-1)
+        cl_out = hp.alm2cl(alm_syn, lmax_out=lmax_out - 1)
 
-        np.testing.assert_array_almost_equal(
-            cl_out, self.cla[:lmax_out], decimal=4)
+        np.testing.assert_array_almost_equal(cl_out, self.cla[:lmax_out], decimal=4)
 
     def test_map2alm(self):
         nside = 32
@@ -401,7 +400,7 @@ class TestSphtFunc(unittest.TestCase):
         # Test an nside that is too large
         with self.assertRaises(ValueError):
             hp.check_max_nside(16384)
-        
+
         # Test an nside that is valid
         # hp.check_max_nside will return 0 if no exceptions are raised
         self.assertEqual(hp.check_max_nside(1024), 0)

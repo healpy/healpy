@@ -22,7 +22,11 @@
 from __future__ import division
 
 import six
+import sys
 import warnings
+
+if sys.version >= "3.4":
+    import pathlib
 import astropy.io.fits as pf
 import numpy as np
 
@@ -48,7 +52,7 @@ def read_cl(filename, dtype=np.float64, h=False):
 
     Parameters
     ----------
-    filename : str or HDUList or HDU
+    filename : str or HDUList or HDU or pathlib.Path instance
       the fits file name
     dtype : data type, optional
       the data type of the returned array
@@ -277,7 +281,7 @@ def read_map(
 
     Parameters
     ----------
-    filename : str or HDU or HDUList
+    filename : str or HDU or HDUList or pathlib.Path instance
       the fits file name
     field : int or tuple of int, or None, optional
       The column to read. Default: 0.
@@ -543,7 +547,7 @@ def read_alm(filename, hdu=1, return_mmax=False):
 
     Parameters
     ----------
-    filename : str or HDUList or HDU
+    filename : str or HDUList or HDU or pathlib.Path instance
       The name of the fits file to read
     hdu : int, or tuple of int, optional
       The header to read. Start at 0. Default: hdu=1
@@ -607,8 +611,11 @@ def _get_hdu(input_data, hdu=None, memmap=None):
     fits_hdu : HDU
         The extracted HDU
     """
+    allowed_paths = tuple(six.string_types)
+    if sys.version >= "3.4":
+        allowed_paths += (pathlib.Path, pathlib.PosixPath)
 
-    if isinstance(input_data, six.string_types):
+    if isinstance(input_data, allowed_paths):
         hdulist = pf.open(input_data, memmap=memmap)
         return _get_hdu(hdulist, hdu=hdu)
 
@@ -624,7 +631,7 @@ def _get_hdu(input_data, hdu=None, memmap=None):
         fits_hdu = input_data
     else:
         raise TypeError(
-            "First argument should be a input_data, HDUList instance, or HDU instance"
+            "First argument should be a input_data (str or pathlib.Path), HDUList instance, or HDU instance"
         )
 
     return fits_hdu

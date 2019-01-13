@@ -44,7 +44,9 @@ class FutureChangeWarning(UserWarning):
 
 
 DATAPATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
-MAX_NSIDE = 8192  # The maximum nside up to which most operations (e.g. map2alm) will work
+MAX_NSIDE = (
+    8192
+)  # The maximum nside up to which most operations (e.g. map2alm) will work
 
 # Spherical harmonics transformation
 def anafast(
@@ -1106,7 +1108,7 @@ def bl2beam(bl, theta):
     beam : array
         (Circular) beam profile b(theta).
     """
-    
+
     lmax = len(bl) - 1
     nx = len(theta)
     x = np.cos(theta)
@@ -1185,8 +1187,8 @@ def check_max_nside(nside):
 
     if nside > MAX_NSIDE:
         raise ValueError(
-            'nside {nside} of map cannot be larger than '
-            'MAX_NSIDE {max_nside}'.format(
-                nside=nside, max_nside=MAX_NSIDE))
+            "nside {nside} of map cannot be larger than "
+            "MAX_NSIDE {max_nside}".format(nside=nside, max_nside=MAX_NSIDE)
+        )
 
     return 0

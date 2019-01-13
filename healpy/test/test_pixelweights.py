@@ -12,7 +12,6 @@ warnings.filterwarnings("ignore")
 
 
 class TestMap2Alm(unittest.TestCase):
-
     def setUp(self):
         self.nside = 64
         self.lmax = 96
