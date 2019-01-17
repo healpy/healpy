@@ -1139,8 +1139,8 @@ def order2nside(order):
     >>> hp.order2nside(7)
     128
 
-    >>> hp.order2nside(np.arange(8))
-    array([  1,   2,   4,   8,  16,  32,  64, 128])
+    >>> print(hp.order2nside(np.arange(8)))
+    [  1   2   4   8  16  32  64 128]
 
     >>> hp.order2nside(31)
     Traceback (most recent call last):
