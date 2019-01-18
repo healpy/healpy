@@ -47,19 +47,19 @@ template<Healpix_Ordering_Scheme scheme>static void
   char *ip1=args[0], *ip2=args[1], *ip3=args[2], *op=args[3];
 
   Healpix_Base2 hb;
-  long oldnside=-1;
+  int64 oldnside=-1;
 
   for(npy_intp i=0; i<n; i++, ip1+=is1, ip2+=is2, ip3+=is3, op+=os)
     {
-      long nside = *(long*)ip1;
+      int64 nside = *(int64*)ip1;
       if (nside!=oldnside)
         { oldnside=nside; hb.SetNside(nside, scheme); }
       try {
         pointing ptg = pointing(*(double *)ip2,*(double *)ip3);
         ptg.normalize();
-        *(long *)op = hb.ang2pix(ptg);
+        *(int64 *)op = hb.ang2pix(ptg);
       } catch(PlanckError &e) {
-        *(long *)op = -1;
+        *(int64 *)op = -1;
       }
   }
 }
@@ -75,15 +75,15 @@ template<Healpix_Ordering_Scheme scheme> static void
   char *ip1=args[0], *ip2=args[1], *op1=args[2], *op2=args[3];
 
   Healpix_Base2 hb;
-  long oldnside=-1;
+  int64 oldnside=-1;
 
   for(i=0; i<n; i++, ip1+=is1, ip2+=is2, op1+=os1, op2+=os2)
     {
-      long nside = *(long*)ip1;
+      int64 nside = *(int64*)ip1;
       if (nside!=oldnside)
         { oldnside=nside; hb.SetNside(nside, scheme); }
       try {
-        pointing ptg = hb.pix2ang(*(long *)ip2);
+        pointing ptg = hb.pix2ang(*(int64 *)ip2);
         *(double *)op1 = ptg.theta;
         *(double *)op2 = ptg.phi;
       } catch (PlanckError & e) {
@@ -105,17 +105,17 @@ template<Healpix_Ordering_Scheme scheme>static void
   char *ip1=args[0], *ip2=args[1], *ip3=args[2], *ip4=args[3], *op=args[4];
 
   Healpix_Base2 hb;
-  long oldnside=-1;
+  int64 oldnside=-1;
 
   for(npy_intp i=0; i<n; i++, ip1+=is1, ip2+=is2, ip3+=is3, ip4+=is4, op+=os)
     {
-      long nside = *(long*)ip1;
+      int64 nside = *(int64*)ip1;
       if (nside!=oldnside)
         { oldnside=nside; hb.SetNside(nside, scheme); }
       try {
-        *(long *)op = hb.xyf2pix((int)*(long *)ip2,(int)*(long *)ip3,(int)*(long *)ip4);
+        *(int64 *)op = hb.xyf2pix((int)*(long *)ip2,(int)*(long *)ip3,(int)*(long *)ip4);
       } catch(PlanckError &e) {
-        *(long *)op = -1;
+        *(int64 *)op = -1;
       }
   }
 }
@@ -131,16 +131,16 @@ template<Healpix_Ordering_Scheme scheme> static void
   char *ip1=args[0], *ip2=args[1], *op1=args[2], *op2=args[3], *op3=args[4];
 
   Healpix_Base2 hb;
-  long oldnside=-1;
+  int64 oldnside=-1;
 
   for(i=0; i<n; i++, ip1+=is1, ip2+=is2, op1+=os1, op2+=os2, op3+=os3)
     {
-      long nside = *(long*)ip1;
+      int64 nside = *(int64*)ip1;
       if (nside!=oldnside)
         { oldnside=nside; hb.SetNside(nside, scheme); }
       try {
         int x, y, f;
-        hb.pix2xyf(*(long *)ip2, x, y, f);
+        hb.pix2xyf(*(int64 *)ip2, x, y, f);
         *(long *)op1 = x;
         *(long *)op2 = y;
         *(long *)op3 = f;
@@ -163,17 +163,17 @@ ufunc_ring2nest(char **args, npy_intp *dimensions, npy_intp *steps, void *func)
   char *ip1=args[0], *ip2=args[1], *op=args[2];
 
   Healpix_Base2 hb;
-  long oldnside=-1;
+  int64 oldnside=-1;
 
   for(i=0; i<n; i++, ip1+=is1, ip2+=is2, op+=os)
     {
-      long nside = *(long*)ip1;
+      int64 nside = *(int64*)ip1;
       if (nside!=oldnside)
         { oldnside=nside; hb.SetNside(nside, RING); }
       try {
-        *(long *)op = hb.ring2nest(*(long *)ip2);
+        *(int64 *)op = hb.ring2nest(*(int64 *)ip2);
       } catch(PlanckError & e) {
-        *(long *)op = -1;
+        *(int64 *)op = -1;
       }
     }
 }
@@ -189,17 +189,17 @@ static void
   char *ip1=args[0], *ip2=args[1], *op=args[2];
 
   Healpix_Base2 hb;
-  long oldnside=-1;
+  int64 oldnside=-1;
 
   for(i=0; i<n; i++, ip1+=is1, ip2+=is2, op+=os)
     {
-      long nside = *(long*)ip1;
+      int64 nside = *(int64*)ip1;
       if (nside!=oldnside)
         { oldnside=nside; hb.SetNside(nside, NEST); }
       try {
-        *(long *)op = hb.nest2ring(*(long *)ip2);
+        *(int64 *)op = hb.nest2ring(*(int64 *)ip2);
       } catch(PlanckError & e) {
-        *(long *)op = -1;
+        *(int64 *)op = -1;
       }
     }
 }
@@ -216,15 +216,15 @@ template<Healpix_Ordering_Scheme scheme> static void
   char *ip1=args[0], *ip2=args[1], *op1=args[2], *op2=args[3], *op3=args[4];
 
   Healpix_Base2 hb;
-  long oldnside=-1;
+  int64 oldnside=-1;
 
   for(i=0; i<n; i++, ip1+=is1, ip2+=is2, op1+=os1, op2+=os2, op3+=os3)
     {
-      long nside = *(long*)ip1;
+      int64 nside = *(int64*)ip1;
       if (nside!=oldnside)
         { oldnside=nside; hb.SetNside(nside, scheme); }
       try {
-        vec3 v = hb.pix2vec(*(long *)ip2);
+        vec3 v = hb.pix2vec(*(int64 *)ip2);
         *(double *)op1 = v.x;
         *(double *)op2 = v.y;
         *(double *)op3 = v.z;
@@ -247,19 +247,19 @@ template<Healpix_Ordering_Scheme scheme> static void
   char *ip1=args[0], *ip2=args[1], *ip3=args[2], *ip4=args[3], *op1=args[4];
 
   Healpix_Base2 hb;
-  long oldnside=-1;
+  int64 oldnside=-1;
 
   for(i=0; i<n; i++, ip1+=is1, ip2+=is2, ip3+=is3, ip4+=is4, op1+=os1)
     {
-      long nside = *(long*)ip1;
+      int64 nside = *(int64*)ip1;
       if (nside!=oldnside)
         { oldnside=nside; hb.SetNside(nside, scheme); }
       vec3 v (*(double *)ip2,*(double *)ip3,*(double *)ip4);
       try {
-        long ipix = hb.vec2pix(v);
-        *(long *)op1 = ipix;
+        int64 ipix = hb.vec2pix(v);
+        *(int64 *)op1 = ipix;
       } catch (PlanckError &e) {
-        *(long *)op1 = -1;
+        *(int64 *)op1 = -1;
       }
     }
 }
@@ -280,7 +280,7 @@ template<Healpix_Ordering_Scheme scheme> static void
     *op5=args[7],*op6=args[8],*op7=args[9],*op8=args[10];
 
   Healpix_Base2 hb;
-  long oldnside=-1;
+  int64 oldnside=-1;
 
   for(i=0; i<n; i++, ip1+=is1, ip2+=is2, ip3+=is3,
         op1+=os1,op2+=os2,op3+=os3,op4+=os4,
@@ -288,26 +288,26 @@ template<Healpix_Ordering_Scheme scheme> static void
     {
       fix_arr<int64,4> pix;
       fix_arr<double,4> wgt;
-      long nside = *(long*)ip1;
+      int64 nside = *(int64*)ip1;
       if (nside!=oldnside)
         { oldnside=nside; hb.SetNside(nside, scheme); }
       try {
         pointing ptg = pointing(*(double*)ip2, *(double*)ip3);
         ptg.normalize();
         hb.get_interpol(ptg, pix, wgt);
-        *(long*)op1 = (long)pix[0];
-        *(long*)op2 = (long)pix[1];
-        *(long*)op3 = (long)pix[2];
-        *(long*)op4 = (long)pix[3];
+        *(int64*)op1 = (int64)pix[0];
+        *(int64*)op2 = (int64)pix[1];
+        *(int64*)op3 = (int64)pix[2];
+        *(int64*)op4 = (int64)pix[3];
         *(double*)op5 = wgt[0];
         *(double*)op6 = wgt[1];
         *(double*)op7 = wgt[2];
         *(double*)op8 = wgt[3];
       } catch (PlanckError &e) {
-        *(long*)op1 = -1;
-        *(long*)op2 = -1;
-        *(long*)op3 = -1;
-        *(long*)op4 = -1;
+        *(int64*)op1 = -1;
+        *(int64*)op2 = -1;
+        *(int64*)op3 = -1;
+        *(int64*)op4 = -1;
         *(double*)op5 = NAN;
         *(double*)op6 = NAN;
         *(double*)op7 = NAN;
@@ -337,26 +337,26 @@ template<Healpix_Ordering_Scheme scheme> static void
         op5+=os5,op6+=os6,op7+=os7,op8+=os8 )
     {
       fix_arr<int64,8> pix;
-      hb.SetNside(*(long*)ip1, scheme);
+      hb.SetNside(*(int64*)ip1, scheme);
       try {
-        hb.neighbors(*(long*)ip2, pix);
-        *(long*)op1 = (long)pix[0];
-        *(long*)op2 = (long)pix[1];
-        *(long*)op3 = (long)pix[2];
-        *(long*)op4 = (long)pix[3];
-        *(long*)op5 = (long)pix[4];
-        *(long*)op6 = (long)pix[5];
-        *(long*)op7 = (long)pix[6];
-        *(long*)op8 = (long)pix[7];
+        hb.neighbors(*(int64*)ip2, pix);
+        *(int64*)op1 = (int64)pix[0];
+        *(int64*)op2 = (int64)pix[1];
+        *(int64*)op3 = (int64)pix[2];
+        *(int64*)op4 = (int64)pix[3];
+        *(int64*)op5 = (int64)pix[4];
+        *(int64*)op6 = (int64)pix[5];
+        *(int64*)op7 = (int64)pix[6];
+        *(int64*)op8 = (int64)pix[7];
       } catch (PlanckError & e) {
-        *(long*)op1 = -1;
-        *(long*)op2 = -1;
-        *(long*)op3 = -1;
-        *(long*)op4 = -1;
-        *(long*)op5 = -1;
-        *(long*)op6 = -1;
-        *(long*)op7 = -1;
-        *(long*)op8 = -1;
+        *(int64*)op1 = -1;
+        *(int64*)op2 = -1;
+        *(int64*)op3 = -1;
+        *(int64*)op4 = -1;
+        *(int64*)op5 = -1;
+        *(int64*)op6 = -1;
+        *(int64*)op7 = -1;
+        *(int64*)op8 = -1;
       }
     }
 }
@@ -372,11 +372,11 @@ static void
   char *ip1=args[0], *op1=args[1];
 
   Healpix_Base2 hb;
-  long oldnside=-1;
+  int64 oldnside=-1;
 
   for(i=0; i<n; i++, ip1+=is1, op1+=os1)
     {
-      long nside = *(long*)ip1;
+      int64 nside = *(int64*)ip1;
       if (nside!=oldnside)
         { oldnside=nside; hb.SetNside(nside, NEST);
         	/* ring and nest should give the same result */
@@ -458,43 +458,43 @@ static PyUFuncGenericFunction max_pixrad_functions[] = {
 static void * blank_data[] = { (void *)NULL };
 
 static char ang2pix_signatures[] = {
-  PyArray_LONG, PyArray_DOUBLE, PyArray_DOUBLE, PyArray_LONG
+  PyArray_INT64, PyArray_DOUBLE, PyArray_DOUBLE, PyArray_INT64
 };
 static char pix2ang_signatures[] = {
-  PyArray_LONG, PyArray_LONG, PyArray_DOUBLE, PyArray_DOUBLE
+  PyArray_INT64, PyArray_INT64, PyArray_DOUBLE, PyArray_DOUBLE
 };
 static char xyf2pix_signatures[] = {
-  PyArray_LONG, PyArray_LONG, PyArray_LONG, PyArray_LONG, PyArray_LONG
+  PyArray_INT64, PyArray_LONG, PyArray_LONG, PyArray_LONG, PyArray_INT64
 };
 static char pix2xyf_signatures[] = {
-  PyArray_LONG, PyArray_LONG, PyArray_LONG, PyArray_LONG, PyArray_LONG
+  PyArray_INT64, PyArray_INT64, PyArray_LONG, PyArray_LONG, PyArray_LONG
 };
 static char pix2vec_signatures[] = {
-  PyArray_LONG, PyArray_LONG, PyArray_DOUBLE, PyArray_DOUBLE, PyArray_DOUBLE
+  PyArray_INT64, PyArray_INT64, PyArray_DOUBLE, PyArray_DOUBLE, PyArray_DOUBLE
 };
 static char vec2pix_signatures[] = {
-  PyArray_LONG, PyArray_DOUBLE, PyArray_DOUBLE, PyArray_DOUBLE, PyArray_LONG
+  PyArray_INT64, PyArray_DOUBLE, PyArray_DOUBLE, PyArray_DOUBLE, PyArray_INT64
 };
 static char ring2nest_signatures[] = {
-  PyArray_LONG, PyArray_LONG, PyArray_LONG
+  PyArray_INT64, PyArray_INT64, PyArray_INT64
 };
 static char get_interpol_signatures[] = {
-  PyArray_LONG, PyArray_DOUBLE, PyArray_DOUBLE,
-  PyArray_LONG, PyArray_LONG, PyArray_LONG, PyArray_LONG,
+  PyArray_INT64, PyArray_DOUBLE, PyArray_DOUBLE,
+  PyArray_INT64, PyArray_INT64, PyArray_INT64, PyArray_INT64,
   PyArray_DOUBLE, PyArray_DOUBLE, PyArray_DOUBLE, PyArray_DOUBLE
 };
 static char get_neighbors_ring_signatures[] = {
-  PyArray_LONG, PyArray_LONG, // input
-  PyArray_LONG, PyArray_LONG, PyArray_LONG, PyArray_LONG, // output
-  PyArray_LONG, PyArray_LONG, PyArray_LONG, PyArray_LONG // output
+  PyArray_INT64, PyArray_INT64, // input
+  PyArray_INT64, PyArray_INT64, PyArray_INT64, PyArray_INT64, // output
+  PyArray_INT64, PyArray_INT64, PyArray_INT64, PyArray_INT64 // output
 };
 static char get_neighbors_nest_signatures[] = {
-  PyArray_LONG, PyArray_LONG, // input
-  PyArray_LONG, PyArray_LONG, PyArray_LONG, PyArray_LONG, // output
-  PyArray_LONG, PyArray_LONG, PyArray_LONG, PyArray_LONG // output
+  PyArray_INT64, PyArray_INT64, // input
+  PyArray_INT64, PyArray_INT64, PyArray_INT64, PyArray_INT64, // output
+  PyArray_INT64, PyArray_INT64, PyArray_INT64, PyArray_INT64 // output
 };
 static char max_pixrad_signatures[] = {
-  PyArray_LONG, PyArray_DOUBLE
+  PyArray_INT64, PyArray_DOUBLE
 };
 
 #if PY_MAJOR_VERSION >= 3

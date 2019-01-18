@@ -162,7 +162,7 @@ class TestPixelFunc(unittest.TestCase):
             numPix = nside2npix(nside)
             numRings = 4 * nside - 1  # Expected number of rings
             for nest in (True, False):
-                pix = np.arange(numPix)
+                pix = np.arange(numPix, dtype=np.int64)
                 ring = pix2ring(nside, pix, nest=nest)
                 self.assertTrue(pix.shape == ring.shape)
                 self.assertTrue(len(set(ring)) == numRings)

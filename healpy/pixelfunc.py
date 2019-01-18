@@ -446,17 +446,17 @@ def ang2pix(nside, theta, phi, nest=False, lonlat=False):
     >>> hp.ang2pix(16, np.pi/2, 0)
     1440
 
-    >>> hp.ang2pix(16, [np.pi/2, np.pi/4, np.pi/2, 0, np.pi], [0., np.pi/4, np.pi/2, 0, 0])
-    array([1440,  427, 1520,    0, 3068])
+    >>> print(hp.ang2pix(16, [np.pi/2, np.pi/4, np.pi/2, 0, np.pi], [0., np.pi/4, np.pi/2, 0, 0]))
+    [1440  427 1520    0 3068]
 
-    >>> hp.ang2pix(16, np.pi/2, [0, np.pi/2])
-    array([1440, 1520])
+    >>> print(hp.ang2pix(16, np.pi/2, [0, np.pi/2]))
+    [1440 1520]
 
-    >>> hp.ang2pix([1, 2, 4, 8, 16], np.pi/2, 0)
-    array([   4,   12,   72,  336, 1440])
+    >>> print(hp.ang2pix([1, 2, 4, 8, 16], np.pi/2, 0))
+    [   4   12   72  336 1440]
 
-    >>> hp.ang2pix([1, 2, 4, 8, 16], 0, 0, lonlat=True)
-    array([   4,   12,   72,  336, 1440])
+    >>> print(hp.ang2pix([1, 2, 4, 8, 16], 0, 0, lonlat=True))
+    [   4   12   72  336 1440]
     """
 
     check_nside(nside, nest=nest)
@@ -553,8 +553,8 @@ def xyf2pix(nside, x, y, face, nest=False):
     >>> hp.xyf2pix(16, 8, 8, 4)
     1440
 
-    >>> hp.xyf2pix(16, [8, 8, 8, 15, 0], [8, 8, 7, 15, 0], [4, 0, 5, 0, 8])
-    array([1440,  427, 1520,    0, 3068])
+    >>> print(hp.xyf2pix(16, [8, 8, 8, 15, 0], [8, 8, 7, 15, 0], [4, 0, 5, 0, 8]))
+    [1440  427 1520    0 3068]
     """
     check_nside(nside, nest=nest)
     if nest:
@@ -633,11 +633,11 @@ def vec2pix(nside, x, y, z, nest=False):
     >>> hp.vec2pix(16, 1, 0, 0)
     1504
 
-    >>> hp.vec2pix(16, [1, 0], [0, 1], [0, 0])
-    array([1504, 1520])
+    >>> print(hp.vec2pix(16, [1, 0], [0, 1], [0, 0]))
+    [1504 1520]
 
-    >>> hp.vec2pix([1, 2, 4, 8], 1, 0, 0)
-    array([  4,  20,  88, 368])
+    >>> print(hp.vec2pix([1, 2, 4, 8], 1, 0, 0))
+    [  4  20  88 368]
     """
     if nest:
         return pixlib._vec2pix_nest(nside, x, y, z)
@@ -772,11 +772,11 @@ def ring2nest(nside, ipix):
     >>> hp.ring2nest(16, 1504)
     1130
 
-    >>> hp.ring2nest(2, np.arange(10))
-    array([ 3,  7, 11, 15,  2,  1,  6,  5, 10,  9])
+    >>> print(hp.ring2nest(2, np.arange(10)))
+    [ 3  7 11 15  2  1  6  5 10  9]
 
-    >>> hp.ring2nest([1, 2, 4, 8], 11)
-    array([ 11,  13,  61, 253])
+    >>> print(hp.ring2nest([1, 2, 4, 8], 11))
+    [ 11  13  61 253]
     """
     check_nside(nside, nest=True)
     return pixlib._ring2nest(nside, ipix)
@@ -807,11 +807,11 @@ def nest2ring(nside, ipix):
     >>> hp.nest2ring(16, 1130)
     1504
 
-    >>> hp.nest2ring(2, np.arange(10))
-    array([13,  5,  4,  0, 15,  7,  6,  1, 17,  9])
+    >>> print(hp.nest2ring(2, np.arange(10)))
+    [13  5  4  0 15  7  6  1 17  9]
 
-    >>> hp.nest2ring([1, 2, 4, 8], 11)
-    array([ 11,   2,  12, 211])
+    >>> print(hp.nest2ring([1, 2, 4, 8], 11))
+    [ 11   2  12 211]
     """
     check_nside(nside, nest=True)
     return pixlib._nest2ring(nside, ipix)
@@ -1321,23 +1321,35 @@ def get_interp_weights(nside, theta, phi=None, nest=False, lonlat=False):
     Examples
     --------
     >>> import healpy as hp
-    >>> hp.get_interp_weights(1, 0)
-    (array([0, 1, 4, 5]), array([ 1.,  0.,  0.,  0.]))
+    >>> pix, weights = hp.get_interp_weights(1, 0)
+    >>> print(pix)
+    [0 1 4 5]
+    >>> weights
+    array([ 1.,  0.,  0.,  0.])
 
-    >>> hp.get_interp_weights(1, 0, 0)
-    (array([1, 2, 3, 0]), array([ 0.25,  0.25,  0.25,  0.25]))
+    >>> pix, weights = hp.get_interp_weights(1, 0, 0)
+    >>> print(pix)
+    [1 2 3 0]
+    >>> weights
+    array([ 0.25,  0.25,  0.25,  0.25])
 
-    >>> hp.get_interp_weights(1, 0, 90, lonlat=True)
-    (array([1, 2, 3, 0]), array([ 0.25,  0.25,  0.25,  0.25]))
+    >>> pix, weights = hp.get_interp_weights(1, 0, 90, lonlat=True)
+    >>> print(pix)
+    [1 2 3 0]
+    >>> weights
+    array([ 0.25,  0.25,  0.25,  0.25])
 
-    >>> hp.get_interp_weights(1, [0, np.pi/2], 0)
-    (array([[ 1,  4],
-           [ 2,  5],
-           [ 3, 11],
-           [ 0,  8]]), array([[ 0.25,  1.  ],
+    >>> pix, weights = hp.get_interp_weights(1, [0, np.pi/2], 0)
+    >>> print(pix)
+    [[ 1  4]
+     [ 2  5]
+     [ 3 11]
+     [ 0  8]]
+    >>> weights
+    array([[ 0.25,  1.  ],
            [ 0.25,  0.  ],
            [ 0.25,  0.  ],
-           [ 0.25,  0.  ]]))
+           [ 0.25,  0.  ]])
     """
     check_nside(nside, nest=nest)
     if phi is None:
@@ -1384,14 +1396,14 @@ def get_all_neighbours(nside, theta, phi=None, nest=False, lonlat=False):
     Examples
     --------
     >>> import healpy as hp
-    >>> hp.get_all_neighbours(1, 4)
-    array([11,  7,  3, -1,  0,  5,  8, -1])
+    >>> print(hp.get_all_neighbours(1, 4))
+    [11  7  3 -1  0  5  8 -1]
 
-    >>> hp.get_all_neighbours(1, np.pi/2, np.pi/2)
-    array([ 8,  4,  0, -1,  1,  6,  9, -1])
+    >>> print(hp.get_all_neighbours(1, np.pi/2, np.pi/2))
+    [ 8  4  0 -1  1  6  9 -1]
 
-    >>> hp.get_all_neighbours(1, 90, 0, lonlat=True)
-    array([ 8,  4,  0, -1,  1,  6,  9, -1])
+    >>> print(hp.get_all_neighbours(1, 90, 0, lonlat=True))
+    [ 8  4  0 -1  1  6  9 -1]
     """
     check_nside(nside, nest=nest)
     if phi is not None:
