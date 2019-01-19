@@ -221,8 +221,13 @@ def maptype(m):
         raise TypeError("input map is a scalar")
     if len(m) == 0:
         raise TypeError("input map has length zero")
-    if hasattr(m[0], "__len__"):
+
+    try:
         npix = len(m[0])
+    except TypeError:
+        npix = None
+        
+    if npix is not None:
         for mm in m[1:]:
             if len(mm) != npix:
                 raise TypeError("input maps have different npix")
