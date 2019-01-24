@@ -442,14 +442,19 @@ def ang2pix(nside, theta, phi, nest=False, lonlat=False):
 
     Examples
     --------
+    Note that some of the test inputs below that are on pixel boundaries
+    such as theta=pi/2, phi=pi/2, have a tiny value of 1e-15 added to them
+    to make them reproducible on i386 machines using x87 floating point
+    instruction set (see https://github.com/healpy/healpy/issues/528).
+
     >>> import healpy as hp
     >>> hp.ang2pix(16, np.pi/2, 0)
     1440
 
-    >>> print(hp.ang2pix(16, [np.pi/2, np.pi/4, np.pi/2, 0, np.pi], [0., np.pi/4, np.pi/2, 0, 0]))
+    >>> print(hp.ang2pix(16, [np.pi/2, np.pi/4, np.pi/2, 0, np.pi], [0., np.pi/4, np.pi/2 + 1e-15, 0, 0]))
     [1440  427 1520    0 3068]
 
-    >>> print(hp.ang2pix(16, np.pi/2, [0, np.pi/2]))
+    >>> print(hp.ang2pix(16, np.pi/2, [0, np.pi/2 + 1e-15]))
     [1440 1520]
 
     >>> print(hp.ang2pix([1, 2, 4, 8, 16], np.pi/2, 0))
@@ -1320,6 +1325,11 @@ def get_interp_weights(nside, theta, phi=None, nest=False, lonlat=False):
 
     Examples
     --------
+    Note that some of the test inputs below that are on pixel boundaries
+    such as theta=pi/2, phi=pi/2, have a tiny value of 1e-15 added to them
+    to make them reproducible on i386 machines using x87 floating point
+    instruction set (see https://github.com/healpy/healpy/issues/528).
+
     >>> import healpy as hp
     >>> pix, weights = hp.get_interp_weights(1, 0)
     >>> print(pix)
@@ -1339,17 +1349,18 @@ def get_interp_weights(nside, theta, phi=None, nest=False, lonlat=False):
     >>> weights
     array([ 0.25,  0.25,  0.25,  0.25])
 
-    >>> pix, weights = hp.get_interp_weights(1, [0, np.pi/2], 0)
+    >>> pix, weights = hp.get_interp_weights(1, [0, np.pi/2 + 1e-15], 0)
     >>> print(pix)
     [[ 1  4]
      [ 2  5]
      [ 3 11]
      [ 0  8]]
-    >>> weights
-    array([[ 0.25,  1.  ],
-           [ 0.25,  0.  ],
-           [ 0.25,  0.  ],
-           [ 0.25,  0.  ]])
+    >>> np.testing.assert_allclose(
+    ...     weights,
+    ...     np.array([[ 0.25,  1.  ],
+    ...               [ 0.25,  0.  ],
+    ...               [ 0.25,  0.  ],
+    ...               [ 0.25,  0.  ]]), rtol=0, atol=1e-14)
     """
     check_nside(nside, nest=nest)
     if phi is None:
