@@ -372,8 +372,7 @@ def synalm(cls, lmax=None, mmax=None, new=False, rng=None, verbose=True):
       
     rng: numpy random number generator state. Useful when generating multiple
        maps in parallel. Typically, `rng=np.random.RandomState(seed)`
-       see:
-       https://stackoverflow.com/questions/29854398/seeding-random-number-generators-in-parallel-programs
+       
 
     Returns
     -------
