@@ -419,7 +419,7 @@ def synalm(cls, lmax=None, mmax=None, new=False, RNG=None, verbose=True):
             alm.imag = np.random.standard_normal(szalm)
         else:
             alm.real = RNG.standard_normal(szalm)
-            alm.imag = RNG..standard_normal(szalm)
+            alm.imag = RNG.standard_normal(szalm)
             
         alms_list = [alm]
         sphtlib._synalm(cls_list, alms_list, lmax, mmax)
