@@ -347,7 +347,7 @@ def alm2map(
         return np.array(output)
 
 
-def synalm(cls, lmax=None, mmax=None, new=False, RNG=None, verbose=True):
+def synalm(cls, lmax=None, mmax=None, new=False, rng=None, verbose=True):
     """Generate a set of alm given cl.
     The cl are given as a float array. Corresponding alm are generated.
     If lmax is None, it is assumed lmax=cl.size-1
@@ -370,8 +370,8 @@ def synalm(cls, lmax=None, mmax=None, new=False, RNG=None, verbose=True):
       If False, use the old ordering, ie by row
       (e.g. TT, TE, TB, EE, EB, BB or TT, TE, EE, BB if 4 cl as input).
       
-    RNG: numpy random number generator state. Useful when generating multiple
-       maps in parallel. Typically, RNG = np.random.RandomState(seed)
+    rng: numpy random number generator state. Useful when generating multiple
+       maps in parallel. Typically, `rng=np.random.RandomState(seed)`
        see:
        https://stackoverflow.com/questions/29854398/seeding-random-number-generators-in-parallel-programs
 
@@ -414,12 +414,12 @@ def synalm(cls, lmax=None, mmax=None, new=False, RNG=None, verbose=True):
         szalm = Alm.getsize(lmax, mmax)
         alm = np.zeros(szalm, "D")
         
-        if RNG is None:
+        if rng is None:
             alm.real = np.random.standard_normal(szalm)
             alm.imag = np.random.standard_normal(szalm)
         else:
-            alm.real = RNG.standard_normal(szalm)
-            alm.imag = RNG.standard_normal(szalm)
+            alm.real = rng.standard_normal(szalm)
+            alm.imag = rng.standard_normal(szalm)
             
         alms_list = [alm]
         sphtlib._synalm(cls_list, alms_list, lmax, mmax)
@@ -454,12 +454,12 @@ def synalm(cls, lmax=None, mmax=None, new=False, RNG=None, verbose=True):
     for i in six.moves.xrange(Nspec):
         alm = np.zeros(szalm, "D")
         
-        if RNG is None:
+        if rng is None:
             alm.real = np.random.standard_normal(szalm)
             alm.imag = np.random.standard_normal(szalm)
         else:
-            alm.real = RNG.standard_normal(szalm)   
-            alm.imag = RNG.standard_normal(szalm)
+            alm.real = rng.standard_normal(szalm)   
+            alm.imag = rng.standard_normal(szalm)
         
         alms_list.append(alm)
     if new:  # new input order: input given by diagonal, should be given by row
@@ -484,7 +484,7 @@ def synfast(
     fwhm=0.0,
     sigma=None,
     new=False,
-    RNG=None,
+    rng=None,
     verbose=True,
 ):
     """Create a map(s) from cl(s).
@@ -515,7 +515,7 @@ def synfast(
     sigma : float, scalar, optional
       The sigma of the Gaussian used to smooth the map (applied on alm)
       [in radians]
-    RNG: Numpy random number generator state, passed to synalm.
+    rng: Numpy random number generator state, passed to synalm.
 
     Returns
     -------
@@ -543,7 +543,7 @@ def synfast(
     cls_lmax = cb.len_array_or_arrays(cls) - 1
     if lmax is None or lmax < 0:
         lmax = min(cls_lmax, 3 * nside - 1)
-    alms = synalm(cls, lmax=lmax, mmax=mmax, new=new, RNG=RNG, verbose=verbose)
+    alms = synalm(cls, lmax=lmax, mmax=mmax, new=new, rng=rng, verbose=verbose)
     maps = alm2map(
         alms,
         nside,
