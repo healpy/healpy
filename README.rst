@@ -27,12 +27,12 @@ Capabilities
 
 `healpy` provides utilities to:
 
-* convert between sky coordinates and pixel indices in HEALPix nested and ring schemes
+* convert between sky coordinates and pixel indices in `HEALPix` nested and ring schemes
 * find pixels within a disk, a polygon or a strip in the sky
 * apply coordinate transformations between Galactic, Ecliptic and Equatorial reference frames
 * apply custom rotations either to vectors or full maps
-* read and write HEALPix maps to disk in FITS format
-* upgrade and downgrade the resolution of existing HEALPix maps
+* read and write `HEALPix` maps to disk in FITS format
+* upgrade and downgrade the resolution of existing `HEALPix` maps
 * visualize maps in Mollweide, Gnomonic and Cartographic projections
 * transform maps to Spherical Harmonics space and back using multi-threaded C++ routines
 * compute Auto and Cross Power Spectra from maps and create map realizations from spectra
@@ -74,12 +74,12 @@ for further details and other installation options.
 Optional
 --------
 
-Healpy depends on the HEALPix C++ and cfitsio C libraries. Source code is
+Healpy depends on the `HEALPix` C++ and cfitsio C libraries. Source code is
 include with Healpy and you do not have to install them separately.
 
 However, if you have them installed already, Healpy should detect and reuse
 them instead of building them from source. To use your own installations of
-HEALPix and cfitsio, you will also need:
+`HEALPix` and cfitsio, you will also need:
 
 * `pkg-config <http://pkg-config.freedesktop.org>`_
 
@@ -95,14 +95,14 @@ for further instructions.
 Known issues
 ------------
 
-* Building with OpenMP support: the underlying HEALPix C++ library can be built
+* Building with OpenMP support: the underlying `HEALPix` C++ library can be built
   to use `OpenMP <http://openmp.org/wp/>`_ to speed up some operations on
   systems with multiple cores. Most, but not all, modern C/C++ compilers support
   OpenMP, `the notable exception being clang <http://openmp.llvm.org>`_.
 
   If your Healpy build fails with an error message about being unable to link
   against `-lgomp`, then this typically means that Healpy detected an
-  already-installed HEALPix C++ library that was built with OpenMP support, but
+  already-installed `HEALPix` C++ library that was built with OpenMP support, but
   you are trying to build Healpy with a compiler that does not support OpenMP.
   Try cleaning the build with `python setup.py clean --all`, and set the
   environment variables `CC` and `CXX` to point to an OpenMP-capable compiler,
@@ -113,9 +113,9 @@ Known issues
 
 * Incompatibility with ``cfitisio`` from ``HEASOFT``: due to a conflict of
   header file names it is currently not possible to use the cfitsio library
-  provided with the HEASOFT package for compilation of HEALPix C++. HEASOFT's
+  provided with the HEASOFT package for compilation of `HEALPix` C++. HEASOFT's
   include directory contains a file called "rotmatrix.h" which clashes with
-  HEALPix's own rotmatrix.h.
+  `HEALPix`'s own rotmatrix.h.
 
 * Compilation problems in the C++ package: some gcc versions (we have reports
   for 4.4.5 and 4.4.6) crash with an internal compiler error during compilation
@@ -165,11 +165,11 @@ Acknowledgements
 ----------------
 
 Note that, as stated `here <http://healpix.sourceforge.net/downloads.php>`_
-publications based on work using the HEALPix software package should include
+publications based on work using the `HEALPix` software package should include
 both of the following:
 
 1. an acknowledgment statement: "Some of the results in this paper have been
-   derived using the HEALPix (Gorski et al., 2005) package". The complete
+   derived using the `HEALPix` (Gorski et al., 2005) package". The complete
    reference is:
 
       Gorski, K.M., E. Hivon, A.J. Banday, B.D. Wandelt, F.K. Hansen,
@@ -177,9 +177,9 @@ both of the following:
       High-resolution Discretization and Fast Analysis of Data
       Distributed on the Sphere, Ap.J., 622, 759-771, 2005.
 
-2. at the first use of the HEALPix acronym, a footnote placed in the main body
-   of the paper referring to the HEALPix web site, currently
+2. at the first use of the `HEALPix` acronym, a footnote placed in the main body
+   of the paper referring to the `HEALPix` web site, currently
    http://healpix.sf.net
 
-As healpy is based on HEALPix Software (the C++ library), the same
+As healpy is based on `HEALPix` Software (the C++ library), the same
 condition applies to it.
