@@ -12,8 +12,8 @@ authors:
    orcid:
    affiliation:
  - name: Daniel Lenz
-   orcid:
-   affiliation:
+   orcid: 0000-0001-5820-475X
+   affiliation: 
  - name: Martin Reinecke
    orcid:
    affiliation:
@@ -29,6 +29,9 @@ authors:
 affiliations:
  - name: San Diego Supercomputer Center, University of California, San Diego
    index: 1
+ - name: Jet Propulsion Laboratory, California Institute of Technology, Pasadena, California 91109, USA
+   index: 2
+ 
 date: 1 February 2019
 bibliography: paper.bib
 ---
