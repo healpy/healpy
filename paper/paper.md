@@ -57,7 +57,7 @@ and then each is further subdivided to achieve higher and higher resolution.
 The ``HEALPix`` team provides FORTRAN, C++ and IDL implementations of the framework.
 
 ``healpy`` is a wrapper to the multi-threaded ``HEALPix`` C++ library in Python, it implements
-a more user-friendly interface for all ``HEALPix`` functionalities.
+a user-friendly interface for all ``HEALPix`` functionalities.
 It also adds utilities to read and write maps, Spherical Harmonics coefficients and
 Power Spectrum values as FITS files based on ``astropy.io.fits``.
 Finally it provides extensive plotting functionality, i.e. Mollweide, Gnomonic and Cartographic
