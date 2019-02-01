@@ -13,26 +13,28 @@ authors:
    affiliation:
  - name: Daniel Lenz
    orcid: 0000-0001-5820-475X
-   affiliation:
+   affiliation: "2"
  - name: Martin Reinecke
    orcid:
-   affiliation: 3
+   affiliation: "3"
  - name: Cyrille Rosset
    orcid:
    affiliation:
  - name: Eric Hivon
-   orcid:
-   affiliation:
+   orcid: 0000-0003-1880-2733
+   affiliation: "4"
  - name: Krzysztof M Gorski
    orcid:
-   affiliation:
+   affiliation: "2"
 affiliations:
  - name: San Diego Supercomputer Center, University of California, San Diego
    index: 1
- - name: Jet Propulsion Laboratory, California Institute of Technology, Pasadena, California 91109, USA
+ - name: Jet Propulsion Laboratory, California Institute of Technology, Pasadena, California, USA
    index: 2
- - name: Max-Planck-Institute for Astrophysics, Karl-Schwarzschild-Str. 1, 85748 Garching, Germany
+ - name: Max-Planck-Institute for Astrophysics, Garching, Germany
    index: 3
+ - name: Institut d'Astrophysique de Paris, CNRS/Sorbonne Universite, Paris, France
+   index: 4
 
 date: 1 February 2019
 bibliography: paper.bib
