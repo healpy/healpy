@@ -13,11 +13,11 @@ authors:
    affiliation:
  - name: Daniel Lenz
    orcid: 0000-0001-5820-475X
-   affiliation: 
+   affiliation:
  - name: Martin Reinecke
    orcid:
-   affiliation:
- - name: Cirille Rosset
+   affiliation: 3
+ - name: Cyrille Rosset
    orcid:
    affiliation:
  - name: Eric Hivon
@@ -31,7 +31,9 @@ affiliations:
    index: 1
  - name: Jet Propulsion Laboratory, California Institute of Technology, Pasadena, California 91109, USA
    index: 2
- 
+ - name: Max-Planck-Institute for Astrophysics, Karl-Schwarzschild-Str. 1, 85748 Garching, Germany
+   index: 3
+
 date: 1 February 2019
 bibliography: paper.bib
 ---
