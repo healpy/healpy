@@ -47,7 +47,7 @@ Microwave Background, like WMAP [@wmap13] and Planck [@planck18], produce all-sk
 and higher resolution.
 Handling those datasets efficiently and study their statistical properties
 requires a discretization scheme on the sphere.
-The Hierarchical Equal Area isoLatitude Pixelation (``HEALPix``, [@gorski05]) scheme
+The Hierarchical Equal Area isoLatitude Pixelation ([``HEALPix``](https://healpix.sourceforge.io), [@gorski05]) scheme
 has proven to be an excellent mathematical framework to store map-domain data
 and efficiently compute their Spherical Harmonics Transform, whose Angular
 Power Spectrum is one the most powerful tools to understand the early Universe.
