@@ -53,13 +53,12 @@ and efficiently compute their Spherical Harmonics Transform, whose Angular
 Power Spectrum is one the most powerful tools to understand the early Universe.
 
 See in the ![figure](healpix_grid.png) how a sphere is first split into 12 base
-pixels of equal area and whose centers are at the same latitude
-and then each is further subdivided to achieve higher and higher resolution.
+pixels of equal area whose centers are at the same latitude. Then, each is further subdivided to achieve higher and higher resolution.
 The ``HEALPix`` team provides FORTRAN, C++, and IDL implementations of the framework.
 
 ``healpy`` is a wrapper to the multi-threaded ``HEALPix`` C++ library in Python, it implements
 a user-friendly interface for all ``HEALPix`` functionalities, most importantly a fast nearest-neighbor search and the decomposition into Spherical Harmonics coefficients.
-It also adds utilities to read and write maps, Spherical Harmonics coefficients and
+It also adds utilities to read/write maps, Spherical Harmonics coefficients, and
 Power Spectrum values as FITS files based on ``astropy.io.fits``.
 Finally it provides extensive plotting functionality, i.e. Mollweide, Gnomonic and Cartographic
 projections based on Matplotlib.
