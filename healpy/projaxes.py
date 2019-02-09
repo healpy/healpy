@@ -879,7 +879,7 @@ def get_color_table(vmin, vmax, val, cmap=None, norm=None):
 def create_colormap(cmap):
     if type(cmap) == str:
         cmap0 = matplotlib.cm.get_cmap(cmap)
-    elif type(cmap) == matplotlib.colors.LinearSegmentedColormap:
+    elif type(cmap) in [matplotlib.colors.LinearSegmentedColormap, matplotlib.color.ListedColormap]:
         cmap0 = cmap
     else:
         cmap0 = matplotlib.cm.get_cmap(matplotlib.rcParams["image.cmap"])
