@@ -18,8 +18,8 @@ authors:
    orcid:
    affiliation: "3"
  - name: Cyrille Rosset
-   orcid:
-   affiliation:
+   orcid: 0000-0003-0286-2192
+   affiliation: "5"
  - name: Eric Hivon
    orcid: 0000-0003-1880-2733
    affiliation: "4"
@@ -35,6 +35,8 @@ affiliations:
    index: 3
  - name: Institut d'Astrophysique de Paris, CNRS/Sorbonne Universite, Paris, France
    index: 4
+ - name: Laboratoire Astroparticules et Cosmologie, CNRS/Université Paris Diderot, Paris, France
+   index: 5
 
 date: 1 February 2019
 bibliography: paper.bib
