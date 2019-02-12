@@ -55,8 +55,10 @@ and efficiently compute their Spherical Harmonics Transform, whose Angular
 Power Spectrum is one the most powerful tools to understand the early Universe.
 
 See in the ![figure](healpix_grid.png) how a sphere is first split into 12 base
-pixels of equal area whose centers are at the same latitude. Then, each is further subdivided to achieve higher and higher resolution.
-The ``HEALPix`` team provides FORTRAN, C++, and IDL implementations of the framework.
+pixels of equal area whose centers are aligned at three different latitudes. Then, each is further subdivided to achieve higher and higher resolution.
+The ``HEALPix`` team provides FORTRAN, C++, IDL/GDL and Java implementations of the framework with simulation, analysis and visualization functionalities,
+format definitions for [FITS files](https://healpix.sourceforge.io/data/examples/),
+and extensive documentation of each routine and facility.
 
 ``healpy`` is a wrapper to the multi-threaded ``HEALPix`` C++ library in Python, it implements
 a user-friendly interface for all ``HEALPix`` functionalities, most importantly a fast nearest-neighbor search and the decomposition into Spherical Harmonics coefficients.
@@ -65,7 +67,9 @@ Power Spectrum values as FITS files based on ``astropy.io.fits``.
 Finally it provides extensive plotting functionality, i.e. Mollweide, Gnomonic and Cartographic
 projections based on Matplotlib.
 We also release a ``conda`` package on ``conda-forge`` and wheels on PyPI for Linux and MacOS. These packages
-also bundle the ``HEALPix`` C++ library.
+also bundle the ``HEALPix`` C++ library. Moreover, ``healpy`` is distributed as part of the ``HEALPix`` release package;
+within the installation script, a single C++ dynamic library is installed in the target system and used both by the C++
+binaries and by ``healpy``.
 
 ``healpy`` was designed to be used by professional cosmologists and students to analyze
 outputs of Cosmic Microwave Background experiments. WMAP, Planck
