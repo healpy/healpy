@@ -53,8 +53,9 @@ has proven to be an excellent mathematical framework to store map-domain data
 and efficiently compute their Spherical Harmonics Transform, whose Angular
 Power Spectrum is one the most powerful tools to understand the early Universe.
 
-See in the ![figure](healpix_grid.png) how a sphere is first split into 12 base
-pixels of equal area whose centers are aligned at three different latitudes. Then, each is further subdivided to achieve higher and higher resolution.
+![See how a sphere is first split into 12 base
+pixels of equal area whose centers are aligned at three different latitudes. Then, each is further subdivided to achieve higher and higher resolution.](healpix_grid.png)
+
 The ``HEALPix`` team provides FORTRAN, C++, IDL/GDL and Java implementations of the framework with simulation, analysis and visualization functionalities,
 format definitions for [FITS files](https://healpix.sourceforge.io/data/examples/),
 and extensive documentation of each routine and facility.
