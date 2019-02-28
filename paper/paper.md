@@ -9,13 +9,11 @@ authors:
    orcid: 0000-0001-6841-1058
    affiliation: "1"
  - name: Leo P Singer
-   orcid:
-   affiliation:
+   affiliation: "6"
  - name: Daniel Lenz
    orcid: 0000-0001-5820-475X
    affiliation: "2"
  - name: Martin Reinecke
-   orcid:
    affiliation: "3"
  - name: Cyrille Rosset
    orcid: 0000-0003-0286-2192
@@ -24,10 +22,9 @@ authors:
    orcid: 0000-0003-1880-2733
    affiliation: "4"
  - name: Krzysztof M Gorski
-   orcid:
    affiliation: "2"
 affiliations:
- - name: San Diego Supercomputer Center, University of California, San Diego
+ - name: San Diego Supercomputer Center, University of California, San Diego, USA
    index: 1
  - name: Jet Propulsion Laboratory, California Institute of Technology, Pasadena, California, USA
    index: 2
@@ -37,6 +34,8 @@ affiliations:
    index: 4
  - name: Laboratoire Astroparticules et Cosmologie, CNRS/Université Paris Diderot, Paris, France
    index: 5
+ - name: Goddard Space Flight Center, NASA, Greenbelt, Maryland, USA
+   index: 6
 
 date: 1 February 2019
 bibliography: paper.bib
