@@ -122,3 +122,8 @@ def test_rotator_input_lengths_inv():
         Rotator(
             coord=[("C", "E"), ("E", "G")], rot=[(0, 0, 90), (0, 90, 0)], inv=[True]
         )
+
+
+def test_rotator_eq():
+    rot_1 = Rotator(coord=("G", "E"))
+    assert rot_1 == rot_1.get_inverse().get_inverse()
