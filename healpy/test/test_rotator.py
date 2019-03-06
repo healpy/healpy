@@ -105,3 +105,20 @@ def test_rotate_dipole_and_back():
     np.testing.assert_allclose(
         m_gal[no_equator], ecl2gal.rotate_map_pixel(m_ecl)[no_equator], rtol=1e-3
     )
+
+
+def test_rotator_input_lengths():
+    with pytest.raises(ValueError):
+        Rotator(coord=[("C", "E"), ("E", "G")], rot=[(0, 0, 90)])
+
+
+def test_rotator_input_type():
+    with pytest.raises(ValueError):
+        Rotator(coord="CE", rot=[(0, 0, 90)])
+
+
+def test_rotator_input_lengths_inv():
+    with pytest.raises(ValueError):
+        Rotator(
+            coord=[("C", "E"), ("E", "G")], rot=[(0, 0, 90), (0, 90, 0)], inv=[True]
+        )
