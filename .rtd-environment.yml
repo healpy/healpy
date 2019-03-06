@@ -14,3 +14,4 @@ dependencies:
     - autoconf
     - automake
     - libtool
+    - pkg-config
