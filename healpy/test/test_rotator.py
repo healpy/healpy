@@ -8,7 +8,7 @@ import numpy as np
 
 import healpy as hp
 from healpy import Rotator
-from healpy.rotator import euler
+from healpy.rotator import euler, euler_matrix_new
 
 path = os.path.dirname(os.path.realpath(__file__))
 
@@ -141,4 +141,9 @@ def test_rotate_vector():
 @pytest.mark.parametrize("FK4", [0, 1])
 def test_euler(select, FK4):
     out = euler(30, 20, select=select, FK4=FK4)
+    np.testing.assert_array_equal(np.isnan(out), 0)
+
+@pytest.mark.parametrize("X,Y,ZYX", [(1,0,0),(0, 1, 0),(0,0,1)])
+def test_euler_matrix_new(X,Y,ZYX):
+    out = euler_matrix_new(10,10, 10, X=X, Y=Y, ZYX=ZYX, deg=True)
     np.testing.assert_array_equal(np.isnan(out), 0)
