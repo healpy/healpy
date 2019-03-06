@@ -8,6 +8,7 @@ import numpy as np
 
 import healpy as hp
 from healpy import Rotator
+from healpy.rotator import euler
 
 path = os.path.dirname(os.path.realpath(__file__))
 
@@ -127,3 +128,17 @@ def test_rotator_input_lengths_inv():
 def test_rotator_eq():
     rot_1 = Rotator(coord=("G", "E"))
     assert rot_1 == rot_1.get_inverse().get_inverse()
+
+
+def test_rotate_vector():
+    gal2ecl = Rotator(coord=("G", "E"))
+    gal_vec = np.array([0.1, -0.1, 1])
+    gal_vec_in_ecl = gal2ecl(*gal_vec)
+    np.testing.assert_allclose(gal_vec, gal2ecl.I(gal_vec_in_ecl))
+
+
+@pytest.mark.parametrize("select", list(range(1, 6 + 1)))
+@pytest.mark.parametrize("FK4", [0, 1])
+def test_euler(select, FK4):
+    out = euler(30, 20, select=select, FK4=FK4)
+    np.testing.assert_array_equal(np.isnan(out), 0)
