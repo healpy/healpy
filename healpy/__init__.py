@@ -103,8 +103,6 @@ from .zoomtool import mollzoom, set_g_clim
 from .fitsfunc import (
     write_map,
     read_map,
-    mrdfits,
-    mwrfits,
     read_alm,
     write_alm,
     write_cl,

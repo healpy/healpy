@@ -8,6 +8,7 @@ import numpy as np
 
 import healpy as hp
 from healpy import Rotator
+from healpy.rotator import euler, euler_matrix_new
 
 path = os.path.dirname(os.path.realpath(__file__))
 
@@ -105,3 +106,44 @@ def test_rotate_dipole_and_back():
     np.testing.assert_allclose(
         m_gal[no_equator], ecl2gal.rotate_map_pixel(m_ecl)[no_equator], rtol=1e-3
     )
+
+
+def test_rotator_input_lengths():
+    with pytest.raises(ValueError):
+        Rotator(coord=[("C", "E"), ("E", "G")], rot=[(0, 0, 90)])
+
+
+def test_rotator_input_type():
+    with pytest.raises(ValueError):
+        Rotator(coord="CE", rot=[(0, 0, 90)])
+
+
+def test_rotator_input_lengths_inv():
+    with pytest.raises(ValueError):
+        Rotator(
+            coord=[("C", "E"), ("E", "G")], rot=[(0, 0, 90), (0, 90, 0)], inv=[True]
+        )
+
+
+def test_rotator_eq():
+    rot_1 = Rotator(coord=("G", "E"))
+    assert rot_1 == rot_1.get_inverse().get_inverse()
+
+
+def test_rotate_vector():
+    gal2ecl = Rotator(coord=("G", "E"))
+    gal_vec = np.array([0.1, -0.1, 1])
+    gal_vec_in_ecl = gal2ecl(*gal_vec)
+    np.testing.assert_allclose(gal_vec, gal2ecl.I(gal_vec_in_ecl))
+
+
+@pytest.mark.parametrize("select", list(range(1, 6 + 1)))
+@pytest.mark.parametrize("FK4", [0, 1])
+def test_euler(select, FK4):
+    out = euler(30, 20, select=select, FK4=FK4)
+    np.testing.assert_array_equal(np.isnan(out), 0)
+
+@pytest.mark.parametrize("X,Y,ZYX", [(1,0,0),(0, 1, 0),(0,0,1)])
+def test_euler_matrix_new(X,Y,ZYX):
+    out = euler_matrix_new(10,10, 10, X=X, Y=Y, ZYX=ZYX, deg=True)
+    np.testing.assert_array_equal(np.isnan(out), 0)
