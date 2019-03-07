@@ -14,6 +14,7 @@ from ..sphtfunc import *
 
 
 class TestFitsFunc(unittest.TestCase):
+
     def setUp(self):
         self.nside = 512
         self.m = np.arange(healpy.nside2npix(self.nside))
@@ -158,6 +159,7 @@ class TestFitsFunc(unittest.TestCase):
 
 
 class TestFitsFuncGzip(unittest.TestCase):
+
     def setUp(self):
         self.nside = 4
         self.m = np.arange(healpy.nside2npix(self.nside))
@@ -177,6 +179,7 @@ class TestFitsFuncGzip(unittest.TestCase):
 
 
 class TestReadWriteAlm(unittest.TestCase):
+
     def setUp(self):
 
         s = Alm.getsize(256)
@@ -253,6 +256,7 @@ class TestReadWriteAlm(unittest.TestCase):
 
 
 class TestReadWriteCl(unittest.TestCase):
+
     def setUp(self):
         self.filename = "test_cl.fits"
 
@@ -296,6 +300,14 @@ class TestReadWriteCl(unittest.TestCase):
         write_cl("test_cl.fits", cl)
         hdu = pf.open("test_cl.fits")[1]
         read_cl(hdu)
+
+
+def test_getformat():
+    assert getformat(False) == "L"
+    assert getformat([False]) == "L"
+    assert getformat(str) == "A"
+    assert getformat("CCC") == "A3"
+    assert getformat(["DD", "CCC"]) == "A3"
 
 
 if __name__ == "__main__":
