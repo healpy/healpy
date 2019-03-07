@@ -563,7 +563,7 @@ def read_alm(filename, hdu=1, return_mmax=False):
     lmaxtot = None
     mmaxtot = None
     for unit in np.atleast_1d(hdu):
-        idx, almr, almi = mrdfits(filename, hdu=unit)
+        idx, almr, almi = [_get_hdu(filename, hdu=unit).data.field(i) for i in range(3)]
         l = np.floor(np.sqrt(idx - 1)).astype(np.long)
         m = idx - l ** 2 - l - 1
         if (m < 0).any():
@@ -635,66 +635,6 @@ def _get_hdu(input_data, hdu=None, memmap=None):
         )
 
     return fits_hdu
-
-
-def mrdfits(filename, hdu=1):
-    """
-    Read a table in a fits file.
-
-    Parameters
-    ----------
-    filename : str or HDUList or HDU
-      The name of the fits file to read, or an HDUList or HDU instance.
-    hdu : int, optional
-      The header to read. Start at 0. Default: hdu=1
-
-    Returns
-    -------
-    cols : a list of arrays
-      A list of column data in the given header
-    """
-    fits_hdu = _get_hdu(filename, hdu=hdu)
-    val = []
-    for i in range(len(fits_hdu.columns)):
-        val.append(fits_hdu.data.field(i))
-    return val
-
-
-def mwrfits(filename, data, hdu=1, colnames=None, keys=None):
-    """Write columns to a fits file in a table extension.
-
-    Parameters
-    ----------
-    filename : str
-      The fits file name
-    data : list of 1D arrays
-      A list of 1D arrays to write in the table
-    hdu : int, optional
-      The header where to write the data. Default: 1
-    colnames : list of str
-      The column names
-    keys : dict-like
-      A dictionary with keywords to write in the header
-    """
-    # Check the inputs
-    if colnames is not None:
-        if len(colnames) != len(data):
-            raise ValueError("colnames and data must the same length")
-    else:
-        colnames = [""] * len(data)
-    cols = []
-    for line in six.moves.xrange(len(data)):
-        cols.append(
-            pf.Column(
-                name=colnames[line], format=getformat(data[line]), array=data[line]
-            )
-        )
-    tbhdu = pf.BinTableHDU.from_columns(cols)
-    if type(keys) is dict:
-        for k, v in keys.items():
-            tbhdu.header[k] = v
-    # write the file
-    tbhdu.writeto(filename)
 
 
 def getformat(t):
