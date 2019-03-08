@@ -1,5 +1,24 @@
 # Steps to release `healpy`
 
+## Synchronize the C++ library
+
+The HEALPix C++ library is available on Sourceforge under SVN, we maintain a read only mirror at <https://github.com/healpy/healpixmirror> so that we can embed into `healpy` with `git submodule`.
+
+We should **only update the C++ sources after HEALPix has been released**, otherwise there could be incompatibilities for users that compile HEALPix separately.
+
+Once new version of HEALPix C++ has been released, we can update `healpixmirror` with:
+
+    git svn rebase
+    git svn push
+
+then in `healpy`:
+
+    cd healpixsubmodule
+    git pull master
+    cd ..
+    git add healpixsubmodule
+    git commit -m "Updated HEALPix C++ to 3.5.0"
+    
 ## Github
 
 * Review recent pull requests and update `CHANGELOG.rst`
