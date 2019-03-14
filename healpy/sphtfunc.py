@@ -839,6 +839,7 @@ def smoothing(
     lmax=None,
     mmax=None,
     use_weights=False,
+    use_pixel_weights=False,
     datapath=None,
     verbose=True,
 ):
@@ -872,6 +873,8 @@ def smoothing(
       Maximum m of the alm. Default: lmax
     use_weights: bool, scalar, optional
       If True, use the ring weighting. Default: False.
+    use_pixel_weights: bool, optional
+      If True, use pixel by pixel weighting, healpy will automatically download the weights, if needed
     datapath : None or str, optional
       If given, the directory where to find the weights data.
     verbose : bool, optional
@@ -907,6 +910,7 @@ def smoothing(
             iter=iter,
             pol=pol,
             use_weights=use_weights,
+            use_pixel_weights=use_pixel_weights,
             datapath=datapath,
         )
         smoothalm(
@@ -929,6 +933,7 @@ def smoothing(
                 iter=iter,
                 pol=pol,
                 use_weights=use_weights,
+                use_pixel_weights=use_pixel_weights,
                 datapath=datapath,
             )
             smoothalm(
