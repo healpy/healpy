@@ -6,18 +6,17 @@ Creating and manipulating maps
 
 Maps are simply numpy arrays, where each array element refers to a location in the sky as defined by the Healpix pixelization schemes (see the `healpix website`_).
 
-Note: Running the code below in a regular Python session will not display the maps; it's recommended to use IPython:
+Note: Running the code below in a regular Python session will not display the maps; it's recommended to use an IPython shell or a `Jupyter notebook <https://jupyter.org/install>`_.
+We recommend to use the interactive mode for IPython:
 
 .. code-block:: bash
 
-    % ipython
+    >>> import matplotlib.pyplot as plt
+    >>> plt.ion()
 
-...then select the appropriate backend display:
+For Jupyter notebooks, we recommend to switch the backend to ``inline``:
 
->>> %matplotlib inline # for IPython notebook
->>> %matplotlib qt     # using Qt (e.g. Windows)
->>> %matplotlib osx    # on Macs
->>> %matplotlib gtk    # GTK
+>>> %matplotlib inline
 
 The resolution of the map is defined by the *NSIDE* parameter. The :py:func:`~healpy.pixelfunc.nside2npix` function gives the number of pixel *NPIX* of the map:
 
@@ -42,9 +41,15 @@ In order to work with *NESTED* ordering, all map related functions support the `
 Reading and writing maps to file
 --------------------------------
 
-Maps are read with the :py:func:`~healpy.fitsfunc.read_map` function:
+For the following section, it is required to download larger maps by running the script located at
 
->>> wmap_map_I = hp.read_map('../healpy/test/data/wmap_band_imap_r9_7yr_W_v4.fits')
+``healpy/healpy/test/data/get_wmaps_data.sh``
+
+This will download the higher resolution WMAP data into the current directory.
+
+Maps are then read with the :py:func:`~healpy.fitsfunc.read_map` function:
+
+>>> wmap_map_I = hp.read_map('wmap_band_iqumap_r9_7yr_W_v4.fits')
 
 By default, input maps are converted to *RING* ordering, if they are in *NESTED* ordering. You can otherwise specify `nest=True` to retrieve a map is NESTED ordering, or `nest=None` to keep the ordering unchanged.
 
@@ -59,10 +64,10 @@ Visualization
 
 Mollweide projection with :py:func:`~healpy.visufunc.mollview` is the most common visualization tool for HEALPIX maps. It also supports coordinate transformation:
 
->>> hp.mollview(wmap_map_I, coord=['G','E'], title='Histogram equalized Ecliptic', unit='mK', norm='hist', min=-1,max=1, xsize=2000) 
+>>> hp.mollview(wmap_map_I, coord=['G','E'], title='Histogram equalized Ecliptic', unit='mK', norm='hist', min=-1, max=1,)
 >>> hp.graticule()
 
-`coord` does galactic to ecliptic coordinate transformation, `norm='hist'` sets a histogram equalized color scale and `xsize` increases the size of the image. :py:func:`~healpy.visufunc.graticule` adds meridians and parallels.
+`coord` does Galactic to ecliptic coordinate transformation, `norm='hist'` sets a histogram equalized color scale and `xsize` increases the size of the image. :py:func:`~healpy.visufunc.graticule` adds meridians and parallels.
 
 .. image:: static/wmap_histeq_ecl.png
 
@@ -83,7 +88,7 @@ All healpy functions automatically deal with maps with UNSEEN pixels, for exampl
 
 There is an alternative way of dealing with UNSEEN pixel based on the numpy MaskedArray class, :py:func:`~healpy.pixelfunc.ma` loads a map as a masked array:
 
->>> mask = hp.read_map('../healpy/test/data/wmap_temperature_analysis_mask_r9_7yr_v4.fits').astype(np.bool)
+>>> mask = hp.read_map('wmap_temperature_analysis_mask_r9_7yr_v4.fits').astype(np.bool)
 >>> wmap_map_I_masked = hp.ma(wmap_map_I)
 >>> wmap_map_I_masked.mask = np.logical_not(mask)
 
@@ -94,7 +99,6 @@ By convention the mask is 0 where the data are masked, while numpy defines data 
 filling a masked array fills in the `UNSEEN` value and return a standard array that can be used by `mollview`.
 `compressed()` instead removes all the masked pixels and returns a standard array that can be used for examples by the matplotlib `hist()` function:
 
->>> import matplotlib.pyplot as plt
 >>> plt.hist(wmap_map_I_masked.compressed(), bins = 1000)
 
 Spherical harmonic transforms
