@@ -67,7 +67,7 @@ import matplotlib
 from . import pixelfunc
 
 pi = np.pi
-dtor = pi / 180.
+dtor = pi / 180.0
 
 
 def mollview(
@@ -194,10 +194,10 @@ def mollview(
         if not margins:
             margins = (0.01, 0.0, 0.0, 0.02)
         extent = (
-            c * 1. / ncols + margins[0],
-            1. - (r + 1) * 1. / nrows + margins[1],
-            1. / ncols - margins[2] - margins[0],
-            1. / nrows - margins[3] - margins[1],
+            c * 1.0 / ncols + margins[0],
+            1.0 - (r + 1) * 1.0 / nrows + margins[1],
+            1.0 / ncols - margins[2] - margins[0],
+            1.0 / nrows - margins[3] - margins[1],
         )
         extent = (
             extent[0] + margins[0],
@@ -429,10 +429,10 @@ def gnomview(
         if not margins:
             margins = (0.01, 0.0, 0.0, 0.02)
         extent = (
-            c * 1. / ncols + margins[0],
-            1. - (r + 1) * 1. / nrows + margins[1],
-            1. / ncols - margins[2] - margins[0],
-            1. / nrows - margins[3] - margins[1],
+            c * 1.0 / ncols + margins[0],
+            1.0 - (r + 1) * 1.0 / nrows + margins[1],
+            1.0 / ncols - margins[2] - margins[0],
+            1.0 / nrows - margins[3] - margins[1],
         )
     extent = (
         extent[0] + margins[0],
@@ -694,10 +694,10 @@ def cartview(
         if not margins:
             margins = (0.01, 0.0, 0.0, 0.02)
         extent = (
-            c * 1. / ncols + margins[0],
-            1. - (r + 1) * 1. / nrows + margins[1],
-            1. / ncols - margins[2] - margins[0],
-            1. / nrows - margins[3] - margins[1],
+            c * 1.0 / ncols + margins[0],
+            1.0 - (r + 1) * 1.0 / nrows + margins[1],
+            1.0 / ncols - margins[2] - margins[0],
+            1.0 / nrows - margins[3] - margins[1],
         )
     extent = (
         extent[0] + margins[0],
@@ -933,10 +933,10 @@ def orthview(
         if not margins:
             margins = (0.01, 0.0, 0.0, 0.02)
         extent = (
-            c * 1. / ncols + margins[0],
-            1. - (r + 1) * 1. / nrows + margins[1],
-            1. / ncols - margins[2] - margins[0],
-            1. / nrows - margins[3] - margins[1],
+            c * 1.0 / ncols + margins[0],
+            1.0 - (r + 1) * 1.0 / nrows + margins[1],
+            1.0 / ncols - margins[2] - margins[0],
+            1.0 / nrows - margins[3] - margins[1],
         )
         extent = (
             extent[0] + margins[0],
@@ -1178,10 +1178,10 @@ def azeqview(
         if not margins:
             margins = (0.01, 0.0, 0.0, 0.02)
         extent = (
-            c * 1. / ncols + margins[0],
-            1. - (r + 1) * 1. / nrows + margins[1],
-            1. / ncols - margins[2] - margins[0],
-            1. / nrows - margins[3] - margins[1],
+            c * 1.0 / ncols + margins[0],
+            1.0 - (r + 1) * 1.0 / nrows + margins[1],
+            1.0 / ncols - margins[2] - margins[0],
+            1.0 / nrows - margins[3] - margins[1],
         )
         extent = (
             extent[0] + margins[0],

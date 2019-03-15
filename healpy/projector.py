@@ -34,7 +34,7 @@ from . import pixelfunc
 from .pixelfunc import UNSEEN
 
 pi = np.pi
-dtor = np.pi / 180.
+dtor = np.pi / 180.0
 
 
 class SphericalProj(object):
@@ -230,7 +230,7 @@ class SphericalProj(object):
         Return:
           fov: the diameter in radian of the field of view
         """
-        return 2. * pi
+        return 2.0 * pi
 
     def get_center(self, lonlat=False):
         """Get the center of the projection.
@@ -245,7 +245,7 @@ class SphericalProj(object):
         if lonlat:
             return lon, lat
         else:
-            return pi / 2. - lat * dtor, lon * dtor
+            return pi / 2.0 - lat * dtor, lon * dtor
 
     def mkcoord(self, coord):
         if self.coordsys is None:
@@ -290,7 +290,7 @@ class GnomonicProj(SphericalProj):
         else:
             raise ValueError("vy and vz must be both defined or both not defined")
         flip = self._flip
-        mask = np.asarray(vec[0]) <= 0.
+        mask = np.asarray(vec[0]) <= 0.0
         w = np.where(mask == False)
         if not mask.any():
             mask = np.ma.nomask
@@ -315,7 +315,7 @@ class GnomonicProj(SphericalProj):
         if y is None:
             x, y = x
         x, y = np.asarray(x), np.asarray(y)
-        rm1 = 1. / np.sqrt(1. + x ** 2 + y ** 2)
+        rm1 = 1.0 / np.sqrt(1.0 + x ** 2 + y ** 2)
         vec = (rm1, flip * rm1 * x, rm1 * y)
         if not direct:
             return self.rotator.I(vec)
@@ -345,7 +345,7 @@ class GnomonicProj(SphericalProj):
         reso = self.arrayinfo["reso"]
         if y is None:
             x, y = x
-        dx = reso / 60. * dtor
+        dx = reso / 60.0 * dtor
         xc, yc = 0.5 * (xsize - 1), 0.5 * (ysize - 1)
         j = np.around(xc + x / dx).astype(np.long)
         i = np.around(yc + y / dx).astype(np.long)
@@ -361,7 +361,7 @@ class GnomonicProj(SphericalProj):
         xsize = int(self.arrayinfo["xsize"])
         ysize = int(self.arrayinfo["ysize"])
         reso = self.arrayinfo["reso"]
-        dx = reso / 60. * dtor
+        dx = reso / 60.0 * dtor
         xc, yc = 0.5 * (xsize - 1), 0.5 * (ysize - 1)
         if i is None and j is None:
             idx = np.outer(np.ones(ysize), np.arange(xsize))
@@ -390,7 +390,7 @@ class GnomonicProj(SphericalProj):
     def get_fov(self):
         vx, vy, vz = self.xy2vec(self.ij2xy(0, 0), direct=True)
         a = np.arccos(vx)
-        return 2. * a
+        return 2.0 * a
 
 
 class MollweideProj(SphericalProj):
@@ -416,9 +416,9 @@ class MollweideProj(SphericalProj):
         X, Y = MollweideProj.__molldata
         # set phi in [-pi,pi]
         phi = (phi + pi) % (2 * pi) - pi
-        lat = pi / 2. - theta
+        lat = pi / 2.0 - theta
         A = MollweideProj.__lininterp(X, Y, lat)
-        x = flip * 2. / pi * phi * np.cos(A)
+        x = flip * 2.0 / pi * phi * np.cos(A)
         y = np.sin(A)
         return x, y
 
@@ -428,7 +428,7 @@ class MollweideProj(SphericalProj):
         flip = self._flip
         if y is None:
             x, y = x
-        mask = np.asarray(x) ** 2 / 4. + np.asarray(y) ** 2 > 1.
+        mask = np.asarray(x) ** 2 / 4.0 + np.asarray(y) ** 2 > 1.0
         w = np.where(mask == False)
         if not mask.any():
             mask = np.ma.nomask
@@ -438,8 +438,8 @@ class MollweideProj(SphericalProj):
             else:
                 s = np.sqrt((1 - y) * (1 + y))
                 a = np.arcsin(y)
-                z = 2. / pi * (a + y * s)
-                phi = flip * pi / 2. * x / np.maximum(s, 1.e-6)
+                z = 2.0 / pi * (a + y * s)
+                phi = flip * pi / 2.0 * x / np.maximum(s, 1.0e-6)
                 sz = np.sqrt((1 - z) * (1 + z))
                 vec = sz * np.cos(phi), sz * np.sin(phi), z
                 if not direct:
@@ -454,8 +454,8 @@ class MollweideProj(SphericalProj):
             )
             s = np.sqrt((1 - y[w]) * (1 + y[w]))
             a = np.arcsin(y[w])
-            vec[2][w] = 2. / pi * (a + y[w] * s)
-            phi = flip * pi / 2. * x[w] / np.maximum(s, 1.e-6)
+            vec[2][w] = 2.0 / pi * (a + y[w] * s)
+            phi = flip * pi / 2.0 * x[w] / np.maximum(s, 1.0e-6)
             sz = np.sqrt((1 - vec[2][w]) * (1 + vec[2][w]))
             vec[0][w] = sz * np.cos(phi)
             vec[1][w] = sz * np.sin(phi)
@@ -486,20 +486,20 @@ class MollweideProj(SphericalProj):
         ysize = xsize // 2
         if y is None:
             x, y = x
-        xc, yc = (xsize - 1.) / 2., (ysize - 1.) / 2.
+        xc, yc = (xsize - 1.0) / 2.0, (ysize - 1.0) / 2.0
         if hasattr(x, "__len__"):
-            j = np.around(x * xc / 2. + xc).astype(np.long)
+            j = np.around(x * xc / 2.0 + xc).astype(np.long)
             i = np.around(yc + y * yc).astype(np.long)
-            mask = x ** 2 / 4. + y ** 2 > 1.
+            mask = x ** 2 / 4.0 + y ** 2 > 1.0
             if not mask.any():
                 mask = np.ma.nomask
             j = np.ma.array(j, mask=mask)
             i = np.ma.array(i, mask=mask)
         else:
-            if x ** 2 / 4. + y ** 2 > 1.:
+            if x ** 2 / 4.0 + y ** 2 > 1.0:
                 i, j = np.nan, np.nan
             else:
-                j = np.around(x * xc / 2. + xc).astype(np.long)
+                j = np.around(x * xc / 2.0 + xc).astype(np.long)
                 i = np.around(yc + y * yc).astype(np.long)
         return i, j
 
@@ -512,27 +512,27 @@ class MollweideProj(SphericalProj):
             )
         xsize = int(self.arrayinfo["xsize"])
         ysize = xsize // 2
-        xc, yc = (xsize - 1.) / 2., (ysize - 1.) / 2.
+        xc, yc = (xsize - 1.0) / 2.0, (ysize - 1.0) / 2.0
         if i is None and j is None:
             idx = np.outer(np.arange(ysize), np.ones(xsize))
             y = (idx - yc) / yc
             idx = np.outer(np.ones(ysize), np.arange(xsize))
-            x = 2. * (idx - xc) / xc
-            mask = x ** 2 / 4. + y ** 2 > 1.
+            x = 2.0 * (idx - xc) / xc
+            mask = x ** 2 / 4.0 + y ** 2 > 1.0
             if not mask.any():
                 mask = np.ma.nomask
             x = np.ma.array(x, mask=mask)
             y = np.ma.array(y, mask=mask)
         elif i is not None and j is not None:
             y = (np.asarray(i) - yc) / yc
-            x = 2. * (np.asarray(j) - xc) / xc
-            if x ** 2 / 4. + y ** 2 > 1.:
+            x = 2.0 * (np.asarray(j) - xc) / xc
+            if x ** 2 / 4.0 + y ** 2 > 1.0:
                 x, y = np.nan, np.nan
         elif i is not None and j is None:
             i, j = i
             y = (np.asarray(i) - yc) / yc
-            x = 2. * (np.asarray(j) - xc) / xc
-            if x ** 2 / 4. + y ** 2 > 1.:
+            x = 2.0 * (np.asarray(j) - xc) / xc
+            if x ** 2 / 4.0 + y ** 2 > 1.0:
                 x, y = np.nan, np.nan
         else:
             raise TypeError("i and j must be both given or both not given")
@@ -546,7 +546,7 @@ class MollweideProj(SphericalProj):
     @staticmethod
     def __initialise_data():
         if len(MollweideProj.__molldata) == 0:
-            X = (np.arange(1., 180., 1.) - 90.) * dtor
+            X = (np.arange(1.0, 180.0, 1.0) - 90.0) * dtor
             Y = MollweideProj.__findRoot(
                 MollweideProj.__fmoll, MollweideProj.__dfmoll, X.copy(), X, niter=10
             )
@@ -569,11 +569,11 @@ class MollweideProj(SphericalProj):
 
     @staticmethod
     def __fmoll(x, args):
-        return 2. * x + np.sin(2. * x) - pi * np.sin(args)
+        return 2.0 * x + np.sin(2.0 * x) - pi * np.sin(args)
 
     @staticmethod
     def __dfmoll(x, args):
-        return 2. * (1. + np.cos(2. * x))
+        return 2.0 * (1.0 + np.cos(2.0 * x))
 
     @staticmethod
     def __lininterp(X, Y, x):
@@ -612,7 +612,7 @@ class CartesianProj(SphericalProj):
 
     def set_proj_plane_info(self, xsize, ysize, lonra, latra):
         if lonra is None:
-            lonra = [-180., 180.]
+            lonra = [-180.0, 180.0]
         else:
             # shift lonra[1] into the range [lonra[0], lonra[0]+360]
             lonra_span = np.mod(lonra[1] - lonra[0], 360)
@@ -620,7 +620,7 @@ class CartesianProj(SphericalProj):
                 lonra_span = 360
             lonra[1] = lonra[0] + lonra_span
         if latra is None:
-            latra = [-90., 90.]
+            latra = [-90.0, 90.0]
         if (
             len(lonra) != 2
             or len(latra) != 2
@@ -654,7 +654,7 @@ class CartesianProj(SphericalProj):
         # set phi in [-pi,pi]
         x = flip * ((phi + pi) % (2 * pi) - pi)
         x /= dtor  # convert in degree
-        y = pi / 2. - theta
+        y = pi / 2.0 - theta
         y /= dtor  # convert in degree
         return x, y
 
@@ -666,7 +666,7 @@ class CartesianProj(SphericalProj):
         else:
             x, y = np.asarray(x), np.asarray(y)
         flip = self._flip
-        theta = pi / 2. - y * dtor  # convert in radian
+        theta = pi / 2.0 - y * dtor  # convert in radian
         phi = flip * x * dtor  # convert in radian
         # dir2vec does not support 2d arrays, so first use flatten and then
         # reshape back to previous shape
@@ -737,10 +737,10 @@ class CartesianProj(SphericalProj):
             i, j = np.asarray(i), np.asarray(j)
         if i is None and j is None:
             idx = np.outer(np.arange(ysize), np.ones(xsize))
-            y = (float(latra[1] - latra[0]) / (ysize - 1.)) * idx
+            y = (float(latra[1] - latra[0]) / (ysize - 1.0)) * idx
             y += latra[0]
             idx = np.outer(np.ones(ysize), np.arange(xsize))
-            x = float(lonra[1] - lonra[0]) / (xsize - 1.) * idx
+            x = float(lonra[1] - lonra[0]) / (xsize - 1.0) * idx
             x += lonra[0]
             x = np.ma.array(x)
             y = np.ma.array(y)
@@ -823,7 +823,7 @@ class OrthographicProj(SphericalProj):
         flip = self._flip
         # set phi in [-pi,pi]
         phi = flip * (phi + pi) % (2 * pi) - pi
-        lat = pi / 2. - theta
+        lat = pi / 2.0 - theta
         x = np.cos(lat) * np.sin(phi)
         if not half_sky:
             x -= 1.0
@@ -899,7 +899,7 @@ class OrthographicProj(SphericalProj):
                 phi[mask] = pi - phi[mask]
             else:
                 phi = pi - phi
-        theta = pi / 2. - lat
+        theta = pi / 2.0 - lat
         vec = R.dir2vec(theta, phi)
         if not direct:
             return self.rotator.I(vec)
@@ -934,7 +934,7 @@ class OrthographicProj(SphericalProj):
             x, y = np.asarray(x)
         else:
             x, y = np.asarray(x), np.asarray(y)
-        xc, yc = (xsize - 1.) / 2., (ysize - 1.) / 2.
+        xc, yc = (xsize - 1.0) / 2.0, (ysize - 1.0) / 2.0
         if hasattr(x, "__len__"):
             if half_sky:
                 mask = x ** 2 + y ** 2 > 1.0
@@ -968,7 +968,7 @@ class OrthographicProj(SphericalProj):
         else:
             ratio = 2
         ysize = xsize // ratio
-        xc, yc = (xsize - 1.) / 2., (ysize - 1.) / 2.
+        xc, yc = (xsize - 1.0) / 2.0, (ysize - 1.0) / 2.0
         if i is None and j is None:
             idx = np.outer(np.arange(ysize), np.ones(xsize))
             y = (idx - yc) / yc
@@ -986,9 +986,9 @@ class OrthographicProj(SphericalProj):
         else:
             raise TypeError("i and j must be both given or both not given")
         if half_sky:
-            mask = x ** 2 + y ** 2 > 1.
+            mask = x ** 2 + y ** 2 > 1.0
         else:
-            mask = (np.mod(x + 2.0, 2.0) - 1.0) ** 2 + y ** 2 > 1.
+            mask = (np.mod(x + 2.0, 2.0) - 1.0) ** 2 + y ** 2 > 1.0
         if not mask.any():
             mask = np.ma.nomask
         x = np.ma.array(x, mask=mask)
@@ -1076,23 +1076,23 @@ class AzimuthalProj(SphericalProj):
         half_sky = self.arrayinfo["half_sky"]
         # set phi in [-pi,pi]
         phi = flip * ((phi + pi) % (2 * pi) - pi)
-        lat = pi / 2. - theta
+        lat = pi / 2.0 - theta
         if lamb:
-            kprime = np.sqrt(2. / (1. + np.cos(lat) * np.cos(phi)))
+            kprime = np.sqrt(2.0 / (1.0 + np.cos(lat) * np.cos(phi)))
         else:
             c = np.arccos(np.cos(lat) * np.cos(phi))
             kprime = c / np.sin(c)
         x = kprime * np.cos(lat) * np.sin(phi)
         y = kprime * np.sin(lat)
         if lamb:
-            r2max = 4.
+            r2max = 4.0
         else:
             r2max = pi ** 2
         if half_sky:
             if lamb:
-                r2max /= 2.
+                r2max /= 2.0
             else:
-                r2max /= 4.
+                r2max /= 4.0
         mask = np.asarray(x) ** 2 + np.asarray(y) ** 2 > r2max
         if not hasattr(x, "__len__"):
             if mask is not np.ma.nomask:
@@ -1118,14 +1118,14 @@ class AzimuthalProj(SphericalProj):
         lamb = self.arrayinfo["lamb"]
         half_sky = self.arrayinfo["half_sky"]
         if lamb:
-            r2max = 4.
+            r2max = 4.0
         else:
             r2max = pi ** 2
         if half_sky:
             if lamb:
-                r2max /= 2.
+                r2max /= 2.0
             else:
-                r2max /= 4.
+                r2max /= 4.0
         mask = np.asarray(x) ** 2 + np.asarray(y) ** 2 > r2max
         w = np.where(mask == False)
         if not mask.any():
@@ -1136,13 +1136,13 @@ class AzimuthalProj(SphericalProj):
             else:
                 rho = np.sqrt(x ** 2 + y ** 2)
                 if lamb:
-                    c = 2. * np.arcsin(rho / 2.)
+                    c = 2.0 * np.arcsin(rho / 2.0)
                 else:
                     c = rho
                 lat = np.arcsin(y * np.sin(c) / rho)
                 phi = np.arctan2(x * np.sin(c), (rho * np.cos(c)))
                 phi *= flip
-                vec = R.dir2vec(pi / 2. - lat, phi)
+                vec = R.dir2vec(pi / 2.0 - lat, phi)
                 if not direct:
                     return self.rotator.I(vec)
                 else:
@@ -1155,7 +1155,7 @@ class AzimuthalProj(SphericalProj):
             )
             rho = np.sqrt(x[w] ** 2 + y[w] ** 2)
             if lamb:
-                c = 2. * np.arcsin(rho / 2.)
+                c = 2.0 * np.arcsin(rho / 2.0)
             else:
                 c = rho
             lat = np.arcsin(y[w] * np.sin(c) / rho)
@@ -1192,17 +1192,17 @@ class AzimuthalProj(SphericalProj):
         lamb = self.arrayinfo["lamb"]
         half_sky = self.arrayinfo["half_sky"]
         if lamb:
-            r2max = 4.
+            r2max = 4.0
         else:
             r2max = pi ** 2
         if half_sky:
             if lamb:
-                r2max /= 2.
+                r2max /= 2.0
             else:
-                r2max /= 4.
+                r2max /= 4.0
         if y is None:
             x, y = x
-        dx = reso / 60. * dtor
+        dx = reso / 60.0 * dtor
         xc, yc = 0.5 * (xsize - 1), 0.5 * (ysize - 1)
         if hasattr(x, "__len__"):
             mask = x ** 2 + y ** 2 > r2max
@@ -1230,17 +1230,17 @@ class AzimuthalProj(SphericalProj):
         reso = self.arrayinfo["reso"]
         lamb = self.arrayinfo["lamb"]
         half_sky = self.arrayinfo["half_sky"]
-        dx = reso / 60. * dtor
+        dx = reso / 60.0 * dtor
         xc, yc = 0.5 * (xsize - 1), 0.5 * (ysize - 1)
         if lamb:
-            r2max = 4.
+            r2max = 4.0
         else:
             r2max = pi ** 2
         if half_sky:
             if lamb:
-                r2max /= 2.
+                r2max /= 2.0
             else:
-                r2max /= 4.
+                r2max /= 4.0
         if i is None and j is None:
             idx = np.outer(np.arange(ysize), np.ones(xsize))
             y = (idx - yc) * dx
@@ -1287,9 +1287,9 @@ class AzimuthalProj(SphericalProj):
         vx, vy, vz = self.xy2vec(self.ij2xy(0, 0), direct=True)
         a = np.arccos(vx)
         if np.isfinite(a):
-            return 2. * a
+            return 2.0 * a
         else:
             if half_sky:
                 return pi
             else:
-                return 2. * pi
+                return 2.0 * pi

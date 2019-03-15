@@ -104,7 +104,7 @@ def mollview(
     import matplotlib.pyplot as plt
 
     width = 8.5
-    fig = plt.figure(figsize=(width, width * .63))
+    fig = plt.figure(figsize=(width, width * 0.63))
     ax = fig.add_subplot(111, projection="mollweide")
     # FIXME: make a more general axes creation that works also with subplots
     # ax = plt.gcf().add_axes((.125, .1, .9, .9), projection="mollweide")
@@ -179,7 +179,7 @@ def mollview(
         # colorbar
         if cbar and not m is None:
             cb = fig.colorbar(
-                ret, orientation="horizontal", shrink=.4, pad=0.05, ticks=[min, max]
+                ret, orientation="horizontal", shrink=0.4, pad=0.05, ticks=[min, max]
             )
             cb.ax.xaxis.set_label_text(unit)
             cb.ax.xaxis.labelpad = -8

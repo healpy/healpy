@@ -28,7 +28,7 @@ import six
 from ._healpy_pixel_lib import UNSEEN
 
 pi = np.pi
-dtor = pi / 180.
+dtor = pi / 180.0
 
 
 class SphericalProjAxes(matplotlib.axes.Axes):
@@ -70,13 +70,13 @@ class SphericalProjAxes(matplotlib.axes.Axes):
         xmin, xmax, ymin, ymax = self.proj.get_extent()
         self.set_xlim(xmin, xmax)
         self.set_ylim(ymin, ymax)
-        dx, dy = self.proj.ang2xy(pi / 2., 1. * dtor, direct=True)
-        self._segment_threshold = 16. * np.sqrt(dx ** 2 + dy ** 2)
+        dx, dy = self.proj.ang2xy(pi / 2.0, 1.0 * dtor, direct=True)
+        self._segment_threshold = 16.0 * np.sqrt(dx ** 2 + dy ** 2)
         self._segment_step_rad = 0.1 * pi / 180
         self._do_border = True
         self._gratdef = {}
         self._gratdef["local"] = False
-        self._gratdef["dpar"] = 30.
+        self._gratdef["dpar"] = 30.0
 
     def set_format(self, f):
         """Set the format string for value display
@@ -176,17 +176,17 @@ class SphericalProjAxes(matplotlib.axes.Axes):
             if vmin is None:
                 vmin = img[w].min()
         except ValueError:
-            vmin = 0.
+            vmin = 0.0
         try:
             if vmax is None:
                 vmax = img[w].max()
         except ValueError:
-            vmax = 0.
+            vmax = 0.0
         if vmin > vmax:
             vmin = vmax
         if vmin == vmax:
-            vmin -= 1.
-            vmax += 1.
+            vmin -= 1.0
+            vmax += 1.0
         cm, nn = get_color_table(vmin, vmax, img[w], cmap=cmap, norm=norm)
         ext = self.proj.get_extent()
         img = np.ma.masked_values(img, badval)
@@ -270,7 +270,7 @@ class SphericalProjAxes(matplotlib.axes.Axes):
         if rot is not None:
             rot = np.array(np.atleast_1d(rot), copy=1)
             rot.resize(3)
-            rot[1] = rot[1] - 90.
+            rot[1] = rot[1] - 90.0
         coord = self.proj.mkcoord(kwds.pop("coord", None))[::-1]
         lonlat = kwds.pop("lonlat", False)
         vec = R.dir2vec(theta, phi, lonlat=lonlat)
@@ -345,7 +345,7 @@ class SphericalProjAxes(matplotlib.axes.Axes):
         if rot is not None:
             rot = np.array(np.atleast_1d(rot), copy=1)
             rot.resize(3)
-            rot[1] = rot[1] - 90.
+            rot[1] = rot[1] - 90.0
         coord = self.proj.mkcoord(kwds.pop("coord", None))[::-1]
         lonlat = kwds.pop("lonlat", False)
         vec = R.dir2vec(theta, phi, lonlat=lonlat)
@@ -400,7 +400,7 @@ class SphericalProjAxes(matplotlib.axes.Axes):
         if rot is not None:
             rot = np.array(np.atleast_1d(rot), copy=1)
             rot.resize(3)
-            rot[1] = rot[1] - 90.
+            rot[1] = rot[1] - 90.0
         coord = self.proj.mkcoord(kwds.pop("coord", None))[::-1]
         lonlat = kwds.pop("lonlat", False)
         vec = R.dir2vec(theta, phi, lonlat=lonlat)
@@ -452,8 +452,8 @@ class SphericalProjAxes(matplotlib.axes.Axes):
             raise ValueError("Both vy and vz must be given or both not given")
         a = np.arccos(vz)
         fov = self.proj.get_fov()
-        vmin = max(0., a - fov / 2.)
-        vmax = min(pi, a + fov / 2.)
+        vmin = max(0.0, a - fov / 2.0)
+        vmax = min(pi, a + fov / 2.0)
         return vmin, vmax
 
     def get_meridian_interval(self, vx, vy=None, vz=None):
@@ -473,13 +473,13 @@ class SphericalProjAxes(matplotlib.axes.Axes):
             raise ValueError("Both vy and vz must be given or both not given")
         fov = self.proj.get_fov()
         th = np.arccos(vz)
-        if th <= fov / 2.:  # test whether north pole is visible
+        if th <= fov / 2.0:  # test whether north pole is visible
             return -np.pi, np.pi
-        if abs(th - pi) <= fov / 2.:  # test whether south pole is visible
+        if abs(th - pi) <= fov / 2.0:  # test whether south pole is visible
             return -np.pi, np.pi
         sth = np.sin(th)
         phi0 = np.arctan2(vy, vx)
-        return phi0 - fov / sth / 2., phi0 + fov / sth / 2.
+        return phi0 - fov / sth / 2.0, phi0 + fov / sth / 2.0
 
     def graticule(
         self, dpar=None, dmer=None, coord=None, local=None, verbose=True, **kwds
@@ -511,13 +511,13 @@ class SphericalProjAxes(matplotlib.axes.Axes):
         u_pmin, u_pmax = kwds.pop("pmax", None), kwds.pop("pmin", None)
         u_mmin, u_mmax = kwds.pop("mmin", None), kwds.pop("mmax", None)
         if u_pmin:
-            u_pmin = (pi / 2. - u_pmin * dtor) % pi
+            u_pmin = (pi / 2.0 - u_pmin * dtor) % pi
         if u_pmax:
-            u_pmax = (pi / 2. - u_pmax * dtor) % pi
+            u_pmax = (pi / 2.0 - u_pmax * dtor) % pi
         if u_mmin:
-            u_mmin = (((u_mmin + 180.) % 360) - 180) * dtor
+            u_mmin = (((u_mmin + 180.0) % 360) - 180) * dtor
         if u_mmax:
-            u_mmax = (((u_mmax + 180.) % 360) - 180) * dtor
+            u_mmax = (((u_mmax + 180.0) % 360) - 180) * dtor
         pmin, pmax = self.get_parallel_interval(vec0)
         mmin, mmax = self.get_meridian_interval(vec0)
         if u_pmin:
@@ -540,41 +540,45 @@ class SphericalProjAxes(matplotlib.axes.Axes):
             )
         theta_list = np.around(np.arange(pmin, pmax + 0.5 * dpar, dpar) / dpar) * dpar
         phi_list = np.around(np.arange(mmin, mmax + 0.5 * dmer, dmer) / dmer) * dmer
-        theta = np.arange(pmin, pmax, min((pmax - pmin) / 100., self._segment_step_rad))
-        phi = np.arange(mmin, mmax, min((mmax - mmin) / 100., self._segment_step_rad))
+        theta = np.arange(
+            pmin, pmax, min((pmax - pmin) / 100.0, self._segment_step_rad)
+        )
+        phi = np.arange(mmin, mmax, min((mmax - mmin) / 100.0, self._segment_step_rad))
         equator = False
         gratlines = []
         kwds.setdefault("lw", 1)
         kwds.setdefault("color", "k")
         for t in theta_list:
-            if abs(t - pi / 2.) < 1.e-10:
+            if abs(t - pi / 2.0) < 1.0e-10:
                 fmt = "-"
                 equator = True
-            elif abs(t) < 1.e-10:  # special case: north pole
-                t = 1.e-10
+            elif abs(t) < 1.0e-10:  # special case: north pole
+                t = 1.0e-10
                 fmt = "-"
-            elif abs(t - pi) < 1.e-10:  # special case: south pole
-                t = pi - 1.e-10
+            elif abs(t - pi) < 1.0e-10:  # special case: south pole
+                t = pi - 1.0e-10
                 fmt = "-"
             else:
                 fmt = ":"
             gratlines.append(
-                self.projplot(phi * 0. + t, phi, fmt, coord=coord, direct=local, **kwds)
+                self.projplot(
+                    phi * 0.0 + t, phi, fmt, coord=coord, direct=local, **kwds
+                )
             )
-        if not equator and pmin <= pi / 2. and pi / 2 <= pmax:
+        if not equator and pmin <= pi / 2.0 and pi / 2 <= pmax:
             gratlines.append(
                 self.projplot(
-                    phi * 0. + pi / 2., phi, "-", coord=coord, direct=local, **kwds
+                    phi * 0.0 + pi / 2.0, phi, "-", coord=coord, direct=local, **kwds
                 )
             )
         for p in phi_list:
-            if abs(p) < 1.e-10:
+            if abs(p) < 1.0e-10:
                 fmt = "-"
             else:
                 fmt = ":"
             gratlines.append(
                 self.projplot(
-                    theta, theta * 0. + p, fmt, coord=coord, direct=local, **kwds
+                    theta, theta * 0.0 + p, fmt, coord=coord, direct=local, **kwds
                 )
             )
         # Now the borders (only useful for full sky projection)
@@ -588,10 +592,10 @@ class SphericalProjAxes(matplotlib.axes.Axes):
             )
             phi = np.arange(-180, 180) * dtor
             gratlines.append(
-                self.projplot(phi * 0 + 1.e-10, phi, "-k", lw=1, direct=True)
+                self.projplot(phi * 0 + 1.0e-10, phi, "-k", lw=1, direct=True)
             )
             gratlines.append(
-                self.projplot(phi * 0 + pi - 1.e-10, phi, "-k", lw=1, direct=True)
+                self.projplot(phi * 0 + pi - 1.0e-10, phi, "-k", lw=1, direct=True)
             )
         if hasattr(self, "_graticules"):
             self._graticules.append((gratargs, gratkwds, gratlines))
@@ -615,7 +619,7 @@ class SphericalProjAxes(matplotlib.axes.Axes):
     def _get_interv_graticule(self, pmin, pmax, dpar, mmin, mmax, dmer, verbose=True):
         def set_prec(d, n, nn=2):
             arcmin = False
-            if d / n < 1.:
+            if d / n < 1.0:
                 d *= 60
                 arcmin = True
                 nn = 1
@@ -624,7 +628,7 @@ class SphericalProjAxes(matplotlib.axes.Axes):
             ex = np.floor(np.log10(y))
             z = np.around(y / 10 ** ex) * 10 ** ex / nn
             if arcmin:
-                z = 1. / np.around(60. / z)
+                z = 1.0 / np.around(60.0 / z)
             return z
 
         max_n_par = 18
@@ -635,10 +639,10 @@ class SphericalProjAxes(matplotlib.axes.Axes):
             dpar = set_prec((pmax - pmin) / dtor, max_n_par / 2) * dtor
         if n_mer > max_n_mer:
             dmer = set_prec((mmax - mmin) / dtor, max_n_mer / 2, nn=1) * dtor
-        if dmer / dpar < 0.2 or dmer / dpar > 5.:
+        if dmer / dpar < 0.2 or dmer / dpar > 5.0:
             dmer = dpar = max(dmer, dpar)
         vdeg = int(np.floor(np.around(dpar / dtor, 10)))
-        varcmin = (dpar / dtor - vdeg) * 60.
+        varcmin = (dpar / dtor - vdeg) * 60.0
         if verbose:
             print(
                 "The interval between parallels is {0:d} deg {1:.2f}'.".format(
@@ -646,7 +650,7 @@ class SphericalProjAxes(matplotlib.axes.Axes):
                 )
             )
         vdeg = int(np.floor(np.around(dmer / dtor, 10)))
-        varcmin = (dmer / dtor - vdeg) * 60.
+        varcmin = (dmer / dtor - vdeg) * 60.0
         if verbose:
             print(
                 "The interval between meridians is {0:d} deg {1:.2f}'.".format(
@@ -672,7 +676,7 @@ class GnomonicAxes(SphericalProjAxes):
         super(GnomonicAxes, self).__init__(P.GnomonicProj, *args, **kwds)
         self._do_border = False
         self._gratdef["local"] = True
-        self._gratdef["dpar"] = 1.
+        self._gratdef["dpar"] = 1.0
 
     def projmap(self, map, vec2pix_func, xsize=200, ysize=None, reso=1.5, **kwds):
         self.proj.set_proj_plane_info(xsize=xsize, ysize=ysize, reso=reso)
@@ -879,7 +883,10 @@ def get_color_table(vmin, vmax, val, cmap=None, norm=None):
 def create_colormap(cmap):
     if type(cmap) == str:
         cmap0 = matplotlib.cm.get_cmap(cmap)
-    elif type(cmap) in [matplotlib.colors.LinearSegmentedColormap, matplotlib.colors.ListedColormap]:
+    elif type(cmap) in [
+        matplotlib.colors.LinearSegmentedColormap,
+        matplotlib.colors.ListedColormap,
+    ]:
         cmap0 = cmap
     else:
         cmap0 = matplotlib.cm.get_cmap(matplotlib.rcParams["image.cmap"])
@@ -914,10 +921,10 @@ class BoundaryLocator(matplotlib.ticker.Locator):
         if self.norm == "log":
             locs = np.log10(vmin) + np.arange(self.Nlocs) * (
                 np.log10(vmax) - np.log10(vmin)
-            ) / (self.Nlocs - 1.)
+            ) / (self.Nlocs - 1.0)
             locs = 10 ** (locs)
         else:
-            locs = vmin + np.arange(self.Nlocs) * (vmax - vmin) / (self.Nlocs - 1.)
+            locs = vmin + np.arange(self.Nlocs) * (vmax - vmin) / (self.Nlocs - 1.0)
         return locs
 
     def autoscale(self):
@@ -1033,7 +1040,7 @@ class HistEqNorm(matplotlib.colors.Normalize):
             # new bins format, remove last point
             bins = bins[:-1]
         hist = hist.astype(np.float) / np.float(hist.sum())
-        self.yval = np.concatenate([[0.], hist.cumsum(), [1.]])
+        self.yval = np.concatenate([[0.0], hist.cumsum(), [1.0]])
         self.xval = np.concatenate(
             [[self.vmin], bins + 0.5 * (bins[1] - bins[0]), [self.vmax]]
         )
@@ -1165,7 +1172,7 @@ class LinNorm2(matplotlib.colors.Normalize):
             if clip:
                 mask = np.ma.getmask(val)
                 val = np.ma.array(np.clip(val.filled(vmax), vmin, vmax), mask=mask)
-            result = (val - vmin) * (1. / (vmax - vmin))
+            result = (val - vmin) * (1.0 / (vmax - vmin))
             result.data[result.data < 0] = 0.0
             result.data[result.data > 1] = 1.0
             result[winf] = -np.inf

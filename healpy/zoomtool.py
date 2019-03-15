@@ -26,7 +26,7 @@ from ._healpy_pixel_lib import UNSEEN
 from . import pixelfunc
 
 pi = np.pi
-dtor = pi / 180.
+dtor = pi / 180.0
 
 
 def mollzoom(
@@ -187,7 +187,7 @@ def mollzoom(
         ## Gnomonic axes
         # extent = (0.02,0.25,0.56,0.72)
         g_xsize = 600
-        g_reso = 1.
+        g_reso = 1.0
         extent = (0.60, 0.04, 0.38, 0.94)
         g_ax = PA.HpxGnomonicAxes(
             f, extent, coord=coord, rot=rot, format=format, flipconv=flip
@@ -336,15 +336,15 @@ class ZoomTool(object):
             0.3,
             0.5,
             0.75,
-            1.,
+            1.0,
             1.5,
-            3.,
-            5.,
-            10.,
-            15.,
-            30.,
-            45.,
-            60.,
+            3.0,
+            5.0,
+            10.0,
+            15.0,
+            30.0,
+            45.0,
+            60.0,
         ]
         self._map = m
         self._nest = nest
@@ -357,13 +357,13 @@ class ZoomTool(object):
         # find min, max of map
         if isinstance(m, dict):
             if len(m) == 0:
-                self._mapmin, self._mapmax = -1., 1.
+                self._mapmin, self._mapmax = -1.0, 1.0
             else:
                 self._mapmin, self._mapmax = min(m.values()), max(m.values())
         else:
             mgood = m[m != UNSEEN]
             if mgood.size == 0:
-                self._mapmin, self._mapmax = -1., 1.
+                self._mapmin, self._mapmax = -1.0, 1.0
             else:
                 self._mapmin, self._mapmax = mgood.min(), mgood.max()
             del mgood
@@ -459,17 +459,17 @@ class ZoomTool(object):
             t = a.transAxes
             a.text(0.1, 0.8, "moll. grat.:", transform=t, weight="bold")
             vdeg = np.floor(np.around(self._m_dpar / dtor, 10))
-            varcmin = (self._m_dpar / dtor - vdeg) * 60.
+            varcmin = (self._m_dpar / dtor - vdeg) * 60.0
             a.text(0.1, 0.65, "   -par: %d d %.2f '" % (vdeg, varcmin), transform=t)
             vdeg = np.floor(np.around(self._m_dmer / dtor, 10))
-            varcmin = (self._m_dmer / dtor - vdeg) * 60.
+            varcmin = (self._m_dmer / dtor - vdeg) * 60.0
             a.text(0.1, 0.5, "   -mer: %d d %.2f '" % (vdeg, varcmin), transform=t)
             a.text(0.1, 0.35, "gnom. grat.:", transform=t, weight="bold")
             vdeg = np.floor(np.around(self._g_dpar / dtor, 10))
-            varcmin = (self._g_dpar / dtor - vdeg) * 60.
+            varcmin = (self._g_dpar / dtor - vdeg) * 60.0
             a.text(0.1, 0.2, "   -par: %d d %.2f '" % (vdeg, varcmin), transform=t)
             vdeg = np.floor(np.around(self._g_dmer / dtor, 10))
-            varcmin = (self._g_dmer / dtor - vdeg) * 60.
+            varcmin = (self._g_dmer / dtor - vdeg) * 60.0
             a.text(0.1, 0.05, "   -mer: %d d %.2f '" % (vdeg, varcmin), transform=t)
 
     def _increase_reso(self):

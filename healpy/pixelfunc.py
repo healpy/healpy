@@ -171,7 +171,7 @@ def lonlat2thetaphi(lon, lat):
     theta, phi : float, scalar or array-like
       The co-latitude and longitude in radians
     """
-    return np.pi / 2. - np.radians(lat), np.radians(lon)
+    return np.pi / 2.0 - np.radians(lat), np.radians(lon)
 
 
 def thetaphi2lonlat(theta, phi):
@@ -189,7 +189,7 @@ def thetaphi2lonlat(theta, phi):
     lon, lat : float, scalar or array-like
       The longitude and latitude in degrees
     """
-    return np.degrees(phi), 90. - np.degrees(theta)
+    return np.degrees(phi), 90.0 - np.degrees(theta)
 
 
 def maptype(m):
@@ -226,7 +226,7 @@ def maptype(m):
         npix = len(m[0])
     except TypeError:
         npix = None
-        
+
     if npix is not None:
         for mm in m[1:]:
             if len(mm) != npix:
@@ -306,7 +306,7 @@ def accept_ma(f):
     return wrapper
 
 
-def mask_bad(m, badval=UNSEEN, rtol=1.e-5, atol=1.e-8):
+def mask_bad(m, badval=UNSEEN, rtol=1.0e-5, atol=1.0e-8):
     """Returns a bool array with ``True`` where m is close to badval.
 
     Parameters
@@ -345,7 +345,7 @@ def mask_bad(m, badval=UNSEEN, rtol=1.e-5, atol=1.e-8):
     return np.absolute(m - badval) <= atol + rtol * np.absolute(badval)
 
 
-def mask_good(m, badval=UNSEEN, rtol=1.e-5, atol=1.e-8):
+def mask_good(m, badval=UNSEEN, rtol=1.0e-5, atol=1.0e-8):
     """Returns a bool array with ``False`` where m is close to badval.
 
     Parameters
@@ -1123,7 +1123,7 @@ def npix2nside(npix):
     """
     if not isnpixok(npix):
         raise ValueError("Wrong pixel number (it is not 12*nside**2)")
-    return int(np.sqrt(npix / 12.))
+    return int(np.sqrt(npix / 12.0))
 
 
 def order2nside(order):
@@ -1242,7 +1242,7 @@ def isnpixok(npix):
     >>> hp.isnpixok([12, 768, 1002])
     array([ True,  True, False], dtype=bool)
     """
-    nside = np.sqrt(np.asarray(npix) / 12.)
+    nside = np.sqrt(np.asarray(npix) / 12.0)
     return nside == np.floor(nside)
 
 
@@ -1779,7 +1779,7 @@ def get_min_valid_nside(npix):
     >>> hp.pixelfunc.get_min_valid_nside(768)
     8
     """
-    order = 0.5 * np.log2(npix / 12.)
+    order = 0.5 * np.log2(npix / 12.0)
     return 1 << int(np.ceil(order))
 
 
