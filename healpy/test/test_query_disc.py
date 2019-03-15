@@ -74,10 +74,10 @@ class TestQueryDisc(unittest.TestCase):
         )
 
     def test_boundaries_floatpix_array(self):
-        self.assertRaises(ValueError, boundaries, 2, np.array([5., 5]))
+        self.assertRaises(ValueError, boundaries, 2, np.array([5.0, 5]))
 
     def test_boundaries_floatpix_scalar(self):
-        self.assertRaises(ValueError, boundaries, 2, 1 / 2.)
+        self.assertRaises(ValueError, boundaries, 2, 1 / 2.0)
 
     def test_buffer_mode(self):
 

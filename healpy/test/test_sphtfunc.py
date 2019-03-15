@@ -74,7 +74,7 @@ class TestSphtFunc(unittest.TestCase):
         self.cliqu = [np.array(cls.field(i)) for i in (0, 1, 2, 3, 5, 4)]
         nside = 32
         lmax = 64
-        fwhm_deg = 7.
+        fwhm_deg = 7.0
         seed = 12345
         np.random.seed(seed)
         self.mapiqu = hp.synfast(
@@ -123,7 +123,7 @@ class TestSphtFunc(unittest.TestCase):
     def test_synfast(self):
         nside = 32
         lmax = 64
-        fwhm_deg = 7.
+        fwhm_deg = 7.0
         seed = 12345
         np.random.seed(seed)
         map_pregen = hp.read_map(
@@ -178,7 +178,7 @@ class TestSphtFunc(unittest.TestCase):
                 os.path.join(self.path, "data", "gaussbeam_10arcmin_lmax512_pol.fits")
             )[0].data
         ).T
-        gauss_beam = hp.gauss_beam(np.radians(10. / 60.), lmax=512, pol=True)
+        gauss_beam = hp.gauss_beam(np.radians(10.0 / 60.0), lmax=512, pol=True)
         np.testing.assert_allclose(idl_gauss_beam, gauss_beam)
 
     def test_alm2cl(self):
@@ -198,7 +198,7 @@ class TestSphtFunc(unittest.TestCase):
     def test_map2alm(self):
         nside = 32
         lmax = 64
-        fwhm_deg = 7.
+        fwhm_deg = 7.0
         seed = 12345
         np.random.seed(seed)
         orig = hp.synfast(
@@ -295,7 +295,7 @@ class TestSphtFunc(unittest.TestCase):
                 for m in range(ell):
                     ind = hp.Alm.getidx(lmax, ell, m)
                     alm[i, ind] = (i + 1) * 10 + ell + 1j * m
-        psi = np.pi / 3.
+        psi = np.pi / 3.0
         theta = 0.5
         phi = 0.01
         hp.rotate_alm(alm, psi, theta, phi)
@@ -305,11 +305,11 @@ class TestSphtFunc(unittest.TestCase):
         ref_0_21_21 = -3.19617408364 + 2.00219590117j
         ref_0_42_0 = 87.8201360825 + 0.00000000000j
         ref_0_42_21 = -6.57242309702 + 50.1128079361j
-        ref_0_42_42 = 0.792592362074 - .928452597766j
+        ref_0_42_42 = 0.792592362074 - 0.928452597766j
         ref_0_63_0 = -49.6732554742 + 0.00000000000j
         ref_0_63_21 = -51.2812623888 - 61.6289129316j
         ref_0_63_42 = -9.32823219430 + 79.0787993482j
-        ref_0_63_63 = -.157204566965 + 0.324692958700j
+        ref_0_63_63 = -0.157204566965 + 0.324692958700j
         ref_1_0_0 = 0.00000000000 + 0.00000000000j
         ref_1_21_0 = -85.5520809077 + 0.00000000000j
         ref_1_21_21 = -3.57384285749 + 2.93255811219j
@@ -319,7 +319,7 @@ class TestSphtFunc(unittest.TestCase):
         ref_1_63_0 = -60.7153303746 + 0.00000000000j
         ref_1_63_21 = -61.0915123767 - 65.9943878923j
         ref_1_63_42 = -4.86354653261 + 86.5277253196j
-        ref_1_63_63 = -.147165377786 + 0.360474777237j
+        ref_1_63_63 = -0.147165377786 + 0.360474777237j
 
         ref = np.array(
             [
@@ -370,12 +370,12 @@ class TestSphtFunc(unittest.TestCase):
     def test_beam2bl(self):
         """ Test beam2bl against analytical transform of Gaussian beam. """
 
-        theta = np.linspace(0, np.radians(1.), 1000)
-        sigma = np.radians(10. / 60.) / np.sqrt(8. * np.log(2.))
-        gaussian_beam = np.exp(-.5 * (theta / sigma) ** 2) / (2 * np.pi * sigma ** 2)
+        theta = np.linspace(0, np.radians(1.0), 1000)
+        sigma = np.radians(10.0 / 60.0) / np.sqrt(8.0 * np.log(2.0))
+        gaussian_beam = np.exp(-0.5 * (theta / sigma) ** 2) / (2 * np.pi * sigma ** 2)
 
-        ell = np.arange(512 + 1.)
-        gaussian_window = np.exp(-.5 * ell * (ell + 1) * sigma ** 2)
+        ell = np.arange(512 + 1.0)
+        gaussian_window = np.exp(-0.5 * ell * (ell + 1) * sigma ** 2)
 
         bl = hp.beam2bl(gaussian_beam, theta, 512)
         np.testing.assert_allclose(gaussian_window, bl, rtol=1e-5)
@@ -383,12 +383,12 @@ class TestSphtFunc(unittest.TestCase):
     def test_bl2beam(self):
         """ Test bl2beam against analytical transform of Gaussian beam. """
 
-        theta = np.linspace(0, np.radians(3.), 1000)
-        sigma = np.radians(1.) / np.sqrt(8. * np.log(2.))
-        gaussian_beam = np.exp(-.5 * (theta / sigma) ** 2) / (2 * np.pi * sigma ** 2)
+        theta = np.linspace(0, np.radians(3.0), 1000)
+        sigma = np.radians(1.0) / np.sqrt(8.0 * np.log(2.0))
+        gaussian_beam = np.exp(-0.5 * (theta / sigma) ** 2) / (2 * np.pi * sigma ** 2)
 
-        ell = np.arange(2048 + 1.)
-        gaussian_window = np.exp(-.5 * ell * (ell + 1) * sigma ** 2)
+        ell = np.arange(2048 + 1.0)
+        gaussian_window = np.exp(-0.5 * ell * (ell + 1) * sigma ** 2)
 
         beam = hp.bl2beam(gaussian_window, theta)
         np.testing.assert_allclose(gaussian_beam, beam, rtol=1e-3)
@@ -407,13 +407,13 @@ class TestSphtFunc(unittest.TestCase):
 
     def test_pixwin_base(self):
         # Base case
-        nsides = [2**p for p in np.arange(1, 14)]
-        [hp.pixwin(nside) for nside in nsides] 
+        nsides = [2 ** p for p in np.arange(1, 14)]
+        [hp.pixwin(nside) for nside in nsides]
 
         # Test invalid nside
         with self.assertRaises(ValueError):
             hp.pixwin(15)
-        
+
     def test_pixwin_pol(self):
         pixwin = hp.pixwin(128, pol=True)
         self.assertEqual(len(pixwin), 2)
@@ -421,11 +421,12 @@ class TestSphtFunc(unittest.TestCase):
     def test_pixwin_lmax(self):
         nside = 128
         pixwin = hp.pixwin(nside, lmax=None)
-        self.assertEqual(len(pixwin), 3*nside)
+        self.assertEqual(len(pixwin), 3 * nside)
 
         lmax = 200
         pixwin = hp.pixwin(nside, lmax=lmax)
         self.assertEqual(len(pixwin), lmax)
+
 
 if __name__ == "__main__":
     unittest.main()

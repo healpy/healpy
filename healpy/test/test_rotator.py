@@ -40,9 +40,9 @@ def test_rotate_map_polarization():
 
     for i_pol, pol in enumerate("QU"):
         assert (
-            (np.abs(expected[i_pol] - QU_ecl[i_pol]) < .05).sum()
+            (np.abs(expected[i_pol] - QU_ecl[i_pol]) < 0.05).sum()
             / np.logical_not(expected[i_pol].mask).sum()
-        ) > .9, (pol + " comparison failed in rotate_map")
+        ) > 0.9, (pol + " comparison failed in rotate_map")
 
 
 def test_rotate_map_polarization_alms():
@@ -143,7 +143,8 @@ def test_euler(select, FK4):
     out = euler(30, 20, select=select, FK4=FK4)
     np.testing.assert_array_equal(np.isnan(out), 0)
 
-@pytest.mark.parametrize("X,Y,ZYX", [(1,0,0),(0, 1, 0),(0,0,1)])
-def test_euler_matrix_new(X,Y,ZYX):
-    out = euler_matrix_new(10,10, 10, X=X, Y=Y, ZYX=ZYX, deg=True)
+
+@pytest.mark.parametrize("X,Y,ZYX", [(1, 0, 0), (0, 1, 0), (0, 0, 1)])
+def test_euler_matrix_new(X, Y, ZYX):
+    out = euler_matrix_new(10, 10, 10, X=X, Y=Y, ZYX=ZYX, deg=True)
     np.testing.assert_array_equal(np.isnan(out), 0)

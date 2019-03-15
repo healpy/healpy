@@ -9,9 +9,9 @@ class TestPixelFunc(unittest.TestCase):
     def setUp(self):
         # data fixture
         self.theta0 = [1.52911759, 0.78550497, 1.57079633, 0.05103658, 3.09055608]
-        self.phi0 = [0., 0.78539816, 1.61988371, 0.78539816, 0.78539816]
+        self.phi0 = [0.0, 0.78539816, 1.61988371, 0.78539816, 0.78539816]
         self.lon0 = np.degrees(self.phi0)
-        self.lat0 = 90. - np.degrees(self.theta0)
+        self.lat0 = 90.0 - np.degrees(self.theta0)
 
     def test_nside2npix(self):
         self.assertEqual(nside2npix(512), 3145728)
@@ -91,13 +91,13 @@ class TestPixelFunc(unittest.TestCase):
         np.testing.assert_array_almost_equal(lat1, self.lat0, decimal=5)
 
     def test_get_interp_val_lonlat(self):
-        m = np.arange(12.)
+        m = np.arange(12.0)
         val0 = get_interp_val(m, self.theta0, self.phi0)
         val1 = get_interp_val(m, self.lon0, self.lat0, lonlat=True)
         np.testing.assert_array_almost_equal(val0, val1)
 
     def test_get_interp_weights(self):
-        p0, w0 = (np.array([0, 1, 4, 5]), np.array([1., 0., 0., 0.]))
+        p0, w0 = (np.array([0, 1, 4, 5]), np.array([1.0, 0.0, 0.0, 0.0]))
 
         # phi not specified, theta assumed to be pixel
         p1, w1 = get_interp_weights(1, 0)
@@ -133,7 +133,7 @@ class TestPixelFunc(unittest.TestCase):
         vec = np.transpose(pix2vec(nside, np.arange(npix)))
         signal = np.dot(vec, d)
         mono, dipole = fit_dipole(signal)
-        self.assertAlmostEqual(mono, 0.)
+        self.assertAlmostEqual(mono, 0.0)
         self.assertAlmostEqual(d[0], dipole[0])
         self.assertAlmostEqual(d[1], dipole[1])
         self.assertAlmostEqual(d[2], dipole[2])
