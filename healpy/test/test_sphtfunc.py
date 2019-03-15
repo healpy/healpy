@@ -405,6 +405,27 @@ class TestSphtFunc(unittest.TestCase):
         # hp.check_max_nside will return 0 if no exceptions are raised
         self.assertEqual(hp.check_max_nside(1024), 0)
 
+    def test_pixwin_base(self):
+        # Base case
+        nsides = [2**p for p in np.arange(1, 14)]
+        [hp.pixwin(nside) for nside in nsides] 
+
+        # Test invalid nside
+        with self.assertRaises(ValueError):
+            hp.pixwin(15)
+        
+    def test_pixwin_pol(self):
+        pixwin = hp.pixwin(128, pol=True)
+        self.assertEqual(len(pixwin), 2)
+
+    def test_pixwin_lmax(self):
+        nside = 128
+        pixwin = hp.pixwin(nside, lmax=None)
+        self.assertEqual(len(pixwin), 3*nside)
+
+        lmax = 200
+        pixwin = hp.pixwin(nside, lmax=lmax)
+        self.assertEqual(len(pixwin), lmax)
 
 if __name__ == "__main__":
     unittest.main()
