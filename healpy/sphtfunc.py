@@ -967,7 +967,7 @@ def pixwin(nside, pol=False, lmax=None):
 
     # Have lmax default to 3*nside
     if lmax is None:
-        lmax = 3 * nside
+        lmax = 3 * nside - 1
 
     datapath = DATAPATH
     if not pixelfunc.isnsideok(nside):
@@ -979,9 +979,9 @@ def pixwin(nside, pol=False, lmax=None):
     pw = pf.getdata(fname)
     pw_temp, pw_pol = pw.field(0), pw.field(1)
     if pol:
-        return pw_temp[:lmax], pw_pol[:lmax]
+        return pw_temp[: lmax + 1], pw_pol[: lmax + 1]
     else:
-        return pw_temp[:lmax]
+        return pw_temp[: lmax + 1]
 
 
 def alm2map_der1(alm, nside, lmax=None, mmax=None):
