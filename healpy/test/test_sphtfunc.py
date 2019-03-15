@@ -425,7 +425,7 @@ class TestSphtFunc(unittest.TestCase):
 
         lmax = 200
         pixwin = hp.pixwin(nside, lmax=lmax)
-        self.assertEqual(len(pixwin), lmax)
+        self.assertEqual(len(pixwin)-1, lmax)
 
 
 if __name__ == "__main__":
