@@ -711,7 +711,7 @@ maps = {
 glms = {
     1: np.array(
         [
-            0.,
+            0.0,
             0.84319998566330767 + 0j,
             -1.0248100911568008 + 0j,
             1.110961761523819 + 0j,
@@ -760,8 +760,8 @@ glms = {
     ),
     2: np.array(
         [
-            0.,
-            0.,
+            0.0,
+            0.0,
             -1.0146369650118083 + 0j,
             1.11121557988063 + 0j,
             -1.0268187317357511 + 0j,
@@ -769,7 +769,7 @@ glms = {
             -1.2007880041682084 + 0j,
             -0.69447547017176625 + 0j,
             -1.0726374658022424 + 0j,
-            0.,
+            0.0,
             -0.40253474561900393 - 0.65784721719896422j,
             0.15199112969379647 - 0.24330956005348325j,
             0.28523253658954206 - 0.3981266584575725j,
@@ -809,24 +809,24 @@ glms = {
     ),
     3: np.array(
         [
-            0.,
-            0.,
-            0.,
+            0.0,
+            0.0,
+            0.0,
             1.1040780794436231 + 0j,
             -1.0554780343915136 + 0j,
             1.003760955073254 + 0j,
             -1.2565856441338645 + 0j,
             -0.62932602562674234 + 0j,
             -1.160067204424214 + 0j,
-            0.,
-            0.,
+            0.0,
+            0.0,
             0.15865387620507715 - 0.23612586328728333j,
             0.27391824074536975 - 0.40229821680653666j,
             -0.24904217061890843 - 0.066454748333335312j,
             0.19465514972961681 - 0.071603817219522803j,
             0.07585111789946225 + 0.10671255623789123j,
             0.67521859645108184 + 0.63791014584128802j,
-            0.,
+            0.0,
             -0.34816350138864738 - 1.084783542403446j,
             0.43615290425078285 - 0.22284828128529358j,
             -0.57324320239356563 - 0.14126286640853886j,
@@ -861,7 +861,7 @@ glms = {
 clms = {
     1: np.array(
         [
-            0.,
+            0.0,
             -1.5258173689739127 + 0j,
             -0.38321729790014736 + 0j,
             -0.67468807400536313 + 0j,
@@ -910,8 +910,8 @@ clms = {
     ),
     2: np.array(
         [
-            0.,
-            0.,
+            0.0,
+            0.0,
             -0.38326814027750383 + 0j,
             -0.65418849087307329 + 0j,
             0.4365892671577063 + 0j,
@@ -919,7 +919,7 @@ clms = {
             -1.4916247379419461 + 0j,
             -1.1324277132571721 + 0j,
             -1.718185868626174 + 0j,
-            0.,
+            0.0,
             1.1956968215533583 - 0.030205892584907437j,
             -0.046100534504420865 + 0.41807122036767436j,
             0.20782483037951727 - 0.94246433056743517j,
@@ -959,24 +959,24 @@ clms = {
     ),
     3: np.array(
         [
-            0.,
-            0.,
-            0.,
+            0.0,
+            0.0,
+            0.0,
             -0.65872355978145192 + 0j,
             0.43111157992422688 + 0j,
             1.3933719902449626 + 0j,
             -1.4337104872664086 + 0j,
             -1.0953871385562564 + 0j,
             -1.592919216965424 + 0j,
-            0.,
-            0.,
+            0.0,
+            0.0,
             -0.037750501706858508 + 0.4056437707216613j,
             0.19266431434449349 - 0.92413738054154204j,
             -0.80624682077443821 - 0.3750231326847116j,
             0.44820402588981811 - 0.14801697141861184j,
             0.25229035881318124 + 0.17607723506064732j,
             -0.47384685147145073 - 0.54847200740427982j,
-            0.,
+            0.0,
             -0.26403005654710615 - 1.2664841194732137j,
             -0.31764611275074489 + 0.29566346120804393j,
             0.85876964582432236 + 0.11833464087123241j,
@@ -1034,12 +1034,12 @@ class TestSpinFunc(unittest.TestCase):
         alm_spin = hp.almxfl(
             self.almg,
             np.array(
-                [np.sqrt(l * (l + 1.)) for l in six.moves.xrange(0, self.lmax + 1)]
+                [np.sqrt(l * (l + 1.0)) for l in six.moves.xrange(0, self.lmax + 1)]
             ),
             inplace=False,
         )
         dt_spin, dp_spin = hp.alm2map_spin(
-            [alm_spin, alm_spin * 0.], self.nside, 1, self.lmax
+            [alm_spin, alm_spin * 0.0], self.nside, 1, self.lmax
         )
 
         np.testing.assert_array_almost_equal(dt_der1, dt_spin, decimal=8)
@@ -1048,11 +1048,11 @@ class TestSpinFunc(unittest.TestCase):
     def test_spin0(self):
         m1 = hp.alm2map(self.almg, self.nside, self.lmax)
         m2_r, m2_i = hp.alm2map_spin(
-            [self.almg, 0. * self.almg], self.nside, 0, self.lmax
+            [self.almg, 0.0 * self.almg], self.nside, 0, self.lmax
         )
 
         np.testing.assert_array_almost_equal(m1, m2_r, decimal=8)
-        np.testing.assert_array_almost_equal(m1 * 0., m2_i, decimal=8)
+        np.testing.assert_array_almost_equal(m1 * 0.0, m2_i, decimal=8)
 
     def test_alm2map_spin_precomputed(self):
         """ compare alm2map_spin outputs to some precomputed results for spin=1,2,3 """
@@ -1078,14 +1078,14 @@ class TestSpinFunc(unittest.TestCase):
         """ compare map2alm_spin outputs to alm2map_spin inputs. tolerances are very loose. """
         for spin in [1, 2, 3]:
             tcl = np.ones(self.lmax + 1)
-            tcl[0:spin] = 0.
+            tcl[0:spin] = 0.0
             almg = hp.almxfl(self.almg, tcl, inplace=False)
             almc = hp.almxfl(self.almc, tcl, inplace=False)
 
             rmap, imap = hp.alm2map_spin([almg, almc], self.nside, spin, self.lmax)
             tglm, tclm = hp.map2alm_spin([rmap, imap], spin, self.lmax)
-            np.testing.assert_allclose(almg, tglm, rtol=1.e-2, atol=1.e-2)
-            np.testing.assert_allclose(almc, tclm, rtol=1.e-2, atol=1.e-2)
+            np.testing.assert_allclose(almg, tglm, rtol=1.0e-2, atol=1.0e-2)
+            np.testing.assert_allclose(almc, tclm, rtol=1.0e-2, atol=1.0e-2)
 
 
 if __name__ == "__main__":

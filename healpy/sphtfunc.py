@@ -759,7 +759,7 @@ def smoothalm(
       Otherwise, a copy is made.
     """
     if (sigma is None) & (beam_window is None):
-        sigma = fwhm / (2. * np.sqrt(2. * np.log(2.)))
+        sigma = fwhm / (2.0 * np.sqrt(2.0 * np.log(2.0)))
 
     if verbose:
         if beam_window is None:
@@ -770,7 +770,7 @@ def smoothalm(
             )
             print(
                 "-> fwhm is {0:f} arcmin".format(
-                    sigma * 60 * 180 / pi * (2. * np.sqrt(2. * np.log(2.)))
+                    sigma * 60 * 180 / pi * (2.0 * np.sqrt(2.0 * np.log(2.0)))
                 )
             )
         else:
@@ -802,7 +802,7 @@ def smoothalm(
                 "Wrong alm size for the given "
                 "mmax (len(alms[%d]) = %d)." % (ialm, len(alm))
             )
-        ell = np.arange(lmax + 1.)
+        ell = np.arange(lmax + 1.0)
         s = 2 if ialm >= 1 and pol else 0
         if beam_window is None:
             fact = np.exp(-0.5 * (ell * (ell + 1) - s ** 2) * sigma ** 2)
@@ -946,7 +946,7 @@ def smoothing(
     return output_map
 
 
-def pixwin(nside, pol=False):
+def pixwin(nside, pol=False, lmax=None):
     """Return the pixel window function for the given nside.
 
     Parameters
@@ -955,6 +955,8 @@ def pixwin(nside, pol=False):
       The nside for which to return the pixel window function
     pol : bool, optional
       If True, return also the polar pixel window. Default: False
+    lmax : int, optional
+        Maximum l of the power spectrum (default: 3*nside-1) 
 
     Returns
     -------
@@ -962,6 +964,10 @@ def pixwin(nside, pol=False):
       The temperature pixel window function, or a tuple with both
       temperature and polarisation pixel window functions.
     """
+
+    if lmax is None:
+        lmax = 3 * nside - 1
+
     datapath = DATAPATH
     if not pixelfunc.isnsideok(nside):
         raise ValueError("Wrong nside value (must be a power of two).")
@@ -972,9 +978,9 @@ def pixwin(nside, pol=False):
     pw = pf.getdata(fname)
     pw_temp, pw_pol = pw.field(0), pw.field(1)
     if pol:
-        return pw_temp, pw_pol
+        return pw_temp[: lmax + 1], pw_pol[: lmax + 1]
     else:
-        return pw_temp
+        return pw_temp[: lmax + 1]
 
 
 def alm2map_der1(alm, nside, lmax=None, mmax=None):
@@ -1078,16 +1084,16 @@ def gauss_beam(fwhm, lmax=512, pol=False):
         otherwise (lmax+1, 4) contains polarized beam
     """
 
-    sigma = fwhm / np.sqrt(8. * np.log(2.))
+    sigma = fwhm / np.sqrt(8.0 * np.log(2.0))
     ell = np.arange(lmax + 1)
     sigma2 = sigma ** 2
-    g = np.exp(-.5 * ell * (ell + 1) * sigma2)
+    g = np.exp(-0.5 * ell * (ell + 1) * sigma2)
 
     if not pol:  # temperature-only beam
         return g
     else:  # polarization beam
         # polarization factors [1, 2 sigma^2, 2 sigma^2, sigma^2]
-        pol_factor = np.exp([0., 2 * sigma2, 2 * sigma2, sigma2])
+        pol_factor = np.exp([0.0, 2 * sigma2, 2 * sigma2, sigma2])
         return g[:, np.newaxis] * pol_factor
 
 

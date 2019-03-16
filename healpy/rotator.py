@@ -331,7 +331,7 @@ class Rotator(object):
     def do_rot(self, i):
         """Returns True if rotation is not (close to) identity.
         """
-        return not np.allclose(self.rots[i], np.zeros(3), rtol=0., atol=1.e-15)
+        return not np.allclose(self.rots[i], np.zeros(3), rtol=0.0, atol=1.0e-15)
 
     def angle_ref(self, *args, **kwds):
         """Compute the angle between transverse reference direction of initial and final frames
@@ -372,7 +372,7 @@ class Rotator(object):
         else:
             raise TypeError("Either 1, 2 or 3 arguments accepted")
         vp = R(v, inv=inv)
-        north_pole = R([0., 0., 1.], inv=inv)
+        north_pole = R([0.0, 0.0, 1.0], inv=inv)
         sinalpha = north_pole[0] * vp[1] - north_pole[1] * vp[0]
         cosalpha = north_pole[2] - vp[2] * np.dot(north_pole, vp)
         return np.arctan2(sinalpha, cosalpha)
@@ -608,7 +608,7 @@ def vec2dir(vec, vy=None, vz=None, lonlat=False):
     if lonlat:
         ang = np.degrees(ang)
         np.negative(ang[0, :], ang[0, :])
-        ang[0, :] += 90.
+        ang[0, :] += 90.0
         return ang[::-1, :].squeeze()
     else:
         return ang.squeeze()
@@ -641,7 +641,7 @@ def dir2vec(theta, phi=None, lonlat=False):
         theta, phi = theta
     if lonlat:
         lon, lat = theta, phi
-        theta, phi = np.pi / 2. - np.radians(lat), np.radians(lon)
+        theta, phi = np.pi / 2.0 - np.radians(lat), np.radians(lon)
     ct, st, cp, sp = np.cos(theta), np.sin(theta), np.cos(phi), np.sin(phi)
     vec = np.empty((3, ct.size), np.float64)
     vec[0, :] = st * cp
@@ -802,9 +802,9 @@ def normalise_rot(rot, deg=False):
    is in radian.
    """
     if deg:
-        convert = np.pi / 180.
+        convert = np.pi / 180.0
     else:
-        convert = 1.
+        convert = 1.0
     if rot is None:
         rot = np.zeros(3)
     else:
@@ -827,7 +827,7 @@ def get_rotation_matrix(rot, deg=False, eulertype="ZYX"):
       - normrot: the normalized version of the input rot.
    """
     rot = normalise_rot(rot, deg=deg)
-    if not np.allclose(rot, np.zeros(3), rtol=0., atol=1.e-15):
+    if not np.allclose(rot, np.zeros(3), rtol=0.0, atol=1.0e-15):
         do_rot = True
     else:
         do_rot = False
@@ -864,8 +864,8 @@ def get_coordconv_matrix(coord):
         matconv = np.identity(3)
         do_conv = False
     else:
-        eps = 23.452294 - 0.0130125 - 1.63889E-6 + 5.02778E-7
-        eps = eps * np.pi / 180.
+        eps = 23.452294 - 0.0130125 - 1.63889e-6 + 5.02778e-7
+        eps = eps * np.pi / 180.0
 
         # ecliptic to galactic
         e2g = np.array(
@@ -879,9 +879,9 @@ def get_coordconv_matrix(coord):
         # ecliptic to equatorial
         e2q = np.array(
             [
-                [1., 0., 0.],
-                [0., np.cos(eps), -1. * np.sin(eps)],
-                [0., np.sin(eps), np.cos(eps)],
+                [1.0, 0.0, 0.0],
+                [0.0, np.cos(eps), -1.0 * np.sin(eps)],
+                [0.0, np.sin(eps), np.cos(eps)],
             ]
         )
 
@@ -1155,7 +1155,7 @@ def euler_matrix_new(a1, a2, a3, X=True, Y=False, ZYX=False, deg=False):
 
     convert = 1.0
     if deg:
-        convert = np.pi / 180.
+        convert = np.pi / 180.0
 
     c1 = np.cos(a1 * convert)
     s1 = np.sin(a1 * convert)
