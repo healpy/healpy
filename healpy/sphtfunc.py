@@ -965,7 +965,6 @@ def pixwin(nside, pol=False, lmax=None):
       temperature and polarisation pixel window functions.
     """
 
-    # Have lmax default to 3*nside
     if lmax is None:
         lmax = 3 * nside - 1
 
