@@ -1,3 +1,10 @@
+Release 1.12.9 21 Mar 2019, related to the `healpy` JOSS paper
+
+* `lmax` support in `hp.pixwin` <https://github.com/healpy/healpy/pull/544>
+* `use_pixel_weights` support in `hp.smoothing` <https://github.com/healpy/healpy/pull/545>
+* improved test coverage <https://github.com/healpy/healpy/pull/541>
+* tutorial as a Jupyter Notebook <https://github.com/healpy/healpy/blob/master/doc/healpy_tutorial.ipynb>
+
 Release 1.12.8 7 Dec 2018, included in HEALPix 3.5.0
 
 * Update HEALPix C++ to latest 3.5.0 commits
