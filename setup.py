@@ -524,4 +524,5 @@ setup(
     tests_require=["pytest", "pytest-cython"],
     test_suite="healpy",
     license="GPLv2",
+    scripts=['bin/healpy_get_wmap_maps.sh'],
 )
