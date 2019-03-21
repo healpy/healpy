@@ -27,7 +27,7 @@ import astropy.io.fits as pf
 from scipy.integrate import simps
 from astropy.utils import data
 
-data.conf.dataurl = "https://healpy.github.io/healpy-data/"
+DATAURL = "https://healpy.github.io/healpy-data/"
 
 from . import _healpy_sph_transform_lib as sphtlib
 from . import _sphtools as _sphtools
@@ -208,10 +208,13 @@ def map2alm(
     if use_pixel_weights:
         if use_weights:
             raise RuntimeError("Either use pixel or ring weights")
-        pixel_weights_filename = data.get_pkg_data_filename(
-            "full_weights/healpix_full_weights_nside_%04d.fits" % nside,
-            package="healpy",
-        )
+        with data.conf.set_temp("dataurl", DATAURL), data.conf.set_temp(
+            "remote_timeout", 30
+        ):
+            pixel_weights_filename = data.get_pkg_data_filename(
+                "full_weights/healpix_full_weights_nside_%04d.fits" % nside,
+                package="healpy",
+            )
     else:
         pixel_weights_filename = None
 
