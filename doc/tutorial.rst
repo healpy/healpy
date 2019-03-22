@@ -29,7 +29,7 @@ Maps are simply numpy arrays, where each array element refers to a
 location in the sky as defined by the Healpix pixelization schemes (see
 the `healpix website <https://healpix.jpl.nasa.gov/>`__).
 
-Note: Running the code-block below in a regular Python session will not
+Note: Running the code below in a regular Python session will not
 display the maps; it’s recommended to use an IPython shell or a Jupyter
 notebook.
 
@@ -118,6 +118,7 @@ in the NESTED scheme, notice the structure of the 12 HEALPix base pixels
 
 .. code-block:: python
 
+    m = np.arange(NPIX)
     hp.mollview(m, nest=True, title="Mollview image NESTED")
 
 All ``healpy`` routines assume RING ordering, in fact as soon as you
@@ -223,7 +224,7 @@ can be used for examples by the matplotlib ``hist()`` function:
 
 .. code-block:: python
 
-    plt.hist(wmap_map_I_masked.compressed(), bins=1000)
+    plt.hist(wmap_map_I_masked.compressed(), bins=1000);
 
 Spherical Harmonics transforms
 ------------------------------
