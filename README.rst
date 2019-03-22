@@ -10,7 +10,7 @@ Healpy, a python wrapper for healpix
    :alt: Documentation Status
 
 .. image:: https://mybinder.org/badge_logo.svg
- :target: https://mybinder.org/v2/gh/zonca/9c114608e0903a3b8ea0bfe41c96f255/master
+   :target: https://mybinder.org/v2/gist/zonca/9c114608e0903a3b8ea0bfe41c96f255/master
 
 Description
 -----------
@@ -41,7 +41,7 @@ Capabilities
 * compute Auto and Cross Power Spectra from maps and create map realizations from spectra
 
 The documentation can be found at https://healpy.readthedocs.io, tutorial at
-https://healpy.readthedocs.io/en/latest/tutorial.html, or execute it on `mybinder <https://mybinder.org/v2/gh/zonca/9c114608e0903a3b8ea0bfe41c96f255/master>`_
+https://healpy.readthedocs.io/en/latest/tutorial.html, or execute it on `mybinder <https://mybinder.org/v2/gist/zonca/9c114608e0903a3b8ea0bfe41c96f255/master>`_
 
 Requirements
 ------------
