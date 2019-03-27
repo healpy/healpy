@@ -15,6 +15,9 @@ Healpy, a python wrapper for healpix
 .. image:: https://zenodo.org/badge/2006005.svg
    :target: https://zenodo.org/badge/latestdoi/2006005
 
+.. image:: http://joss.theoj.org/papers/10.21105/joss.01298/status.svg
+   :target: https://doi.org/10.21105/joss.01298
+
 Description
 -----------
 
