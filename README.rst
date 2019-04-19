@@ -178,13 +178,8 @@ publications based on work using the `HEALPix` software package should include
 both of the following:
 
 1. an acknowledgment statement: "Some of the results in this paper have been
-   derived using the `HEALPix` (Gorski et al., 2005) package". The complete
-   reference is:
-
-      Gorski, K.M., E. Hivon, A.J. Banday, B.D. Wandelt, F.K. Hansen,
-      M. Reinecke, and M. Bartelmann, HEALPix: A Framework for
-      High-resolution Discretization and Fast Analysis of Data
-      Distributed on the Sphere, Ap.J., 622, 759-771, 2005.
+   derived using the `healpy` and `HEALPix` packages". See the `CITATION` file
+   for the Bibtex entry.
 
 2. at the first use of the `HEALPix` acronym, a footnote placed in the main body
    of the paper referring to the `HEALPix` web site, currently
