@@ -139,6 +139,8 @@ class SphericalProjAxes(matplotlib.axes.Axes):
         vmin=None,
         vmax=None,
         badval=UNSEEN,
+        badcolor="gray",
+        bgcolor="white",
         cmap=None,
         norm=None,
         rot=None,
@@ -157,6 +159,10 @@ class SphericalProjAxes(matplotlib.axes.Axes):
           min and max value to use instead of min max of the map
         badval : float
           The value of the bad pixels
+        badcolor : str
+          Color to use to plot bad values
+        bgcolor : str
+          Color to use for background
         cmap : a color map
           The colormap to use (see matplotlib.cm)
         rot : sequence
@@ -187,7 +193,8 @@ class SphericalProjAxes(matplotlib.axes.Axes):
         if vmin == vmax:
             vmin -= 1.0
             vmax += 1.0
-        cm, nn = get_color_table(vmin, vmax, img[w], cmap=cmap, norm=norm)
+        cm, nn = get_color_table(vmin, vmax, img[w], cmap=cmap, norm=norm,
+                                 badcolor=badcolor, bgcolor=bgcolor)
         ext = self.proj.get_extent()
         img = np.ma.masked_values(img, badval)
         aximg = self.imshow(
@@ -860,9 +867,10 @@ class HpxAzimuthalAxes(AzimuthalAxes):
 #   http://matplotlib.org/examples/pylab_examples/custom_cmap.html
 
 
-def get_color_table(vmin, vmax, val, cmap=None, norm=None):
+def get_color_table(vmin, vmax, val, cmap=None, norm=None,
+                    badcolor="gray", bgcolor="white"):
     # Create color table
-    newcmap = create_colormap(cmap)
+    newcmap = create_colormap(cmap, badcolor=badcolor, bgcolor=bgcolor)
     if type(norm) is str:
         if norm.lower().startswith("log"):
             norm = LogNorm2(clip=False)
@@ -880,7 +888,7 @@ def get_color_table(vmin, vmax, val, cmap=None, norm=None):
     return newcmap, norm
 
 
-def create_colormap(cmap):
+def create_colormap(cmap, badcolor="gray", bgcolor="white"):
     if type(cmap) == str:
         cmap0 = matplotlib.cm.get_cmap(cmap)
     elif type(cmap) in [
@@ -897,8 +905,8 @@ def create_colormap(cmap):
     else:
         newcm = cmap0
     newcm.set_over(newcm(1.0))
-    newcm.set_under("w")
-    newcm.set_bad("gray")
+    newcm.set_under(bgcolor)
+    newcm.set_bad(badcolor)
     return newcm
 
 
