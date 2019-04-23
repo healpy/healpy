@@ -89,6 +89,8 @@ def mollview(
     format2="%g",
     cbar=True,
     cmap=None,
+    badcolor="gray",
+    bgcolor="white",
     notext=False,
     norm=None,
     hold=False,
@@ -148,6 +150,12 @@ def mollview(
     norm : {'hist', 'log', None}
       Color normalization, hist= histogram equalized color mapping,
       log= logarithmic color mapping, default: None (linear color mapping)
+    cmap : a color map
+       The colormap to use (see matplotlib.cm)
+    badcolor : str
+      Color to use to plot bad values
+    bgcolor : str
+      Color to use for background
     hold : bool, optional
       If True, replace the current Axes by a MollweideAxes.
       use this if you want to have multiple maps on the same
@@ -236,6 +244,8 @@ def mollview(
             vmin=min,
             vmax=max,
             cmap=cmap,
+            badcolor=badcolor,
+            bgcolor=bgcolor,
             norm=norm,
         )
         if cbar:
@@ -321,6 +331,8 @@ def gnomview(
     format="%.3g",
     cbar=True,
     cmap=None,
+    badcolor="gray",
+    bgcolor="white",
     norm=None,
     hold=False,
     sub=None,
@@ -376,6 +388,12 @@ def gnomview(
       Removes points in latitude range [-gal_cut, +gal_cut]
     format : str, optional
       The format of the scale label. Default: '%g'
+    cmap : a color map
+       The colormap to use (see matplotlib.cm)
+    badcolor : str
+      Color to use to plot bad values
+    bgcolor : str
+      Color to use for background
     hold : bool, optional
       If True, replace the current Axes by a MollweideAxes.
       use this if you want to have multiple maps on the same
@@ -469,6 +487,8 @@ def gnomview(
             reso=reso,
             cmap=cmap,
             norm=norm,
+            badcolor=badcolor,
+            bgcolor=bgcolor,
         )
         if cbar:
             im = ax.get_images()[0]
@@ -583,6 +603,8 @@ def cartview(
     format="%.3g",
     cbar=True,
     cmap=None,
+    badcolor="gray",
+    bgcolor="white",
     norm=None,
     aspect=None,
     hold=False,
@@ -645,6 +667,12 @@ def cartview(
     norm : {'hist', 'log', None}, optional
       Color normalization, hist= histogram equalized color mapping,
       log= logarithmic color mapping, default: None (linear color mapping)
+    cmap : a color map
+       The colormap to use (see matplotlib.cm)
+    badcolor : str
+      Color to use to plot bad values
+    bgcolor : str
+      Color to use for background
     hold : bool, optional
       If True, replace the current Axes by a CartesianAxes.
       use this if you want to have multiple maps on the same
@@ -740,6 +768,8 @@ def cartview(
             lonra=lonra,
             latra=latra,
             cmap=cmap,
+            badcolor=badcolor,
+            bgcolor=bgcolor,
             norm=norm,
             aspect=aspect,
         )
@@ -827,6 +857,8 @@ def orthview(
     format2="%g",
     cbar=True,
     cmap=None,
+    badcolor="gray",
+    bgcolor="white",
     notext=False,
     norm=None,
     hold=False,
@@ -887,6 +919,12 @@ def orthview(
     norm : {'hist', 'log', None}
       Color normalization, hist= histogram equalized color mapping,
       log= logarithmic color mapping, default: None (linear color mapping)
+    cmap : a color map
+       The colormap to use (see matplotlib.cm)
+    badcolor : str
+      Color to use to plot bad values
+    bgcolor : str
+      Color to use for background
     hold : bool, optional
       If True, replace the current Axes by an OrthographicAxes.
       use this if you want to have multiple maps on the same
@@ -975,6 +1013,8 @@ def orthview(
             vmin=min,
             vmax=max,
             cmap=cmap,
+            badcolor=badcolor,
+            bgcolor=bgcolor,
             norm=norm,
         )
         if cbar:
@@ -1063,6 +1103,8 @@ def azeqview(
     format="%.3g",
     cbar=True,
     cmap=None,
+    badcolor="gray",
+    bgcolor="white",
     norm=None,
     aspect=None,
     hold=False,
@@ -1132,6 +1174,12 @@ def azeqview(
     norm : {'hist', 'log', None}
       Color normalization, hist= histogram equalized color mapping,
       log= logarithmic color mapping, default: None (linear color mapping)
+    cmap : a color map
+       The colormap to use (see matplotlib.cm)
+    badcolor : str
+      Color to use to plot bad values
+    bgcolor : str
+      Color to use for background
     hold : bool, optional
       If True, replace the current Axes by an Equidistant AzimuthalAxes.
       use this if you want to have multiple maps on the same
@@ -1223,6 +1271,8 @@ def azeqview(
             vmin=min,
             vmax=max,
             cmap=cmap,
+            badcolor=badcolor,
+            bgcolor=bgcolor,
             norm=norm,
         )
         if cbar:
