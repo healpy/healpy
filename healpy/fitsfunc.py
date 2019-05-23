@@ -294,7 +294,7 @@ def read_map(
       Force the conversion to some type. Passing a list allows different
       types for each field. In that case, the length of the list must
       correspond to the length of the field parameter. Default: np.float64
-      if None, keeps the same dtype of the input FITS file
+      if None, keep the dtype of the input FITS file
     nest : bool, optional
       If True return the map in NEST ordering, otherwise in RING ordering;
       use fits keyword ORDERING to decide whether conversion is needed or not
