@@ -294,6 +294,7 @@ def read_map(
       Force the conversion to some type. Passing a list allows different
       types for each field. In that case, the length of the list must
       correspond to the length of the field parameter. Default: np.float64
+      if None, keep the dtype of the input FITS file
     nest : bool, optional
       If True return the map in NEST ordering, otherwise in RING ordering;
       use fits keyword ORDERING to decide whether conversion is needed or not
@@ -397,15 +398,21 @@ def read_map(
 
     for ff, curr_dtype in zip(field, dtype):
         try:
-            m = fits_hdu.data.field(ff).astype(curr_dtype, copy=False).ravel()
+            if curr_dtype is None:
+                m = fits_hdu.data.field(ff).ravel()
+            else:
+                m = fits_hdu.data.field(ff).astype(curr_dtype, copy=False).ravel()
         except pf.VerifyError as e:
             print(e)
             print("Trying to fix a badly formatted header")
             m = fits_hdu.verify("fix")
-            m = fits_hdu.data.field(ff).astype(curr_dtype, copy=False).ravel()
+            if curr_dtype is None:
+                m = fits_hdu.data.field(ff).ravel()
+            else:
+                m = fits_hdu.data.field(ff).astype(curr_dtype, copy=False).ravel()
 
         if partial:
-            mnew = UNSEEN * np.ones(sz, dtype=curr_dtype)
+            mnew = UNSEEN * np.ones(sz, dtype=m.dtype)
             mnew[pix] = m
             m = mnew
 
