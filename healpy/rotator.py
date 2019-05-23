@@ -377,16 +377,20 @@ class Rotator(object):
         cosalpha = north_pole[2] - vp[2] * np.dot(north_pole, vp)
         return np.arctan2(sinalpha, cosalpha)
 
-    def rotate_alm(self, alm, lmax=None, mmax=None):
+    def rotate_alm(self, alm, lmax=None, mmax=None, inplace=False):
         """Rotate Alms with the transform defined in the Rotator object
 
         see the docstring of the rotate_alm function defined
         in the healpy package, this function **returns** the rotated alms,
         does not rotate in place"""
 
-        rotated_alm = alm.copy()  # rotate_alm works inplace
+        if not inplace:
+            rotated_alm = alm.copy()  # rotate_alm works inplace
+        else:
+            rotated_alm = alm
         rotate_alm(rotated_alm, matrix=self.mat, lmax=lmax, mmax=mmax)
-        return rotated_alm
+        if not inplace:
+            return rotated_alm
 
     def rotate_map_alms(self, m, use_pixel_weights=True, lmax=None, mmax=None):
         """Rotate a HEALPix map to a new reference frame in spherical harmonics space
