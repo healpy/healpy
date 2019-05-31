@@ -24,7 +24,7 @@ import six
 pi = np.pi
 import warnings
 import astropy.io.fits as pf
-from scipy.integrate import simps
+from scipy.integrate import trapz
 from astropy.utils import data
 
 DATAURL = "https://healpy.github.io/healpy-data/"
@@ -1175,12 +1175,12 @@ def beam2bl(beam, theta, lmax):
     p0 = np.ones(nx)
     p1 = np.copy(x)
 
-    window[0] = simps(beam * p0 * st, theta)
-    window[1] = simps(beam * p1 * st, theta)
+    window[0] = trapz(beam * p0 * st, theta)
+    window[1] = trapz(beam * p1 * st, theta)
 
     for l in np.arange(2, lmax + 1):
         p2 = x * p1 * (2 * l - 1) / l - p0 * (l - 1) / l
-        window[l] = simps(beam * p2 * st, theta)
+        window[l] = trapz(beam * p2 * st, theta)
         p0 = p1
         p1 = p2
 
