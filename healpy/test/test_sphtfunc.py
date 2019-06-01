@@ -378,7 +378,7 @@ class TestSphtFunc(unittest.TestCase):
         gaussian_window = np.exp(-0.5 * ell * (ell + 1) * sigma ** 2)
 
         bl = hp.beam2bl(gaussian_beam, theta, 512)
-        np.testing.assert_allclose(gaussian_window, bl, rtol=1e-5)
+        np.testing.assert_allclose(gaussian_window, bl, rtol=1e-4)
 
     def test_bl2beam(self):
         """ Test bl2beam against analytical transform of Gaussian beam. """
