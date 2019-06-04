@@ -35,6 +35,12 @@ On Linux with newer compilers many users reported compilation errors like ``conf
 the solution is to specifiy the flags for the C and CXX compiler:
 
     CC=gcc CXX=g++ CFLAGS='-fPIC' CXXFLAGS='-fPIC' pip install --user healpy
+    
+Compilation issues with Mac OS
+------------------------------
+
+Currently most people report they cannot install `healpy` on Mac OS either via `pip` or building from source, due to the impossibility of compiling the `HEALPix` based extension.
+The only options right now are using `conda-forge` or `Macports`.
 
 Installation on Mac OS with MacPorts
 -------------------------------------------------
