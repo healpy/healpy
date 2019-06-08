@@ -1138,7 +1138,7 @@ class LogNorm2(matplotlib.colors.Normalize):
             raise ValueError("Not invertible until scaled")
         vmin, vmax = float(self.vmin), float(self.vmax)
 
-        if matplotlib.cbook.iterable(value):
+        if np.iterable(value):
             val = np.ma.asarray(value)
             return vmin * np.ma.power((vmax / vmin), val)
         else:
@@ -1160,7 +1160,7 @@ class LinNorm2(matplotlib.colors.Normalize):
         if clip is None:
             clip = self.clip
 
-        if matplotlib.cbook.iterable(value):
+        if np.iterable(value):
             vtype = "array"
             val = np.ma.asarray(value).astype(np.float)
         else:
@@ -1201,7 +1201,7 @@ class LinNorm2(matplotlib.colors.Normalize):
             raise ValueError("Not invertible until scaled")
         vmin, vmax = float(self.vmin), float(self.vmax)
 
-        if matplotlib.cbook.iterable(value):
+        if np.iterable(value):
             val = np.ma.asarray(value)
             return vmin + (vmax - vmin) * val
         else:
