@@ -963,7 +963,7 @@ class HistEqNorm(matplotlib.colors.Normalize):
         if clip is None:
             clip = self.clip
 
-        if matplotlib.cbook.iterable(value):
+        if np.iterable(value):
             vtype = "array"
             val = np.ma.asarray(value).astype(np.float)
         else:
@@ -993,7 +993,7 @@ class HistEqNorm(matplotlib.colors.Normalize):
         if not self.scaled():
             raise ValueError("Not invertible until scaled")
 
-        if matplotlib.cbook.iterable(value):
+        if np.iterable(value):
             vtype = "array"
             val = np.ma.array(value)
         else:
@@ -1096,7 +1096,7 @@ class LogNorm2(matplotlib.colors.Normalize):
         if clip is None:
             clip = self.clip
 
-        if matplotlib.cbook.iterable(value):
+        if np.iterable(value):
             vtype = "array"
             val = np.ma.asarray(value).astype(np.float)
         else:
