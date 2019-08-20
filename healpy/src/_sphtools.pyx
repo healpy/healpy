@@ -595,7 +595,7 @@ def alm_getlmmax(a, lmax, mmax):
 @cython.cdivision(True)
 cdef inline int alm_getlmax(int s):
     cdef double x
-    x=(-3+np.sqrt(1+8*s))/2
+    x=(-3+np.sqrt(1.+8.*s))/2
     if x != floor(x):
         return -1
     else:
