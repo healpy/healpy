@@ -129,7 +129,9 @@ extensions in place with::
 
     python setup.py build_ext --inplace
 
-then add the ``healpy/healpy`` folder to your ``PYTHONPATH``.
+then add the ``healpy`` repository folder to your ``PYTHONPATH`` (e.g. if you
+cloned this repository to ``$REPOS`` such that ``$REPOS/healpy/INSTALL.rst``
+exists, then add ``$REPOS/healpy`` to your ``PYTHONPATH``).
 
 In case of compilation errors, see the note above in the ``pip`` section.
 
