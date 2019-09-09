@@ -941,17 +941,12 @@ def nside2npix(nside):
     Parameters
     ----------
     nside : int
-      healpix nside parameter; an exception is raised if nside is not valid
-      (nside must be a power of 2, less than 2**30)
+      healpix nside parameter
 
     Returns
     -------
     npix : int
       corresponding number of pixels
-
-    Notes
-    -----
-    Raise a ValueError exception if nside is not valid.
 
     Examples
     --------
