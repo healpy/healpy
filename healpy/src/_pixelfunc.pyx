@@ -15,7 +15,7 @@ def ringinfo(nside, np.ndarray[int64, ndim=1] ring not None):
     ----------
     nside : int
       The healpix nside parameter, must be a power of 2, less than 2**30
-    ring : int, scalar or array-like
+    ring : 1d numpy array
       The ring number
 
     Returns
@@ -36,10 +36,14 @@ def ringinfo(nside, np.ndarray[int64, ndim=1] ring not None):
     >>> import healpy as hp
     >>> import numpy as np
     >>> nside = 2
-    >>> hp.ringinfo(nside, np.arange(4*nside-1))
-    (array([ 0,  0,  4, 12, 20, 28, 36]), array([0, 4, 8, 8, 8, 8, 8]), array([ 1.        ,  0.91666667,  0.66666667,  0.33333333,  0.        ,
-           -0.33333333, -0.66666667]), array([ 0.        ,  0.39965263,  0.74535599,  0.94280904,  1.        ,
-            0.94280904,  0.74535599]), array([ True,  True,  True, False,  True, False,  True], dtype=bool))
+    >>> hp.ringinfo(nside, np.arange(1, 4*nside))
+    (array([ 0,  4, 12, 20, 28, 36, 44]),
+     array([4, 8, 8, 8, 8, 8, 4]),
+     array([ 0.91666667,  0.66666667,  0.33333333,  0.        , -0.33333333,
+            -0.66666667, -0.91666667]),
+     array([0.39965263, 0.74535599, 0.94280904, 1.        , 0.94280904,
+            0.74535599, 0.39965263]),
+     array([ True,  True, False,  True, False,  True,  True]))
     """
     if not isnsideok(nside, nest=False):
         raise ValueError('Wrong nside value, must be a power of 2, less than 2**30')

@@ -1,0 +1,18 @@
+name: healpy
+
+channels:
+    - conda-forge
+
+dependencies:
+    - python>=3.6
+    - astropy
+    - Cython
+    - matplotlib
+    - numpy
+    - gcc_linux-64
+    - gxx_linux-64
+    - autoconf
+    - automake
+    - libtool
+    - pkg-config
+    - numpydoc

@@ -31,6 +31,17 @@ by upgrading from time to time::
 
     pip install --user --upgrade healpy
 
+On Linux with newer compilers many users reported compilation errors like ``configure: error: cannot run C compiled programs``,
+the solution is to specifiy the flags for the C and CXX compiler:
+
+    CC=gcc CXX=g++ CFLAGS='-fPIC' CXXFLAGS='-fPIC' pip install --user healpy
+    
+Compilation issues with Mac OS
+------------------------------
+
+Currently most people report they cannot install `healpy` on Mac OS either via `pip` or building from source, due to the impossibility of compiling the `HEALPix` based extension.
+The only options right now are using `conda-forge` or `Macports`.
+
 Installation on Mac OS with MacPorts
 -------------------------------------------------
 
@@ -118,7 +129,11 @@ extensions in place with::
 
     python setup.py build_ext --inplace
 
-then add the ``healpy/healpy`` folder to your ``PYTHONPATH``.
+then add the ``healpy`` repository folder to your ``PYTHONPATH`` (e.g. if you
+cloned this repository to ``$REPOS`` such that ``$REPOS/healpy/INSTALL.rst``
+exists, then add ``$REPOS/healpy`` to your ``PYTHONPATH``).
+
+In case of compilation errors, see the note above in the ``pip`` section.
 
 Clean
 -----

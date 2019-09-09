@@ -20,9 +20,14 @@
 import warnings
 import numpy as np
 import six
+
 pi = np.pi
 import warnings
 import astropy.io.fits as pf
+from scipy.integrate import trapz
+from astropy.utils import data
+
+DATAURL = "https://healpy.github.io/healpy-data/"
 
 from . import _healpy_sph_transform_lib as sphtlib
 from . import _sphtools as _sphtools
@@ -33,27 +38,44 @@ from . import pixelfunc
 
 from .pixelfunc import maptype, UNSEEN, ma_to_array, accept_ma
 
+
 class FutureChangeWarning(UserWarning):
     pass
 
-DATAPATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data')
+
+DATAPATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
+MAX_NSIDE = (
+    8192
+)  # The maximum nside up to which most operations (e.g. map2alm) will work
 
 # Spherical harmonics transformation
-def anafast(map1, map2 = None, nspec = None, lmax = None, mmax = None,
-            iter = 3, alm = False, pol = True, use_weights = False,
-            datapath = None):
-    """Computes the power spectrum of an Healpix map, or the cross-spectrum
+def anafast(
+    map1,
+    map2=None,
+    nspec=None,
+    lmax=None,
+    mmax=None,
+    iter=3,
+    alm=False,
+    pol=True,
+    use_weights=False,
+    datapath=None,
+    gal_cut=0,
+    use_pixel_weights=False,
+):
+    """Computes the power spectrum of a Healpix map, or the cross-spectrum
     between two maps if *map2* is given.
-    No removal of monopole or dipole is performed.
+    No removal of monopole or dipole is performed. The input maps must be
+    in ring-ordering.
 
     Parameters
     ----------
     map1 : float, array-like shape (Npix,) or (3, Npix)
       Either an array representing a map, or a sequence of 3 arrays
-      representing I, Q, U maps
+      representing I, Q, U maps. Must be in ring ordering.
     map2 : float, array-like shape (Npix,) or (3, Npix)
       Either an array representing a map, or a sequence of 3 arrays
-      representing I, Q, U maps
+      representing I, Q, U maps. Must be in ring ordering.
     nspec : None or int, optional
       The number of spectra to return. If None, returns all, otherwise
       returns cls[:nspec]
@@ -73,6 +95,10 @@ def anafast(map1, map2 = None, nspec = None, lmax = None, mmax = None,
       If there is only one input map, it has no effect. Default: True.
     datapath : None or str, optional
       If given, the directory where to find the weights data.
+    gal_cut : float [degrees]
+      pixels at latitude in [-gal_cut;+gal_cut] are not taken into account
+    use_pixel_weights: bool, optional
+      If True, use pixel by pixel weighting, healpy will automatically download the weights, if needed
 
     Returns
     -------
@@ -85,19 +111,34 @@ def anafast(map1, map2 = None, nspec = None, lmax = None, mmax = None,
     """
 
     map1 = ma_to_array(map1)
-    alms1 = map2alm(map1, lmax = lmax, mmax = mmax, pol = pol, iter = iter,
-                    use_weights = use_weights,
-                    datapath = datapath)
+    alms1 = map2alm(
+        map1,
+        lmax=lmax,
+        mmax=mmax,
+        pol=pol,
+        iter=iter,
+        use_weights=use_weights,
+        datapath=datapath,
+        gal_cut=gal_cut,
+        use_pixel_weights=use_pixel_weights,
+    )
     if map2 is not None:
         map2 = ma_to_array(map2)
-        alms2 = map2alm(map2, lmax = lmax, mmax = mmax, pol = pol,
-                        iter = iter, use_weights = use_weights,
-                        datapath = datapath)
+        alms2 = map2alm(
+            map2,
+            lmax=lmax,
+            mmax=mmax,
+            pol=pol,
+            iter=iter,
+            use_weights=use_weights,
+            datapath=datapath,
+            gal_cut=gal_cut,
+            use_pixel_weights=use_pixel_weights,
+        )
     else:
         alms2 = None
 
-    cls = alm2cl(alms1, alms2 = alms2, lmax = lmax, mmax = mmax,
-                 lmax_out = lmax, nspec = nspec)
+    cls = alm2cl(alms1, alms2=alms2, lmax=lmax, mmax=mmax, lmax_out=lmax, nspec=nspec)
 
     if alm:
         if map2 is not None:
@@ -107,14 +148,25 @@ def anafast(map1, map2 = None, nspec = None, lmax = None, mmax = None,
     else:
         return cls
 
-def map2alm(maps, lmax = None, mmax = None, iter = 3, pol = True,
-            use_weights = False, datapath = None):
-    """Computes the alm of an Healpix map.
+
+def map2alm(
+    maps,
+    lmax=None,
+    mmax=None,
+    iter=3,
+    pol=True,
+    use_weights=False,
+    datapath=None,
+    gal_cut=0,
+    use_pixel_weights=False,
+):
+    """Computes the alm of a Healpix map. The input maps must all be
+    in ring ordering.
 
     Parameters
     ----------
     maps : array-like, shape (Npix,) or (n, Npix)
-      The input map or a list of n input maps.
+      The input map or a list of n input maps. Must be in ring ordering.
     lmax : int, scalar, optional
       Maximum l of the power spectrum. Default: 3*nside-1
     mmax : int, scalar, optional
@@ -131,6 +183,10 @@ def map2alm(maps, lmax = None, mmax = None, iter = 3, pol = True,
       If True, use the ring weighting. Default: False.
     datapath : None or str, optional
       If given, the directory where to find the weights data.
+    gal_cut : float [degrees]
+      pixels at latitude in [-gal_cut;+gal_cut] are not taken into account
+    use_pixel_weights: bool, optional
+      If True, use pixel by pixel weighting, healpy will automatically download the weights, if needed
 
     Returns
     -------
@@ -146,22 +202,64 @@ def map2alm(maps, lmax = None, mmax = None, iter = 3, pol = True,
     """
     maps = ma_to_array(maps)
     info = maptype(maps)
+    nside = pixelfunc.get_nside(maps)
+    check_max_nside(nside)
+
+    if use_pixel_weights:
+        if use_weights:
+            raise RuntimeError("Either use pixel or ring weights")
+        with data.conf.set_temp("dataurl", DATAURL), data.conf.set_temp(
+            "remote_timeout", 30
+        ):
+            pixel_weights_filename = data.get_pkg_data_filename(
+                "full_weights/healpix_full_weights_nside_%04d.fits" % nside,
+                package="healpy",
+            )
+    else:
+        pixel_weights_filename = None
+
     if pol or info in (0, 1):
-        alms = _sphtools.map2alm(maps, niter = iter,
-                                 datapath = datapath, use_weights = use_weights,
-                                 lmax = lmax, mmax = mmax)
+        alms = _sphtools.map2alm(
+            maps,
+            niter=iter,
+            datapath=datapath,
+            use_weights=use_weights,
+            lmax=lmax,
+            mmax=mmax,
+            gal_cut=gal_cut,
+            pixel_weights_filename=pixel_weights_filename,
+        )
     else:
         # info >= 2 and pol is False : spin 0 spht for each map
-        alms = [_sphtools.map2alm(mm, niter = iter,
-                                  datapath = datapath, use_weights = use_weights,
-                                  lmax = lmax, mmax = mmax)
-               for mm in maps]
+        alms = [
+            _sphtools.map2alm(
+                mm,
+                niter=iter,
+                datapath=datapath,
+                use_weights=use_weights,
+                lmax=lmax,
+                mmax=mmax,
+                gal_cut=gal_cut,
+                pixel_weights_filename=pixel_weights_filename,
+            )
+            for mm in maps
+        ]
     return np.array(alms)
 
-def alm2map(alms, nside, lmax = None, mmax = None, pixwin = False,
-            fwhm = 0.0, sigma = None,  pol = True,
-            inplace = False, verbose=True):
-    """Computes an Healpix map given the alm.
+
+def alm2map(
+    alms,
+    nside,
+    lmax=None,
+    mmax=None,
+    pixwin=False,
+    fwhm=0.0,
+    sigma=None,
+    pol=True,
+    inplace=False,
+    verbose=True,
+):
+    """Computes a Healpix map given the alm.
 
     The alm are given as a complex array. You can specify lmax
     and mmax, or they will be computed from array size (assuming
@@ -201,14 +299,21 @@ def alm2map(alms, nside, lmax = None, mmax = None, pixwin = False,
     Returns
     -------
     maps : array or list of arrays
-      An Healpix map in RING scheme at nside or a list of T,Q,U maps (if
+      A Healpix map in RING scheme at nside or a list of T,Q,U maps (if
       polarized input)
+
+    Notes
+    -----
+    Running map2alm then alm2map will not return exactly the same map if the discretized field you construct on the sphere is not band-limited (for example, if you have a map containing pixel-based noise rather than beam-smoothed noise). If you need a band-limited map, you have to start with random numbers in lm space and transform these via alm2map. With such an input, the accuracy of map2alm->alm2map should be quite good, depending on your choices of lmax, mmax and nside (for some typical values, see e.g., section 5.1 of https://arxiv.org/pdf/1010.2084).
     """
     if not cb.is_seq(alms):
         raise TypeError("alms must be a sequence")
 
-    alms = smoothalm(alms, fwhm = fwhm, sigma = sigma,
-                     pol = pol, inplace = inplace, verbose=verbose)
+    check_max_nside(nside)
+
+    alms = smoothalm(
+        alms, fwhm=fwhm, sigma=sigma, pol=pol, inplace=inplace, verbose=verbose
+    )
 
     if not cb.is_seq_of_seq(alms):
         alms = [alms]
@@ -217,11 +322,11 @@ def alm2map(alms, nside, lmax = None, mmax = None, pixwin = False,
         lonely = False
 
     if pixwin:
-        pw = globals()['pixwin'](nside,True)
+        pw = globals()["pixwin"](nside, True)
         alms_new = []
         for ialm, alm in enumerate(alms):
             pixelwindow = pw[1] if ialm >= 1 and pol else pw[0]
-            alms_new.append(almxfl(alm, pixelwindow, inplace = inplace))
+            alms_new.append(almxfl(alm, pixelwindow, inplace=inplace))
     else:
         alms_new = alms
 
@@ -230,19 +335,22 @@ def alm2map(alms, nside, lmax = None, mmax = None, pixwin = False,
     if mmax is None:
         mmax = -1
     if pol:
-        output = sphtlib._alm2map(alms_new[0] if lonely else tuple(alms_new),
-                                  nside, lmax = lmax, mmax = mmax)
+        output = sphtlib._alm2map(
+            alms_new[0] if lonely else tuple(alms_new), nside, lmax=lmax, mmax=mmax
+        )
         if lonely:
             output = [output]
     else:
-        output = [sphtlib._alm2map(alm, nside, lmax = lmax, mmax = mmax)
-                  for alm in alms_new]
+        output = [
+            sphtlib._alm2map(alm, nside, lmax=lmax, mmax=mmax) for alm in alms_new
+        ]
     if lonely:
         return output[0]
     else:
         return np.array(output)
 
-def synalm(cls, lmax = None, mmax = None, new = False, verbose=True):
+
+def synalm(cls, lmax=None, mmax=None, new=False, verbose=True):
     """Generate a set of alm given cl.
     The cl are given as a float array. Corresponding alm are generated.
     If lmax is None, it is assumed lmax=cl.size-1
@@ -284,27 +392,29 @@ def synalm(cls, lmax = None, mmax = None, new = False, verbose=True):
     with new=True, and TT, TE, TB, EE, EB, BB if new=False.
     """
     if (not new) and verbose:
-        warnings.warn("The order of the input cl's will change in a future "
-                      "release.\n"
-                      "Use new=True keyword to start using the new order.\n"
-                      "See documentation of healpy.synalm.",
-                      category=FutureChangeWarning)
+        warnings.warn(
+            "The order of the input cl's will change in a future "
+            "release.\n"
+            "Use new=True keyword to start using the new order.\n"
+            "See documentation of healpy.synalm.",
+            category=FutureChangeWarning,
+        )
     if not cb.is_seq(cls):
-        raise TypeError('cls must be an array or a sequence of arrays')
+        raise TypeError("cls must be an array or a sequence of arrays")
 
     if not cb.is_seq_of_seq(cls):
         # Only one spectrum
         if lmax is None or lmax < 0:
-            lmax = cls.size-1
+            lmax = cls.size - 1
         if mmax is None or mmax < 0:
             mmax = lmax
-        cls_list = [np.asarray(cls, dtype = np.float64)]
-        szalm = Alm.getsize(lmax,mmax)
-        alm = np.zeros(szalm,'D')
+        cls_list = [np.asarray(cls, dtype=np.float64)]
+        szalm = Alm.getsize(lmax, mmax)
+        alm = np.zeros(szalm, "D")
         alm.real = np.random.standard_normal(szalm)
         alm.imag = np.random.standard_normal(szalm)
-        alms_list=[alm]
-        sphtlib._synalm(cls_list,alms_list,lmax,mmax)
+        alms_list = [alm]
+        sphtlib._synalm(cls_list, alms_list, lmax, mmax)
         return alm
 
     # From here, we interpret cls as a list of spectra
@@ -312,7 +422,7 @@ def synalm(cls, lmax = None, mmax = None, new = False, verbose=True):
     maxsize = max([len(c) for c in cls])
 
     if lmax is None or lmax < 0:
-        lmax = maxsize-1
+        lmax = maxsize - 1
     if mmax is None or mmax < 0:
         mmax = lmax
 
@@ -320,33 +430,48 @@ def synalm(cls, lmax = None, mmax = None, new = False, verbose=True):
 
     if Nspec <= 0:
         if len(cls_list) == 4:
-            if new: ## new input order: TT EE BB TE -> TT EE BB TE 0 0
+            if new:  ## new input order: TT EE BB TE -> TT EE BB TE 0 0
                 cls_list = [cls[0], cls[1], cls[2], cls[3], None, None]
-            else: ## old input order: TT TE EE BB -> TT TE 0 EE 0 BB
+            else:  ## old input order: TT TE EE BB -> TT TE 0 EE 0 BB
                 cls_list = [cls[0], cls[1], None, cls[2], None, cls[3]]
             Nspec = 3
         else:
-            raise TypeError("The sequence of arrays must have either 4 elements "
-                            "or n(n+1)/2 elements (some may be None)")
+            raise TypeError(
+                "The sequence of arrays must have either 4 elements "
+                "or n(n+1)/2 elements (some may be None)"
+            )
 
-    szalm = Alm.getsize(lmax,mmax)
+    szalm = Alm.getsize(lmax, mmax)
     alms_list = []
     for i in six.moves.xrange(Nspec):
-        alm = np.zeros(szalm,'D')
+        alm = np.zeros(szalm, "D")
         alm.real = np.random.standard_normal(szalm)
         alm.imag = np.random.standard_normal(szalm)
         alms_list.append(alm)
-    if new: # new input order: input given by diagonal, should be given by row
+    if new:  # new input order: input given by diagonal, should be given by row
         cls_list = new_to_old_spectra_order(cls_list)
     # ensure cls are float64
-    cls_list = [(np.asarray(cl, dtype = np.float64) if cl is not None else None)
-                for cl in cls_list]
+    cls_list = [
+        (np.asarray(cl, dtype=np.float64) if cl is not None else None)
+        for cl in cls_list
+    ]
     sphtlib._synalm(cls_list, alms_list, lmax, mmax)
     return np.array(alms_list)
 
-def synfast(cls, nside, lmax = None, mmax = None, alm = False,
-            pol = True, pixwin = False, fwhm = 0.0, sigma = None,
-            new = False, verbose=True):
+
+def synfast(
+    cls,
+    nside,
+    lmax=None,
+    mmax=None,
+    alm=False,
+    pol=True,
+    pixwin=False,
+    fwhm=0.0,
+    sigma=None,
+    new=False,
+    verbose=True,
+):
     """Create a map(s) from cl(s).
 
     Parameters
@@ -397,16 +522,29 @@ def synfast(cls, nside, lmax = None, mmax = None, alm = False,
     """
     if not pixelfunc.isnsideok(nside):
         raise ValueError("Wrong nside value (must be a power of two).")
-    cls_lmax = cb.len_array_or_arrays(cls) -1
+    check_max_nside(nside)
+
+    cls_lmax = cb.len_array_or_arrays(cls) - 1
     if lmax is None or lmax < 0:
         lmax = min(cls_lmax, 3 * nside - 1)
-    alms = synalm(cls, lmax = lmax, mmax = mmax, new = new, verbose=verbose)
-    maps = alm2map(alms, nside, lmax = lmax, mmax = mmax, pixwin = pixwin,
-                   pol = pol, fwhm = fwhm, sigma = sigma, inplace = True, verbose=verbose)
+    alms = synalm(cls, lmax=lmax, mmax=mmax, new=new, verbose=verbose)
+    maps = alm2map(
+        alms,
+        nside,
+        lmax=lmax,
+        mmax=mmax,
+        pixwin=pixwin,
+        pol=pol,
+        fwhm=fwhm,
+        sigma=sigma,
+        inplace=True,
+        verbose=verbose,
+    )
     if alm:
         return np.array(maps), np.array(alms)
     else:
         return np.array(maps)
+
 
 class Alm(object):
     """This class provides some static methods for alm index computation.
@@ -418,11 +556,12 @@ class Alm(object):
     getsize
     getlmax
     """
+
     def __init__(self):
         pass
 
     @staticmethod
-    def getlm(lmax,i=None):
+    def getlm(lmax, i=None):
         """Get the l and m from index and lmax.
 
         Parameters
@@ -434,13 +573,17 @@ class Alm(object):
           If None, the function return l and m for i=0..Alm.getsize(lmax)
         """
         if i is None:
-            i=np.arange(Alm.getsize(lmax))
-        m=(np.ceil(((2*lmax+1)-np.sqrt((2*lmax+1)**2-8*(i-lmax)))/2)).astype(int)
-        l = i-m*(2*lmax+1-m)//2
-        return (l,m)
+            i = np.arange(Alm.getsize(lmax))
+        m = (
+            np.ceil(
+                ((2 * lmax + 1) - np.sqrt((2 * lmax + 1) ** 2 - 8 * (i - lmax))) / 2
+            )
+        ).astype(int)
+        l = i - m * (2 * lmax + 1 - m) // 2
+        return (l, m)
 
     @staticmethod
-    def getidx(lmax,l,m):
+    def getidx(lmax, l, m):
         """Returns index corresponding to (l,m) in an array describing alm up to lmax.
 
         Parameters
@@ -457,10 +600,10 @@ class Alm(object):
         idx : int
           The index corresponding to (l,m)
         """
-        return m*(2*lmax+1-m)//2+l
+        return m * (2 * lmax + 1 - m) // 2 + l
 
     @staticmethod
-    def getsize(lmax,mmax = None):
+    def getsize(lmax, mmax=None):
         """Returns the size of the array needed to store alm up to *lmax* and *mmax*
 
         Parameters
@@ -480,7 +623,7 @@ class Alm(object):
         return mmax * (2 * lmax + 1 - mmax) // 2 + lmax + 1
 
     @staticmethod
-    def getlmax(s, mmax = None):
+    def getlmax(s, mmax=None):
         """Returns the lmax corresponding to a given array size.
 
         Parameters
@@ -505,8 +648,7 @@ class Alm(object):
             return int(x)
 
 
-def alm2cl(alms1, alms2 = None, lmax = None, mmax = None,
-           lmax_out = None, nspec = None):
+def alm2cl(alms1, alms2=None, lmax=None, mmax=None, lmax_out=None, nspec=None):
     """Computes (cross-)spectra from alm(s). If alm2 is given, cross-spectra between
     alm and alm2 are computed. If alm (and alm2 if provided) contains n alm,
     then n(n+1)/2 auto and cross-spectra are returned.
@@ -540,15 +682,14 @@ def alm2cl(alms1, alms2 = None, lmax = None, mmax = None,
       For example, if *alm* is almT, almE, almB, then the returned spectra are:
       TT, EE, BB, TE, EB, TB.
     """
-    cls = _sphtools.alm2cl(alms1, alms2 = alms2, lmax = lmax,
-                           mmax = mmax, lmax_out = lmax_out)
+    cls = _sphtools.alm2cl(alms1, alms2=alms2, lmax=lmax, mmax=mmax, lmax_out=lmax_out)
     if nspec is None:
         return np.array(cls)
     else:
         return np.array(cls[:nspec])
 
 
-def almxfl(alm, fl, mmax = None, inplace = False):
+def almxfl(alm, fl, mmax=None, inplace=False):
     """Multiply alm by a function of l. The function is assumed
     to be zero where not defined.
 
@@ -570,11 +711,20 @@ def almxfl(alm, fl, mmax = None, inplace = False):
       if inplace is True.
     """
     # FIXME: Should handle multidimensional input
-    almout = _sphtools.almxfl(alm, fl, mmax = mmax, inplace = inplace)
+    almout = _sphtools.almxfl(alm, fl, mmax=mmax, inplace=inplace)
     return almout
 
-def smoothalm(alms, fwhm = 0.0, sigma = None,  pol = True,
-              mmax = None, verbose = True, inplace = True):
+
+def smoothalm(
+    alms,
+    fwhm=0.0,
+    sigma=None,
+    beam_window=None,
+    pol=True,
+    mmax=None,
+    verbose=True,
+    inplace=True,
+):
     """Smooth alm with a Gaussian symmetric beam function.
 
     Parameters
@@ -588,6 +738,8 @@ def smoothalm(alms, fwhm = 0.0, sigma = None,  pol = True,
     sigma : float, optional
       The sigma of the Gaussian. Override fwhm.
       [in radians]
+    beam_window: array, optional
+      Custom beam window function. Override fwhm and sigma.
     pol : bool, optional
       If True, assumes input alms are TEB. Output will be TQU maps.
       (input must be 1 or 3 alms)
@@ -609,18 +761,29 @@ def smoothalm(alms, fwhm = 0.0, sigma = None,  pol = True,
       and *inplace* is True the smoothing is applied inplace.
       Otherwise, a copy is made.
     """
-    if sigma is None:
-        sigma = fwhm / (2.*np.sqrt(2.*np.log(2.)))
+    if (sigma is None) & (beam_window is None):
+        sigma = fwhm / (2.0 * np.sqrt(2.0 * np.log(2.0)))
 
     if verbose:
-        print("Sigma is {0:f} arcmin ({1:f} rad) ".format(sigma*60*180/pi,sigma))
-        print("-> fwhm is {0:f} arcmin".format(sigma*60*180/pi*(2.*np.sqrt(2.*np.log(2.)))))
+        if beam_window is None:
+            print(
+                "Sigma is {0:f} arcmin ({1:f} rad) ".format(
+                    sigma * 60 * 180 / pi, sigma
+                )
+            )
+            print(
+                "-> fwhm is {0:f} arcmin".format(
+                    sigma * 60 * 180 / pi * (2.0 * np.sqrt(2.0 * np.log(2.0)))
+                )
+            )
+        else:
+            print("Using provided beam window function")
 
     # Check alms
     if not cb.is_seq(alms):
         raise ValueError("alm must be a sequence")
 
-    if sigma == 0:
+    if (sigma == 0) & (beam_window is None):
         # nothing to be done
         return alms
 
@@ -638,12 +801,17 @@ def smoothalm(alms, fwhm = 0.0, sigma = None,  pol = True,
     for ialm, alm in enumerate(alms):
         lmax = Alm.getlmax(len(alm), mmax)
         if lmax < 0:
-            raise TypeError('Wrong alm size for the given '
-                            'mmax (len(alms[%d]) = %d).'%(ialm, len(alm)))
-        ell = np.arange(lmax + 1.)
+            raise TypeError(
+                "Wrong alm size for the given "
+                "mmax (len(alms[%d]) = %d)." % (ialm, len(alm))
+            )
+        ell = np.arange(lmax + 1.0)
         s = 2 if ialm >= 1 and pol else 0
-        fact = np.exp(-0.5 * (ell * (ell + 1) - s ** 2) * sigma ** 2)
-        res = almxfl(alm, fact, mmax = mmax, inplace = inplace)
+        if beam_window is None:
+            fact = np.exp(-0.5 * (ell * (ell + 1) - s ** 2) * sigma ** 2)
+        else:
+            fact = np.copy(beam_window)
+        res = almxfl(alm, fact, mmax=mmax, inplace=inplace)
         retalm.append(res)
     # Test what to return (inplace/not inplace...)
     # Case 1: 1d input, return 1d output
@@ -662,10 +830,22 @@ def smoothalm(alms, fwhm = 0.0, sigma = None,  pol = True,
     # return the input alms.  If the input was a tuple, so will the output be.
     return alms
 
+
 @accept_ma
-def smoothing(map_in, fwhm = 0.0, sigma = None,  pol = True,
-              iter = 3, lmax = None, mmax = None, use_weights = False,
-              datapath = None, verbose = True):
+def smoothing(
+    map_in,
+    fwhm=0.0,
+    sigma=None,
+    beam_window=None,
+    pol=True,
+    iter=3,
+    lmax=None,
+    mmax=None,
+    use_weights=False,
+    use_pixel_weights=False,
+    datapath=None,
+    verbose=True,
+):
     """Smooth a map with a Gaussian symmetric beam.
 
     No removal of monopole or dipole is performed.
@@ -680,6 +860,8 @@ def smoothing(map_in, fwhm = 0.0, sigma = None,  pol = True,
       radians]. Default:0.0
     sigma : float, optional
       The sigma of the Gaussian [in radians]. Override fwhm.
+    beam_window: array, optional
+      Custom beam window function. Override fwhm and sigma.
     pol : bool, optional
       If True, assumes input maps are TQU. Output will be TQU maps.
       (input must be 1 or 3 alms)
@@ -694,6 +876,8 @@ def smoothing(map_in, fwhm = 0.0, sigma = None,  pol = True,
       Maximum m of the alm. Default: lmax
     use_weights: bool, scalar, optional
       If True, use the ring weighting. Default: False.
+    use_pixel_weights: bool, optional
+      If True, use pixel by pixel weighting, healpy will automatically download the weights, if needed
     datapath : None or str, optional
       If given, the directory where to find the weights data.
     verbose : bool, optional
@@ -718,29 +902,59 @@ def smoothing(map_in, fwhm = 0.0, sigma = None,  pol = True,
         nside = pixelfunc.get_nside(map_in)
         n_maps = 0
 
+    check_max_nside(nside)
+
     if pol or n_maps in (0, 1):
         # Treat the maps together (1 or 3 maps)
-        alms = map2alm(map_in, lmax = lmax, mmax = mmax, iter = iter,
-                       pol = pol, use_weights = use_weights,
-                       datapath = datapath)
-        smoothalm(alms, fwhm = fwhm, sigma = sigma,
-                  inplace = True, verbose = verbose)
-        output_map = alm2map(alms, nside, pixwin = False, verbose=verbose)
+        alms = map2alm(
+            map_in,
+            lmax=lmax,
+            mmax=mmax,
+            iter=iter,
+            pol=pol,
+            use_weights=use_weights,
+            use_pixel_weights=use_pixel_weights,
+            datapath=datapath,
+        )
+        smoothalm(
+            alms,
+            fwhm=fwhm,
+            sigma=sigma,
+            beam_window=beam_window,
+            inplace=True,
+            verbose=verbose,
+        )
+        output_map = alm2map(alms, nside, pixwin=False, verbose=verbose)
     else:
         # Treat each map independently (any number)
         output_map = []
         for m in map_in:
-            alm = map2alm(m, lmax = lmax, mmax = mmax, iter = iter, pol = pol,
-                          use_weights = use_weights, datapath = datapath)
-            smoothalm(alm, fwhm = fwhm, sigma = sigma,
-                      inplace = True, verbose = verbose)
-            output_map.append(alm2map(alm, nside, pixwin = False, verbose=verbose))
+            alm = map2alm(
+                m,
+                lmax=lmax,
+                mmax=mmax,
+                iter=iter,
+                pol=pol,
+                use_weights=use_weights,
+                use_pixel_weights=use_pixel_weights,
+                datapath=datapath,
+            )
+            smoothalm(
+                alm,
+                fwhm=fwhm,
+                sigma=sigma,
+                beam_window=beam_window,
+                inplace=True,
+                verbose=verbose,
+            )
+            output_map.append(alm2map(alm, nside, pixwin=False, verbose=verbose))
         output_map = np.array(output_map)
     output_map[masks] = UNSEEN
 
     return output_map
 
-def pixwin(nside, pol = False):
+
+def pixwin(nside, pol=False, lmax=None):
     """Return the pixel window function for the given nside.
 
     Parameters
@@ -749,6 +963,8 @@ def pixwin(nside, pol = False):
       The nside for which to return the pixel window function
     pol : bool, optional
       If True, return also the polar pixel window. Default: False
+    lmax : int, optional
+        Maximum l of the power spectrum (default: 3*nside-1) 
 
     Returns
     -------
@@ -756,23 +972,27 @@ def pixwin(nside, pol = False):
       The temperature pixel window function, or a tuple with both
       temperature and polarisation pixel window functions.
     """
+
+    if lmax is None:
+        lmax = 3 * nside - 1
+
     datapath = DATAPATH
     if not pixelfunc.isnsideok(nside):
         raise ValueError("Wrong nside value (must be a power of two).")
-    fname = os.path.join(datapath, 'pixel_window_n%04d.fits'%nside)
+    fname = os.path.join(datapath, "pixel_window_n%04d.fits" % nside)
     if not os.path.isfile(fname):
-        raise ValueError("No pixel window for this nside "
-                         "or data files missing")
+        raise ValueError("No pixel window for this nside " "or data files missing")
     # return hfitslib._pixwin(nside,datapath,pol)  ## BROKEN -> seg fault...
     pw = pf.getdata(fname)
     pw_temp, pw_pol = pw.field(0), pw.field(1)
     if pol:
-        return pw_temp, pw_pol
+        return pw_temp[: lmax + 1], pw_pol[: lmax + 1]
     else:
-        return pw_temp
+        return pw_temp[: lmax + 1]
 
-def alm2map_der1(alm, nside, lmax = None, mmax = None):
-   """Computes an Healpix map and its first derivatives given the alm.
+
+def alm2map_der1(alm, nside, lmax=None, mmax=None):
+    """Computes a Healpix map and its first derivatives given the alm.
 
    The alm are given as a complex array. You can specify lmax
    and mmax, or they will be computed from array size (assuming
@@ -795,11 +1015,13 @@ def alm2map_der1(alm, nside, lmax = None, mmax = None):
      The maps correponding to alm, and its derivatives with respect to
      theta and phi. d_phi is already divided by sin(theta)
    """
-   if lmax is None:
-       lmax = -1
-   if mmax is None:
-       mmax = -1
-   return np.array(sphtlib._alm2map_der1(alm,nside,lmax=lmax,mmax=mmax))
+    check_max_nside(nside)
+    if lmax is None:
+        lmax = -1
+    if mmax is None:
+        mmax = -1
+    return np.array(sphtlib._alm2map_der1(alm, nside, lmax=lmax, mmax=mmax))
+
 
 def new_to_old_spectra_order(cls_new_order):
     """Reorder the cls from new order (by diagonal) to old order (by row).
@@ -817,6 +1039,7 @@ def new_to_old_spectra_order(cls_new_order):
             cls_old_order.append(cls_new_order[idx_new])
     return cls_old_order
 
+
 def load_sample_spectra():
     """Read a sample power spectra for testing and demo purpose.
     Based on LambdaCDM. Gives TT, EE, BB, TE.
@@ -828,11 +1051,12 @@ def load_sample_spectra():
       f is the factor ell*(ell+1)/2pi (in general, plots show f * cl)
       cls is a sequence of the power spectra TT, EE, BB and TE
     """
-    cls = np.loadtxt(os.path.join(DATAPATH, 'totcls.dat'), unpack = True)
+    cls = np.loadtxt(os.path.join(DATAPATH, "totcls.dat"), unpack=True)
     ell = cls[0]
     f = ell * (ell + 1) / 2 / np.pi
     cls[1:, 1:] /= f[1:]
     return ell, f, cls[1:]
+
 
 def gauss_beam(fwhm, lmax=512, pol=False):
     """Gaussian beam window function
@@ -868,14 +1092,117 @@ def gauss_beam(fwhm, lmax=512, pol=False):
         otherwise (lmax+1, 4) contains polarized beam
     """
 
-    sigma = fwhm / np.sqrt(8. * np.log(2.))
+    sigma = fwhm / np.sqrt(8.0 * np.log(2.0))
     ell = np.arange(lmax + 1)
     sigma2 = sigma ** 2
-    g = np.exp(-.5 * ell * (ell + 1) * sigma2)
+    g = np.exp(-0.5 * ell * (ell + 1) * sigma2)
 
-    if not pol: # temperature-only beam
+    if not pol:  # temperature-only beam
         return g
-    else: # polarization beam
+    else:  # polarization beam
         # polarization factors [1, 2 sigma^2, 2 sigma^2, sigma^2]
-        pol_factor = np.exp([0., 2*sigma2, 2*sigma2, sigma2])
+        pol_factor = np.exp([0.0, 2 * sigma2, 2 * sigma2, sigma2])
         return g[:, np.newaxis] * pol_factor
+
+
+def bl2beam(bl, theta):
+    """Computes a circular beam profile b(theta) in real space from 
+    its transfer (or window) function b(l) in spherical harmonic space.
+
+    Parameters
+    ----------
+    bl : array
+        Window function b(l) of the beam.
+    theta : array
+        Radius at which the beam profile will be computed.
+        Has to be given in radians.
+
+    Returns
+    -------
+    beam : array
+        (Circular) beam profile b(theta).
+    """
+
+    lmax = len(bl) - 1
+    nx = len(theta)
+    x = np.cos(theta)
+    p0 = np.zeros(nx) + 1
+    p1 = x
+
+    beam = bl[0] * p0 + bl[1] * p1 * 3
+
+    for l in np.arange(2, lmax):
+        p2 = x * p1 * (2 * l - 1) / l - p0 * (l - 1) / l
+        p0 = p1
+        p1 = p2
+        beam += bl[l] * p2 * (2 * l + 1)
+
+    beam /= 4 * pi
+
+    return beam
+
+
+def beam2bl(beam, theta, lmax):
+    """Computes a transfer (or window) function b(l) in spherical 
+    harmonic space from its circular beam profile b(theta) in real 
+    space.
+
+    Parameters
+    ----------
+    beam : array
+        Circular beam profile b(theta).
+    theta : array
+        Radius at which the beam profile is given. Has to be given 
+        in radians with same size as beam.
+    lmax : integer
+        Maximum multipole moment at which to compute b(l).
+
+    Returns
+    -------
+    bl : array
+        Beam window function b(l).
+    """
+
+    nx = len(theta)
+    nb = len(beam)
+    if nb != nx:
+        print("beam and theta must have same size!")
+
+    x = np.cos(theta)
+    st = np.sin(theta)
+    window = np.zeros(lmax + 1)
+
+    p0 = np.ones(nx)
+    p1 = np.copy(x)
+
+    window[0] = trapz(beam * p0 * st, theta)
+    window[1] = trapz(beam * p1 * st, theta)
+
+    for l in np.arange(2, lmax + 1):
+        p2 = x * p1 * (2 * l - 1) / l - p0 * (l - 1) / l
+        window[l] = trapz(beam * p2 * st, theta)
+        p0 = p1
+        p1 = p2
+
+    window *= 2 * pi
+
+    return window
+
+
+def check_max_nside(nside):
+    """Checks whether the nside used in a certain operation does not exceed the
+    maximum supported nside. The maximum nside is saved in MAX_NSIDE.
+
+    Parameters
+    ----------
+    nside : int
+        nside of the map that is being checked
+    """
+
+    if nside > MAX_NSIDE:
+        raise ValueError(
+            "nside {nside} of map cannot be larger than "
+            "MAX_NSIDE {max_nside}".format(nside=nside, max_nside=MAX_NSIDE)
+        )
+
+    return 0

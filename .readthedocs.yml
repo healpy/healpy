@@ -1,0 +1,5 @@
+build:
+  image: latest
+
+conda:
+  file: .rtd-environment.yml
