@@ -1,3 +1,11 @@
+Release 1.12.10 9 Sep 2019
+
+* fix overflow in nside2npix at NSIDE>8192 <https://github.com/healpy/healpy/pull/573>
+* option to set UNSEEN color in plots <https://github.com/healpy/healpy/pull/551>
+* option to rotate alms in place <https://github.com/healpy/healpy/pull/555>
+* option to keep the FITS dtype in `read_map` <https://github.com/healpy/healpy/pull/554>
+* fix compatibility with matplotlib 3 <https://github.com/healpy/healpy/pull/563> and <https://github.com/healpy/healpy/pull/566>
+
 Release 1.12.9 21 Mar 2019, related to the `healpy` JOSS paper
 
 * `lmax` support in `hp.pixwin` <https://github.com/healpy/healpy/pull/544>
