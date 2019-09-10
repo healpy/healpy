@@ -33,13 +33,15 @@ then in `healpy`:
 ## Conda packages
 
 Conda forge should automatically detect the PyPI package and try to build the conda package,
-review and merge the Pull Request at <https://github.com/conda-forge/healpy-feedstock/pull>
+review and merge the Pull Request at <https://github.com/conda-forge/healpy-feedstock/pulls>
 
 ## PyPI - Wheels
 
 ### Linux
 
-    mkdir -p wheelhouse && docker run --rm -v $(pwd)/wheelhouse:/wheelhouse quay.io/pypa/manylinux1_x86_64 bash -c 'for PIP in /opt/python/*/bin/pip; do $PIP install numpy==1.13.3\;python_version\<\"3.7\" numpy==1.14.3\;python_version\>=\"3.7\" && $PIP wheel --no-deps healpy==1.12.9; done; for WHEEL in *.whl; do auditwheel repair $WHEEL; done'
+Edit the version number in the line below and run on machine with Docker:
+
+    mkdir -p wheelhouse && docker run --rm -v $(pwd)/wheelhouse:/wheelhouse quay.io/pypa/manylinux1_x86_64 bash -c 'for PIP in /opt/python/*/bin/pip; do $PIP install numpy==1.13.3\;python_version\<\"3.7\" numpy==1.14.3\;python_version\>=\"3.7\" && $PIP wheel --no-deps healpy==1.12.10; done; for WHEEL in *.whl; do auditwheel repair $WHEEL; done'
 
 ### macOS + MacPorts
 
