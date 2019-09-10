@@ -586,6 +586,12 @@ class Alm(object):
     def getidx(lmax, l, m):
         """Returns index corresponding to (l,m) in an array describing alm up to lmax.
 
+        In HEALPix C++ and healpy, :math:`a_{lm}` coefficients are stored ordered by
+        :math:`m`. I.e. if :math:`\ell_{max}` is 16, the first 16 elements are
+        :math:`m=0, \ell=0-16`, then the following 15 elements are :math:`m=1, \ell=1-16`,
+        then :math:`m=2, \ell=2-16` and so on until the last element, the 153th, is
+        :math:`m=16, \ell=16`.
+
         Parameters
         ----------
         lmax : int
