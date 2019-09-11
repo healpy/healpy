@@ -55,3 +55,21 @@ Edit the version number in the line below and run on machine with Docker:
     python3.7 -m venv --system-site-packages delocate
     delocate/bin/pip install delocate
     for WHEEL in *.whl; do delocate/bin/delocate-wheel -w wheelhouse $WHEEL; done
+    
+## Track release with an issue
+
+Template:
+
+Release:
+* [ ] Github: https://github.com/healpy/healpy/releases/tag/1.12.10
+* [ ] PyPI: https://pypi.org/project/healpy/1.12.10/
+* [ ] conda-forge: https://anaconda.org/conda-forge/healpy
+* [ ] wheels on PyPI for linux and Mac OS 
+
+```
+healpy-1.12.10-cp27-cp27m-manylinux1_x86_64.whl   healpy-1.12.10-cp35-cp35m-manylinux1_x86_64.whl
+healpy-1.12.10-cp27-cp27mu-manylinux1_x86_64.whl  healpy-1.12.10-cp36-cp36m-manylinux1_x86_64.whl
+healpy-1.12.10-cp34-cp34m-manylinux1_x86_64.whl   healpy-1.12.10-cp37-cp37m-manylinux1_x86_64.whl
+```
+
+@zonca @DanielLenz @lpsinger @hivon @mreineck @lpsinger 
