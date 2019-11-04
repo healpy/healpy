@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
 
-from .. import query_disc, boundaries, nside2npix
+from .. import query_disc, boundaries, nside2npix, nside2resol, ang2vec
 
 try:
     from exceptions import ValueError
@@ -73,6 +73,28 @@ class TestQueryDisc(unittest.TestCase):
             corners, self.nside2_55_corners_precomp, decimal=8
         )
 
+    # For RING scheme, nside should not need to be a power of two.
+    def test_nside_non_power_of_two(self):
+
+        nside = 1
+        resolution = 1.0
+        theta=0.0
+        phi=0.0
+        radius = np.radians(1)
+        while True:
+            nside = nside + 1 
+            res = nside2resol(nside, arcmin = True)
+            print("nside={} res={} arcmin".format(nside, res))
+            if res < resolution:
+                break
+            
+        self.assertEqual(nside, 3518)
+        
+        x0 = ang2vec(theta, phi)
+        
+        pixel_indices = query_disc(nside, x0, radius, inclusive=False, nest=False)
+        self.assertEqual(pixel_indices.shape[0], 11400)
+        
     def test_boundaries_floatpix_array(self):
         self.assertRaises(ValueError, boundaries, 2, np.array([5.0, 5]))
 
