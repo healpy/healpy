@@ -47,15 +47,13 @@ class HealpixFitsWarning(Warning):
     pass
 
 
-def read_cl(filename, dtype=np.float64, h=False):
+def read_cl(filename):
     """Reads Cl from a healpix file, as IDL fits2cl.
 
     Parameters
     ----------
     filename : str or HDUList or HDU or pathlib.Path instance
       the fits file name
-    dtype : data type, optional
-      the data type of the returned array
 
     Returns
     -------
@@ -70,7 +68,7 @@ def read_cl(filename, dtype=np.float64, h=False):
         return cl
 
 
-def write_cl(filename, cl, dtype=np.float64, overwrite=False):
+def write_cl(filename, cl, dtype=None, overwrite=False):
     """Writes Cl into a healpix file, as IDL cl2fits.
 
     Parameters
@@ -79,10 +77,15 @@ def write_cl(filename, cl, dtype=np.float64, overwrite=False):
       the fits file name
     cl : array
       the cl array to write to file
+    dtype : np.dtype (optional)
+      The datatype in which the columns will be stored. If not supplied,
+      the type of cl will be used.
     overwrite : bool, optional
       If True, existing file is silently overwritten. Otherwise trying to write
       an existing file raises an OSError (IOError for Python 2).
     """
+    if dtype is None:
+        dtype = cl.dtype if isinstance(cl, np.ndarray) else cl[0].dtype
     # check the dtype and convert it
     fitsformat = getformat(dtype)
     column_names = ["TEMPERATURE", "GRADIENT", "CURL", "G-T", "C-T", "C-G"]
@@ -107,7 +110,7 @@ def write_map(
     filename,
     m,
     nest=False,
-    dtype=np.float32,
+    dtype=None,
     fits_IDL=True,
     coord=None,
     partial=False,
@@ -155,7 +158,7 @@ def write_map(
       The datatype in which the columns will be stored. Will be converted
       internally from the numpy datatype to the fits convention. If a list,
       the length must correspond to the number of map arrays.
-      Default: np.float32.
+      Default: use the data type of the input array(s).
     overwrite : bool, optional
       If True, existing file is silently overwritten. Otherwise trying to write
       an existing file raises an OSError (IOError for Python 2).
@@ -168,6 +171,8 @@ def write_map(
         m = [m]
 
     # check the dtype and convert it
+    if dtype is None:
+        dtype = [x.dtype for x in m]
     try:
         fitsformat = []
         for curr_dtype in dtype:
@@ -268,7 +273,7 @@ def write_map(
 def read_map(
     filename,
     field=0,
-    dtype=np.float64,
+    dtype=None,
     nest=False,
     partial=False,
     hdu=1,
@@ -389,6 +394,8 @@ def read_map(
             fits_hdu.verify("fix")
             pix = fits_hdu.data.field(0).astype(int, copy=False).ravel()
 
+    if dtype is None:
+        dtype = [fits_hdu.data.field(ff).dtype for ff in field]
     try:
         assert len(dtype) == len(
             field

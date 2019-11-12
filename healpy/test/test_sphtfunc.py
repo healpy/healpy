@@ -151,6 +151,7 @@ class TestSphtFunc(unittest.TestCase):
                 "wmap_band_iqumap_r9_7yr_W_v4_udgraded32_smoothed10deg_fortran.fits",
             ),
             (0, 1, 2),
+            np.float64
         )
         np.testing.assert_array_almost_equal(smoothed, smoothed_f90, decimal=6)
 
@@ -164,6 +165,7 @@ class TestSphtFunc(unittest.TestCase):
                     "wmap_band_iqumap_r9_7yr_W_v4_udgraded32_masked_smoothed10deg_fortran.fits",
                 ),
                 (0, 1, 2),
+                np.float64
             )
         )
         # fortran does not restore the mask
