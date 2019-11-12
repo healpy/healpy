@@ -6,6 +6,8 @@ from libcpp cimport bool
 cimport cython
 from _common cimport int64, Healpix_Ordering_Scheme, RING, NEST, SET_NSIDE, T_Healpix_Base
 
+from pixelfunc import isnsideok
+
 def ringinfo(nside, np.ndarray[int64, ndim=1] ring not None):
     """Get information for rings
 
@@ -97,16 +99,3 @@ def pix2ring(nside, np.ndarray[int64, ndim=1] pix not None, nest=False):
     for i in range(num):
         ring[i] = hb.pix2ring(pix[i])
     return ring
-
-
-def isnsideok(int nside, bool nest=False):
-    """
-        Check whether the nside value is sensible.
-        If nest is true, then it should be a power of 2
-        otherwise just positive.
-    """
-    if nest:
-        return nside > 0 and ((nside & (nside -1))==0)
-    else:
-        return nside > 0
-    
