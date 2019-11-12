@@ -73,8 +73,8 @@ class TestQueryDisc(unittest.TestCase):
             corners, self.nside2_55_corners_precomp, decimal=8
         )
 
-    # For RING scheme, nside should not need to be a power of two.
     def test_nside_non_power_of_two(self):
+        # For RING scheme, nside should not need to be a power of two.
 
         nside = 1
         resolution = 1.0
