@@ -99,5 +99,14 @@ def pix2ring(nside, np.ndarray[int64, ndim=1] pix not None, nest=False):
     return ring
 
 
-cdef bool isnsideok(int nside, bool nest=False):
-    return (nside > 0) and ((not nest) or ((nside&(nside-1))==0))
+def isnsideok(int nside, bool nest=False):
+    """
+        Check whether the nside value is sensible.
+        If nest is true, then it should be a power of 2
+        otherwise just positive.
+    """
+    if nest:
+        return nside > 0 and ((nside & (nside -1))==0)
+    else:
+        return nside > 0
+    
