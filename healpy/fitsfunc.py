@@ -79,13 +79,20 @@ def write_cl(filename, cl, dtype=None, overwrite=False):
       the cl array to write to file
     dtype : np.dtype (optional)
       The datatype in which the columns will be stored. If not supplied,
-      the type of cl will be used.
+      np.float64 will be assumed.
+      (WARNING: in some future version, the type of cl will be used instead.)
     overwrite : bool, optional
       If True, existing file is silently overwritten. Otherwise trying to write
       an existing file raises an OSError (IOError for Python 2).
     """
     if dtype is None:
-        dtype = cl.dtype if isinstance(cl, np.ndarray) else cl[0].dtype
+        warnings.warn(
+            "The default dtype of write_cl() will change in a future version: "
+            "explicitly set the dtype if it is important to you",
+            category=FutureWarning)
+        dtype = np.float64
+        # At some poin change this to:
+        # dtype = cl.dtype if isinstance(cl, np.ndarray) else cl[0].dtype
     # check the dtype and convert it
     fitsformat = getformat(dtype)
     column_names = ["TEMPERATURE", "GRADIENT", "CURL", "G-T", "C-T", "C-G"]
@@ -158,7 +165,9 @@ def write_map(
       The datatype in which the columns will be stored. Will be converted
       internally from the numpy datatype to the fits convention. If a list,
       the length must correspond to the number of map arrays.
-      Default: use the data type of the input array(s).
+      Default: use np.float32
+      (WARNING: in a future version this will change to
+      "use the data type of the input array(s)".)
     overwrite : bool, optional
       If True, existing file is silently overwritten. Otherwise trying to write
       an existing file raises an OSError (IOError for Python 2).
@@ -172,7 +181,13 @@ def write_map(
 
     # check the dtype and convert it
     if dtype is None:
-        dtype = [x.dtype for x in m]
+        warnings.warn(
+            "The default dtype of write_map() will change in a future version: "
+            "explicitly set the dtype if it is important to you",
+            category=FutureWarning)
+        dtype = [np.float32 for x in m]
+        # Change this at some point to:
+        # dtype = [x.dtype for x in m]
     try:
         fitsformat = []
         for curr_dtype in dtype:
@@ -299,7 +314,9 @@ def read_map(
       Force the conversion to some type. Passing a list allows different
       types for each field. In that case, the length of the list must
       correspond to the length of the field parameter. Default: np.float64
-      if None, keep the dtype of the input FITS file
+      Default: use np.float64
+      (WARNING: in a future version this will change to
+      "use the data type of the input FITS file".)
     nest : bool, optional
       If True return the map in NEST ordering, otherwise in RING ordering;
       use fits keyword ORDERING to decide whether conversion is needed or not
@@ -395,7 +412,13 @@ def read_map(
             pix = fits_hdu.data.field(0).astype(int, copy=False).ravel()
 
     if dtype is None:
-        dtype = [fits_hdu.data.field(ff).dtype for ff in field]
+        warnings.warn(
+            "The default dtype of read_map() will change in a future version: "
+            "explicitly set the dtype if it is important to you",
+            category=FutureWarning)
+        dtype = [np.float64 for ff in field]
+        # Change this at some point to:
+        # dtype = [fits_hdu.data.field(ff).dtype for ff in field]
     try:
         assert len(dtype) == len(
             field
