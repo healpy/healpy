@@ -7,6 +7,7 @@ from libcpp.vector cimport vector
 cimport cython
 
 from _common cimport int64, pointing, rangeset, vec3, Healpix_Ordering_Scheme, RING, NEST, SET_NSIDE, T_Healpix_Base
+from _pixelfunc import isnsideok
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
@@ -50,7 +51,7 @@ def query_disc(nside, vec, radius, inclusive = False, fact = 4, nest = False, np
     are returned, at the cost of increased run time.
     """
     # Check Nside value
-    if not isnsideok(nside):
+    if not isnsideok(nside, nest):
         raise ValueError('Wrong nside value, must be a power of 2, less than 2**30')
     cdef vec3 v = vec3(vec[0], vec[1], vec[2])
     cdef Healpix_Ordering_Scheme scheme
@@ -113,7 +114,7 @@ def query_polygon(nside, vertices, inclusive = False, fact = 4, nest = False, np
     are returned, at the cost of increased run time.
     """
     # Check Nside value
-    if not isnsideok(nside):
+    if not isnsideok(nside, nest):
         raise ValueError('Wrong nside value, must be a power of 2, less than 2**30')
     # Create vector of vertices
     cdef vector[pointing] vert
@@ -174,7 +175,7 @@ def query_strip(nside, theta1, theta2, inclusive = False, nest = False, np.ndarr
       The pixels which lie within the given strip.
     """
     # Check Nside value
-    if not isnsideok(nside):
+    if not isnsideok(nside, nest):
         raise ValueError('Wrong nside value, must be a power of 2, less than 2**30')
     # Create the Healpix_Base2 structure
     cdef Healpix_Ordering_Scheme scheme
@@ -275,7 +276,7 @@ def boundaries(nside, pix, step=1, nest=False):
     # doctest moved to test_query_disc.py
     """
 
-    if not isnsideok(nside):
+    if not isnsideok(nside, nest):
         raise ValueError('Wrong nside value, must be a power of 2, less than 2**30')
     if np.isscalar(pix):
         if not np.can_cast(type(pix), np.int):
@@ -295,7 +296,7 @@ def boundaries(nside, pix, step=1, nest=False):
 ### @cython.wraparound(False)
 ### def pix2ang(nside, ipix, nest = False):
 ###     # Check Nside value
-###     if not isnsideok(nside):
+###     if not isnsideok(nside, nest):
 ###         raise ValueError('Wrong nside value, must be a power of 2, less than 2**30')
 ###     # Create the Healpix_Base2 structure
 ###     cdef Healpix_Ordering_Scheme scheme
@@ -344,8 +345,5 @@ cdef pixset_to_array(rangeset[int64] &pixset, buff=None):
             ii += 1
     return ipix
 
-cdef bool isnsideok(int nside):
-     return nside > 0 and ((nside & (nside -1))==0)
-    
 
 
