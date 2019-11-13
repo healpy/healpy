@@ -288,7 +288,7 @@ def write_map(
 def read_map(
     filename,
     field=0,
-    dtype=None,
+    dtype=42,
     nest=False,
     partial=False,
     hdu=1,
@@ -313,7 +313,8 @@ def read_map(
     dtype : data type or list of data types, optional
       Force the conversion to some type. Passing a list allows different
       types for each field. In that case, the length of the list must
-      correspond to the length of the field parameter. Default: np.float64
+      correspond to the length of the field parameter.
+      If None, keep the dtype of the input FITS file
       Default: use np.float64
       (WARNING: in a future version this will change to
       "use the data type of the input FITS file".)
@@ -411,7 +412,10 @@ def read_map(
             fits_hdu.verify("fix")
             pix = fits_hdu.data.field(0).astype(int, copy=False).ravel()
 
-    if dtype is None:
+    # This is extremely ugly, but I couldn't think of another way to decide
+    # when to print the warning.
+    # In the future, the default value should be changed to None, of course.
+    if dtype == 42:
         warnings.warn(
             "The default dtype of read_map() will change in a future version: "
             "explicitly set the dtype if it is important to you",
