@@ -288,7 +288,7 @@ def write_map(
 def read_map(
     filename,
     field=0,
-    dtype=42,
+    dtype=np.float64,
     nest=False,
     partial=False,
     hdu=1,
@@ -412,17 +412,9 @@ def read_map(
             fits_hdu.verify("fix")
             pix = fits_hdu.data.field(0).astype(int, copy=False).ravel()
 
-    # This is extremely ugly, but I couldn't think of another way to decide
-    # when to print the warning.
-    # In the future, the default value should be changed to None, of course.
-    if dtype == 42:
-        warnings.warn(
-            "The default dtype of read_map() will change in a future version: "
-            "explicitly set the dtype if it is important to you",
-            category=FutureWarning)
-        dtype = [np.float64 for ff in field]
-        # Change this at some point to:
-        # dtype = [fits_hdu.data.field(ff).dtype for ff in field]
+    #FIXME: at some point in the future, add:
+    # if dtype is None:
+    #     dtype = [fits_hdu.data.field(ff).dtype for ff in field]
     try:
         assert len(dtype) == len(
             field
