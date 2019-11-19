@@ -346,6 +346,14 @@ def read_map(
     m | (m0, m1, ...) [, header] : array or a tuple of arrays, optionally with header appended
       The map(s) read from the file, and the header if *h* is True.
     """
+    # Temporary warning for default dtype
+    if dtype == np.float64:
+        warnings.warn(
+            "If you are not specifying the input dtype and using the default "
+            "np.float64 dtype of read_map(), please consider that it will "
+            "change in a future version to None as to keep the same dtype of "
+            "the input file: please explicitly set the dtype if it is "
+            "important to you.")
 
     fits_hdu = _get_hdu(filename, hdu=hdu, memmap=memmap)
 
@@ -412,9 +420,6 @@ def read_map(
             fits_hdu.verify("fix")
             pix = fits_hdu.data.field(0).astype(int, copy=False).ravel()
 
-    #FIXME: at some point in the future, add:
-    # if dtype is None:
-    #     dtype = [fits_hdu.data.field(ff).dtype for ff in field]
     try:
         assert len(dtype) == len(
             field
