@@ -47,15 +47,13 @@ class HealpixFitsWarning(Warning):
     pass
 
 
-def read_cl(filename, dtype=np.float64, h=False):
+def read_cl(filename):
     """Reads Cl from a healpix file, as IDL fits2cl.
 
     Parameters
     ----------
     filename : str or HDUList or HDU or pathlib.Path instance
       the fits file name
-    dtype : data type, optional
-      the data type of the returned array
 
     Returns
     -------
@@ -70,7 +68,7 @@ def read_cl(filename, dtype=np.float64, h=False):
         return cl
 
 
-def write_cl(filename, cl, dtype=np.float64, overwrite=False):
+def write_cl(filename, cl, dtype=None, overwrite=False):
     """Writes Cl into a healpix file, as IDL cl2fits.
 
     Parameters
@@ -79,10 +77,22 @@ def write_cl(filename, cl, dtype=np.float64, overwrite=False):
       the fits file name
     cl : array
       the cl array to write to file
+    dtype : np.dtype (optional)
+      The datatype in which the columns will be stored. If not supplied,
+      np.float64 will be assumed.
+      (WARNING: in some future version, the type of cl will be used instead.)
     overwrite : bool, optional
       If True, existing file is silently overwritten. Otherwise trying to write
       an existing file raises an OSError (IOError for Python 2).
     """
+    if dtype is None:
+        warnings.warn(
+            "The default dtype of write_cl() will change in a future version: "
+            "explicitly set the dtype if it is important to you",
+            category=FutureWarning)
+        dtype = np.float64
+        # At some poin change this to:
+        # dtype = cl.dtype if isinstance(cl, np.ndarray) else cl[0].dtype
     # check the dtype and convert it
     fitsformat = getformat(dtype)
     column_names = ["TEMPERATURE", "GRADIENT", "CURL", "G-T", "C-T", "C-G"]
@@ -107,7 +117,7 @@ def write_map(
     filename,
     m,
     nest=False,
-    dtype=np.float32,
+    dtype=None,
     fits_IDL=True,
     coord=None,
     partial=False,
@@ -155,7 +165,9 @@ def write_map(
       The datatype in which the columns will be stored. Will be converted
       internally from the numpy datatype to the fits convention. If a list,
       the length must correspond to the number of map arrays.
-      Default: np.float32.
+      Default: use np.float32
+      (WARNING: in a future version this will change to
+      "use the data type of the input array(s)".)
     overwrite : bool, optional
       If True, existing file is silently overwritten. Otherwise trying to write
       an existing file raises an OSError (IOError for Python 2).
@@ -168,6 +180,14 @@ def write_map(
         m = [m]
 
     # check the dtype and convert it
+    if dtype is None:
+        warnings.warn(
+            "The default dtype of write_map() will change in a future version: "
+            "explicitly set the dtype if it is important to you",
+            category=FutureWarning)
+        dtype = [np.float32 for x in m]
+        # Change this at some point to:
+        # dtype = [x.dtype for x in m]
     try:
         fitsformat = []
         for curr_dtype in dtype:
@@ -293,8 +313,11 @@ def read_map(
     dtype : data type or list of data types, optional
       Force the conversion to some type. Passing a list allows different
       types for each field. In that case, the length of the list must
-      correspond to the length of the field parameter. Default: np.float64
-      if None, keep the dtype of the input FITS file
+      correspond to the length of the field parameter.
+      If None, keep the dtype of the input FITS file
+      Default: use np.float64
+      (WARNING: in a future version this will change to
+      "use the data type of the input FITS file".)
     nest : bool, optional
       If True return the map in NEST ordering, otherwise in RING ordering;
       use fits keyword ORDERING to decide whether conversion is needed or not
@@ -323,6 +346,14 @@ def read_map(
     m | (m0, m1, ...) [, header] : array or a tuple of arrays, optionally with header appended
       The map(s) read from the file, and the header if *h* is True.
     """
+    # Temporary warning for default dtype
+    if dtype == np.float64:
+        warnings.warn(
+            "If you are not specifying the input dtype and using the default "
+            "np.float64 dtype of read_map(), please consider that it will "
+            "change in a future version to None as to keep the same dtype of "
+            "the input file: please explicitly set the dtype if it is "
+            "important to you.")
 
     fits_hdu = _get_hdu(filename, hdu=hdu, memmap=memmap)
 
