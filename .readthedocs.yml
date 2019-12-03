@@ -1,5 +1,19 @@
 build:
   image: latest
 
+version: 2
+
+submodules:
+  include: all
+
+formats:
+  - htmlzip
+
 conda:
-  file: .rtd-environment.yml
+  environment: .rtd-environment.yml
+
+python:
+  version: 3.7
+  install:
+    - method: pip
+      path: .
