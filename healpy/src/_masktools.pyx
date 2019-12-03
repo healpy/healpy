@@ -9,17 +9,21 @@ from healpy.pixelfunc import maptype
 from _common cimport Healpix_Map, RING, ndarray2map
 
 cdef extern from "mask_tools.h":
-    cdef void dist2holes(Healpix_Map[double] &mask,
-                         Healpix_Map[double] &distances)
+    cdef Healpix_Map[double] dist2holes(Healpix_Map[double] &mask,
+                                        double max_distance)
 
-def dist2holes_healpy(m):
+def dist2holes_healpy(m, maxdist=np.pi):
     """Computes the distance (in radians) from pixel center to center of
-    closest invalid pixel.
+    closest invalid pixel up to a maximal distance.
 
     Parameters
     ----------
     m : array-like, shape (Npix,)
       The input mask.
+
+    maxdist : float
+      The maximal distance in radians. Pixel farther from this distance are not
+      taken into account (default: pi).
 
     Returns
     -------
@@ -33,6 +37,7 @@ def dist2holes_healpy(m):
     >>> hp.dist2holes(np.random.randint(0, 2, 12*nside**2))
     array([0.        , 0.        , 0.        , ..., 0.05831086, 0.05831086,
        0.        ])
+
     """
     info = maptype(m)
     if info == 0:
@@ -50,7 +55,7 @@ def dist2holes_healpy(m):
     distances = np.empty(npix, dtype=np.float64)
     D = ndarray2map(distances, RING)
 
-    dist2holes(M[0], D[0])
+    D[0] = dist2holes(M[0], maxdist)
 
     del M, D
     return distances

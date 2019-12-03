@@ -462,10 +462,17 @@ setup(
             },
         ),
         (
+            "sharp",
+            {
+                "pkg_config_name": "libsharp",
+                "local_source": "healpixsubmodule/src/common_libraries/libsharp",
+            },
+        ),
+        (
             "healpix_cxx",
             {
-                "pkg_config_name": "healpix_cxx >= 3.40.0",
-                "local_source": "healpixsubmodule/src/cxx/autotools",
+                "pkg_config_name": "healpix_cxx >= 3.60.0",
+                "local_source": "healpixsubmodule/src/cxx",
             },
         ),
     ],
@@ -484,35 +491,35 @@ setup(
         Extension(
             "healpy._healpy_pixel_lib",
             sources=["healpy/src/_healpy_pixel_lib.cc"],
-            language="c++",
+            language="c++", extra_compile_args=["-std=c++11"]
         ),
         Extension(
             "healpy._healpy_sph_transform_lib",
             sources=["healpy/src/_healpy_sph_transform_lib.cc"],
-            language="c++",
+            language="c++", extra_compile_args=["-std=c++11"]
         ),
         Extension(
             "healpy._query_disc",
             ["healpy/src/_query_disc.pyx"],
-            language="c++",
+            language="c++", extra_compile_args=["-std=c++11"],
             cython_directives=dict(embedsignature=True),
         ),
         Extension(
             "healpy._sphtools",
             ["healpy/src/_sphtools.pyx"],
-            language="c++",
+            language="c++", extra_compile_args=["-std=c++11"],
             cython_directives=dict(embedsignature=True),
         ),
         Extension(
             "healpy._pixelfunc",
             ["healpy/src/_pixelfunc.pyx"],
-            language="c++",
+            language="c++", extra_compile_args=["-std=c++11"],
             cython_directives=dict(embedsignature=True),
         ),
         Extension(
             "healpy._masktools",
             ["healpy/src/_masktools.pyx"],
-            language="c++",
+            language="c++", extra_compile_args=["-std=c++11"],
             cython_directives=dict(embedsignature=True),
         ),
     ],
