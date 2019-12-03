@@ -1,6 +1,6 @@
 from ..pixelfunc import *
 from .._query_disc import boundaries
-from .._pixelfunc import ringinfo, pix2ring
+from .._pixelfunc import ringinfo, pix2ring, isnsideok
 import numpy as np
 import unittest
 
@@ -180,6 +180,15 @@ class TestPixelFunc(unittest.TestCase):
             ud_grade(map_in=ma, nside_out=32)
         except IndexError:
             self.fail("IndexError raised")
+
+    def test_isnsideok(self):
+        """ Test the isnsideok."""
+        self.assertTrue(isnsideok(nside=1, nest=False))
+        self.assertTrue(isnsideok(nside=16, nest=True))
+
+        self.assertTrue(not isnsideok(nside=-16, nest=True))
+        self.assertTrue(not isnsideok(nside=-16, nest=False))
+        self.assertTrue(not isnsideok(nside=13, nest=True))
 
 
 if __name__ == "__main__":
