@@ -516,6 +516,12 @@ setup(
             language="c++", extra_compile_args=["-std=c++11"],
             cython_directives=dict(embedsignature=True),
         ),
+        Extension(
+            "healpy._masktools",
+            ["healpy/src/_masktools.pyx"],
+            language="c++", extra_compile_args=["-std=c++11"],
+            cython_directives=dict(embedsignature=True),
+        ),
     ],
     package_data={
         "healpy": [
