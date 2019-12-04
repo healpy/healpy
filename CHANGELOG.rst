@@ -1,3 +1,10 @@
+Release 1.13.0 3 Dec 2019, included in HEALPix 3.60
+
+* updated HEALPix C++ to 3.60 <https://github.com/healpy/healpy/pull/589>
+* different handling of default dtype in `read_cl`, `write_cl` and `read_map` <https://github.com/healpy/healpy/pull/586>
+* implemented `dist2holes`, distance from pixel center to closest invalid pixel <https://github.com/healpy/healpy/pull/581>
+* allow not-power-of-2 NSIDE for RING <https://github.com/healpy/healpy/pull/584>
+
 Release 1.12.10 9 Sep 2019
 
 * fix overflow in nside2npix at NSIDE>8192 <https://github.com/healpy/healpy/pull/573>
