@@ -29,6 +29,7 @@ then in `healpy`:
 
 * `python setup.py build sdist`
 * `twine upload dist/*`
+* Attach the PyPI source package to the Github release (because that also includes the submodules and the compiled cython files, otherwise people might download the archive automatically created by Github that does not contain those)
 
 ## Conda packages
 
