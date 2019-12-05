@@ -43,6 +43,10 @@ review and merge the Pull Request at <https://github.com/conda-forge/healpy-feed
 Edit the version number in the line below and run on machine with Docker:
 
     mkdir -p wheelhouse && docker run --rm -v $(pwd)/wheelhouse:/wheelhouse quay.io/pypa/manylinux1_x86_64 bash -c 'for PIP in /opt/python/*/bin/pip; do $PIP install numpy==1.13.3\;python_version\<\"3.7\" numpy==1.14.3\;python_version\>=\"3.7\" && $PIP wheel --no-deps healpy==1.12.10; done; for WHEEL in *.whl; do auditwheel repair $WHEEL; done'
+    
+Once in a while, update the `manulinux1` docker container with:
+
+    docker pull quay.io/pypa/manylinux1_x86_64
 
 ### macOS + MacPorts
 
