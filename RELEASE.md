@@ -42,7 +42,7 @@ review and merge the Pull Request at <https://github.com/conda-forge/healpy-feed
 
 Edit the version number in the line below and run on machine with Docker:
 
-    mkdir -p wheelhouse && docker run --rm -v $(pwd)/wheelhouse:/wheelhouse quay.io/pypa/manylinux1_x86_64 bash -c 'for PIP in /opt/python/*/bin/pip; do $PIP install numpy==1.13.3\;python_version\<\"3.7\" numpy==1.14.3\;python_version\>=\"3.7\" && $PIP wheel --no-deps healpy==1.12.10; done; for WHEEL in *.whl; do auditwheel repair $WHEEL; done'
+    mkdir -p wheelhouse && docker run --rm -v $(pwd)/wheelhouse:/wheelhouse quay.io/pypa/manylinux1_x86_64 bash -c 'set -ex; for PIP in /opt/python/*/bin/pip; do $PIP install numpy==1.13.3\;python_version\<\"3.7\" numpy==1.14.5\;python_version~=\"3.7.0\" numpy==1.17.3\;python_version~=\"3.8.0\" && $PIP wheel --no-deps healpy==1.13.0; done; for WHEEL in *.whl; do auditwheel repair $WHEEL; done'
     
 Once in a while, update the `manulinux1` docker container with:
 
@@ -50,14 +50,14 @@ Once in a while, update the `manulinux1` docker container with:
 
 ### macOS + MacPorts
 
-    sudo port -N install py{27,35,36,37}-{matplotlib,numpy,six,astropy,scipy,pytest-runner,six,setuptools,pip,wheel,virtualenv} gcc8 clang-6.0
+    sudo port -N install py{27,35,36,37,38}-{pip,wheel,virtualenv} gcc8 clang-6.0
     sudo port select --set clang mp-clang-6.0
     export CC=gcc-mp-8
     export CXX=g++-mp-8
     export CFLAGS=-Wa,-q
     export CXXFLAGS=-Wa,-q
-    for VERS in {2.7,3.5,3.6,3.7}; do rm -rf env && virtualenv-$VERS --system-site-packages env && env/bin/pip install --upgrade pip setuptools wheel && env/bin/pip install "numpy==1.13.3;python_version<'3.7'" "numpy==1.14.3;python_version>='3.7'" && env/bin/pip wheel --verbose --no-deps healpy==1.12.10; done
-    python3.7 -m venv --system-site-packages delocate
+    for VERS in {2.7,3.5,3.6,3.7,3.8}; do rm -rf env && virtualenv-$VERS env && env/bin/pip install --upgrade pip setuptools wheel && env/bin/pip install "numpy==1.13.3;python_version<'3.7'" "numpy==1.14.5;python_version~='3.7.0'"  "numpy==1.17.3;python_version~='3.8.0'" && env/bin/pip wheel --verbose --no-deps healpy==1.13.0; done
+    python3.7 -m venv delocate
     delocate/bin/pip install delocate
     for WHEEL in *.whl; do delocate/bin/delocate-wheel -w wheelhouse $WHEEL; done
     
@@ -66,15 +66,24 @@ Once in a while, update the `manulinux1` docker container with:
 Template:
 
 Release:
-* [ ] Github: https://github.com/healpy/healpy/releases/tag/1.12.10
-* [ ] PyPI: https://pypi.org/project/healpy/1.12.10/
+* [ ] Github: https://github.com/healpy/healpy/releases/tag/1.13.0
+* [ ] PyPI: https://pypi.org/project/healpy/1.13.0/
 * [ ] conda-forge: https://anaconda.org/conda-forge/healpy
 * [ ] wheels on PyPI for linux and Mac OS 
 
 ```
-healpy-1.12.10-cp27-cp27m-manylinux1_x86_64.whl   healpy-1.12.10-cp35-cp35m-manylinux1_x86_64.whl
-healpy-1.12.10-cp27-cp27mu-manylinux1_x86_64.whl  healpy-1.12.10-cp36-cp36m-manylinux1_x86_64.whl
-healpy-1.12.10-cp34-cp34m-manylinux1_x86_64.whl   healpy-1.12.10-cp37-cp37m-manylinux1_x86_64.whl
+healpy-1.13.0-cp27-cp27m-macosx_10_14_x86_64.whl
+healpy-1.13.0-cp27-cp27m-manylinux1_x86_64.whl
+healpy-1.13.0-cp27-cp27mu-manylinux1_x86_64.whl
+healpy-1.13.0-cp34-cp34m-manylinux1_x86_64.whl
+healpy-1.13.0-cp35-cp35m-macosx_10_14_x86_64.whl
+healpy-1.13.0-cp35-cp35m-manylinux1_x86_64.whl
+healpy-1.13.0-cp36-cp36m-macosx_10_14_x86_64.whl
+healpy-1.13.0-cp36-cp36m-manylinux1_x86_64.whl
+healpy-1.13.0-cp37-cp37m-macosx_10_14_x86_64.whl
+healpy-1.13.0-cp37-cp37m-manylinux1_x86_64.whl
+healpy-1.13.0-cp38-cp38-macosx_10_14_x86_64.whl
+healpy-1.13.0-cp38-cp38-manylinux1_x86_64.whl
 ```
 
 @zonca @DanielLenz @lpsinger @hivon @mreineck @lpsinger 
