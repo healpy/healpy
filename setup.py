@@ -522,6 +522,12 @@ setup(
             language="c++", extra_compile_args=["-std=c++11"],
             cython_directives=dict(embedsignature=True),
         ),
+        Extension(
+            "healpy._hotspots",
+            ["healpy/src/_hotspots.pyx"],
+            language="c++", extra_compile_args=["-std=c++11"],
+            cython_directives=dict(embedsignature=True),
+        ),
     ],
     package_data={
         "healpy": [
