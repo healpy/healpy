@@ -3,12 +3,11 @@ cimport numpy as np
 from libcpp.vector cimport vector
 
 import cython
-from healpy import npix2nside, nside2npix
 from healpy.pixelfunc import maptype
 
 from _common cimport Healpix_Map, RING, ndarray2map
 
-cdef extern from "hotspots.h":
+cdef extern from "_healpy_hotspots_lib.h":
     cdef void hotspots(const Healpix_Map[double] &inmap,
                        Healpix_Map[double] &outmap,
                        vector[int] &maskmin,
