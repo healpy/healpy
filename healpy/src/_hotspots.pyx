@@ -16,6 +16,11 @@ cdef extern from "_healpy_hotspots_lib.h":
 def hotspots_healpy(m):
     """Find extrema in the 2-D field on the sphere.
 
+    This routine finds the local extrema in (for example) the CMB temperature field to compute a
+    projection of the angular correlation function of the CMB. Applications of this function can be
+    found in WMAP paper (https://arxiv.org/pdf/1001.4538.pdf) as well as recent work done by Planck
+    (https://arxiv.org/pdf/1303.5062.pdf, https://arxiv.org/abs/1506.07135).
+
     Parameters
     ----------
     m : array-like, shape (Npix,)
