@@ -67,6 +67,10 @@ def anafast(
     between two maps if *map2* is given.
     No removal of monopole or dipole is performed. The input maps must be
     in ring-ordering.
+    Spherical harmonics transforms in HEALPix are always on the full sky,
+    if the map is masked, those pixels are set to 0. It is recommended to
+    remove monopole from the map before running `anafast` to reduce
+    boundary effects.
 
     Parameters
     ----------
