@@ -17,4 +17,4 @@ include healpy/src/_query_disc.pyx
 include healpy/src/_sphtools.pyx
 include healpy/src/_pixelfunc.pyx
 include healpy/src/_masktools.pyx
-
+include healpy/src/_hotspots.pyx
