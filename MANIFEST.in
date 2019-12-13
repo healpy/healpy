@@ -12,6 +12,7 @@ include healpy/src/_query_disc.cpp
 include healpy/src/_sphtools.cpp
 include healpy/src/_pixelfunc.cpp
 include healpy/src/_masktools.cpp
+include healpy/src/_hotspots.cpp
 include healpy/src/_common.pxd
 include healpy/src/_query_disc.pyx
 include healpy/src/_sphtools.pyx
