@@ -8,6 +8,7 @@ exclude *.a
 exclude .gitignore .gitmodules .travis.yml clean.sh
 include COPYING CITATION INSTALL.rst README.rst MANIFEST.in CHANGELOG.rst ez_setup.py run_pykg_config.py
 include healpy/src/_healpy_utils.h
+include healpy/src/_healpy_hotspots_lib.h
 include healpy/src/_query_disc.cpp
 include healpy/src/_sphtools.cpp
 include healpy/src/_pixelfunc.cpp
