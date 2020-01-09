@@ -28,6 +28,7 @@ from scipy.integrate import trapz
 from astropy.utils import data
 
 DATAURL = "https://healpy.github.io/healpy-data/"
+DATAURL_MIRROR = "https://github.com/healpy/healpy-data/releases/download/"
 
 from . import _healpy_sph_transform_lib as sphtlib
 from . import _sphtools as _sphtools
@@ -213,8 +214,8 @@ def map2alm(
         if use_weights:
             raise RuntimeError("Either use pixel or ring weights")
         with data.conf.set_temp("dataurl", DATAURL), data.conf.set_temp(
-            "remote_timeout", 30
-        ):
+            "dataurl_mirror", DATAURL_MIRROR
+        ), data.conf.set_temp("remote_timeout", 30):
             pixel_weights_filename = data.get_pkg_data_filename(
                 "full_weights/healpix_full_weights_nside_%04d.fits" % nside,
                 package="healpy",
