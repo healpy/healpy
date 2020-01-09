@@ -13,6 +13,7 @@ conda:
   environment: .rtd-environment.yml
 
 python:
+  system_packages: true
   version: 3.7
   install:
     - method: pip
