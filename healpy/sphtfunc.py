@@ -104,6 +104,7 @@ def anafast(
       pixels at latitude in [-gal_cut;+gal_cut] are not taken into account
     use_pixel_weights: bool, optional
       If True, use pixel by pixel weighting, healpy will automatically download the weights, if needed
+      See the map2alm docs for details about weighting
 
     Returns
     -------
@@ -167,6 +168,19 @@ def map2alm(
 ):
     """Computes the alm of a Healpix map. The input maps must all be
     in ring ordering.
+
+
+    Pixel values are weighted before applying the transform:
+
+    * when you don't specify any weights, the uniform weight value 4*pi/n_pix is used
+    * with ring weights enabled (use_weights=True), pixels in every ring
+      are weighted with a uniform value similar to the one above, ring weights are
+      included in healpy
+    * with pixel weights (use_pixel_weights=True), every pixel gets an individual weight
+
+    Pixel weights provide the most accurate transform, so you should always use them if
+    possible. However they are not included in healpy and will be automatically downloaded
+    and cached in ~/.astropy the first time you compute a trasform at a specific nside.
 
     Parameters
     ----------
@@ -889,6 +903,7 @@ def smoothing(
       If True, use the ring weighting. Default: False.
     use_pixel_weights: bool, optional
       If True, use pixel by pixel weighting, healpy will automatically download the weights, if needed
+      See the map2alm docs for details about weighting
     datapath : None or str, optional
       If given, the directory where to find the weights data.
     verbose : bool, optional
