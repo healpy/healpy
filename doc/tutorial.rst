@@ -8,7 +8,7 @@ https://github.com/healpy/healpy/blob/master/doc/healpy_tutorial.ipynb
 See a executed version of the notebook with embedded plots at
 https://gist.github.com/zonca/9c114608e0903a3b8ea0bfe41c96f255
 
-Choose the ``inline`` backend of ``maptlotlib`` to display the plots
+Choose the ``inline`` backend of ``matplotlib`` to display the plots
 inside the Jupyter Notebook
 
 .. code-block:: python
