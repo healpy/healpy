@@ -1,20 +1,12 @@
-build:
-  image: latest
-
 version: 2
 
-submodules:
-  include: all
-
-formats:
-  - htmlzip
-
-conda:
-  environment: .rtd-environment.yml
-
 python:
-  system_packages: true
-  version: 3.7
-  install:
-    - method: pip
-      path: .
+   version: 3.7
+   install:
+      - requirements: doc/requirements.txt
+      - method: pip
+        path: .
+   system_packages: true
+
+build:
+   image: latest
