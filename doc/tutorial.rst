@@ -1,6 +1,6 @@
 
-healpy tutorial
-===============
+healpy getting-started tutorial
+===============================
 
 See the Jupyter Notebook version of this tutorial at
 https://github.com/healpy/healpy/blob/master/doc/healpy_tutorial.ipynb

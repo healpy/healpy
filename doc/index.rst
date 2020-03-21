@@ -31,6 +31,7 @@ Tutorial
    :maxdepth: 1
 
    tutorial
+   other_tutorials
 
 Installation
 ------------
