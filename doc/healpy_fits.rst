@@ -30,14 +30,6 @@ Reading/writing cl
    read_cl
    write_cl
 
-Reading/writing column in fits file
------------------------------------
-.. autosummary::
-   :toctree: generated/
-
-   mrdfits
-   mwrfits
-
 Helper
 ------
 .. autosummary::
