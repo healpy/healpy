@@ -224,18 +224,29 @@ def map2alm(
     nside = pixelfunc.get_nside(maps)
     check_max_nside(nside)
 
+    pixel_weights_filename = None
     if use_pixel_weights:
         if use_weights:
             raise RuntimeError("Either use pixel or ring weights")
-        with data.conf.set_temp("dataurl", DATAURL), data.conf.set_temp(
-            "dataurl_mirror", DATAURL_MIRROR
-        ), data.conf.set_temp("remote_timeout", 30):
-            pixel_weights_filename = data.get_pkg_data_filename(
-                "full_weights/healpix_full_weights_nside_%04d.fits" % nside,
-                package="healpy",
-            )
-    else:
-        pixel_weights_filename = None
+        filename = "full_weights/healpix_full_weights_nside_%04d.fits" % nside
+        if datapath is not None:
+            pixel_weights_filename = os.path.join(datapath, filename)
+            if os.path.exists(pixel_weights_filename):
+                warnings.warn(
+                    "Accessing pixel weights from {}".format(pixel_weights_filename)
+                )
+            else:
+                raise RuntimeError(
+                    "You specified datapath but pixel weights file"
+                    "is missing at {}".format(pixel_weights_filename)
+                )
+        if pixel_weights_filename is None:
+            with data.conf.set_temp("dataurl", DATAURL), data.conf.set_temp(
+                "dataurl_mirror", DATAURL_MIRROR
+            ), data.conf.set_temp("remote_timeout", 30):
+                pixel_weights_filename = data.get_pkg_data_filename(
+                    filename, package="healpy"
+                )
 
     if pol or info in (0, 1):
         alms = _sphtools.map2alm(
