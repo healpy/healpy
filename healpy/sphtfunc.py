@@ -181,6 +181,12 @@ def map2alm(
     Pixel weights provide the most accurate transform, so you should always use them if
     possible. However they are not included in healpy and will be automatically downloaded
     and cached in ~/.astropy the first time you compute a trasform at a specific nside.
+    If datapath is specified, healpy will first check that local folder before downloading
+    the weights.
+    The easiest way to setup the folder is to clone the healpy-data repository:
+    git clone --depth 1 https://github.com/healpy/healpy-data
+    and add the NSIDE 8192 weight from https://github.com/healpy/healpy-data/releases
+    and set datapath to the root of the repository.
 
     Parameters
     ----------
