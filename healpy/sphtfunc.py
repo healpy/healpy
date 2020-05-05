@@ -165,6 +165,7 @@ def map2alm(
     datapath=None,
     gal_cut=0,
     use_pixel_weights=False,
+    verbose=True,
 ):
     """Computes the alm of a Healpix map. The input maps must all be
     in ring ordering.
@@ -212,6 +213,8 @@ def map2alm(
       pixels at latitude in [-gal_cut;+gal_cut] are not taken into account
     use_pixel_weights: bool, optional
       If True, use pixel by pixel weighting, healpy will automatically download the weights, if needed
+    verbose : bool, optional
+      If True prints diagnostic information. Default: True
 
     Returns
     -------
@@ -238,9 +241,10 @@ def map2alm(
         if datapath is not None:
             pixel_weights_filename = os.path.join(datapath, filename)
             if os.path.exists(pixel_weights_filename):
-                warnings.warn(
-                    "Accessing pixel weights from {}".format(pixel_weights_filename)
-                )
+                if verbose:
+                    warnings.warn(
+                        "Accessing pixel weights from {}".format(pixel_weights_filename)
+                    )
             else:
                 raise RuntimeError(
                     "You specified datapath but pixel weights file"
