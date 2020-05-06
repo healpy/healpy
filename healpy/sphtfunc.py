@@ -165,6 +165,7 @@ def map2alm(
     datapath=None,
     gal_cut=0,
     use_pixel_weights=False,
+    verbose=True,
 ):
     """Computes the alm of a Healpix map. The input maps must all be
     in ring ordering.
@@ -181,6 +182,12 @@ def map2alm(
     Pixel weights provide the most accurate transform, so you should always use them if
     possible. However they are not included in healpy and will be automatically downloaded
     and cached in ~/.astropy the first time you compute a trasform at a specific nside.
+    If datapath is specified, healpy will first check that local folder before downloading
+    the weights.
+    The easiest way to setup the folder is to clone the healpy-data repository:
+    git clone --depth 1 https://github.com/healpy/healpy-data
+    and add the NSIDE 8192 weight from https://github.com/healpy/healpy-data/releases
+    and set datapath to the root of the repository.
 
     Parameters
     ----------
@@ -206,6 +213,8 @@ def map2alm(
       pixels at latitude in [-gal_cut;+gal_cut] are not taken into account
     use_pixel_weights: bool, optional
       If True, use pixel by pixel weighting, healpy will automatically download the weights, if needed
+    verbose : bool, optional
+      If True prints diagnostic information. Default: True
 
     Returns
     -------
@@ -224,18 +233,30 @@ def map2alm(
     nside = pixelfunc.get_nside(maps)
     check_max_nside(nside)
 
+    pixel_weights_filename = None
     if use_pixel_weights:
         if use_weights:
             raise RuntimeError("Either use pixel or ring weights")
-        with data.conf.set_temp("dataurl", DATAURL), data.conf.set_temp(
-            "dataurl_mirror", DATAURL_MIRROR
-        ), data.conf.set_temp("remote_timeout", 30):
-            pixel_weights_filename = data.get_pkg_data_filename(
-                "full_weights/healpix_full_weights_nside_%04d.fits" % nside,
-                package="healpy",
-            )
-    else:
-        pixel_weights_filename = None
+        filename = "full_weights/healpix_full_weights_nside_%04d.fits" % nside
+        if datapath is not None:
+            pixel_weights_filename = os.path.join(datapath, filename)
+            if os.path.exists(pixel_weights_filename):
+                if verbose:
+                    warnings.warn(
+                        "Accessing pixel weights from {}".format(pixel_weights_filename)
+                    )
+            else:
+                raise RuntimeError(
+                    "You specified datapath but pixel weights file"
+                    "is missing at {}".format(pixel_weights_filename)
+                )
+        if pixel_weights_filename is None:
+            with data.conf.set_temp("dataurl", DATAURL), data.conf.set_temp(
+                "dataurl_mirror", DATAURL_MIRROR
+            ), data.conf.set_temp("remote_timeout", 30):
+                pixel_weights_filename = data.get_pkg_data_filename(
+                    filename, package="healpy"
+                )
 
     if pol or info in (0, 1):
         alms = _sphtools.map2alm(

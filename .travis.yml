@@ -5,8 +5,7 @@
 language: python
 
 python:
-  - 2.7
-  - 3.5
+  - 3.7
   - 3.6
 
 env:
@@ -26,13 +25,13 @@ env:
 
 matrix:
   exclude:
-    - python: 3.5
+    - python: 3.7
       env: USE_ANACONDA=false USE_PIP=false USE_EXTERNAL_CFITSIO=false
-    - python: 3.5
+    - python: 3.7
       env: USE_ANACONDA=false USE_PIP=false USE_EXTERNAL_CFITSIO=true
-    - python: 3.5
+    - python: 3.7
       env: USE_ANACONDA=false USE_PIP=true  USE_EXTERNAL_CFITSIO=false
-    - python: 3.5
+    - python: 3.7
       env: USE_ANACONDA=false USE_PIP=true  USE_EXTERNAL_CFITSIO=true
     - python: 3.6
       env: USE_ANACONDA=false USE_PIP=false USE_EXTERNAL_CFITSIO=false
@@ -42,10 +41,6 @@ matrix:
       env: USE_ANACONDA=false USE_PIP=true  USE_EXTERNAL_CFITSIO=false
     - python: 3.6
       env: USE_ANACONDA=false USE_PIP=true  USE_EXTERNAL_CFITSIO=true
-    - python: 2.7
-      env: USE_ANACONDA=true  USE_PIP=true  USE_EXTERNAL_CFITSIO=false
-    - python: 2.7
-      env: USE_ANACONDA=true  USE_PIP=true  USE_EXTERNAL_CFITSIO=true
 
 before_install:
   - sudo apt-get -qq update
@@ -62,12 +57,12 @@ before_install:
       bash miniconda.sh -b -p ~/miniconda && \
       ~/miniconda/bin/conda create --yes -n anaconda_env \
         python=$TRAVIS_PYTHON_VERSION \
-        setuptools pip numpy matplotlib astropy cython pytest scipy && \
+        setuptools pip numpy matplotlib astropy cython pytest scipy requests && \
       source ~/miniconda/bin/activate anaconda_env
     else
      sudo apt-get -y install pkg-config && \
      travis_retry pip install --upgrade setuptools && \
-     travis_retry pip install numpy matplotlib astropy cython pytest scipy
+     travis_retry pip install numpy matplotlib astropy cython pytest scipy requests
     fi
 
   # Install cfitsio if necessary
