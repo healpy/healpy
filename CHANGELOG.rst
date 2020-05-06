@@ -1,3 +1,7 @@
+Release in progress
+
+* Local datapath for pixel weights <https://github.com/healpy/healpy/pull/611>
+
 Release 1.13.0 3 Dec 2019, included in HEALPix 3.60
 
 * updated HEALPix C++ to 3.60 <https://github.com/healpy/healpy/pull/589>
