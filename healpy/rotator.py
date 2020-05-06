@@ -392,7 +392,15 @@ class Rotator(object):
         if not inplace:
             return rotated_alm
 
-    def rotate_map_alms(self, m, use_pixel_weights=True, lmax=None, mmax=None):
+    def rotate_map_alms(
+        self,
+        m,
+        use_pixel_weights=True,
+        lmax=None,
+        mmax=None,
+        datapath=None,
+        verbose=None,
+    ):
         """Rotate a HEALPix map to a new reference frame in spherical harmonics space
 
         This is generally the best strategy to rotate/change reference frame of maps.
@@ -405,8 +413,7 @@ class Rotator(object):
         ----------
         m : np.ndarray
             Input map, 1 map is considered I, 2 maps:[Q,U], 3 maps:[I,Q,U]
-        use_pixel_weights : bool, optional
-            Use pixel weights in map2alm
+        other arguments : see map2alm
 
         Returns
         -------
@@ -414,11 +421,20 @@ class Rotator(object):
             Map in the new reference frame
         """
         alm = sphtfunc.map2alm(
-            m, use_pixel_weights=use_pixel_weights, lmax=lmax, mmax=mmax
+            m,
+            use_pixel_weights=use_pixel_weights,
+            lmax=lmax,
+            mmax=mmax,
+            datapath=datapath,
+            verbose=verbose,
         )
         rotated_alm = self.rotate_alm(alm, lmax=lmax, mmax=mmax)
         return sphtfunc.alm2map(
-            rotated_alm, lmax=lmax, mmax=mmax, nside=pixelfunc.get_nside(m)
+            rotated_alm,
+            lmax=lmax,
+            mmax=mmax,
+            nside=pixelfunc.get_nside(m),
+            verbose=verbose,
         )
 
     def rotate_map_pixel(self, m):
