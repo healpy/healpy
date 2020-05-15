@@ -968,10 +968,20 @@ def smoothing(
             fwhm=fwhm,
             sigma=sigma,
             beam_window=beam_window,
-            inplace=True,
+            pol=pol,
+            mmax=mmax,
             verbose=verbose,
+            inplace=True,
         )
-        output_map = alm2map(alms, nside, pixwin=False, verbose=verbose)
+        output_map = alm2map(
+            alms,
+            nside,
+            lmax=lmax,
+            mmax=mmax,
+            pixwin=False,
+            verbose=verbose,
+            pol=pol,
+        )
     else:
         # Treat each map independently (any number)
         output_map = []
