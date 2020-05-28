@@ -9,3 +9,6 @@ dependencies:
   - pytest
   - scipy
   - requests
+  - automake
+  - pkg-config
+  - libtool
