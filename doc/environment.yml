@@ -9,6 +9,7 @@ dependencies:
   - pytest
   - scipy
   - requests
+  - numpydoc
   - automake
   - pkg-config
   - libtool
