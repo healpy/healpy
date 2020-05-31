@@ -1,12 +1,16 @@
 version: 2
 
-python:
-   version: 3.7
-   install:
-      - requirements: doc/requirements.txt
-      - method: pip
-        path: .
-   system_packages: true
+conda:
+    environment: doc/environment.yml
 
 build:
    image: latest
+
+python:
+   version: 3.7
+   install:
+      - method: pip
+        path: .
+
+submodules:
+    include: all

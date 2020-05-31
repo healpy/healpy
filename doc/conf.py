@@ -12,6 +12,7 @@
 # serve to show the default value.
 
 import sys, os
+from importlib import import_module
 
 # If your extensions are in another directory, add it here. If the directory
 # is relative to the documentation root, use os.path.abspath to make it
@@ -45,9 +46,13 @@ copyright = u"CC/BY/4.0/International"
 # The short X.Y version.
 import healpy
 
-version = healpy.__version__
+import_module("healpy")
+package = sys.modules["healpy"]
+
+# The short X.Y version.
+version = package.__version__.split("-", 1)[0]
 # The full version, including alpha/beta/rc tags.
-release = version
+release = package.__version__
 
 # There are two options for replacing |today|: either, you set today to some
 # non-false value, then it is used:

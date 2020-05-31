@@ -76,79 +76,6 @@ class build_external_clib(build_clib):
         build_clib.__init__(self, dist)
         self.build_args = {}
 
-    def autotools_path(self):
-        """
-        Install Autotools locally if we are building on Read The Docs, because
-        we will be building from git and need to generate the healpix_cxx build
-        system.
-        """
-        on_rtd = os.environ.get("READTHEDOCS", None) == "True"
-        if not on_rtd:
-            return None
-
-        log.info("checking if autotools is installed")
-        try:
-            check_output(["autoreconf", "--version"])
-        except OSError as e:
-            if e.errno != errno.ENOENT:
-                raise
-            log.info("autotools is not installed")
-        else:
-            log.info("autotools is already installed")
-            return None
-
-        urls = [
-            "https://ftp.gnu.org/gnu/m4/m4-1.4.17.tar.gz",
-            "https://ftp.gnu.org/gnu/libtool/libtool-2.4.6.tar.gz",
-            "https://ftp.gnu.org/gnu/autoconf/autoconf-2.69.tar.gz",
-            "https://ftp.gnu.org/gnu/automake/automake-1.15.tar.gz",
-            "https://pkg-config.freedesktop.org/releases/pkg-config-0.29.1.tar.gz",
-        ]
-
-        # Use a subdirectory of build_temp as the build directory.
-        build_temp = os.path.realpath(self.build_temp)
-        prefix = os.path.join(build_temp, "autotools")
-        mkpath(prefix)
-
-        env = dict(os.environ)
-        path = os.path.join(prefix, "bin")
-        try:
-            path += ":" + env["PATH"]
-        except KeyError:
-            pass
-        env["PATH"] = path
-
-        # Check again if autotools is available, now that we have added the
-        # temporary path.
-        try:
-            check_output(["autoreconf", "--version"], env=env)
-        except OSError as e:
-            if e.errno != errno.ENOENT:
-                raise
-            log.info("building autotools from source")
-        else:
-            log.info("using autotools built from source")
-            return path
-
-        # Otherwise, build from source.
-        for url in urls:
-            _, _, tarball = url.rpartition("/")
-            pkg_version = tarball.replace(".tar.gz", "")
-            log.info("downloading %s", url)
-            check_call(["curl", "-O", url], cwd=build_temp)
-            log.info("extracting %s", tarball)
-            check_call(["tar", "-xzf", tarball], cwd=build_temp)
-            cwd = os.path.join(build_temp, pkg_version)
-            log.info("configuring %s", pkg_version)
-            check_call(
-                ["./configure", "--prefix", prefix, "--with-internal-glib"],
-                env=env,
-                cwd=cwd,
-            )
-            log.info("making %s", pkg_version)
-            check_call(["make", "install"], env=env, cwd=cwd)
-        return path
-
     def env(self):
         """Construct an environment dictionary suitable for having pkg-config
         pick up .pc files in the build_clib directory."""
@@ -157,10 +84,6 @@ class build_external_clib(build_clib):
             env = self._env
         except AttributeError:
             env = dict(os.environ)
-
-            path = self.autotools_path()
-            if path is not None:
-                env["PATH"] = path
 
             try:
                 check_output(["pkg-config", "--version"])
@@ -491,42 +414,48 @@ setup(
         Extension(
             "healpy._healpy_pixel_lib",
             sources=["healpy/src/_healpy_pixel_lib.cc"],
-            language="c++", extra_compile_args=["-std=c++11"]
+            language="c++",
+            extra_compile_args=["-std=c++11"],
         ),
         Extension(
             "healpy._healpy_sph_transform_lib",
             sources=["healpy/src/_healpy_sph_transform_lib.cc"],
-            language="c++", extra_compile_args=["-std=c++11"]
+            language="c++",
+            extra_compile_args=["-std=c++11"],
         ),
         Extension(
             "healpy._query_disc",
             ["healpy/src/_query_disc.pyx"],
-            language="c++", extra_compile_args=["-std=c++11"],
+            language="c++",
+            extra_compile_args=["-std=c++11"],
             cython_directives=dict(embedsignature=True),
         ),
         Extension(
             "healpy._sphtools",
             ["healpy/src/_sphtools.pyx"],
-            language="c++", extra_compile_args=["-std=c++11"],
+            language="c++",
+            extra_compile_args=["-std=c++11"],
             cython_directives=dict(embedsignature=True),
         ),
         Extension(
             "healpy._pixelfunc",
             ["healpy/src/_pixelfunc.pyx"],
-            language="c++", extra_compile_args=["-std=c++11"],
+            language="c++",
+            extra_compile_args=["-std=c++11"],
             cython_directives=dict(embedsignature=True),
         ),
         Extension(
             "healpy._masktools",
             ["healpy/src/_masktools.pyx"],
-            language="c++", extra_compile_args=["-std=c++11"],
+            language="c++",
+            extra_compile_args=["-std=c++11"],
             cython_directives=dict(embedsignature=True),
         ),
         Extension(
             "healpy._hotspots",
-            ["healpy/src/_hotspots.pyx",
-             "healpy/src/_healpy_hotspots_lib.cc"],
-            language="c++", extra_compile_args=["-std=c++11"],
+            ["healpy/src/_hotspots.pyx", "healpy/src/_healpy_hotspots_lib.cc"],
+            language="c++",
+            extra_compile_args=["-std=c++11"],
             cython_directives=dict(embedsignature=True),
         ),
     ],
@@ -544,5 +473,5 @@ setup(
     tests_require=["pytest", "pytest-cython"],
     test_suite="healpy",
     license="GPLv2",
-    scripts=['bin/healpy_get_wmap_maps.sh'],
+    scripts=["bin/healpy_get_wmap_maps.sh"],
 )
