@@ -178,6 +178,10 @@ def mollview(
     # Create the figure
     import pylab
 
+    if map is None:
+        map = np.zeros(12) + np.inf
+        cbar = False
+
     # Ensure that the nside is valid
     nside = pixelfunc.get_nside(map)
     pixelfunc.check_nside(nside, nest=nest)
@@ -220,9 +224,6 @@ def mollview(
     wasinteractive = pylab.isinteractive()
     pylab.ioff()
     try:
-        if map is None:
-            map = np.zeros(12) + np.inf
-            cbar = False
         map = pixelfunc.ma_to_array(map)
         ax = PA.HpxMollweideAxes(
             f, extent, coord=coord, rot=rot, format=format2, flipconv=flip
@@ -419,6 +420,10 @@ def gnomview(
     """
     import pylab
 
+    if map is None:
+        map = np.zeros(12) + np.inf
+        cbar = False
+
     # Ensure that the nside is valid
     nside = pixelfunc.get_nside(map)
     pixelfunc.check_nside(nside, nest=nest)
@@ -464,9 +469,6 @@ def gnomview(
     wasinteractive = pylab.isinteractive()
     pylab.ioff()
     try:
-        if map is None:
-            map = np.zeros(12) + np.inf
-            cbar = False
         map = pixelfunc.ma_to_array(map)
         ax = PA.HpxGnomonicAxes(
             f, extent, coord=coord, rot=rot, format=format, flipconv=flip
@@ -694,6 +696,10 @@ def cartview(
     """
     import pylab
 
+    if map is None:
+        map = np.zeros(12) + np.inf
+        cbar = False
+
     # Ensure that the nside is valid
     nside = pixelfunc.get_nside(map)
     pixelfunc.check_nside(nside, nest=nest)
@@ -739,9 +745,6 @@ def cartview(
     wasinteractive = pylab.isinteractive()
     pylab.ioff()
     try:
-        if map is None:
-            map = np.zeros(12) + np.inf
-            cbar = False
         map = pixelfunc.ma_to_array(map)
         if zat and rot:
             raise ValueError("Only give rot or zat, not both")
@@ -947,6 +950,10 @@ def orthview(
     # Create the figure
     import pylab
 
+    if map is None:
+        map = np.zeros(12) + np.inf
+        cbar = False
+
     # Ensure that the nside is valid
     nside = pixelfunc.get_nside(map)
     pixelfunc.check_nside(nside, nest=nest)
@@ -989,9 +996,6 @@ def orthview(
     wasinteractive = pylab.isinteractive()
     pylab.ioff()
     try:
-        if map is None:
-            map = np.zeros(12) + np.inf
-            cbar = False
         ax = PA.HpxOrthographicAxes(
             f, extent, coord=coord, rot=rot, format=format2, flipconv=flip
         )
@@ -1202,6 +1206,10 @@ def azeqview(
     # Create the figure
     import pylab
 
+    if map is None:
+        map = np.zeros(12) + np.inf
+        cbar = False
+
     # Ensure that the nside is valid
     nside = pixelfunc.get_nside(map)
     pixelfunc.check_nside(nside, nest=nest)
@@ -1244,9 +1252,6 @@ def azeqview(
     wasinteractive = pylab.isinteractive()
     pylab.ioff()
     try:
-        if map is None:
-            map = np.zeros(12) + np.inf
-            cbar = False
         ax = PA.HpxAzimuthalAxes(
             f, extent, coord=coord, rot=rot, format=format, flipconv=flip
         )
