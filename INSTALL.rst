@@ -16,9 +16,9 @@ Conda forge provides a `conda
 channel <https://anaconda.org/conda-forge/healpy>`_ with a pre-compiled version of ``healpy``
 for linux 64bit and MAC OS X platforms, you can install it in Anaconda with::
 
-    conda config --add channels conda-forge 
+    conda config --add channels conda-forge
     conda install healpy
-    
+
 Source installation with Pip
 ---------------------------
 
@@ -35,7 +35,7 @@ On Linux with newer compilers many users reported compilation errors like ``conf
 the solution is to specifiy the flags for the C and CXX compiler:
 
     CC=gcc CXX=g++ CFLAGS='-fPIC' CXXFLAGS='-fPIC' pip install --user healpy
-    
+
 Compilation issues with Mac OS
 ------------------------------
 
@@ -50,7 +50,7 @@ package manager, it's even easer to install Healpy with::
 
     sudo port install py27-healpy
 
-Binary `apt-get` style packages are also available in the development versions of 
+Binary `apt-get` style packages are also available in the development versions of
 `Debian (sid) <https://packages.debian.org/sid/python-healpy>`_ and
 `Ubuntu (utopic) <http://packages.ubuntu.com/utopic/python-healpy>`_.
 
@@ -75,13 +75,13 @@ If everything goes fine, you can test it::
     python
 >>> import matplotlib.pyplot as plt
 >>> import numpy as np
->>> import healpy as hp 
+>>> import healpy as hp
 >>> hp.mollview(np.arange(12))
 >>> plt.show()
 
-or run the test suite with nose::
+or run the test suite with::
 
-    cd healpy-1.7.4 && python setup.py test
+    cd healpy-* && python setup.py test
 
 Building against external Healpix and cfitsio
 ---------------------------------------------
