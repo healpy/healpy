@@ -1,5 +1,6 @@
 Release in progress
 
+* Updated to cfitsio 3.48 (used only if missing) <https://github.com/healpy/healpy/pull/597>
 * Local datapath for pixel weights <https://github.com/healpy/healpy/pull/611>
 
 Release 1.13.0 3 Dec 2019, included in HEALPix 3.60
