@@ -12,4 +12,5 @@ dependencies:
   - numpydoc
   - automake
   - pkg-config
+  - cfitsio
   - libtool
