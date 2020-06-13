@@ -5,7 +5,7 @@ from _common cimport RING, Healpix_Map, ndarray2map
 from pixelfunc import npix2nside
 from healpy.sphtfunc import alm2map, Alm
 
-cdef extern from "_line_integral_convolution_lib.cc":
+cdef extern from "_line_integral_convolution_lib.h":
     cdef void lic_main(const Healpix_Map[double] &Q, const Healpix_Map[double] &U,
                        const Healpix_Map[double] &th, Healpix_Map[double] &hit,
                        Healpix_Map[double] &tex, Healpix_Map[double] &mag,
