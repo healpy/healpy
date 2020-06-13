@@ -94,6 +94,7 @@ def mollview(
     notext=False,
     norm=None,
     hold=False,
+    reuse_axes=False,
     margins=None,
     sub=None,
     nlocs=2,
@@ -163,6 +164,10 @@ def mollview(
     sub : int, scalar or sequence, optional
       Use only a zone of the current figure (same syntax as subplot).
       Default: None
+    reuse_axes : bool, optional
+      If True, reuse the current Axes (should be a MollweideAxes). This is
+      useful if you want to overplot with a partially transparent colormap,
+      such as for plotting a line integral convolution. Default: False
     margins : None or sequence, optional
       Either None, or a sequence (left,bottom,right,top)
       giving the margins on left,bottom,right and top
@@ -186,7 +191,7 @@ def mollview(
     nside = pixelfunc.get_nside(map)
     pixelfunc.check_nside(nside, nest=nest)
 
-    if not (hold or sub):
+    if not (hold or sub or reuse_axes):
         f = pylab.figure(fig, figsize=(8.5, 5.4))
         extent = (0.02, 0.05, 0.96, 0.9)
     elif hold:
@@ -194,6 +199,8 @@ def mollview(
         left, bottom, right, top = np.array(f.gca().get_position()).ravel()
         extent = (left, bottom, right - left, top - bottom)
         f.delaxes(f.gca())
+    elif reuse_axes:
+        f = pylab.gcf()
     else:  # using subplot syntax
         f = pylab.gcf()
         if hasattr(sub, "__len__"):
@@ -225,10 +232,13 @@ def mollview(
     pylab.ioff()
     try:
         map = pixelfunc.ma_to_array(map)
-        ax = PA.HpxMollweideAxes(
-            f, extent, coord=coord, rot=rot, format=format2, flipconv=flip
-        )
-        f.add_axes(ax)
+        if reuse_axes:
+            ax = f.gca()
+        else:
+            ax = PA.HpxMollweideAxes(
+                f, extent, coord=coord, rot=rot, format=format2, flipconv=flip
+            )
+            f.add_axes(ax)
         if remove_dip:
             map = pixelfunc.remove_dipole(
                 map, gal_cut=gal_cut, nest=nest, copy=True, verbose=True
@@ -337,6 +347,7 @@ def gnomview(
     norm=None,
     hold=False,
     sub=None,
+    reuse_axes=False,
     margins=None,
     notext=False,
     return_projected_map=False,
@@ -396,12 +407,16 @@ def gnomview(
     bgcolor : str
       Color to use for background
     hold : bool, optional
-      If True, replace the current Axes by a MollweideAxes.
+      If True, replace the current Axes by a GnomonicAxes.
       use this if you want to have multiple maps on the same
       figure. Default: False
     sub : int or sequence, optional
       Use only a zone of the current figure (same syntax as subplot).
       Default: None
+    reuse_axes : bool, optional
+      If True, reuse the current Axes (should be a GnomonicAxes). This is
+      useful if you want to overplot with a partially transparent colormap,
+      such as for plotting a line integral convolution. Default: False
     margins : None or sequence, optional
       Either None, or a sequence (left,bottom,right,top)
       giving the margins on left,bottom,right and top
@@ -428,7 +443,7 @@ def gnomview(
     nside = pixelfunc.get_nside(map)
     pixelfunc.check_nside(nside, nest=nest)
 
-    if not (hold or sub):
+    if not (hold or sub or reuse_axes):
         f = pylab.figure(fig, figsize=(5.8, 6.4))
         if not margins:
             margins = (0.075, 0.05, 0.075, 0.05)
@@ -440,6 +455,8 @@ def gnomview(
             margins = (0.0, 0.0, 0.0, 0.0)
         extent = (left, bottom, right - left, top - bottom)
         f.delaxes(pylab.gca())
+    elif reuse_axes:
+        f = pylab.gcf()
     else:  # using subplot syntax
         f = pylab.gcf()
         if hasattr(sub, "__len__"):
@@ -470,10 +487,13 @@ def gnomview(
     pylab.ioff()
     try:
         map = pixelfunc.ma_to_array(map)
-        ax = PA.HpxGnomonicAxes(
-            f, extent, coord=coord, rot=rot, format=format, flipconv=flip
-        )
-        f.add_axes(ax)
+        if reuse_axes:
+            ax = f.gca()
+        else:
+            ax = PA.HpxGnomonicAxes(
+                f, extent, coord=coord, rot=rot, format=format, flipconv=flip
+            )
+            f.add_axes(ax)
         if remove_dip:
             map = pixelfunc.remove_dipole(map, gal_cut=gal_cut, nest=nest, copy=True)
         elif remove_mono:
@@ -611,6 +631,7 @@ def cartview(
     aspect=None,
     hold=False,
     sub=None,
+    reuse_axes=False,
     margins=None,
     notext=False,
     return_projected_map=False,
@@ -682,6 +703,10 @@ def cartview(
     sub : int, scalar or sequence, optional
       Use only a zone of the current figure (same syntax as subplot).
       Default: None
+    reuse_axes : bool, optional
+      If True, reuse the current Axes (should be a CartesianAxes). This is
+      useful if you want to overplot with a partially transparent colormap,
+      such as for plotting a line integral convolution. Default: False
     margins : None or sequence, optional
       Either None, or a sequence (left,bottom,right,top)
       giving the margins on left,bottom,right and top
@@ -704,7 +729,7 @@ def cartview(
     nside = pixelfunc.get_nside(map)
     pixelfunc.check_nside(nside, nest=nest)
 
-    if not (hold or sub):
+    if not (hold or sub or reuse_axes):
         f = pylab.figure(fig, figsize=(8.5, 5.4))
         if not margins:
             margins = (0.075, 0.05, 0.075, 0.05)
@@ -716,6 +741,8 @@ def cartview(
             margins = (0.0, 0.0, 0.0, 0.0)
         extent = (left, bottom, right - left, top - bottom)
         f.delaxes(pylab.gca())
+    elif reuse_axes:
+        f = pylab.gcf()
     else:  # using subplot syntax
         f = pylab.gcf()
         if hasattr(sub, "__len__"):
@@ -752,10 +779,13 @@ def cartview(
             rot = np.array(zat, dtype=np.float64)
             rot.resize(3)
             rot[1] -= 90
-        ax = PA.HpxCartesianAxes(
-            f, extent, coord=coord, rot=rot, format=format, flipconv=flip
-        )
-        f.add_axes(ax)
+        if reuse_axes:
+            ax = f.gca()
+        else:
+            ax = PA.HpxCartesianAxes(
+                f, extent, coord=coord, rot=rot, format=format, flipconv=flip
+            )
+            f.add_axes(ax)
         if remove_dip:
             map = pixelfunc.remove_dipole(map, gal_cut=gal_cut, nest=nest, copy=True)
         elif remove_mono:
@@ -867,6 +897,7 @@ def orthview(
     hold=False,
     margins=None,
     sub=None,
+    reuse_axes=False,
     return_projected_map=False,
 ):
     """Plot a healpix map (given as an array) in Orthographic projection.
@@ -935,6 +966,10 @@ def orthview(
     sub : int, scalar or sequence, optional
       Use only a zone of the current figure (same syntax as subplot).
       Default: None
+    reuse_axes : bool, optional
+      If True, reuse the current Axes (should be a OrthographicAxes). This is
+      useful if you want to overplot with a partially transparent colormap,
+      such as for plotting a line integral convolution. Default: False
     margins : None or sequence, optional
       Either None, or a sequence (left,bottom,right,top)
       giving the margins on left,bottom,right and top
@@ -958,7 +993,7 @@ def orthview(
     nside = pixelfunc.get_nside(map)
     pixelfunc.check_nside(nside, nest=nest)
 
-    if not (hold or sub):
+    if not (hold or sub or reuse_axes):
         f = pylab.figure(fig, figsize=(8.5, 5.4))
         extent = (0.02, 0.05, 0.96, 0.9)
     elif hold:
@@ -966,6 +1001,8 @@ def orthview(
         left, bottom, right, top = np.array(f.gca().get_position()).ravel()
         extent = (left, bottom, right - left, top - bottom)
         f.delaxes(f.gca())
+    elif reuse_axes:
+        f = pylab.gcf()
     else:  # using subplot syntax
         f = pylab.gcf()
         if hasattr(sub, "__len__"):
@@ -996,10 +1033,13 @@ def orthview(
     wasinteractive = pylab.isinteractive()
     pylab.ioff()
     try:
-        ax = PA.HpxOrthographicAxes(
-            f, extent, coord=coord, rot=rot, format=format2, flipconv=flip
-        )
-        f.add_axes(ax)
+        if reuse_axes:
+            ax = f.gca()
+        else:
+            ax = PA.HpxOrthographicAxes(
+                f, extent, coord=coord, rot=rot, format=format2, flipconv=flip
+            )
+            f.add_axes(ax)
         if remove_dip:
             map = pixelfunc.remove_dipole(
                 map, gal_cut=gal_cut, nest=nest, copy=True, verbose=True
@@ -1113,6 +1153,7 @@ def azeqview(
     aspect=None,
     hold=False,
     sub=None,
+    reuse_axes=False,
     margins=None,
     notext=False,
     return_projected_map=False,
@@ -1191,6 +1232,10 @@ def azeqview(
     sub : int, scalar or sequence, optional
       Use only a zone of the current figure (same syntax as subplot).
       Default: None
+    reuse_axes : bool, optional
+      If True, reuse the current Axes (should be a AzimuthalAxes). This is
+      useful if you want to overplot with a partially transparent colormap,
+      such as for plotting a line integral convolution. Default: False
     margins : None or sequence, optional
       Either None, or a sequence (left,bottom,right,top)
       giving the margins on left,bottom,right and top
@@ -1214,7 +1259,7 @@ def azeqview(
     nside = pixelfunc.get_nside(map)
     pixelfunc.check_nside(nside, nest=nest)
 
-    if not (hold or sub):
+    if not (hold or sub or reuse_axes):
         f = pylab.figure(fig, figsize=(8.5, 5.4))
         extent = (0.02, 0.05, 0.96, 0.9)
     elif hold:
@@ -1222,6 +1267,8 @@ def azeqview(
         left, bottom, right, top = np.array(f.gca().get_position()).ravel()
         extent = (left, bottom, right - left, top - bottom)
         f.delaxes(f.gca())
+    elif reuse_axes:
+        f = pylab.gcf()
     else:  # using subplot syntax
         f = pylab.gcf()
         if hasattr(sub, "__len__"):
@@ -1252,10 +1299,13 @@ def azeqview(
     wasinteractive = pylab.isinteractive()
     pylab.ioff()
     try:
-        ax = PA.HpxAzimuthalAxes(
-            f, extent, coord=coord, rot=rot, format=format, flipconv=flip
-        )
-        f.add_axes(ax)
+        if reuse_axes:
+            ax = f.gca()
+        else:
+            ax = PA.HpxAzimuthalAxes(
+                f, extent, coord=coord, rot=rot, format=format, flipconv=flip
+            )
+            f.add_axes(ax)
         if remove_dip:
             map = pixelfunc.remove_dipole(
                 map, gal_cut=gal_cut, nest=nest, copy=True, verbose=True

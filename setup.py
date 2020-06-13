@@ -458,6 +458,14 @@ setup(
             extra_compile_args=["-std=c++11"],
             cython_directives=dict(embedsignature=True),
         ),
+        Extension(
+            "healpy._line_integral_convolution",
+            ["healpy/src/_line_integral_convolution.pyx"],
+            language="c++",
+            extra_compile_args=["-std=c++11"],
+            cython_directives=dict(embedsignature=True),
+            include_dirs=["healpixsubmodule/src/cxx/cxxsupport"],
+        ),
     ],
     package_data={
         "healpy": [
