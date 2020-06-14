@@ -614,12 +614,14 @@ class Alm(object):
         """
         if i is None:
             i = np.arange(Alm.getsize(lmax))
-        m = (
-            np.ceil(
-                ((2 * lmax + 1) - np.sqrt((2 * lmax + 1) ** 2 - 8 * (i - lmax))) / 2
-            )
-        ).astype(int)
-        l = i - m * (2 * lmax + 1 - m) // 2
+
+        with np.errstate(all='raise'):
+            m = (
+                np.ceil(
+                    ((2 * lmax + 1) - np.sqrt((2 * lmax + 1) ** 2 - 8 * (i - lmax))) / 2
+                )
+            ).astype(int)
+            l = i - m * (2 * lmax + 1 - m) // 2
         return (l, m)
 
     @staticmethod
