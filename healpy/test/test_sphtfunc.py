@@ -151,7 +151,7 @@ class TestSphtFunc(unittest.TestCase):
                 "wmap_band_iqumap_r9_7yr_W_v4_udgraded32_smoothed10deg_fortran.fits",
             ),
             (0, 1, 2),
-            np.float64
+            np.float64,
         )
         np.testing.assert_array_almost_equal(smoothed, smoothed_f90, decimal=6)
 
@@ -165,7 +165,7 @@ class TestSphtFunc(unittest.TestCase):
                     "wmap_band_iqumap_r9_7yr_W_v4_udgraded32_masked_smoothed10deg_fortran.fits",
                 ),
                 (0, 1, 2),
-                np.float64
+                np.float64,
             )
         )
         # fortran does not restore the mask
@@ -427,7 +427,12 @@ class TestSphtFunc(unittest.TestCase):
 
         lmax = 200
         pixwin = hp.pixwin(nside, lmax=lmax)
-        self.assertEqual(len(pixwin)-1, lmax)
+        self.assertEqual(len(pixwin) - 1, lmax)
+
+    def test_getlm_overflow(self):
+        # test that overflow raises valueerror
+        with self.assertRaises(FloatingPointError):
+            hp.Alm.getlm(500, 125751)
 
 
 if __name__ == "__main__":
