@@ -431,7 +431,7 @@ class TestSphtFunc(unittest.TestCase):
 
     def test_getlm_overflow(self):
         # test that overflow raises valueerror
-        with self.assertRaises(FloatingPointError):
+        with self.assertRaises(AssertionError):
             hp.Alm.getlm(500, 125751)
 
 

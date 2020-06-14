@@ -46,8 +46,8 @@ class FutureChangeWarning(UserWarning):
 
 DATAPATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
 MAX_NSIDE = (
-    8192
-)  # The maximum nside up to which most operations (e.g. map2alm) will work
+    8192  # The maximum nside up to which most operations (e.g. map2alm) will work
+)
 
 # Spherical harmonics transformation
 def anafast(
@@ -612,10 +612,16 @@ class Alm(object):
           The index for which to compute the l and m.
           If None, the function return l and m for i=0..Alm.getsize(lmax)
         """
+        szalm = Alm.getsize(lmax, lmax)
         if i is None:
-            i = np.arange(Alm.getsize(lmax))
+            i = np.arange(szalm)
+        assert (
+            i < szalm
+        ), "Invalid index, it should less than the max alm array length of {}".format(
+            szalm
+        )
 
-        with np.errstate(all='raise'):
+        with np.errstate(all="raise"):
             m = (
                 np.ceil(
                     ((2 * lmax + 1) - np.sqrt((2 * lmax + 1) ** 2 - 8 * (i - lmax))) / 2
@@ -976,13 +982,7 @@ def smoothing(
             inplace=True,
         )
         output_map = alm2map(
-            alms,
-            nside,
-            lmax=lmax,
-            mmax=mmax,
-            pixwin=False,
-            verbose=verbose,
-            pol=pol,
+            alms, nside, lmax=lmax, mmax=mmax, pixwin=False, verbose=verbose, pol=pol,
         )
     else:
         # Treat each map independently (any number)
