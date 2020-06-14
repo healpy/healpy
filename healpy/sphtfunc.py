@@ -616,7 +616,7 @@ class Alm(object):
         if i is None:
             i = np.arange(szalm)
         assert (
-            i < szalm
+            np.max(i) < szalm
         ), "Invalid index, it should less than the max alm array length of {}".format(
             szalm
         )
