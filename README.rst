@@ -173,17 +173,11 @@ List of contributors: https://github.com/healpy/healpy/graphs/contributors
 Acknowledgements
 ----------------
 
-Note that, as stated `here <http://healpix.sourceforge.net/downloads.php>`_
-publications based on work using the `HEALPix` software package should include
-both of the following:
+1. Cite the HEALPix and `healpy` papers, see the [CITATION file](https://github.com/healpy/healpy/blob/master/CITATION) in the repository.
 
-1. an acknowledgment statement: "Some of the results in this paper have been
-   derived using the `healpy` and `HEALPix` packages". See the `CITATION` file
-   for the Bibtex entry.
+2. Add an acknowledgment statement: "Some of the results in this paper have been
+   derived using the `healpy` and `HEALPix` packages".
 
-2. at the first use of the `HEALPix` acronym, a footnote placed in the main body
+3. at the first use of the `HEALPix` acronym, a footnote placed in the main body
    of the paper referring to the `HEALPix` web site, currently
    http://healpix.sf.net
-
-As healpy is based on `HEALPix` Software (the C++ library), the same
-condition applies to it.
