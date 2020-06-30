@@ -2,6 +2,12 @@
 Healpy, a python wrapper for healpix
 ====================================
 
+.. image:: https://badge.fury.io/py/healpy.svg
+    :target: https://badge.fury.io/py/healpy
+    
+.. image:: https://anaconda.org/conda-forge/healpy/badges/version.svg
+    :target: https://anaconda.org/conda-forge/healpy
+    
 .. image:: https://travis-ci.org/healpy/healpy.png?branch=master
    :target: https://travis-ci.org/healpy/healpy
 
@@ -12,8 +18,8 @@ Healpy, a python wrapper for healpix
 .. image:: https://mybinder.org/badge_logo.svg
    :target: https://mybinder.org/v2/gist/zonca/9c114608e0903a3b8ea0bfe41c96f255/master
 
-.. image:: https://zenodo.org/badge/2006005.svg
-   :target: https://zenodo.org/badge/latestdoi/2006005
+.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.2605425.svg
+   :target: https://doi.org/10.5281/zenodo.2605425
 
 .. image:: http://joss.theoj.org/papers/10.21105/joss.01298/status.svg
    :target: https://doi.org/10.21105/joss.01298
