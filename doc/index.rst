@@ -23,6 +23,17 @@ is very welcome to propose new features.
 * transform maps to Spherical Harmonics space and back using multi-threaded C++ routines
 * compute Auto and Cross Power Spectra from maps and create map realizations from spectra
 
+Citing
+------
+
+1. Cite the HEALPix and `healpy` papers, see the `CITATION file <https://github.com/healpy/healpy/blob/master/CITATION>`_ in the repository.
+
+2. Add an acknowledgment statement: "Some of the results in this paper have been
+   derived using the `healpy` and `HEALPix` packages".
+
+3. at the first use of the `HEALPix` acronym, a footnote placed in the main body
+   of the paper referring to the `HEALPix` web site, currently
+   http://healpix.sf.net
 
 Tutorial
 --------
