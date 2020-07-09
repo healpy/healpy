@@ -39,7 +39,7 @@
    ang2pix
 */
 template<Healpix_Ordering_Scheme scheme>static void
-  ufunc_ang2pix(char **args, npy_intp *dimensions, npy_intp *steps, void *func)
+  ufunc_ang2pix(char **args, const npy_intp *dimensions, const npy_intp *steps, void *func)
 {
   npy_intp n=dimensions[0];
 
@@ -68,7 +68,7 @@ template<Healpix_Ordering_Scheme scheme>static void
    pix2ang
 */
 template<Healpix_Ordering_Scheme scheme> static void
-  ufunc_pix2ang(char **args, npy_intp *dimensions, npy_intp *steps, void *func)
+  ufunc_pix2ang(char **args, const npy_intp *dimensions, const npy_intp *steps, void *func)
 {
   register npy_intp i, n=dimensions[0];
   register npy_intp is1=steps[0],is2=steps[1],os1=steps[2],os2=steps[3];
@@ -97,7 +97,7 @@ template<Healpix_Ordering_Scheme scheme> static void
    xyf2pix
 */
 template<Healpix_Ordering_Scheme scheme>static void
-  ufunc_xyf2pix(char **args, npy_intp *dimensions, npy_intp *steps, void *func)
+  ufunc_xyf2pix(char **args, const npy_intp *dimensions, const npy_intp *steps, void *func)
 {
   npy_intp n=dimensions[0];
 
@@ -124,7 +124,7 @@ template<Healpix_Ordering_Scheme scheme>static void
    pix2xyf
 */
 template<Healpix_Ordering_Scheme scheme> static void
-  ufunc_pix2xyf(char **args, npy_intp *dimensions, npy_intp *steps, void *func)
+  ufunc_pix2xyf(char **args, const npy_intp *dimensions, const npy_intp *steps, void *func)
 {
   register npy_intp i, n=dimensions[0];
   register npy_intp is1=steps[0],is2=steps[1],os1=steps[2],os2=steps[3],os3=steps[4];
@@ -156,7 +156,7 @@ template<Healpix_Ordering_Scheme scheme> static void
    ring2nest
 */
 static void
-ufunc_ring2nest(char **args, npy_intp *dimensions, npy_intp *steps, void *func)
+ufunc_ring2nest(char **args, const npy_intp *dimensions, const npy_intp *steps, void *func)
 {
   register npy_intp i, n=dimensions[0];
   register npy_intp is1=steps[0],is2=steps[1],os=steps[2];
@@ -182,7 +182,7 @@ ufunc_ring2nest(char **args, npy_intp *dimensions, npy_intp *steps, void *func)
    nest2ring
 */
 static void
- ufunc_nest2ring (char **args, npy_intp *dimensions, npy_intp *steps, void *func)
+ ufunc_nest2ring (char **args, const npy_intp *dimensions, const npy_intp *steps, void *func)
 {
   register npy_intp i, n=dimensions[0];
   register npy_intp is1=steps[0],is2=steps[1],os=steps[2];
@@ -209,7 +209,7 @@ static void
   pix2vec
 */
 template<Healpix_Ordering_Scheme scheme> static void
-  ufunc_pix2vec(char **args, npy_intp *dimensions, npy_intp *steps, void *func)
+  ufunc_pix2vec(char **args, const npy_intp *dimensions, const npy_intp *steps, void *func)
 {
   register npy_intp i, n=dimensions[0];
   register npy_intp is1=steps[0],is2=steps[1],os1=steps[2],os2=steps[3],os3=steps[4];
@@ -240,7 +240,7 @@ template<Healpix_Ordering_Scheme scheme> static void
   vec2pix
 */
 template<Healpix_Ordering_Scheme scheme> static void
-  ufunc_vec2pix(char **args, npy_intp *dimensions, npy_intp *steps, void *func)
+  ufunc_vec2pix(char **args, const npy_intp *dimensions, const npy_intp *steps, void *func)
 {
   register npy_intp i, n=dimensions[0];
   register npy_intp is1=steps[0],is2=steps[1],is3=steps[2],is4=steps[3],os1=steps[4];
@@ -269,7 +269,7 @@ template<Healpix_Ordering_Scheme scheme> static void
   get_interpol
 */
 template<Healpix_Ordering_Scheme scheme> static void
-  ufunc_get_interpol(char **args, npy_intp *dimensions, npy_intp *steps, void *func)
+  ufunc_get_interpol(char **args, const npy_intp *dimensions, const npy_intp *steps, void *func)
 {
   register npy_intp i, n=dimensions[0];
   register npy_intp is1=steps[0],is2=steps[1],is3=steps[2],
@@ -321,7 +321,7 @@ template<Healpix_Ordering_Scheme scheme> static void
   get_neighbors
 */
 template<Healpix_Ordering_Scheme scheme> static void
-  ufunc_get_neighbors(char **args, npy_intp *dimensions, npy_intp *steps, void *func)
+  ufunc_get_neighbors(char **args, const npy_intp *dimensions, const npy_intp *steps, void *func)
 {
   register npy_intp i, n=dimensions[0];
   register npy_intp is1=steps[0],is2=steps[1],
@@ -365,7 +365,7 @@ template<Healpix_Ordering_Scheme scheme> static void
   max_pixrad
 */
 static void
-  ufunc_max_pixrad(char **args, npy_intp *dimensions, npy_intp *steps, void *func)
+  ufunc_max_pixrad(char **args, const npy_intp *dimensions, const npy_intp *steps, void *func)
 {
   register npy_intp i, n=dimensions[0];
   register npy_intp is1=steps[0],os1=steps[1];
@@ -397,61 +397,61 @@ static char *docstring = CP_(
 
 /* to define the ufunc */
 static PyUFuncGenericFunction ang2pix_ring_functions[] = {
-  ufunc_ang2pix<RING>
+  (PyUFuncGenericFunction) ufunc_ang2pix<RING>
 };
 static PyUFuncGenericFunction ang2pix_nest_functions[] = {
-  ufunc_ang2pix<NEST>
+  (PyUFuncGenericFunction) ufunc_ang2pix<NEST>
 };
 static PyUFuncGenericFunction pix2ang_ring_functions[] = {
-  ufunc_pix2ang<RING>
+  (PyUFuncGenericFunction) ufunc_pix2ang<RING>
 };
 static PyUFuncGenericFunction pix2ang_nest_functions[] = {
-  ufunc_pix2ang<NEST>
+  (PyUFuncGenericFunction) ufunc_pix2ang<NEST>
 };
 static PyUFuncGenericFunction xyf2pix_ring_functions[] = {
-  ufunc_xyf2pix<RING>
+  (PyUFuncGenericFunction) ufunc_xyf2pix<RING>
 };
 static PyUFuncGenericFunction xyf2pix_nest_functions[] = {
-  ufunc_xyf2pix<NEST>
+  (PyUFuncGenericFunction) ufunc_xyf2pix<NEST>
 };
 static PyUFuncGenericFunction pix2xyf_ring_functions[] = {
-  ufunc_pix2xyf<RING>
+  (PyUFuncGenericFunction) ufunc_pix2xyf<RING>
 };
 static PyUFuncGenericFunction pix2xyf_nest_functions[] = {
-  ufunc_pix2xyf<NEST>
+  (PyUFuncGenericFunction) ufunc_pix2xyf<NEST>
 };
 static PyUFuncGenericFunction vec2pix_ring_functions[] = {
-  ufunc_vec2pix<RING>
+  (PyUFuncGenericFunction) ufunc_vec2pix<RING>
 };
 static PyUFuncGenericFunction vec2pix_nest_functions[] = {
-  ufunc_vec2pix<NEST>
+  (PyUFuncGenericFunction) ufunc_vec2pix<NEST>
 };
 static PyUFuncGenericFunction pix2vec_ring_functions[] = {
-  ufunc_pix2vec<RING>
+  (PyUFuncGenericFunction) ufunc_pix2vec<RING>
 };
 static PyUFuncGenericFunction pix2vec_nest_functions[] = {
-  ufunc_pix2vec<NEST>
+  (PyUFuncGenericFunction) ufunc_pix2vec<NEST>
 };
 static PyUFuncGenericFunction ring2nest_functions[] = {
-  ufunc_ring2nest
+  (PyUFuncGenericFunction) ufunc_ring2nest
 };
 static PyUFuncGenericFunction nest2ring_functions[] = {
-  ufunc_nest2ring
+  (PyUFuncGenericFunction) ufunc_nest2ring
 };
 static PyUFuncGenericFunction get_interpol_ring_functions[] = {
-  ufunc_get_interpol<RING>
+  (PyUFuncGenericFunction) ufunc_get_interpol<RING>
 };
 static PyUFuncGenericFunction get_interpol_nest_functions[] = {
-  ufunc_get_interpol<NEST>
+  (PyUFuncGenericFunction) ufunc_get_interpol<NEST>
 };
 static PyUFuncGenericFunction get_neighbors_ring_functions[] = {
-  ufunc_get_neighbors<RING>
+  (PyUFuncGenericFunction) ufunc_get_neighbors<RING>
 };
 static PyUFuncGenericFunction get_neighbors_nest_functions[] = {
-  ufunc_get_neighbors<NEST>
+  (PyUFuncGenericFunction) ufunc_get_neighbors<NEST>
 };
 static PyUFuncGenericFunction max_pixrad_functions[] = {
-  ufunc_max_pixrad
+  (PyUFuncGenericFunction) ufunc_max_pixrad
 };
 
 
