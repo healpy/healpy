@@ -1026,7 +1026,7 @@ def nside2resol(nside, arcmin=False):
     Examples
     --------
     >>> import healpy as hp
-    >>> hp.nside2resol(128, arcmin = True)
+    >>> hp.nside2resol(128, arcmin = True)  # doctest: +FLOAT_CMP
     27.483891294539248
 
     >>> hp.nside2resol(256)
@@ -1066,7 +1066,7 @@ def nside2pixarea(nside, degrees=False):
     Examples
     --------
     >>> import healpy as hp
-    >>> hp.nside2pixarea(128, degrees = True)
+    >>> hp.nside2pixarea(128, degrees = True)  # doctest: +FLOAT_CMP
     0.2098234113027917
 
     >>> hp.nside2pixarea(256)
