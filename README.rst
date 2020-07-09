@@ -4,10 +4,10 @@ Healpy, a python wrapper for healpix
 
 .. image:: https://badge.fury.io/py/healpy.svg
     :target: https://badge.fury.io/py/healpy
-    
+
 .. image:: https://anaconda.org/conda-forge/healpy/badges/version.svg
     :target: https://anaconda.org/conda-forge/healpy
-    
+
 .. image:: https://travis-ci.org/healpy/healpy.png?branch=master
    :target: https://travis-ci.org/healpy/healpy
 
@@ -62,7 +62,7 @@ Requirements
 
 * `Numpy <http://numpy.scipy.org/>`_ (tested with version >=1.5.0)
 
-* `Matplotlib <http://matplotlib.sourceforge.net/>`_ 
+* `Matplotlib <http://matplotlib.sourceforge.net/>`_
 
 * Python development package is required for some distribution (e.g.,
   python-dev package for Ubuntu)
@@ -171,7 +171,7 @@ Core developers:
 * Cyrille Rosset
 * Andrea Zonca
 * Martin Reinecke
-* Leo Singer 
+* Leo Singer
 * Daniel Lenz
 
 List of contributors: https://github.com/healpy/healpy/graphs/contributors
