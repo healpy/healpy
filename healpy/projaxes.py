@@ -24,6 +24,7 @@ import matplotlib
 import matplotlib.axes
 import numpy as np
 import six
+import copy
 
 from ._healpy_pixel_lib import UNSEEN
 
@@ -889,6 +890,17 @@ def get_color_table(vmin, vmax, val, cmap=None, norm=None,
 
 
 def create_colormap(cmap, badcolor="gray", bgcolor="white"):
+    """Create a new colormap with specified bad/background colors.
+
+    Parameters
+    ----------
+    cmap : string or matplotlib.colors.Colormap
+        type of colormap to create
+    badcolor : string
+        color for bad pixels (passed to set_bad)
+    bgcolor : string
+        color for background (passed to set_under)
+    """
     if type(cmap) == str:
         cmap0 = matplotlib.cm.get_cmap(cmap)
     elif type(cmap) in [
@@ -903,7 +915,7 @@ def create_colormap(cmap, badcolor="gray", bgcolor="white"):
             "newcm", cmap0._segmentdata, cmap0.N
         )
     else:
-        newcm = cmap0
+        newcm = copy.deepcopy(cmap0)
     newcm.set_over(newcm(1.0))
     newcm.set_under(bgcolor)
     newcm.set_bad(badcolor)
