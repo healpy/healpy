@@ -1,8 +1,10 @@
 import matplotlib
+import matplotlib.cm
 
 matplotlib.use("agg")
 import unittest
 import numpy as np
+import copy
 
 import healpy as hp
 from ..visufunc import *
@@ -87,3 +89,22 @@ class TestNoCrash(unittest.TestCase):
 
     def test_azeqview_ma_nocrash(self):
         azeqview(self.ma)
+
+    def test_cmap_colors(self):
+        # Get a built-in colormap
+        name = 'viridis'
+        cmap = matplotlib.cm.get_cmap(name)
+
+        # Set outlier colors
+        color = (0.25,0.75,0.95,1.0)
+        cmap.set_bad(color)
+        cmap.set_over(color)
+        cmap.set_under(color)
+
+        # Call healpy plotting
+        mollview(self.m,cmap=name)
+
+        # Check that colors haven't been changed
+        assert cmap._rgba_bad == color
+        assert cmap._rgba_over == color
+        assert cmap._rgba_under == color
