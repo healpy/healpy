@@ -18,6 +18,15 @@ for linux 64bit and MAC OS X platforms, you can install it in Anaconda with::
 
     conda config --add channels conda-forge
     conda install healpy
+
+There have also been reports of specific installation issues under Mac OS Catalina 10.15.5 with conda install as the
+solver appears to run without finding the required packages. This is a generalised issue with a number of packages,
+and not limited to ``healpy``. The most straightforward solution (after adding conda-forge to the channel list) is for
+the user to decide which packages they wish to install alongside ``healpy`` and then create a new environment installing
+``healpy`` alongside said packages. For instance if one wishes to install ``healpy`` alongside Spyder and My_Package into
+newly created environment env_healpy, the command will be::
+
+    conda create --name env_healpy python=3.7 healpy spyder my_package
      
 Source installation with Pip
 ---------------------------
@@ -41,15 +50,6 @@ Compilation issues with Mac OS
 
 Currently most people report they cannot install `healpy` on Mac OS either via `pip` or building from source, due to the impossibility of compiling the `HEALPix` based extension.
 The only options right now are using `conda-forge` or `Macports`.
-
-There have also been reports of specific installation issues under Mac OS Catalina 10.15.5 with conda install as the
-solver appear to run without finding the required packages. This is a generalised issue with a number of packages,
-and not limited to Healpy. The most straightforward solution (after adding conda-forge to the channel list) is for
-the user to decide which packages they wish to install alongside Healpy and then create a new environment installing
-Healpy alongside said packages. For instance if one wishes to install Healpy alongside Spyder and My_Package into
-newly created environment env_healpy, the command will be
-
-    conda create --name env_healpy python=3.7 healpy spyder my_package
 
 Installation on Mac OS with MacPorts
 -------------------------------------------------
