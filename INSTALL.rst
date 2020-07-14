@@ -19,6 +19,15 @@ for linux 64bit and MAC OS X platforms, you can install it in Anaconda with::
     conda config --add channels conda-forge
     conda install healpy
 
+There have also been reports of specific installation issues under Mac OS Catalina 10.15.5 with conda install as the
+solver appears to run without finding the required packages. This is a generalised issue with a number of packages,
+and not limited to ``healpy``. The most straightforward solution (after adding conda-forge to the channel list) is for
+the user to decide which packages they wish to install alongside ``healpy`` and then create a new environment installing
+``healpy`` alongside said packages. For instance if one wishes to install ``healpy`` alongside Spyder and My_Package into
+newly created environment env_healpy, the command will be::
+
+    conda create --name env_healpy python=3.7 healpy spyder my_package
+     
 Source installation with Pip
 ---------------------------
 
