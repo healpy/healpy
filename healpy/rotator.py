@@ -20,6 +20,7 @@
 import numpy as np
 import warnings
 import six
+from astropy.coordinates import SkyCoord
 from . import pixelfunc
 from . import sphtfunc
 from ._sphtools import rotate_alm
@@ -888,12 +889,27 @@ def get_coordconv_matrix(coord):
         eps = eps * np.pi / 180.0
 
         # ecliptic to galactic
-        e2g = np.array(
-            [
-                [-0.054882486, -0.993821033, -0.096476249],
-                [0.494116468, -0.110993846, 0.862281440],
-                [-0.867661702, -0.000346354, 0.497154957],
-            ]
+        # e2g = np.array(
+        #     [
+        #         [-0.054882486, -0.993821033, -0.096476249],
+        #         [0.494116468, -0.110993846, 0.862281440],
+        #         [-0.867661702, -0.000346354, 0.497154957],
+        #     ]
+        # )
+        x, y, z = np.eye(3)
+        astropy_frame = "BarycentricMeanEcliptic"
+        e2g = (
+            SkyCoord(
+                x=x,
+                y=y,
+                z=z,
+                frame=astropy_frame.lower(),
+                representation_type="cartesian",
+            )
+            .transform_to("galactic")
+            .data.to_cartesian()
+            .get_xyz()
+            .value
         )
 
         # ecliptic to equatorial
