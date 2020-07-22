@@ -336,7 +336,8 @@ def read_map(
     h : bool, optional
       If True, return also the header. Default: False.
     verbose : bool, optional
-      If True, print a number of diagnostic messages
+      If True, print a number of diagnostic messages, call hp.disable_warnings() to
+      disable warnings for all functions.
     memmap : bool, optional
       Argument passed to astropy.io.fits.open, if True, the map is not read into memory,
       but only the required pixels are read when needed. Default: False.

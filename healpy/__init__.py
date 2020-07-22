@@ -108,6 +108,12 @@ from ._hotspots import hotspots_healpy as hotspots
 
 
 def disable_warnings():
+    """Disable all healpy warnings messages for the current session
+
+    Warnings from individual functions can be disabled setting
+    ``verbose=False``.
+    Warnings can be re-enabled calling ``hp.enable_warnings()``.
+    """
     warnings.filterwarnings(action="ignore", module="healpy")
 
 

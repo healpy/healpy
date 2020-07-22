@@ -805,6 +805,7 @@ def smoothalm(
       of type complex128. Otherwise, a copy of alm is made. Default: True.
     verbose : bool, optional
       If True prints diagnostic information. Default: True
+      Call hp.disable_warnings() to disable warnings for all functions.
 
     Returns
     -------

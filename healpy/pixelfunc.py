@@ -1542,6 +1542,7 @@ def remove_dipole(
       whether to modify input map or not (by default, make a copy)
     verbose : bool
       print values of monopole and dipole
+      call hp.disable_warnings() to disable warnings for all functions.
 
     Returns
     -------
