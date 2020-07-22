@@ -119,7 +119,9 @@ def write_cl(filename, cl, dtype=None, overwrite=False):
     tbhdu = pf.BinTableHDU.from_columns(cols)
     # add needed keywords
     tbhdu.header["CREATOR"] = "healpy"
-    tbhdu.writeto(filename, overwrite=overwrite)
+    # Add str to convert pathlib.Path into str
+    # Due to https://github.com/astropy/astropy/issues/10594
+    tbhdu.writeto(str(filename), overwrite=overwrite)
 
 
 def write_map(
@@ -291,7 +293,9 @@ def write_map(
     for args in extra_header:
         tbhdu.header[args[0]] = args[1:]
 
-    tbhdu.writeto(filename, overwrite=overwrite)
+    # Add str to convert pathlib.Path into str
+    # Due to https://github.com/astropy/astropy/issues/10594
+    tbhdu.writeto(str(filename), overwrite=overwrite)
 
 
 def read_map(
@@ -590,7 +594,9 @@ def write_alm(
 
         tbhdu = pf.BinTableHDU.from_columns([cindex, creal, cimag])
         hdulist.append(tbhdu)
-    hdulist.writeto(filename, overwrite=overwrite)
+    # Add str to convert pathlib.Path into str
+    # Due to https://github.com/astropy/astropy/issues/10594
+    hdulist.writeto(str(filename), overwrite=overwrite)
 
 
 def read_alm(filename, hdu=1, return_mmax=False):
