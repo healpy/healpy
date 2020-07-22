@@ -21,37 +21,44 @@ class TestFitsFunc(unittest.TestCase):
 
     def test_write_map_IDL(self):
         write_map(self.filename, self.m, fits_IDL=True)
-        read_m = pf.open(self.filename)[1].data.field(0)
-        self.assertEqual(read_m.ndim, 2)
-        self.assertEqual(read_m.shape[1], 1024)
-        self.assertTrue(np.all(self.m == read_m.flatten()))
+        with pf.open(self.filename) as f:
+            read_m = f[1].data.field(0)
+            self.assertEqual(read_m.ndim, 2)
+            self.assertEqual(read_m.shape[1], 1024)
+            self.assertTrue(np.all(self.m == read_m.flatten()))
 
     def test_write_map_units_string(self):
         write_map(self.filename, self.m, column_units="K")
-        read_m = pf.open(self.filename)[1].data.field(0)
+        with pf.open(self.filename) as f:
+            assert f[1].header["TUNIT1"] == "K"
 
     def test_write_map_pathlib(self):
         if sys.version < "3.4":
             return
         path = Path(self.filename)
+        assert isinstance(path, Path)
         write_map(path, self.m)
-        read_m = pf.open(path)[1].data.field(0)
+        #read_map(path)
 
     def test_write_map_units_list(self):
-        write_map(self.filename, [self.m, self.m], column_units=["K", "K"])
-        read_m = pf.open(self.filename)[1].data.field(0)
+        write_map(self.filename, [self.m, self.m], column_units=["K", "mK"]) # evil!
+        with pf.open(self.filename) as f:
+            assert f[1].header["TUNIT1"] == "K"
+            assert f[1].header["TUNIT2"] == "mK"
 
     def test_write_map_C(self):
         write_map(self.filename, self.m, fits_IDL=False)
-        read_m = pf.open(self.filename)[1].data.field(0)
-        self.assertEqual(read_m.ndim, 1)
-        self.assertTrue(np.all(self.m == read_m))
+        with pf.open(self.filename) as f:
+            read_m = f[1].data.field(0)
+            self.assertEqual(read_m.ndim, 1)
+            self.assertTrue(np.all(self.m == read_m))
 
     def test_write_map_C_3comp(self):
         write_map(self.filename, [self.m, self.m, self.m], fits_IDL=False)
-        read_m = pf.open(self.filename)[1].data
-        for comp in range(3):
-            self.assertTrue(np.all(self.m == read_m.field(comp)))
+        with pf.open(self.filename) as f:
+            read_m = f[1].data
+            for comp in range(3):
+                self.assertTrue(np.all(self.m == read_m.field(comp)))
 
     def test_read_map_filename(self):
         write_map(self.filename, self.m)
@@ -74,11 +81,13 @@ class TestFitsFunc(unittest.TestCase):
         write_map(self.filename, self.m)
         hdulist = pf.open(self.filename)
         read_map(hdulist)
+        hdulist.close()
 
     def test_read_map_hdu(self):
         write_map(self.filename, self.m)
-        hdu = pf.open(self.filename)[1]
-        read_map(hdu)
+        with pf.open(self.filename) as f:
+            hdu = f[1]
+            read_map(hdu)
 
     def test_read_map_all(self):
         write_map(self.filename, [self.m, self.m, self.m], overwrite=True)
@@ -169,7 +178,7 @@ class TestFitsFuncGzip(unittest.TestCase):
         gzfile = gzip.open(self.filename, "rb")
         gzfile.read()
         gzfile.close()
-        read_m = pf.open(self.filename)[1].data.field(0)
+        read_map(self.filename)
 
     def tearDown(self):
         if os.path.exists(self.filename):
@@ -245,11 +254,13 @@ class TestReadWriteAlm(unittest.TestCase):
         write_alm("testalm_128.fits", self.alms, lmax=128, mmax=128)
         hdulist = pf.open("testalm_128.fits")
         read_alm(hdulist)
+        hdulist.close()
 
     def test_read_alm_hdu(self):
         write_alm("testalm_128.fits", self.alms, lmax=128, mmax=128)
-        hdu = pf.open("testalm_128.fits")[1]
-        read_alm(hdu)
+        with pf.open("testalm_128.fits") as f:
+            hdu = f[1]
+            read_alm(hdu)
 
 
 class TestReadWriteCl(unittest.TestCase):
@@ -288,14 +299,15 @@ class TestReadWriteCl(unittest.TestCase):
     def test_read_cl_hdulist(self):
         cl = np.arange(1025, dtype=np.double)
         write_cl("test_cl.fits", cl)
-        hdulist = pf.open("test_cl.fits")
-        read_cl(hdulist)
+        with pf.open("test_cl.fits") as hdulist:
+            read_cl(hdulist)
 
     def test_read_cl_hdu(self):
         cl = np.arange(1025, dtype=np.double)
         write_cl("test_cl.fits", cl)
-        hdu = pf.open("test_cl.fits")[1]
-        read_cl(hdu)
+        with pf.open("test_cl.fits") as hdulist:
+            hdu = hdulist[1]
+            read_cl(hdu)
 
 
 def test_getformat():

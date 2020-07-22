@@ -42,6 +42,10 @@ standard_column_names = {
     6: ["II", "IQ", "IU", "QQ", "QU", "UU"],
 }
 
+allowed_paths = tuple(six.string_types)
+if sys.version >= "3.4":
+    allowed_paths += (pathlib.Path,)
+
 
 class HealpixFitsWarning(Warning):
     pass
@@ -60,8 +64,14 @@ def read_cl(filename):
     cl : array
       the cl array
     """
+    opened_file = False
+    if isinstance(filename, allowed_paths):
+        filename = pf.open(filename)
+        opened_file = True
     fits_hdu = _get_hdu(filename, hdu=1)
     cl = np.array([fits_hdu.data.field(n) for n in range(len(fits_hdu.columns))])
+    if opened_file:
+        filename.close()
     if len(cl) == 1:
         return cl[0]
     else:
@@ -89,7 +99,8 @@ def write_cl(filename, cl, dtype=None, overwrite=False):
         warnings.warn(
             "The default dtype of write_cl() will change in a future version: "
             "explicitly set the dtype if it is important to you",
-            category=FutureWarning)
+            category=FutureWarning,
+        )
         dtype = np.float64
         # At some poin change this to:
         # dtype = cl.dtype if isinstance(cl, np.ndarray) else cl[0].dtype
@@ -110,7 +121,9 @@ def write_cl(filename, cl, dtype=None, overwrite=False):
     tbhdu = pf.BinTableHDU.from_columns(cols)
     # add needed keywords
     tbhdu.header["CREATOR"] = "healpy"
-    tbhdu.writeto(filename, overwrite=overwrite)
+    # Add str to convert pathlib.Path into str
+    # Due to https://github.com/astropy/astropy/issues/10594
+    tbhdu.writeto(str(filename), overwrite=overwrite)
 
 
 def write_map(
@@ -184,7 +197,8 @@ def write_map(
         warnings.warn(
             "The default dtype of write_map() will change in a future version: "
             "explicitly set the dtype if it is important to you",
-            category=FutureWarning)
+            category=FutureWarning,
+        )
         dtype = [np.float32 for x in m]
         # Change this at some point to:
         # dtype = [x.dtype for x in m]
@@ -282,7 +296,9 @@ def write_map(
     for args in extra_header:
         tbhdu.header[args[0]] = args[1:]
 
-    tbhdu.writeto(filename, overwrite=overwrite)
+    # Add str to convert pathlib.Path into str
+    # Due to https://github.com/astropy/astropy/issues/10594
+    tbhdu.writeto(str(filename), overwrite=overwrite)
 
 
 def read_map(
@@ -354,7 +370,13 @@ def read_map(
             "np.float64 dtype of read_map(), please consider that it will "
             "change in a future version to None as to keep the same dtype of "
             "the input file: please explicitly set the dtype if it is "
-            "important to you.")
+            "important to you."
+        )
+
+    opened_file = False
+    if isinstance(filename, allowed_paths):
+        filename = pf.open(filename, memmap=memmap)
+        opened_file = True
 
     fits_hdu = _get_hdu(filename, hdu=hdu, memmap=memmap)
 
@@ -473,6 +495,9 @@ def read_map(
         for (key, value) in fits_hdu.header.items():
             header.append((key, value))
 
+    if opened_file:
+        filename.close()
+
     if len(ret) == 1:
         if h:
             return ret[0], header
@@ -573,7 +598,9 @@ def write_alm(
 
         tbhdu = pf.BinTableHDU.from_columns([cindex, creal, cimag])
         hdulist.append(tbhdu)
-    hdulist.writeto(filename, overwrite=overwrite)
+    # Add str to convert pathlib.Path into str
+    # Due to https://github.com/astropy/astropy/issues/10594
+    hdulist.writeto(str(filename), overwrite=overwrite)
 
 
 def read_alm(filename, hdu=1, return_mmax=False):
@@ -601,6 +628,12 @@ def read_alm(filename, hdu=1, return_mmax=False):
     alms = []
     lmaxtot = None
     mmaxtot = None
+
+    opened_file = False
+    if isinstance(filename, allowed_paths):
+        filename = pf.open(filename)
+        opened_file = True
+
     for unit in np.atleast_1d(hdu):
         idx, almr, almi = [_get_hdu(filename, hdu=unit).data.field(i) for i in range(3)]
         l = np.floor(np.sqrt(idx - 1)).astype(np.long)
@@ -623,6 +656,8 @@ def read_alm(filename, hdu=1, return_mmax=False):
         alm.real[i] = almr
         alm.imag[i] = almi
         alms.append(alm)
+    if opened_file:
+        filename.close()
     if len(alms) == 1:
         alm = alms[0]
     else:
@@ -650,10 +685,6 @@ def _get_hdu(input_data, hdu=None, memmap=None):
     fits_hdu : HDU
         The extracted HDU
     """
-    allowed_paths = tuple(six.string_types)
-    if sys.version >= "3.4":
-        allowed_paths += (pathlib.Path, pathlib.PosixPath)
-
     if isinstance(input_data, allowed_paths):
         hdulist = pf.open(input_data, memmap=memmap)
         return _get_hdu(hdulist, hdu=hdu)
