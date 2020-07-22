@@ -1,7 +1,18 @@
 Release in progress
 
+Release 1.14.0 22 July 2020, included in HEALPix 3.70
+
+* Fixed FITS files that were left open <https://github.com/healpy/healpy/pull/631>
+* Line Integral Convolution plots to plot polarization <https://github.com/healpy/healpy/pull/617>
+* reworked verbose, see `hp.disable_warnings` <https://github.com/healpy/healpy/pull/630>
+* increased precision in coordinate transforms <https://github.com/healpy/healpy/pull/633>
+* colormaps now are not overwritten by plotting functions <https://github.com/healpy/healpy/pull/627>
+* fix propagation on `mmax` in smoothing <https://github.com/healpy/healpy/pull/612>
+* updated HEALPix C++ to 3.70 <https://github.com/healpy/healpy/pull/632>
 * Updated to cfitsio 3.48 (used only if missing) <https://github.com/healpy/healpy/pull/597>
 * Local datapath for pixel weights <https://github.com/healpy/healpy/pull/611>
+* Support pixel weights for NSIDE 8192 <https://github.com/healpy/healpy/pull/595>
+* Minor bugfixes <https://github.com/healpy/healpy/pull/626>, <https://github.com/healpy/healpy/pull/624>, <https://github.com/healpy/healpy/pull/618>, <https://github.com/healpy/healpy/pull/614>
 
 Release 1.13.0 3 Dec 2019, included in HEALPix 3.60
 
