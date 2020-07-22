@@ -67,6 +67,7 @@ Reference
    healpy_rotator
    healpy_projector
    healpy_zoomtool
+   healpy_line_integral_convolution
 
 Indices and tables
 ==================
