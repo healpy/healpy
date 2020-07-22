@@ -684,10 +684,6 @@ def _get_hdu(input_data, hdu=None, memmap=None):
     fits_hdu : HDU
         The extracted HDU
     """
-    allowed_paths = tuple(six.string_types)
-    if sys.version >= "3.4":
-        allowed_paths += (pathlib.Path, pathlib.PosixPath)
-
     if isinstance(input_data, allowed_paths):
         hdulist = pf.open(input_data, memmap=memmap)
         return _get_hdu(hdulist, hdu=hdu)
