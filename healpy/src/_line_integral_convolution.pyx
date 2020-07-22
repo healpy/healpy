@@ -28,6 +28,15 @@ def line_integral_convolution(
 ):
     """Computes line integral convolution of polarized map.
 
+    This visualizes the vector field via convolution of streamlines with a
+    random background texture. It thus serves as a technique for visualizing
+    polarization orientation. Polarization intensity can additionally be
+    visualized by modulating it with the convolved texture by setting the
+    *modulate* argument. By default, the random texture is white noise, but it
+    can also be generated with power at a given angular scale if *ell* is
+    specified, or a custom texture can be passed to this function with the
+    *texture* argument.
+
     Parameters
     ----------
     Q : array-like, shape (Npix,)
