@@ -574,6 +574,7 @@ def rotate_alm(alm not None, double psi=0, double theta=0, double phi=0, matrix=
         del AI, AG, AC
 
 
+@cython.cdivision(True)
 cdef int alm_getn(int l, int m):
     if not m <= l:
         raise ValueError("mmax must be <= lmax")
