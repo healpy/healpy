@@ -28,12 +28,29 @@ from ._sphtools import rotate_alm
 coordname = {"G": "Galactic", "E": "Ecliptic", "C": "Equatorial"}
 
 x, y, z = np.eye(3)
-astropy_frame = "BarycentricMeanEcliptic"
+astropy_ecliptic_frame = "BarycentricMeanEcliptic"
 e2g = (
     SkyCoord(
-        x=x, y=y, z=z, frame=astropy_frame.lower(), representation_type="cartesian",
+        x=x,
+        y=y,
+        z=z,
+        frame=astropy_ecliptic_frame.lower(),
+        representation_type="cartesian",
     )
     .transform_to("galactic")
+    .data.to_cartesian()
+    .get_xyz()
+    .value
+)
+e2q = (
+    SkyCoord(
+        x=x,
+        y=y,
+        z=z,
+        frame=astropy_ecliptic_frame.lower(),
+        representation_type="cartesian",
+    )
+    .transform_to("fk5")
     .data.to_cartesian()
     .get_xyz()
     .value
@@ -897,8 +914,8 @@ def get_coordconv_matrix(coord):
         matconv = np.identity(3)
         do_conv = False
     else:
-        eps = 23.452294 - 0.0130125 - 1.63889e-6 + 5.02778e-7
-        eps = eps * np.pi / 180.0
+        # eps = 23.452294 - 0.0130125 - 1.63889e-6 + 5.02778e-7
+        # eps = eps * np.pi / 180.0
 
         # ecliptic to galactic
         # e2g = np.array(
@@ -910,13 +927,13 @@ def get_coordconv_matrix(coord):
         # )
 
         # ecliptic to equatorial
-        e2q = np.array(
-            [
-                [1.0, 0.0, 0.0],
-                [0.0, np.cos(eps), -1.0 * np.sin(eps)],
-                [0.0, np.sin(eps), np.cos(eps)],
-            ]
-        )
+        # e2q = np.array(
+        #     [
+        #         [1.0, 0.0, 0.0],
+        #         [0.0, np.cos(eps), -1.0 * np.sin(eps)],
+        #         [0.0, np.sin(eps), np.cos(eps)],
+        #     ]
+        # )
 
         # galactic to ecliptic
         g2e = np.linalg.inv(e2g)
