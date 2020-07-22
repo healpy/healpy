@@ -28,7 +28,8 @@ class TestFitsFunc(unittest.TestCase):
 
     def test_write_map_units_string(self):
         write_map(self.filename, self.m, column_units="K")
-        read_m = pf.open(self.filename)[1].data.field(0)
+        with pf.open(self.filename) as f:
+            assert f[1].header["TUNIT1"] == "K"
 
     def test_write_map_pathlib(self):
         if sys.version < "3.4":
