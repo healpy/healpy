@@ -27,6 +27,18 @@ from ._sphtools import rotate_alm
 
 coordname = {"G": "Galactic", "E": "Ecliptic", "C": "Equatorial"}
 
+x, y, z = np.eye(3)
+astropy_frame = "BarycentricMeanEcliptic"
+e2g = (
+    SkyCoord(
+        x=x, y=y, z=z, frame=astropy_frame.lower(), representation_type="cartesian",
+    )
+    .transform_to("galactic")
+    .data.to_cartesian()
+    .get_xyz()
+    .value
+)
+
 
 class ConsistencyWarning(Warning):
     """Warns for a problem in the consistency of data
@@ -896,21 +908,6 @@ def get_coordconv_matrix(coord):
         #         [-0.867661702, -0.000346354, 0.497154957],
         #     ]
         # )
-        x, y, z = np.eye(3)
-        astropy_frame = "BarycentricMeanEcliptic"
-        e2g = (
-            SkyCoord(
-                x=x,
-                y=y,
-                z=z,
-                frame=astropy_frame.lower(),
-                representation_type="cartesian",
-            )
-            .transform_to("galactic")
-            .data.to_cartesian()
-            .get_xyz()
-            .value
-        )
 
         # ecliptic to equatorial
         e2q = np.array(
