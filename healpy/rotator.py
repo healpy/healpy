@@ -105,18 +105,18 @@ class Rotator(object):
     >>> theta_gal, phi_gal = np.pi/2., 0.
     >>> theta_ecl, phi_ecl = r(theta_gal, phi_gal)  # Apply the conversion
     >>> print(theta_ecl)
-    1.66742286715
+    1.66742347999
     >>> print(phi_ecl)
-    -1.62596400306
+    -1.6259571125
     >>> theta_ecl, phi_ecl = Rotator(coord='ge')(theta_gal, phi_gal) # In one line
     >>> print(theta_ecl)
-    1.66742286715
+    1.66742347999
     >>> print(phi_ecl)
-    -1.62596400306
+    -1.6259571125
     >>> vec_gal = np.array([1, 0, 0]) #Using vectors
     >>> vec_ecl = r(vec_gal)
     >>> print(vec_ecl)
-    [-0.05488249 -0.99382103 -0.09647625]
+    [-0.05487563 -0.99382135 -0.09647686]
     """
 
     ErrMessWrongPar = (
@@ -1258,9 +1258,9 @@ def coordsys2euler_zyz(coord):
     Examples
     --------
     >>> np.array(coordsys2euler_zyz('GE'))
-    array([ 1.45937485,  1.05047962, -3.14119347])
+    array([ 1.4593747 ,  1.05048844, -3.14118737])
     >>> np.array(coordsys2euler_zyz('CG'))
-    array([-0.22443941,  1.09730866,  2.14556934])
+    array([-0.22444029,  1.09731902,  2.14556673])
     >>> np.array(coordsys2euler_zyz('E'))
     array([ 0.,  0.,  0.])
     """
