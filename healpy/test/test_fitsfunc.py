@@ -288,14 +288,15 @@ class TestReadWriteCl(unittest.TestCase):
     def test_read_cl_hdulist(self):
         cl = np.arange(1025, dtype=np.double)
         write_cl("test_cl.fits", cl)
-        hdulist = pf.open("test_cl.fits")
-        read_cl(hdulist)
+        with pf.open("test_cl.fits") as hdulist:
+            read_cl(hdulist)
 
     def test_read_cl_hdu(self):
         cl = np.arange(1025, dtype=np.double)
         write_cl("test_cl.fits", cl)
-        hdu = pf.open("test_cl.fits")[1]
-        read_cl(hdu)
+        with pf.open("test_cl.fits") as hdulist:
+            hdu = hdulist[1]
+            read_cl(hdu)
 
 
 def test_getformat():

@@ -42,6 +42,9 @@ standard_column_names = {
     6: ["II", "IQ", "IU", "QQ", "QU", "UU"],
 }
 
+allowed_paths = tuple(six.string_types)
+if sys.version >= "3.4":
+    allowed_paths += (pathlib.Path, pathlib.PosixPath)
 
 class HealpixFitsWarning(Warning):
     pass
@@ -60,8 +63,14 @@ def read_cl(filename):
     cl : array
       the cl array
     """
+    opened_file = False
+    if isinstance(filename, allowed_paths):
+        filename = pf.open(filename)
+        opened_file = True
     fits_hdu = _get_hdu(filename, hdu=1)
     cl = np.array([fits_hdu.data.field(n) for n in range(len(fits_hdu.columns))])
+    if opened_file:
+        filename.close()
     if len(cl) == 1:
         return cl[0]
     else:
@@ -355,6 +364,12 @@ def read_map(
             "the input file: please explicitly set the dtype if it is "
             "important to you.")
 
+
+    opened_file = False
+    if isinstance(filename, allowed_paths):
+        filename = pf.open(filename, memmap=memmap)
+        opened_file = True
+
     fits_hdu = _get_hdu(filename, hdu=hdu, memmap=memmap)
 
     nside = fits_hdu.header.get("NSIDE")
@@ -471,6 +486,9 @@ def read_map(
         header = []
         for (key, value) in fits_hdu.header.items():
             header.append((key, value))
+
+    if opened_file:
+        filename.close()
 
     if len(ret) == 1:
         if h:
@@ -600,6 +618,12 @@ def read_alm(filename, hdu=1, return_mmax=False):
     alms = []
     lmaxtot = None
     mmaxtot = None
+
+    opened_file = False
+    if isinstance(filename, allowed_paths):
+        filename = pf.open(filename)
+        opened_file = True
+
     for unit in np.atleast_1d(hdu):
         idx, almr, almi = [_get_hdu(filename, hdu=unit).data.field(i) for i in range(3)]
         l = np.floor(np.sqrt(idx - 1)).astype(np.long)
@@ -622,6 +646,8 @@ def read_alm(filename, hdu=1, return_mmax=False):
         alm.real[i] = almr
         alm.imag[i] = almi
         alms.append(alm)
+    if opened_file:
+        filename.close()
     if len(alms) == 1:
         alm = alms[0]
     else:
