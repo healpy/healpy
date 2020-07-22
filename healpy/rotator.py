@@ -20,11 +20,41 @@
 import numpy as np
 import warnings
 import six
+from astropy.coordinates import SkyCoord
 from . import pixelfunc
 from . import sphtfunc
 from ._sphtools import rotate_alm
 
 coordname = {"G": "Galactic", "E": "Ecliptic", "C": "Equatorial"}
+
+x, y, z = np.eye(3)
+astropy_ecliptic_frame = "BarycentricMeanEcliptic"
+e2g = (
+    SkyCoord(
+        x=x,
+        y=y,
+        z=z,
+        frame=astropy_ecliptic_frame.lower(),
+        representation_type="cartesian",
+    )
+    .transform_to("galactic")
+    .data.to_cartesian()
+    .get_xyz()
+    .value
+)
+e2q = (
+    SkyCoord(
+        x=x,
+        y=y,
+        z=z,
+        frame=astropy_ecliptic_frame.lower(),
+        representation_type="cartesian",
+    )
+    .transform_to("fk5")
+    .data.to_cartesian()
+    .get_xyz()
+    .value
+)
 
 
 class ConsistencyWarning(Warning):
@@ -75,18 +105,18 @@ class Rotator(object):
     >>> theta_gal, phi_gal = np.pi/2., 0.
     >>> theta_ecl, phi_ecl = r(theta_gal, phi_gal)  # Apply the conversion
     >>> print(theta_ecl)
-    1.66742286715
+    1.66742347999
     >>> print(phi_ecl)
-    -1.62596400306
+    -1.6259571125
     >>> theta_ecl, phi_ecl = Rotator(coord='ge')(theta_gal, phi_gal) # In one line
     >>> print(theta_ecl)
-    1.66742286715
+    1.66742347999
     >>> print(phi_ecl)
-    -1.62596400306
+    -1.6259571125
     >>> vec_gal = np.array([1, 0, 0]) #Using vectors
     >>> vec_ecl = r(vec_gal)
     >>> print(vec_ecl)
-    [-0.05488249 -0.99382103 -0.09647625]
+    [-0.05487563 -0.99382135 -0.09647686]
     """
 
     ErrMessWrongPar = (
@@ -884,26 +914,26 @@ def get_coordconv_matrix(coord):
         matconv = np.identity(3)
         do_conv = False
     else:
-        eps = 23.452294 - 0.0130125 - 1.63889e-6 + 5.02778e-7
-        eps = eps * np.pi / 180.0
+        # eps = 23.452294 - 0.0130125 - 1.63889e-6 + 5.02778e-7
+        # eps = eps * np.pi / 180.0
 
         # ecliptic to galactic
-        e2g = np.array(
-            [
-                [-0.054882486, -0.993821033, -0.096476249],
-                [0.494116468, -0.110993846, 0.862281440],
-                [-0.867661702, -0.000346354, 0.497154957],
-            ]
-        )
+        # e2g = np.array(
+        #     [
+        #         [-0.054882486, -0.993821033, -0.096476249],
+        #         [0.494116468, -0.110993846, 0.862281440],
+        #         [-0.867661702, -0.000346354, 0.497154957],
+        #     ]
+        # )
 
         # ecliptic to equatorial
-        e2q = np.array(
-            [
-                [1.0, 0.0, 0.0],
-                [0.0, np.cos(eps), -1.0 * np.sin(eps)],
-                [0.0, np.sin(eps), np.cos(eps)],
-            ]
-        )
+        # e2q = np.array(
+        #     [
+        #         [1.0, 0.0, 0.0],
+        #         [0.0, np.cos(eps), -1.0 * np.sin(eps)],
+        #         [0.0, np.sin(eps), np.cos(eps)],
+        #     ]
+        # )
 
         # galactic to ecliptic
         g2e = np.linalg.inv(e2g)
@@ -1228,9 +1258,9 @@ def coordsys2euler_zyz(coord):
     Examples
     --------
     >>> np.array(coordsys2euler_zyz('GE'))
-    array([ 1.45937485,  1.05047962, -3.14119347])
+    array([ 1.4593747 ,  1.05048844, -3.14118737])
     >>> np.array(coordsys2euler_zyz('CG'))
-    array([-0.22443941,  1.09730866,  2.14556934])
+    array([-0.22444029,  1.09731902,  2.14556673])
     >>> np.array(coordsys2euler_zyz('E'))
     array([ 0.,  0.,  0.])
     """
