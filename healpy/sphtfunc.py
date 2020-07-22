@@ -21,7 +21,6 @@ import warnings
 import numpy as np
 import six
 
-pi = np.pi
 import astropy.io.fits as pf
 from scipy.integrate import trapz
 from astropy.utils import data
@@ -821,12 +820,12 @@ def smoothalm(
         if beam_window is None:
             warnings.warn(
                 "Sigma is {0:f} arcmin ({1:f} rad) ".format(
-                    sigma * 60 * 180 / pi, sigma
+                    sigma * 60 * 180 / np.pi, sigma
                 )
             )
             warnings.warn(
                 "-> fwhm is {0:f} arcmin".format(
-                    sigma * 60 * 180 / pi * (2.0 * np.sqrt(2.0 * np.log(2.0)))
+                    sigma * 60 * 180 / np.pi * (2.0 * np.sqrt(2.0 * np.log(2.0)))
                 )
             )
         else:
@@ -1195,7 +1194,7 @@ def bl2beam(bl, theta):
         p1 = p2
         beam += bl[l] * p2 * (2 * l + 1)
 
-    beam /= 4 * pi
+    beam /= 4 * np.pi
 
     return beam
 
@@ -1242,7 +1241,7 @@ def beam2bl(beam, theta, lmax):
         p0 = p1
         p1 = p2
 
-    window *= 2 * pi
+    window *= 2 * np.pi
 
     return window
 
