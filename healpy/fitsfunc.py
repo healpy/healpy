@@ -44,7 +44,8 @@ standard_column_names = {
 
 allowed_paths = tuple(six.string_types)
 if sys.version >= "3.4":
-    allowed_paths += (pathlib.Path, pathlib.PosixPath)
+    allowed_paths += (pathlib.Path,)
+
 
 class HealpixFitsWarning(Warning):
     pass
@@ -98,7 +99,8 @@ def write_cl(filename, cl, dtype=None, overwrite=False):
         warnings.warn(
             "The default dtype of write_cl() will change in a future version: "
             "explicitly set the dtype if it is important to you",
-            category=FutureWarning)
+            category=FutureWarning,
+        )
         dtype = np.float64
         # At some poin change this to:
         # dtype = cl.dtype if isinstance(cl, np.ndarray) else cl[0].dtype
@@ -195,7 +197,8 @@ def write_map(
         warnings.warn(
             "The default dtype of write_map() will change in a future version: "
             "explicitly set the dtype if it is important to you",
-            category=FutureWarning)
+            category=FutureWarning,
+        )
         dtype = [np.float32 for x in m]
         # Change this at some point to:
         # dtype = [x.dtype for x in m]
@@ -366,8 +369,8 @@ def read_map(
             "np.float64 dtype of read_map(), please consider that it will "
             "change in a future version to None as to keep the same dtype of "
             "the input file: please explicitly set the dtype if it is "
-            "important to you.")
-
+            "important to you."
+        )
 
     opened_file = False
     if isinstance(filename, allowed_paths):
