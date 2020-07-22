@@ -86,13 +86,9 @@ Map data manipulation
   at given angular coordinates, using 4 nearest neighbours
 """
 
-try:
-    from exceptions import NameError
-except:
-    pass
-
 import numpy as np
 from functools import wraps
+import warnings
 
 UNSEEN = None
 
@@ -102,8 +98,6 @@ try:
     #: Special value used for masked pixels
     UNSEEN = pixlib.UNSEEN
 except:
-    import warnings
-
     warnings.warn("Warning: cannot import _healpy_pixel_lib module")
 
 # We are using 64-bit integer types.
@@ -1548,6 +1542,7 @@ def remove_dipole(
       whether to modify input map or not (by default, make a copy)
     verbose : bool
       print values of monopole and dipole
+      call hp.disable_warnings() to disable warnings for all functions.
 
     Returns
     -------
@@ -1583,7 +1578,7 @@ def remove_dipole(
 
         lon, lat = R.vec2dir(dipole, lonlat=True)
         amp = np.sqrt((dipole * dipole).sum())
-        print(
+        warnings.warn(
             "monopole: {0:g}  dipole: lon: {1:g}, lat: {2:g}, amp: {3:g}".format(
                 mono, lon, lat, amp
             )
@@ -1693,7 +1688,7 @@ def remove_monopole(
         x, y, z = pix2vec(nside, ipix, nest)
         m.flat[ipix] -= mono
     if verbose:
-        print("monopole: {0:g}".format(mono))
+        warnings.warn("monopole: {0:g}".format(mono))
     if input_ma:
         m = ma(m)
     if fitval:

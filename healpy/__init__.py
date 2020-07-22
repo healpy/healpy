@@ -21,6 +21,8 @@
 compute spherical harmonics tranforms on them.
 """
 
+import warnings
+
 from .version import __version__
 
 from .pixelfunc import (
@@ -104,3 +106,17 @@ from .fitsfunc import write_map, read_map, read_alm, write_alm, write_cl, read_c
 from ._masktools import dist2holes_healpy as dist2holes
 from ._hotspots import hotspots_healpy as hotspots
 from ._line_integral_convolution import line_integral_convolution
+
+
+def disable_warnings():
+    """Disable all healpy warnings messages for the current session
+
+    Warnings from individual functions can be disabled setting
+    ``verbose=False``.
+    Warnings can be re-enabled calling ``hp.enable_warnings()``.
+    """
+    warnings.filterwarnings(action="ignore", module="healpy")
+
+
+def enable_warnings():
+    warnings.simplefilter("always")

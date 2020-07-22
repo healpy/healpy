@@ -18,8 +18,8 @@
 #  For more information about Healpy, see http://code.google.com/p/healpy
 #
 import numpy as np
-import six
 import warnings
+import six
 from . import pixelfunc
 from . import sphtfunc
 from ._sphtools import rotate_alm

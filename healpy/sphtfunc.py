@@ -21,8 +21,6 @@ import warnings
 import numpy as np
 import six
 
-pi = np.pi
-import warnings
 import astropy.io.fits as pf
 from scipy.integrate import trapz
 from astropy.utils import data
@@ -807,6 +805,7 @@ def smoothalm(
       of type complex128. Otherwise, a copy of alm is made. Default: True.
     verbose : bool, optional
       If True prints diagnostic information. Default: True
+      Call hp.disable_warnings() to disable warnings for all functions.
 
     Returns
     -------
@@ -820,18 +819,18 @@ def smoothalm(
 
     if verbose:
         if beam_window is None:
-            print(
+            warnings.warn(
                 "Sigma is {0:f} arcmin ({1:f} rad) ".format(
-                    sigma * 60 * 180 / pi, sigma
+                    sigma * 60 * 180 / np.pi, sigma
                 )
             )
-            print(
+            warnings.warn(
                 "-> fwhm is {0:f} arcmin".format(
-                    sigma * 60 * 180 / pi * (2.0 * np.sqrt(2.0 * np.log(2.0)))
+                    sigma * 60 * 180 / np.pi * (2.0 * np.sqrt(2.0 * np.log(2.0)))
                 )
             )
         else:
-            print("Using provided beam window function")
+            warnings.warn("Using provided beam window function")
 
     # Check alms
     if not cb.is_seq(alms):
@@ -1196,7 +1195,7 @@ def bl2beam(bl, theta):
         p1 = p2
         beam += bl[l] * p2 * (2 * l + 1)
 
-    beam /= 4 * pi
+    beam /= 4 * np.pi
 
     return beam
 
@@ -1225,7 +1224,7 @@ def beam2bl(beam, theta, lmax):
     nx = len(theta)
     nb = len(beam)
     if nb != nx:
-        print("beam and theta must have same size!")
+        warnings.warn("beam and theta must have same size!")
 
     x = np.cos(theta)
     st = np.sin(theta)
@@ -1243,7 +1242,7 @@ def beam2bl(beam, theta, lmax):
         p0 = p1
         p1 = p2
 
-    window *= 2 * pi
+    window *= 2 * np.pi
 
     return window
 
