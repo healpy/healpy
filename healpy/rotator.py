@@ -282,7 +282,7 @@ class Rotator(object):
     def mat(self):
         """The matrix representing the rotation.
         """
-        return np.matrix(self._matrix)
+        return np.asarray(self._matrix)
 
     @property
     def coordin(self):
