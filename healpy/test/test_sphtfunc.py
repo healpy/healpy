@@ -59,19 +59,19 @@ class TestSphtFunc(unittest.TestCase):
                 "cl_wmap_band_iqumap_r9_7yr_W_v4_udgraded32_II_lmax64_rmmono_3iter_nomask.fits",
             )
         )
-        cls_file = pf.open(
+        with pf.open(
             os.path.join(
                 self.path,
                 "data",
                 "cl_wmap_band_iqumap_r9_7yr_W_v4_udgraded32_IQU_lmax64_rmmono_3iter.fits",
             )
-        )
-        # fix for pyfits to read the file with duplicate column names
-        for i in range(2, 6):
-            cls_file[1].header["TTYPE%d" % i] += "-%d" % i
-        cls = cls_file[1].data
-        # order of HEALPIX is TB, EB while in healpy is EB, TB
-        self.cliqu = [np.array(cls.field(i)) for i in (0, 1, 2, 3, 5, 4)]
+        ) as cls_file:
+            # fix for pyfits to read the file with duplicate column names
+            for i in range(2, 6):
+                cls_file[1].header["TTYPE%d" % i] += "-%d" % i
+            cls = cls_file[1].data
+            # order of HEALPIX is TB, EB while in healpy is EB, TB
+            self.cliqu = [np.array(cls.field(i)) for i in (0, 1, 2, 3, 5, 4)]
         nside = 32
         lmax = 64
         fwhm_deg = 7.0
@@ -175,11 +175,10 @@ class TestSphtFunc(unittest.TestCase):
         )
 
     def test_gauss_beam(self):
-        idl_gauss_beam = np.array(
-            pf.open(
-                os.path.join(self.path, "data", "gaussbeam_10arcmin_lmax512_pol.fits")
-            )[0].data
-        ).T
+        with pf.open(
+            os.path.join(self.path, "data", "gaussbeam_10arcmin_lmax512_pol.fits")
+        ) as f:
+            idl_gauss_beam = np.array(f[0].data).T
         gauss_beam = hp.gauss_beam(np.radians(10.0 / 60.0), lmax=512, pol=True)
         np.testing.assert_allclose(idl_gauss_beam, gauss_beam)
 
