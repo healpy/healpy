@@ -27,9 +27,9 @@ the user to decide which packages they wish to install alongside ``healpy`` and 
 newly created environment env_healpy, the command will be::
 
     conda create --name env_healpy python=3.7 healpy spyder my_package
-     
+
 Source installation with Pip
----------------------------
+----------------------------
 
 It is possible to build the latest ``healpy`` with `pip <http://www.pip-installer.org>`_ ::
 
@@ -39,6 +39,8 @@ If you have installed with ``pip``, you can keep your installation up to date
 by upgrading from time to time::
 
     pip install --user --upgrade healpy
+
+``libssl-dev`` (Debian) or ``openssl-dev`` (CentOS) is required to build ``cfitsio`` from source
 
 On Linux with newer compilers many users reported compilation errors like ``configure: error: cannot run C compiled programs``,
 the solution is to specifiy the flags for the C and CXX compiler:
@@ -57,11 +59,14 @@ Installation on Mac OS with MacPorts
 If you are using a Mac and have the `MacPorts <https://www.macports.org>`_
 package manager, it's even easer to install Healpy with::
 
-    sudo port install py27-healpy
+    sudo port install py36-healpy
+
+Installation with a package manager on Debian and Ubuntu
+--------------------------------------------------------
 
 Binary `apt-get` style packages are also available in the development versions of
 `Debian (sid) <https://packages.debian.org/sid/python-healpy>`_ and
-`Ubuntu (utopic) <http://packages.ubuntu.com/utopic/python-healpy>`_.
+`Ubuntu <https://packages.ubuntu.com/search?keywords=python-healpy>`_.
 
 Almost-as-quick installation from official source release
 ---------------------------------------------------------
@@ -70,14 +75,13 @@ Healpy is also available in the
 `Python Package Index (PyPI) <https://pypi.python.org/pypi/healpy>`_. You can
 download it with::
 
-    curl -O https://pypi.python.org/packages/source/h/healpy/healpy-1.7.4.tar.gz
+    curl -O https://pypi.python.org/packages/source/h/healpy/healpy-1.14.0.tar.gz
 
 and build it with::
 
-    tar -xzf healpy-1.7.4.tar.gz
-    pushd healpy-1.7.4
+    tar -xzf healpy-*.tar.gz
+    cd healpy-*
     python setup.py install --user
-    popd
 
 If everything goes fine, you can test it::
 
@@ -127,6 +131,9 @@ Developers building from a snapshot of the github repository need:
 
 * ``autoconf`` and ``libtool`` (in Debian or Ubuntu:
   ``sudo apt-get install autoconf automake libtool pkg-config``)
+
+* ``libssl-dev`` (Debian) or ``openssl-dev`` (CentOS)
+  is required to build ``cfitsio`` from source
 
 * `cython` > 0.16
 
