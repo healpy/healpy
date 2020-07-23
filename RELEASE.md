@@ -18,7 +18,7 @@ then in `healpy`:
     cd ..
     git add healpixsubmodule
     git commit -m "Updated HEALPix C++ to 3.5.0"
-    
+
 ## Github
 
 * Review recent pull requests and update `CHANGELOG.rst`
@@ -40,10 +40,10 @@ review and merge the Pull Request at <https://github.com/conda-forge/healpy-feed
 
 ### Linux
 
-Edit the version number in the line below and run on machine with Docker:
+Edit the version number in the file and run on machine with Docker:
 
-    mkdir -p wheelhouse && docker run --rm -v $(pwd)/wheelhouse:/wheelhouse quay.io/pypa/manylinux1_x86_64 bash -c 'set -ex; for PIP in /opt/python/*/bin/pip; do $PIP install numpy==1.13.3\;python_version\<\"3.7\" numpy==1.14.5\;python_version~=\"3.7.0\" numpy==1.17.3\;python_version~=\"3.8.0\" && $PIP wheel --no-deps healpy==1.13.0; done; for WHEEL in *.whl; do auditwheel repair $WHEEL; done'
-    
+    bash bin/build_wheels.sh
+
 Once in a while, update the `manulinux1` docker container with:
 
     docker pull quay.io/pypa/manylinux1_x86_64
