@@ -37,6 +37,8 @@ def line_integral_convolution(
     specified, or a custom texture can be passed to this function with the
     *texture* argument.
 
+    See example: https://github.com/healpy/healpy/pull/617#issue-434041253
+
     Parameters
     ----------
     Q : array-like, shape (Npix,)
