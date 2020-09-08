@@ -442,7 +442,7 @@ class Rotator(object):
         Parameters
         ----------
         m : np.ndarray
-            Input map, 1 map is considered I, 2 maps:[Q,U], 3 maps:[I,Q,U]
+            Input map, single array is considered I, array with 3 rows:[I,Q,U]
         other arguments : see map2alm
 
         Returns
