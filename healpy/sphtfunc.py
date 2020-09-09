@@ -512,6 +512,9 @@ def synfast(
 ):
     """Create a map(s) from cl(s).
 
+    You can choose a random seed using `numpy.random.seed(SEEDVALUE)`
+    before calling `synfast`.
+
     Parameters
     ----------
     cls : array or tuple of array
