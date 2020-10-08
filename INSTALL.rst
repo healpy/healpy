@@ -7,7 +7,7 @@ Requirements
 Healpy depends on the HEALPix C++ and cfitsio C libraries. Source code for both
 is included with Healpy and is built automatically, so you do not need to
 install them yourself.
-Only Linux and MAC OS X are supported, not Windows.
+Only Linux and MAC OS X are supported, Windows only through the "Windows Subsystem for Linux" (see below).
 
 Binary installation with conda (RECOMMENDED)
 -----------------------
@@ -123,6 +123,33 @@ environment variable settings are necessary, and you do not need to set
 
 Then, unpack each of the above packages and build them with the usual
 ``configure; make; make install`` recipe.
+
+Installation on Windows through the "Windows Subsystem for Linux"
+-------------------
+
+1. Restart your computer, and follow the instructions (which appear before windows starts) to enter BIOS. Usually this means pressing DEL or F2 just after powering on. Find the option to enable virtualization (exact name will depend on your system, can google your machine brand name + "enable virtualization" for instructions)
+
+2. Follow these instructions to install Windows Subsystem for Linux: https://docs.microsoft.com/en-us/windows/wsl/install-win10 Following the instructions for WSL version 2, and choosing Ubuntu from the store.
+
+3. Restart machine
+
+4. Open the newly installed Ubuntu application from the Start menu and follow the setup instructions.
+
+5. When they are complete, run these commands::
+
+		sudo apt-get update
+		sudo apt-get upgrade
+		sudo apt-get install python3 python3-pip
+
+6. Quit ubuntu, restart it, and run::
+
+		pip3 install numpy jupyter matplotlib healpy ipython jupyter
+
+7. Quit ubuntu again, restart it, and run::
+
+		ipython notebook --no-browser
+
+8. Copy and paste the line starting with ``http://localhost:8888/?token=`` into your normal Windows web browser.
 
 Development install
 -------------------
