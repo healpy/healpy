@@ -71,6 +71,9 @@ def anafast(
     remove monopole from the map before running `anafast` to reduce
     boundary effects.
 
+    For recommendations about how to set `lmax`, `iter`, and weights, see the
+    `Anafast documentation <https://healpix.sourceforge.io/html/fac_anafast.htm>`
+
     Parameters
     ----------
     map1 : float, array-like shape (Npix,) or (3, Npix)
@@ -168,6 +171,8 @@ def map2alm(
     """Computes the alm of a Healpix map. The input maps must all be
     in ring ordering.
 
+    For recommendations about how to set `lmax`, `iter`, and weights, see the
+    `Anafast documentation <https://healpix.sourceforge.io/html/fac_anafast.htm>`
 
     Pixel values are weighted before applying the transform:
 
