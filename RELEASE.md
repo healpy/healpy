@@ -50,13 +50,13 @@ Once in a while, update the `manulinux1` docker container with:
 
 ### macOS + MacPorts
 
-    sudo port -N install py{27,35,36,37,38}-{pip,wheel,virtualenv} gcc8 clang-6.0
+    sudo port -N install py{27,35,36,37,38,39}-{pip,wheel,virtualenv} gcc8 clang-6.0
     sudo port select --set clang mp-clang-6.0
     export CC=gcc-mp-8
     export CXX=g++-mp-8
     export CFLAGS=-Wa,-q
     export CXXFLAGS=-Wa,-q
-    for VERS in {2.7,3.5,3.6,3.7,3.8}; do rm -rf env && virtualenv-$VERS env && env/bin/pip install --upgrade pip setuptools wheel && env/bin/pip install "numpy==1.13.3;python_version<'3.7'" "numpy==1.14.5;python_version~='3.7.0'"  "numpy==1.17.3;python_version~='3.8.0'" && env/bin/pip wheel --verbose --no-deps healpy==1.13.0; done
+    for VERS in {2.7,3.5,3.6,3.7,3.8,3.9}; do rm -rf env && virtualenv-$VERS env && env/bin/pip install --upgrade pip setuptools wheel && env/bin/pip install "numpy==1.13.3;python_version<'3.7'" "numpy==1.14.5;python_version~='3.7.0'"  "numpy==1.17.3;python_version~='3.8.0'" "numpy==1.19.4;python_version~='3.9.0'" && env/bin/pip wheel --verbose --no-deps healpy==1.13.0; done
     python3.7 -m venv delocate
     delocate/bin/pip install delocate
     for WHEEL in *.whl; do delocate/bin/delocate-wheel -w wheelhouse $WHEEL; done
