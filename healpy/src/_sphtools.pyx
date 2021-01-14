@@ -112,7 +112,7 @@ def map2alm_spin_healpy(maps, spin, lmax = None, mmax = None):
 
     # replace UNSEEN pixels with zeros
     for m, mask in zip(maps_c, masks):
-        if mask:
+        if mask is not False:
             m[mask] = 0.0
 
     # Create an ndarray object that will contain the alm for output (to be returned)
@@ -134,7 +134,7 @@ def map2alm_spin_healpy(maps, spin, lmax = None, mmax = None):
 
     # restore input map with UNSEEN pixels
     for m, mask in zip(maps_c, masks):
-        if mask:
+        if mask is not False:
             m[mask] = UNSEEN
 
     del w_arr
