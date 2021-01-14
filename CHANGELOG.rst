@@ -1,5 +1,7 @@
 Release in progress
 
+* Fixed `map2alm_spin` bug for masked input <https://github.com/healpy/healpy/pull/651>
+
 Release 1.14.0 22 July 2020, included in HEALPix 3.70
 
 * Fixed FITS files that were left open <https://github.com/healpy/healpy/pull/631>
