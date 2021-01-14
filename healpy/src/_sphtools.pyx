@@ -87,7 +87,7 @@ def map2alm_spin_healpy(maps, spin, lmax = None, mmax = None):
     maps_c = [np.ascontiguousarray(m, dtype=np.float64) for m in maps]
 
     # create UNSEEN mask for map
-    masks = [False if count_bad(m) == 0 else mkmask(m) for m in maps_c]
+    masks = [mkmask(m) for m in maps_c]
 
     # Adjust lmax and mmax
     cdef int lmax_, mmax_, nside, npix
