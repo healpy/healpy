@@ -481,7 +481,7 @@ setup(
     },
     install_requires=["matplotlib", "numpy>=1.13", "six", "astropy", "scipy"],
     setup_requires=["pytest-runner", "six"],
-    tests_require=["pytest", "pytest-cython", "pytest-doctestplus"],
+    tests_require=["pytest", "pytest-cython", "pytest-doctestplus", "requests"],
     test_suite="healpy",
     license="GPLv2",
     scripts=["bin/healpy_get_wmap_maps.sh"],
