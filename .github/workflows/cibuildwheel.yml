@@ -1,0 +1,70 @@
+name: build
+
+on:
+  push:
+  pull_request:
+  release:
+    types:
+      - published
+
+jobs:
+
+  source:
+    name: Build source package
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+
+      - uses: docker://python
+        with:
+          args: 'sh -c "pip install build && python -m build --sdist"'
+
+      - uses: actions/upload-artifact@v2
+        with:
+          path: dist/*
+
+  wheels:
+    name: Build binary packages
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+
+      - name: Build wheels
+        uses: joerick/cibuildwheel@v1.9.0
+        env:
+          CIBW_BEFORE_ALL_LINUX: yum install -y openssl-devel
+          CIBW_BEFORE_ALL_MACOS: brew install automake
+          CIBW_ENVIRONMENT_MACOS: CC=gcc-9 CXX=g++-9
+          CIBW_MANYLINUX_X86_64_IMAGE: quay.io/pypa/manylinux1_x86_64
+          CIBW_MANYLINUX_I686_IMAGE: quay.io/pypa/manylinux1_i686
+          CIBW_SKIP: pp*
+          # Workaround for https://github.com/matthew-brett/delocate/pull/87.
+          # Remove this file when delocate>0.8.2 has been released.
+          CIBW_BEFORE_BUILD: pip install --upgrade --no-deps git+https://github.com/matthew-brett/delocate@df9e994fb8d3bb36993de918ef160e0a978f66d6
+
+      - uses: actions/upload-artifact@v2
+        with:
+          path: wheelhouse/*
+
+  publish:
+    name: Publish to PyPI
+    runs-on: ubuntu-latest
+    needs: [source, wheels]
+    if: github.event_name == 'release'
+
+    steps:
+      - uses: actions/download-artifact@v2
+
+      - uses: pypa/gh-action-pypi-publish@master
+        with:
+          user: __token__
+          password: ${{ secrets.PYPI_API_TOKEN }}
