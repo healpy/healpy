@@ -978,10 +978,10 @@ class HistEqNorm(matplotlib.colors.Normalize):
 
         if np.iterable(value):
             vtype = "array"
-            val = np.ma.asarray(value).astype(np.float)
+            val = np.ma.asarray(value).astype(np.float64)
         else:
             vtype = "scalar"
-            val = np.ma.array([value]).astype(np.float)
+            val = np.ma.array([value]).astype(np.float64)
 
         self.autoscale_None(val)
 
@@ -1043,8 +1043,8 @@ class HistEqNorm(matplotlib.colors.Normalize):
             w = w | data.mask
         data2 = data.data[~w]
         if data2.size < 3:
-            self.yval = np.array([0, 1], dtype=np.float)
-            self.xval = np.array([self.vmin, self.vmax], dtype=np.float)
+            self.yval = np.array([0, 1], dtype=np.float64)
+            self.xval = np.array([self.vmin, self.vmax], dtype=np.float64)
             return
         bins = min(data2.size // 20, 5000)
         if bins < 3:
@@ -1060,7 +1060,7 @@ class HistEqNorm(matplotlib.colors.Normalize):
         if bins.size == hist.size + 1:
             # new bins format, remove last point
             bins = bins[:-1]
-        hist = hist.astype(np.float) / np.float(hist.sum())
+        hist = hist.astype(np.float64) / np.float(hist.sum())
         self.yval = np.concatenate([[0.0], hist.cumsum(), [1.0]])
         self.xval = np.concatenate(
             [[self.vmin], bins + 0.5 * (bins[1] - bins[0]), [self.vmax]]
@@ -1069,10 +1069,10 @@ class HistEqNorm(matplotlib.colors.Normalize):
     def _lininterp(self, x, X, Y):
         if hasattr(x, "__len__"):
             xtype = "array"
-            xx = np.asarray(x).astype(np.float)
+            xx = np.asarray(x).astype(np.float64)
         else:
             xtype = "scalar"
-            xx = np.asarray([x]).astype(np.float)
+            xx = np.asarray([x]).astype(np.float64)
         idx = X.searchsorted(xx)
         yy = xx * 0
         yy[idx > len(X) - 1] = Y[-1]  # over
@@ -1111,10 +1111,10 @@ class LogNorm2(matplotlib.colors.Normalize):
 
         if np.iterable(value):
             vtype = "array"
-            val = np.ma.asarray(value).astype(np.float)
+            val = np.ma.asarray(value).astype(np.float64)
         else:
             vtype = "scalar"
-            val = np.ma.array([value]).astype(np.float)
+            val = np.ma.array([value]).astype(np.float64)
 
         val = np.ma.masked_where(np.isinf(val.data), val)
 
@@ -1175,10 +1175,10 @@ class LinNorm2(matplotlib.colors.Normalize):
 
         if np.iterable(value):
             vtype = "array"
-            val = np.ma.asarray(value).astype(np.float)
+            val = np.ma.asarray(value).astype(np.float64)
         else:
             vtype = "scalar"
-            val = np.ma.array([value]).astype(np.float)
+            val = np.ma.array([value]).astype(np.float64)
 
         winf = np.isinf(val.data)
         val = np.ma.masked_where(winf, val)

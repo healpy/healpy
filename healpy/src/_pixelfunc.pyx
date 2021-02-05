@@ -54,9 +54,9 @@ def ringinfo(nside, np.ndarray[int64, ndim=1] ring not None):
     num = ring.shape[0]
     cdef np.ndarray[int64, ndim=1] startpix = np.empty(num, dtype=np.int64)
     cdef np.ndarray[int64, ndim=1] ringpix = np.empty(num, dtype=np.int64)
-    cdef np.ndarray[double, ndim=1] costheta = np.empty(num, dtype=np.float)
-    cdef np.ndarray[double, ndim=1] sintheta = np.empty(num, dtype=np.float)
-    cdef np.ndarray[bool, ndim=1, cast=True] shifted = np.empty(num, dtype=np.bool)
+    cdef np.ndarray[double, ndim=1] costheta = np.empty(num, dtype=np.float64)
+    cdef np.ndarray[double, ndim=1] sintheta = np.empty(num, dtype=np.float64)
+    cdef np.ndarray[bool, ndim=1, cast=True] shifted = np.empty(num, dtype=np.bool_)
     for i in range(num):
         hb.get_ring_info(ring[i], startpix[i], ringpix[i], costheta[i], sintheta[i], shifted[i])
     return startpix, ringpix, costheta, sintheta, shifted
