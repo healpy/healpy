@@ -203,7 +203,7 @@ def _boundaries_single(nside, pix, step=1, nest=False):
         raise ValueError('Pixel identifier is too large')
     hb.boundaries(pix, step, bounds)
     cdef size_t n = bounds.size()
-    cdef np.ndarray[double, ndim = 2] out = np.empty((3, n), dtype=np.float)
+    cdef np.ndarray[double, ndim = 2] out = np.empty((3, n), dtype=np.float64)
     for i in range(n):
         out[0,i] = bounds[i].x
         out[1,i] = bounds[i].y
@@ -220,7 +220,7 @@ def _boundaries_multiple(nside, pix, step=1, nest=False):
     cdef size_t npix = len(pix)
     cdef size_t n = step * 4
     cdef size_t maxnpix = 12*nside*nside
-    cdef np.ndarray[double, ndim = 3] out = np.empty((npix, 3, n), dtype=np.float)
+    cdef np.ndarray[double, ndim = 3] out = np.empty((npix, 3, n), dtype=np.float64)
     cdef vector[vec3] bounds
  
     for j in range(npix):

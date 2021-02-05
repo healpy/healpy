@@ -29,7 +29,7 @@ hp.graticule()
 plt.savefig("static/wmap_histeq_ecl.png", dpi=DPI)
 mask = hp.read_map(
     "../healpy/test/data/wmap_temperature_analysis_mask_r9_7yr_v4.fits"
-).astype(np.bool)
+).astype(np.bool_)
 wmap_map_I_masked = hp.ma(wmap_map_I)
 wmap_map_I_masked.mask = np.logical_not(mask)
 LMAX = 1024

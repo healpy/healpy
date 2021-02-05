@@ -721,7 +721,7 @@ def getformat(t):
       The FITS string code describing the data type, or None if unknown type.
     """
     conv = {
-        np.dtype(np.bool): "L",
+        np.dtype(np.bool_): "L",
         np.dtype(np.uint8): "B",
         np.dtype(np.int16): "I",
         np.dtype(np.int32): "J",

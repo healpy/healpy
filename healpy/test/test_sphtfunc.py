@@ -42,7 +42,7 @@ class TestSphtFunc(unittest.TestCase):
                 "data",
                 "wmap_temperature_analysis_mask_r9_7yr_v4_udgraded32.fits",
             )
-        ).astype(np.bool)
+        ).astype(np.bool_)
         for m in chain(self.map1, self.map2):
             m.mask = np.logical_not(self.mask)
         self.cla = hp.read_cl(

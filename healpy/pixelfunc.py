@@ -251,7 +251,7 @@ def ma_to_array(m):
     --------
     >>> import healpy as hp
     >>> m = hp.ma(np.array([2., 2., 3, 4, 5, 0, 0, 0, 0, 0, 0, 0]))
-    >>> m.mask = np.array([0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], dtype=np.bool)
+    >>> m.mask = np.array([0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], dtype=np.bool_)
     >>> print(m.data[1]) # data is not affected by mask
     2.0
     >>> print(m[1]) # shows that the value is masked

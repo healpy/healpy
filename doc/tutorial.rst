@@ -209,7 +209,7 @@ the mask.
 
 .. code-block:: python
 
-    mask = hp.read_map("wmap_temperature_analysis_mask_r9_7yr_v4.fits").astype(np.bool)
+    mask = hp.read_map("wmap_temperature_analysis_mask_r9_7yr_v4.fits").astype(np.bool_)
     wmap_map_I_masked = hp.ma(wmap_map_I)
     wmap_map_I_masked.mask = np.logical_not(mask)
 
