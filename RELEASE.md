@@ -25,42 +25,15 @@ then in `healpy`:
 * Edit `healpy/version.py` and create a git tag
 * Draft a new release on Github using the same version name of the tag, add the same details added in the Changelog to the release description
 
-## PyPI - source
+## PyPI - binary wheels, source
 
-* `python setup.py build sdist`
-* `twine upload dist/*`
-* Attach the PyPI source package to the Github release (because that also includes the submodules and the compiled cython files, otherwise people might download the archive automatically created by Github that does not contain those)
+Once you publish a release in GitHub, the GitHub Actions workflow will automatically build the source package and binary wheels for all supported platforms and upload them to the Python Package Index.
 
 ## Conda packages
 
 Conda forge should automatically detect the PyPI package and try to build the conda package,
 review and merge the Pull Request at <https://github.com/conda-forge/healpy-feedstock/pulls>
 
-## PyPI - Wheels
-
-### Linux
-
-Edit the version number in the file and run on machine with Docker:
-
-    bash bin/build_wheels.sh
-
-Once in a while, update the `manulinux1` docker container with:
-
-    docker pull quay.io/pypa/manylinux1_x86_64
-
-### macOS + MacPorts
-
-    sudo port -N install py{27,35,36,37,38,39}-{pip,wheel,virtualenv} gcc8 clang-6.0
-    sudo port select --set clang mp-clang-6.0
-    export CC=gcc-mp-8
-    export CXX=g++-mp-8
-    export CFLAGS=-Wa,-q
-    export CXXFLAGS=-Wa,-q
-    for VERS in {2.7,3.5,3.6,3.7,3.8,3.9}; do rm -rf env && virtualenv-$VERS env && env/bin/pip install --upgrade pip setuptools wheel && env/bin/pip install "numpy==1.13.3;python_version<'3.7'" "numpy==1.14.5;python_version~='3.7.0'"  "numpy==1.17.3;python_version~='3.8.0'" "numpy==1.19.4;python_version~='3.9.0'" && env/bin/pip wheel --verbose --no-deps healpy==1.13.0; done
-    python3.7 -m venv delocate
-    delocate/bin/pip install delocate
-    for WHEEL in *.whl; do delocate/bin/delocate-wheel -w wheelhouse $WHEEL; done
-    
 ## Track release with an issue
 
 Template:
