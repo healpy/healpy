@@ -19,7 +19,6 @@
 #
 import numpy as np
 import warnings
-import six
 from astropy.coordinates import SkyCoord
 from . import pixelfunc
 from . import sphtfunc
@@ -795,7 +794,7 @@ def check_coord(c):
     """
     if c is None:
         return c
-    if not isinstance(c, six.string_types):
+    if not isinstance(c, str):
         raise TypeError(
             "Coordinate must be a string (G[alactic],"
             " E[cliptic], C[elestial]"

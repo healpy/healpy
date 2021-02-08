@@ -1,8 +1,7 @@
 import os
 import sys
 
-if sys.version >= "3.4":
-    from pathlib import Path
+from pathlib import Path
 import astropy.io.fits as pf
 import unittest
 import numpy as np
@@ -33,8 +32,6 @@ class TestFitsFunc(unittest.TestCase):
             assert f[1].header["TUNIT1"] == "K"
 
     def test_write_map_pathlib(self):
-        if sys.version < "3.4":
-            return
         path = Path(self.filename)
         assert isinstance(path, Path)
         write_map(path, self.m)
@@ -65,8 +62,6 @@ class TestFitsFunc(unittest.TestCase):
         read_map(self.filename)
 
     def test_read_map_filename_pathlib(self):
-        if sys.version < "3.4":
-            return
         path = Path(self.filename)
         write_map(path, self.m)
         read_map(path)
@@ -238,8 +233,6 @@ class TestReadWriteAlm(unittest.TestCase):
         read_alm("testalm_128.fits")
 
     def test_read_alm_pathlib(self):
-        if sys.version < "3.4":
-            return
         path = Path("testalm_128.fits")
         write_alm(path, self.alms, lmax=128, mmax=128)
         read_alm(path)

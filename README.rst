@@ -58,7 +58,7 @@ https://healpy.readthedocs.io/en/latest/tutorial.html, or execute it on `mybinde
 Requirements
 ------------
 
-* `Python <http://www.python.org>`_ 2.7, 3.5, or 3.6
+* `Python <http://www.python.org>`_ 3.6, 3.7, 3.8, or 3.9
 
 * `Numpy <http://numpy.scipy.org/>`_ (tested with version >=1.5.0)
 
