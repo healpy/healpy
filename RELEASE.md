@@ -27,7 +27,7 @@ then in `healpy`:
 
 ## PyPI - binary wheels, source
 
-Once you publish a release in GitHub, the GitHub Actions workflow will automatically build the source package and binary wheels for all supported platforms and upload them to the Python Pacakge Index.
+Once you publish a release in GitHub, the GitHub Actions workflow will automatically build the source package and binary wheels for all supported platforms and upload them to the Python Package Index.
 
 ## Conda packages
 
