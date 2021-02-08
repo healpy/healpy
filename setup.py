@@ -5,6 +5,7 @@ import errno
 import fnmatch
 import sys
 import shlex
+from Cython.Distutils import build_ext, Extension
 from distutils.sysconfig import get_config_var, get_config_vars
 import pkg_resources
 from subprocess import check_output, CalledProcessError, check_call
@@ -29,30 +30,6 @@ if (
     and not "MACOSX_DEPLOYMENT_TARGET" in os.environ
 ):
     os.environ["MACOSX_DEPLOYMENT_TARGET"] = str(get_config_var("MACOSX_DEPLOYMENT_TARGET"))
-
-
-# If the Cython-generated C++ files are absent, then fetch and install Cython
-# as an egg. If the Cython-generated files are present, then only use Cython if
-# a sufficiently new version of Cython is already present on the system.
-cython_require = "Cython >= 0.16"
-log.info("checking if Cython-generated files have been built")
-try:
-    open("healpy/src/_query_disc.cpp")
-except IOError:
-    log.info("Cython-generated files are absent; installing Cython locally")
-    Distribution().fetch_build_eggs(cython_require)
-else:
-    log.info("Cython-generated files are present")
-try:
-    log.info("Checking for %s", cython_require)
-    pkg_resources.require(cython_require)
-except pkg_resources.ResolutionError:
-    log.info("%s is not installed; not using Cython")
-    from setuptools.command.build_ext import build_ext
-    from setuptools import Extension
-else:
-    log.info("%s is installed; using Cython")
-    from Cython.Distutils import build_ext, Extension
 
 
 class build_external_clib(build_clib):
