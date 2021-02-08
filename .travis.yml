@@ -88,4 +88,4 @@ install:
       python setup.py install
     fi
 
-script: python setup.py test
+script: pytest
