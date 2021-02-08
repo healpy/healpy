@@ -1,6 +1,7 @@
 name: readthedocs
 dependencies:
   - python=3.7
+  - pip
   - astropy
   - numpy
   - ipykernel
