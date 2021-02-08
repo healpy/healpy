@@ -28,7 +28,7 @@ if (
     get_config_var("MACOSX_DEPLOYMENT_TARGET")
     and not "MACOSX_DEPLOYMENT_TARGET" in os.environ
 ):
-    os.environ["MACOSX_DEPLOYMENT_TARGET"] = get_config_var("MACOSX_DEPLOYMENT_TARGET")
+    os.environ["MACOSX_DEPLOYMENT_TARGET"] = str(get_config_var("MACOSX_DEPLOYMENT_TARGET"))
 
 
 # If the Cython-generated C++ files are absent, then fetch and install Cython
