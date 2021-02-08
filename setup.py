@@ -1,17 +1,5 @@
 #!/usr/bin/env python
 
-# Bootstrap setuptools installation. We require setuptools >= 3.2 because of a
-# bug in earlier versions regarding C++ sources generated with Cython. See:
-#    https://pypi.python.org/pypi/setuptools/3.6#id171
-try:
-    import pkg_resources
-
-    pkg_resources.require("setuptools >= 3.2")
-except pkg_resources.ResolutionError:
-    from ez_setup import use_setuptools
-
-    use_setuptools()
-
 import os
 import errno
 import fnmatch
@@ -313,15 +301,6 @@ class custom_build_ext(build_ext):
     def finalize_options(self):
         build_ext.finalize_options(self)
 
-        # Make sure that Numpy is importable
-        # (does the same thing as setup_requires=['numpy'])
-        self.distribution.fetch_build_eggs("numpy")
-        # Prevent numpy from thinking it is still in its setup process:
-        # See http://stackoverflow.com/questions/19919905
-        import builtins
-
-        builtins.__NUMPY_SETUP__ = False
-
         # Add Numpy header search path path
         import numpy
 
@@ -478,7 +457,6 @@ setup(
         ]
     },
     install_requires=["matplotlib", "numpy>=1.13", "astropy", "scipy"],
-    setup_requires=["pytest-runner"],
     tests_require=["pytest", "pytest-cython", "pytest-doctestplus", "requests"],
     test_suite="healpy",
     license="GPLv2",
