@@ -21,12 +21,10 @@
 """
 from __future__ import division
 
-import six
 import sys
 import warnings
 
-if sys.version >= "3.4":
-    import pathlib
+import pathlib
 import astropy.io.fits as pf
 import numpy as np
 
@@ -42,9 +40,7 @@ standard_column_names = {
     6: ["II", "IQ", "IU", "QQ", "QU", "UU"],
 }
 
-allowed_paths = tuple(six.string_types)
-if sys.version >= "3.4":
-    allowed_paths += (pathlib.Path,)
+allowed_paths = (str, pathlib.Path)
 
 
 class HealpixFitsWarning(Warning):
@@ -217,7 +213,7 @@ def write_map(
     else:
         assert len(column_names) == len(m), "Length column_names != number of maps"
 
-    if column_units is None or isinstance(column_units, six.string_types):
+    if column_units is None or isinstance(column_units, str):
         column_units = [column_units] * len(m)
 
     # maps must have same length

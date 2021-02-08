@@ -1,9 +1,5 @@
 # Implemented by Duncan Hanson
-import six
-import os
 import numpy as np
-from copy import deepcopy
-from itertools import chain
 
 import unittest
 
@@ -1034,7 +1030,7 @@ class TestSpinFunc(unittest.TestCase):
         alm_spin = hp.almxfl(
             self.almg,
             np.array(
-                [np.sqrt(l * (l + 1.0)) for l in six.moves.xrange(0, self.lmax + 1)]
+                [np.sqrt(l * (l + 1.0)) for l in range(0, self.lmax + 1)]
             ),
             inplace=False,
         )

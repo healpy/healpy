@@ -19,7 +19,6 @@
 #
 import warnings
 import numpy as np
-import six
 
 import astropy.io.fits as pf
 from scipy.integrate import trapz
@@ -486,7 +485,7 @@ def synalm(cls, lmax=None, mmax=None, new=False, verbose=True):
 
     szalm = Alm.getsize(lmax, mmax)
     alms_list = []
-    for i in six.moves.xrange(Nspec):
+    for i in range(Nspec):
         alm = np.zeros(szalm, "D")
         alm.real = np.random.standard_normal(szalm)
         alm.imag = np.random.standard_normal(szalm)
@@ -879,7 +878,7 @@ def smoothalm(
     if lonely:
         return retalm[0]
     # case 2: 2d input, check if in-place smoothing for all alm's
-    for i in six.moves.xrange(len(alms)):
+    for i in range(len(alms)):
         samearray = alms[i] is retalm[i]
         if not samearray:
             # Case 2a:
@@ -1097,8 +1096,8 @@ def new_to_old_spectra_order(cls_new_order):
     if Nspec < 0:
         raise ValueError("Input must be a list of n(n+1)/2 arrays")
     cls_old_order = []
-    for i in six.moves.xrange(Nspec):
-        for j in six.moves.xrange(i, Nspec):
+    for i in range(Nspec):
+        for j in range(i, Nspec):
             p = j - i
             q = i
             idx_new = p * (2 * Nspec + 1 - p) // 2 + q

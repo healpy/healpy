@@ -318,7 +318,7 @@ class custom_build_ext(build_ext):
         self.distribution.fetch_build_eggs("numpy")
         # Prevent numpy from thinking it is still in its setup process:
         # See http://stackoverflow.com/questions/19919905
-        from six.moves import builtins
+        import builtins
 
         builtins.__NUMPY_SETUP__ = False
 
@@ -363,12 +363,10 @@ setup(
         "License :: OSI Approved :: GNU General Public License v2 or later (GPLv2+)",
         "Operating System :: POSIX",
         "Programming Language :: C++",
-        "Programming Language :: Python :: 2.7",
-        "Programming Language :: Python :: 3.4",
-        "Programming Language :: Python :: 3.5",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
         "Topic :: Scientific/Engineering :: Astronomy",
         "Topic :: Scientific/Engineering :: Visualization",
     ],
@@ -479,10 +477,11 @@ setup(
             "test/data/*.sh",
         ]
     },
-    install_requires=["matplotlib", "numpy>=1.13", "six", "astropy", "scipy"],
-    setup_requires=["pytest-runner", "six"],
+    install_requires=["matplotlib", "numpy>=1.13", "astropy", "scipy"],
+    setup_requires=["pytest-runner"],
     tests_require=["pytest", "pytest-cython", "pytest-doctestplus", "requests"],
     test_suite="healpy",
     license="GPLv2",
     scripts=["bin/healpy_get_wmap_maps.sh"],
+    python_requires='>=3',
 )
