@@ -461,5 +461,5 @@ setup(
     test_suite="healpy",
     license="GPLv2",
     scripts=["bin/healpy_get_wmap_maps.sh"],
-    python_requires='>=3',
+    python_requires='>=3.6',
 )
