@@ -48,7 +48,7 @@ jobs:
           CIBW_MANYLINUX_I686_IMAGE: quay.io/pypa/manylinux1_i686
           CIBW_SKIP: pp*
           # Workaround for https://github.com/matthew-brett/delocate/pull/87.
-          # Remove this file when delocate>0.8.2 has been released.
+          # Remove this when delocate>0.8.2 has been released.
           CIBW_BEFORE_BUILD: pip install --upgrade --no-deps git+https://github.com/matthew-brett/delocate@df9e994fb8d3bb36993de918ef160e0a978f66d6
 
       - uses: actions/upload-artifact@v2
