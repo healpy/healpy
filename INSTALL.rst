@@ -6,32 +6,45 @@ Requirements
 
 Healpy depends on the HEALPix C++ and cfitsio C libraries. Source code for both
 is included with Healpy and is built automatically, so you do not need to
-install them yourself.
-Only Linux and MAC OS X are supported, Windows only through the "Windows Subsystem for Linux" (see below).
+install them yourself. Only Linux and macOS are supported, Windows only through
+the "Windows Subsystem for Linux" (see below).
 
-Binary installation with conda (RECOMMENDED)
------------------------
+Binary installation with conda (recommended for Anaconda/Miniconda users)
+-------------------------------------------------------------------------
 
-Conda forge provides a `conda
-channel <https://anaconda.org/conda-forge/healpy>`_ with a pre-compiled version of ``healpy``
-for linux 64bit and MAC OS X platforms, you can install it in Anaconda with::
+Conda Forge provides a `conda channel
+<https://anaconda.org/conda-forge/healpy>`_ with a pre-compiled version of
+``healpy`` for linux 64bit and MAC OS X platforms, you can install it in
+Anaconda with::
 
     conda config --add channels conda-forge
     conda install healpy
 
-There have also been reports of specific installation issues under Mac OS Catalina 10.15.5 with conda install as the
-solver appears to run without finding the required packages. This is a generalised issue with a number of packages,
-and not limited to ``healpy``. The most straightforward solution (after adding conda-forge to the channel list) is for
-the user to decide which packages they wish to install alongside ``healpy`` and then create a new environment installing
-``healpy`` alongside said packages. For instance if one wishes to install ``healpy`` alongside Spyder and My_Package into
-newly created environment env_healpy, the command will be::
+There have also been reports of specific installation issues under Mac OS
+Catalina 10.15.5 with conda install as the solver appears to run without
+finding the required packages. This is a general issue with a number of
+packages, and not limited to ``healpy``. The most straightforward solution
+(after adding conda-forge to the channel list) is for the user to decide which
+packages they wish to install alongside ``healpy`` and then create a new
+environment installing ``healpy`` alongside said packages. For instance if one
+wishes to install ``healpy`` alongside Spyder and My_Package into newly created
+environment env_healpy, the command will be::
 
     conda create --name env_healpy python=3.7 healpy spyder my_package
 
-Source installation with Pip
-----------------------------
+Binary installation with Pip (recommended for most other Python users)
+----------------------------------------------------------------------
 
-It is possible to build the latest ``healpy`` with `pip <http://www.pip-installer.org>`_ ::
+You can install Healpy from the Python Package Index using `pip
+<http://www.pip-installer.org>`_. For most common architectures and platforms
+(Linux x86-64, Linux i686, and macOS x86-64), Pip will download and install a
+pre-built binary. For other platforms, it will automatically try to build
+healpy from source.
+
+Note that there are not yet native prebuilt binaries for Apple Silicon Macs.
+
+To install the latest version of ``healpy`` with `pip
+<http://www.pip-installer.org>`_, simply run::
 
     pip install --user healpy
 
@@ -40,21 +53,49 @@ by upgrading from time to time::
 
     pip install --user --upgrade healpy
 
-``libssl-dev`` (Debian) or ``openssl-dev`` (CentOS) is required to build ``cfitsio`` from source
+Source installation with Pip (not usually recommended)
+------------------------------------------------------
 
-On Linux with newer compilers many users reported compilation errors like ``configure: error: cannot run C compiled programs``,
-the solution is to specifiy the flags for the C and CXX compiler:
+On platforms for which we do not yet have prebuilt binaries in the Python
+Package Index, pip build healpy from source. You can force pip to build from
+source by running::
+
+    pip install --no-binary healpy healpy
+
+Some common issues that you might encounter when building from source:
+
+* ``libssl-dev`` (Debian) or ``openssl-dev`` (CentOS) is required to build
+  ``cfitsio`` from source.
+
+* On Linux with newer compilers many users reported compilation errors like
+  ``configure: error: cannot run C compiled programs``. The solution is to
+  specifiy the flags for the C and CXX compiler:
 
     CC=gcc CXX=g++ CFLAGS='-fPIC' CXXFLAGS='-fPIC' pip install --user healpy
+
+Installation from package managers
+----------------------------------
+
+Debian users may install Healpy for the Debian-supplied system Python
+interpreter by running::
+
+    sudo apt-get install python3-healpy
+
+MacPorts users on macOS may install Healpy for the MacPorts-supplied Python
+interpreter by running::
+
+    sudo port install py38-healpy
 
 Compilation issues with Mac OS
 ------------------------------
 
-Currently most people report they cannot install `healpy` on Mac OS either via `pip` or building from source, due to the impossibility of compiling the `HEALPix` based extension.
-The only options right now are using `conda-forge` or `Macports`.
+Currently most people report they cannot install `healpy` on Mac OS either via
+`pip` or building from source, due to the impossibility of compiling the
+`HEALPix` based extension. The best alternatives are conda, binary installation
+with pip, or MacPorts.
 
 Installation on Mac OS with MacPorts
--------------------------------------------------
+------------------------------------
 
 If you are using a Mac and have the `MacPorts <https://www.macports.org>`_
 package manager, it's even easer to install Healpy with::
@@ -125,15 +166,22 @@ Then, unpack each of the above packages and build them with the usual
 ``configure; make; make install`` recipe.
 
 Installation on Windows through the "Windows Subsystem for Linux"
--------------------
+-----------------------------------------------------------------
 
-1. Restart your computer, and follow the instructions (which appear before windows starts) to enter BIOS. Usually this means pressing DEL or F2 just after powering on. Find the option to enable virtualization (exact name will depend on your system, can google your machine brand name + "enable virtualization" for instructions)
+1. Restart your computer, and follow the instructions (which appear before
+   windows starts) to enter BIOS. Usually this means pressing DEL or F2 just
+   after powering on. Find the option to enable virtualization (exact name will
+   depend on your system, can google your machine brand name + "enable
+   virtualization" for instructions)
 
-2. Follow these instructions to install Windows Subsystem for Linux: https://docs.microsoft.com/en-us/windows/wsl/install-win10 Following the instructions for WSL version 2, and choosing Ubuntu from the store.
+2. Follow these instructions to install Windows Subsystem for Linux:
+   https://docs.microsoft.com/en-us/windows/wsl/install-win10 Following the
+   instructions for WSL version 2, and choosing Ubuntu from the store.
 
 3. Restart machine
 
-4. Open the newly installed Ubuntu application from the Start menu and follow the setup instructions.
+4. Open the newly installed Ubuntu application from the Start menu and follow
+   the setup instructions.
 
 5. When they are complete, run these commands::
 
@@ -149,7 +197,8 @@ Installation on Windows through the "Windows Subsystem for Linux"
 
 		ipython notebook --no-browser
 
-8. Copy and paste the line starting with ``http://localhost:8888/?token=`` into your normal Windows web browser.
+8. Copy and paste the line starting with ``http://localhost:8888/?token=`` into
+   your normal Windows web browser.
 
 Development install
 -------------------
