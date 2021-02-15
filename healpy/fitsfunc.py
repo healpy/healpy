@@ -399,7 +399,7 @@ def read_map(
     ret = []
 
     # partial sky: check OBJECT, then INDXSCHM
-    obj = fits_hdu.header.get("OBJECT", "UNDEF").strip()
+    obj = str(fits_hdu.header.get("OBJECT", "UNDEF")).strip()
     if obj != "UNDEF":
         if obj == "PARTIAL":
             partial = True
