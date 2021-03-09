@@ -1196,7 +1196,7 @@ def bl2beam(bl, theta):
 
     beam = bl[0] * p0 + bl[1] * p1 * 3
 
-    for l in np.arange(2, lmax):
+    for l in np.arange(2, lmax + 1):
         p2 = x * p1 * (2 * l - 1) / l - p0 * (l - 1) / l
         p0 = p1
         p1 = p2
