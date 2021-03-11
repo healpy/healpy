@@ -4,7 +4,8 @@ import numpy as np
 from .pixelfunc import ang2pix, npix2nside
 from .rotator import Rotator
 from matplotlib.projections.geo import GeoAxes
-from matplotlib.ticker import (MultipleLocator, FormatStrFormatter, AutoMinorLocator)
+from matplotlib.ticker import MultipleLocator, FormatStrFormatter, AutoMinorLocator
+import warnings
 
 ###### WARNING #################
 # this module is work in progress, the aim is to reimplement the healpy
@@ -24,6 +25,7 @@ class ThetaFormatterShiftPi(GeoAxes.ThetaFormatter):
             x += 2 * np.pi
         return super(ThetaFormatterShiftPi, self).__call__(x, pos)
 
+
 class ThetaFormatterTheta(GeoAxes.ThetaFormatter):
     """Change thetaticks in rads to degs"""
 
@@ -41,6 +43,13 @@ def lonlat(theta, phi):
     return longitude, latitude
 
 
+def update_dictionary(main_dict, update_dict):
+    for key, key_val in main_dict.items():
+        if key in update_dict:
+            main_dict[key] = update_dict[key]
+    return main_dict
+
+
 def projview(
     m=None,
     rot=None,
@@ -53,24 +62,24 @@ def projview(
     flip="astro",
     format="%g",
     cbar=True,
-    cmap='jet',
+    cmap="viridis",
     norm=None,
     graticule=False,
     graticule_labels=False,
     return_only_data=False,
-    projection_type = "mollweide",
-    cb_orientation = "horizontal",
+    projection_type="mollweide",
+    cb_orientation="horizontal",
     xlabel=None,
     ylabel=None,
-    longitude_grid_spacing = 60,
-    latitude_grid_spacing = 30,
+    longitude_grid_spacing=60,
+    latitude_grid_spacing=30,
     override_plot_properties=None,
     title=None,
-    lcolor='black',
+    lcolor="black",
+    fontsize=None,
     **kwargs
 ):
     """Plot a healpix map (given as an array) in the chosen projection.
-
 
     Parameters
     ----------
@@ -125,15 +134,18 @@ def projview(
     latitude_grid_spacing : float
       set y axis grid spacing
     override_plot_properties : list
-      Override the following plot proporties: shrink (colorbar size), pad (colorbar padding), 
+      Override the following plot proporties: shrink (colorbar size), pad (colorbar padding),
       lpad (colorbar label padding), width of the figure, ratio of the height and width of the plot
     title : str
       set title of the plot
     lcolor : str
       change the color of the longitude tick labels, some color maps make it hard to read black tick labels
     """
+
+    geographic_projections = ["aitoff", "hammer", "lambert", "mollweide"]
+
     if not m is None:
-    # auto min and max
+        # auto min and max
         if min is None:
             min = m.min()
         if max is None:
@@ -142,81 +154,131 @@ def projview(
     # do this to find how many decimals are in the colorbar labels, so that the padding in the vertical cbar can done properly
     def find_number_of_decimals(number):
         try:
-            return len(str(number).split('.')[1])
+            return len(str(number).split(".")[1])
         except:
             return 0
-    
-    decs = np.max([find_number_of_decimals(min),find_number_of_decimals(max)])
-    if decs >= 3:
-        lpad=-27
-    else:
-        lpad = -9*decs
 
+    decs = np.max([find_number_of_decimals(min), find_number_of_decimals(max)])
+    if decs >= 3:
+        lpad = -27
+    else:
+        lpad = -9 * decs
+
+    # default font sizes
+    fontsize_defaults = {
+        "xlabel": 12,
+        "ylabel": 12,
+        "title": 14,
+        "xtick_label": 12,
+        "ytick_label": 12,
+        "cbar_label": 12,
+        "cbar_tick_label": 12,
+    }
+    if fontsize is not None:
+        fontsize_defaults = update_dictionary(fontsize_defaults, fontsize)
     # default plot settings
-    r = 0.63
-    if projection_type=="3d":
-        if cb_orientation=='vertical':
-            shrink=0.55;pad=0.02;lpad=lpad;width=11.5
-        if cb_orientation=='horizontal':
-            shrink=0.2;pad=0;lpad=-10;width=14
-    if projection_type == "aitoff" or projection_type ==  "hammer" or  projection_type == "lambert" or projection_type == "mollweide":
-        if cb_orientation=='vertical':
-            shrink=0.6;pad=0.01;lpad=lpad;width=10
-        if cb_orientation=='horizontal':
-            shrink=0.6;pad=0.05;lpad=-8;width=8.5
-    if projection_type =="cart":
-        if cb_orientation=='vertical':
-           shrink=1;pad=0.01;lpad=lpad;width=9.6 ;r=0.42;
-        if  cb_orientation=='horizontal':
-            shrink=0.4;pad=0.1;lpad=-12;width=8.8
+    ratio = 0.63
+    if projection_type == "3d":
+        if cb_orientation == "vertical":
+            shrink = 0.55
+            pad = 0.02
+            lpad = lpad
+            width = 11.5
+        if cb_orientation == "horizontal":
+            shrink = 0.2
+            pad = 0
+            lpad = -10
+            width = 14
+    if projection_type in geographic_projections:
+        if cb_orientation == "vertical":
+            shrink = 0.6
+            pad = 0.01
+            lpad = lpad
+            width = 10
+        if cb_orientation == "horizontal":
+            shrink = 0.6
+            pad = 0.05
+            lpad = -8
+            width = 8.5
+    if projection_type == "cart":
+        if cb_orientation == "vertical":
+            shrink = 1
+            pad = 0.01
+            lpad = lpad
+            width = 9.6
+            ratio = 0.42
+        if cb_orientation == "horizontal":
+            shrink = 0.4
+            pad = 0.1
+            lpad = -12
+            width = 8.8
             if xlabel == None:
-                pad=0.01;r=0.63
-    if projection_type=="polar":
-        if  cb_orientation=='vertical':
-            shrink=1;pad=0.01;lpad=lpad;width=10
-        if cb_orientation=='horizontal':
-            shrink=0.4;pad=0.01;lpad=0;width=12
+                pad = 0.01
+                ratio = 0.63
+    if projection_type == "polar":
+        if cb_orientation == "vertical":
+            shrink = 1
+            pad = 0.01
+            lpad = lpad
+            width = 10
+        if cb_orientation == "horizontal":
+            shrink = 0.4
+            pad = 0.01
+            lpad = 0
+            width = 12
+    # pass the default settings to the plot_properties dictionary
+    plot_properties = {
+        "cbar_shrink": shrink,
+        "cbar_pad": pad,
+        "cbar_label_pad": lpad,
+        "figure_width": width,
+        "figure_size_ratio": ratio,
+    }
+
     if override_plot_properties is not None:
-        print('Overriding default plot properies: shrink= {}, pad={}, lpad={},width={},r={}, to one:  shrink= {}, pad={}, lpad={},width={},r={}'.format(\
-        shrink,pad,lpad,width,r,override_plot_properties[0],override_plot_properties[1],override_plot_properties[2],override_plot_properties[3],override_plot_properties[4]))
-        shrink=override_plot_properties[0]
-        pad=override_plot_properties[1]
-        lpad=override_plot_properties[2]
-        width=override_plot_properties[3]
-        r=override_plot_properties[4]
+        warnings.warn(
+            "\n *** Overriding default plot properies: " + str(plot_properties) + " ***"
+        )
+        plot_properties = update_dictionary(plot_properties, override_plot_properties)
+        warnings.warn("\n *** New plot properies: " + str(plot_properties) + " ***")
 
     # not implemented features
     if not (norm is None):
         raise NotImplementedError()
 
     # Create the figure
-    if not return_only_data: # supress figure creation when only dumping the data
+    if not return_only_data:  # supress figure creation when only dumping the data
         import matplotlib.pyplot as plt
-    
-        width = width # 8.5
-        fig = plt.figure(figsize=(width, width * r))
-        print(str(projection_type))
+
+        width = width  # 8.5
+        fig = plt.figure(
+            figsize=(
+                plot_properties["figure_width"],
+                plot_properties["figure_width"] * plot_properties["figure_size_ratio"],
+            )
+        )
+
         if projection_type == "cart":
             ax = fig.add_subplot(111)
         else:
             ax = fig.add_subplot(111, projection=projection_type)
         # FIXME: make a more general axes creation that works also with subplots
         # ax = plt.gcf().add_axes((.125, .1, .9, .9), projection="mollweide")
-    
+
         # remove white space around the image
         plt.subplots_adjust(left=0.02, right=0.98, top=0.95, bottom=0.05)
-    #end if not
+    # end if not
     if graticule and graticule_labels:
         plt.subplots_adjust(left=0.04, right=0.98, top=0.95, bottom=0.05)
 
     # allow callers to override the hold state by passing hold=True|False
-    #washold = ax.ishold() #  commented out
+    # washold = ax.ishold() #  commented out
     hold = kwargs.pop("hold", None)
-    #if hold is not None:
+    # if hold is not None:
     #    ax.hold(hold)
 
     try:
-        ysize = int(xsize / 2)
+        ysize = xsize // 2
         theta = np.linspace(np.pi, 0, ysize)
         phi = np.linspace(-np.pi, np.pi, xsize)
 
@@ -238,9 +300,9 @@ def projview(
             grid_map = m[grid_pix]
 
             # plot
-            if return_only_data: # exit here when dumping the data
-                return [longitude,  latitude, grid_map]
-            if projection_type is not '3d': # test for 3d plot
+            if return_only_data:  # exit here when dumping the data
+                return [longitude, latitude, grid_map]
+            if projection_type is not "3d":  # test for 3d plot
                 ret = plt.pcolormesh(
                     longitude,
                     latitude,
@@ -249,71 +311,94 @@ def projview(
                     vmax=max,
                     rasterized=True,
                     cmap=cmap,
-                    shading='auto',
+                    shading="auto",
                     **kwargs
                 )
-            elif projection_type is '3d': # test for 3d plot
+            elif projection_type is "3d":  # test for 3d plot
                 LONGITUDE, LATITUDE = np.meshgrid(longitude, latitude)
-                ret = ax.plot_surface(LONGITUDE, LATITUDE, grid_map, cmap=cmap, vmin=min,  vmax=max, rasterized=True, **kwargs)
+                ret = ax.plot_surface(
+                    LONGITUDE,
+                    LATITUDE,
+                    grid_map,
+                    cmap=cmap,
+                    vmin=min,
+                    vmax=max,
+                    rasterized=True,
+                    **kwargs
+                )
         # graticule
         plt.grid(graticule)
-        
+
         if graticule:
-            if projection_type == "aitoff" or projection_type ==  "hammer" or  projection_type == "lambert" or projection_type == "mollweide":
+            if projection_type in geographic_projections:
                 longitude_grid_spacing = longitude_grid_spacing  # deg 60
                 ax.set_longitude_grid(longitude_grid_spacing)
                 ax.set_latitude_grid(latitude_grid_spacing)
                 ax.set_longitude_grid_ends(90)
-         #       if width < 10:
-          #          ax.set_latitude_grid(45)
-           #         ax.set_longitude_grid_ends(90)
             else:
                 longitude_grid_spacing = longitude_grid_spacing  # deg
-                latitude_grid_spacing = latitude_grid_spacing #  deg
-                ax.xaxis.set_major_locator(MultipleLocator(np.deg2rad(longitude_grid_spacing) )) # longitude
-                ax.yaxis.set_major_locator(MultipleLocator(np.deg2rad(latitude_grid_spacing))) # lattitude
+                latitude_grid_spacing = latitude_grid_spacing  #  deg
+                ax.xaxis.set_major_locator(
+                    MultipleLocator(np.deg2rad(longitude_grid_spacing))
+                )  # longitude
+                ax.yaxis.set_major_locator(
+                    MultipleLocator(np.deg2rad(latitude_grid_spacing))
+                )  # lattitude
 
         if graticule_labels & graticule:
-            if projection_type == "aitoff" or projection_type ==  "hammer" or  projection_type == "lambert" or projection_type == "mollweide":
-                ax.xaxis.set_major_formatter(ThetaFormatterShiftPi(longitude_grid_spacing))
-                ax.tick_params(axis='x', colors=lcolor)
+            if projection_type in geographic_projections:
+                ax.xaxis.set_major_formatter(
+                    ThetaFormatterShiftPi(longitude_grid_spacing)
+                )
+                ax.tick_params(axis="x", colors=lcolor)
             else:
-                ax.xaxis.set_major_formatter(ThetaFormatterShiftPi(longitude_grid_spacing))
+                ax.xaxis.set_major_formatter(
+                    ThetaFormatterShiftPi(longitude_grid_spacing)
+                )
                 ax.yaxis.set_major_formatter(ThetaFormatterTheta(latitude_grid_spacing))
-        if graticule == False:
+        if not graticule:
             # remove longitude and latitude labels
             ax.xaxis.set_ticklabels([])
             ax.yaxis.set_ticklabels([])
-            ax.tick_params(axis=u'both', which=u'both',length=0)
-        
-        ax.set_title(title, fontsize= 14)
+            ax.tick_params(axis=u"both", which=u"both", length=0)
+
+        ax.set_title(title, fontsize=fontsize_defaults["title"])
+        # tick font size
+        ax.tick_params(axis="x", labelsize=fontsize_defaults["xtick_label"])
+        ax.tick_params(axis="y", labelsize=fontsize_defaults["ytick_label"])
         # colorbar
         if projection_type is "cart":
             ax.set_aspect(1)
-        extend = 'neither'
+        extend = "neither"
         if min > np.min(m):
             extend = "min"
         if max < np.max(m):
             extend = "max"
         if min > np.min(m) and max < np.max(m):
-            extend = 'both'
+            extend = "both"
         cb = fig.colorbar(
-            ret, orientation=cb_orientation, shrink=shrink, pad=pad, ticks=[min, max], extend=extend
+            ret,
+            orientation=cb_orientation,
+            shrink=plot_properties["cbar_shrink"],
+            pad=plot_properties["cbar_pad"],
+            ticks=[min, max],
+            extend=extend,
         )
-        if cb_orientation == 'horizontal':
-            cb.ax.xaxis.set_label_text(unit)
-            cb.ax.xaxis.labelpad = lpad
-        if cb_orientation == 'vertical':
-            cb.ax.yaxis.set_label_text(unit)
-            cb.ax.yaxis.labelpad = lpad
+        if cb_orientation == "horizontal":
+            cb.ax.xaxis.set_label_text(unit, fontsize=fontsize_defaults["cbar_label"])
+            cb.ax.tick_params(axis="x", labelsize=fontsize_defaults["cbar_tick_label"])
+            cb.ax.xaxis.labelpad = plot_properties["cbar_label_pad"]
+        if cb_orientation == "vertical":
+            cb.ax.yaxis.set_label_text(unit, fontsize=fontsize_defaults["cbar_label"])
+            cb.ax.tick_params(axis="y", labelsize=fontsize_defaults["cbar_tick_label"])
+            cb.ax.yaxis.labelpad = plot_properties["cbar_label_pad"]
         # workaround for issue with viewers, see colorbar docstring
         cb.solids.set_edgecolor("face")
-        ax.set_xlabel(xlabel,fontsize=12)
-        ax.set_ylabel(ylabel,fontsize=12)
+        ax.set_xlabel(xlabel, fontsize=fontsize_defaults["xlabel"])
+        ax.set_ylabel(ylabel, fontsize=fontsize_defaults["ylabel"])
         plt.draw()
-    finally:
-        #ax.hold(washold)
-        None
+    except:
+        pass
 
     return ret
 
