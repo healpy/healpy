@@ -133,13 +133,14 @@ def projview(
       set x axis grid spacing
     latitude_grid_spacing : float
       set y axis grid spacing
-    override_plot_properties : list
-      Override the following plot proporties: shrink (colorbar size), pad (colorbar padding),
-      lpad (colorbar label padding), width of the figure, ratio of the height and width of the plot
+    override_plot_properties : dict
+      Override the following plot proporties: "cbar_shrink", "cbar_pad", "cbar_label_pad", "figure_width": width, "figure_size_ratio": ratio.
     title : str
       set title of the plot
     lcolor : str
       change the color of the longitude tick labels, some color maps make it hard to read black tick labels
+    fontsize:  dict
+        Override fontsize of labels: "xlabel", "ylabel", "title", "xtick_label", "ytick_label", "cbar_label", "cbar_tick_label".
     """
 
     geographic_projections = ["aitoff", "hammer", "lambert", "mollweide"]
