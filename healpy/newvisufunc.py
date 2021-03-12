@@ -3,6 +3,7 @@ __all__ = ["projview", "projplot"]
 import numpy as np
 from .pixelfunc import ang2pix, npix2nside
 from .rotator import Rotator
+import matplotlib.pyplot as plt
 from matplotlib.projections.geo import GeoAxes
 from matplotlib.ticker import MultipleLocator, FormatStrFormatter, AutoMinorLocator
 import warnings
@@ -249,7 +250,6 @@ def projview(
 
     # Create the figure
     if not return_only_data:  # supress figure creation when only dumping the data
-        import matplotlib.pyplot as plt
 
         width = width  # 8.5
         fig = plt.figure(
