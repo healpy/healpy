@@ -433,7 +433,7 @@ class SphericalProjAxes(matplotlib.axes.Axes):
         elif len(w) >= 2:
             xx.append(x[0 : w[0]])
             yy.append(y[0 : w[0]])
-            for i in xrange(len(w) - 1):
+            for i in range(len(w) - 1):
                 xx.append(x[w[i] : w[i + 1]])
                 yy.append(y[w[i] : w[i + 1]])
             xx.append(x[w[-1] :])
