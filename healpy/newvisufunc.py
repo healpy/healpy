@@ -14,21 +14,37 @@ import warnings
 # of the custom projection code
 
 
-class ThetaFormatterShiftPi(GeoAxes.ThetaFormatter):
-    """Shifts labelling by pi
-
-    Shifts labelling from -180,180 to 0-360"""
+class ThetaFormatterCounterclockwisePhi(GeoAxes.ThetaFormatter):
+    """Convert tick labels from rads to degs and shifts labelling from -180|-90|0|90|180 to conterclockwise periodic 180|90|0|270|180 """
 
     def __call__(self, x, pos=None):
         if x != 0:
             x *= -1
         if x < 0:
             x += 2 * np.pi
-        return super(ThetaFormatterShiftPi, self).__call__(x, pos)
+        return super(ThetaFormatterCounterclockwisePhi, self).__call__(x, pos)
+
+
+class ThetaFormatterClockwisePhi(GeoAxes.ThetaFormatter):
+    """Convert tick labels from rads to degs and shifts labelling from -180|-90|0|90|180 to clockwise periodic 180|270|0|90|180 """
+
+    def __call__(self, x, pos=None):
+
+        if x < 0:
+            x += 2 * np.pi
+        #   return super(ThetaFormatterShiftPhi, self).__call__(x, pos)
+        return super(ThetaFormatterClockwisePhi, self).__call__(x, pos)
+
+
+class ThetaFormatterSymmetricPhi(GeoAxes.ThetaFormatter):
+    """Just convert phi ticks from rad to degs and keep the true -180|-90|0|90|180 """
+
+    def __call__(self, x, pos=None):
+        return super(ThetaFormatterSymmetricPhi, self).__call__(x, pos)
 
 
 class ThetaFormatterTheta(GeoAxes.ThetaFormatter):
-    """Change thetaticks in rads to degs"""
+    """Convert theta ticks from rads to degs"""
 
     def __call__(self, x, pos=None):
         return super(ThetaFormatterTheta, self).__call__(x, pos)
@@ -76,8 +92,13 @@ def projview(
     latitude_grid_spacing=30,
     override_plot_properties=None,
     title=None,
-    lcolor="black",
+    xtick_label_color="black",
+    ytick_label_color="black",
+    graticule_color=None,
     fontsize=None,
+    phi_convention="counterclockwise",
+    custom_xtick_labels=None,
+    custom_ytick_labels=None,
     **kwargs
 ):
     """Plot a healpix map (given as an array) in the chosen projection.
@@ -142,6 +163,12 @@ def projview(
       change the color of the longitude tick labels, some color maps make it hard to read black tick labels
     fontsize:  dict
         Override fontsize of labels: "xlabel", "ylabel", "title", "xtick_label", "ytick_label", "cbar_label", "cbar_tick_label".
+    phi_convention : string
+        convention on x-axis (phi), 'counterclockwise' (default), 'clockwise, 'symmetrical' (phi as it is truly given)
+    custom_xtick_labels : list
+        override x-axis tick labels
+    custom_ytick_labels : list
+        override y-axis tick labels
     """
 
     geographic_projections = ["aitoff", "hammer", "lambert", "mollweide"]
@@ -160,12 +187,6 @@ def projview(
         except:
             return 0
 
-    decs = np.max([find_number_of_decimals(min), find_number_of_decimals(max)])
-    if decs >= 3:
-        lpad = -27
-    else:
-        lpad = -9 * decs
-
     # default font sizes
     fontsize_defaults = {
         "xlabel": 12,
@@ -178,7 +199,13 @@ def projview(
     }
     if fontsize is not None:
         fontsize_defaults = update_dictionary(fontsize_defaults, fontsize)
+
     # default plot settings
+    decs = np.max([find_number_of_decimals(min), find_number_of_decimals(max)])
+    if decs >= 3:
+        lpad = -27
+    else:
+        lpad = -9 * decs
     ratio = 0.63
     if projection_type == "3d":
         if cb_orientation == "vertical":
@@ -278,128 +305,154 @@ def projview(
     # if hold is not None:
     #    ax.hold(hold)
 
-    try:
-        ysize = xsize // 2
-        theta = np.linspace(np.pi, 0, ysize)
-        phi = np.linspace(-np.pi, np.pi, xsize)
+    #    try:
+    ysize = xsize // 2
+    theta = np.linspace(np.pi, 0, ysize)
+    phi = np.linspace(-np.pi, np.pi, xsize)
 
-        longitude = np.radians(np.linspace(-180, 180, xsize))
-        if flip == "astro":
-            longitude = longitude[::-1]
-        latitude = np.radians(np.linspace(-90, 90, ysize))
-        # project the map to a rectangular matrix xsize x ysize
-        PHI, THETA = np.meshgrid(phi, theta)
-        # coord or rotation
-        if coord or rot:
-            r = Rotator(coord=coord, rot=rot, inv=True)
-            THETA, PHI = r(THETA.flatten(), PHI.flatten())
-            THETA = THETA.reshape(ysize, xsize)
-            PHI = PHI.reshape(ysize, xsize)
-        nside = npix2nside(len(m))
-        if not m is None:
-            grid_pix = ang2pix(nside, THETA, PHI, nest=nest)
-            grid_map = m[grid_pix]
+    longitude = np.radians(np.linspace(-180, 180, xsize))
+    if flip == "astro":
+        longitude = longitude[::-1]
+    latitude = np.radians(np.linspace(-90, 90, ysize))
+    # project the map to a rectangular matrix xsize x ysize
+    PHI, THETA = np.meshgrid(phi, theta)
+    # coord or rotation
+    if coord or rot:
+        r = Rotator(coord=coord, rot=rot, inv=True)
+        THETA, PHI = r(THETA.flatten(), PHI.flatten())
+        THETA = THETA.reshape(ysize, xsize)
+        PHI = PHI.reshape(ysize, xsize)
+    nside = npix2nside(len(m))
+    if not m is None:
+        grid_pix = ang2pix(nside, THETA, PHI, nest=nest)
+        grid_map = m[grid_pix]
 
-            # plot
-            if return_only_data:  # exit here when dumping the data
-                return [longitude, latitude, grid_map]
-            if projection_type is not "3d":  # test for 3d plot
-                ret = plt.pcolormesh(
-                    longitude,
-                    latitude,
-                    grid_map,
-                    vmin=min,
-                    vmax=max,
-                    rasterized=True,
-                    cmap=cmap,
-                    shading="auto",
-                    **kwargs
-                )
-            elif projection_type is "3d":  # test for 3d plot
-                LONGITUDE, LATITUDE = np.meshgrid(longitude, latitude)
-                ret = ax.plot_surface(
-                    LONGITUDE,
-                    LATITUDE,
-                    grid_map,
-                    cmap=cmap,
-                    vmin=min,
-                    vmax=max,
-                    rasterized=True,
-                    **kwargs
-                )
-        # graticule
+        # plot
+        if return_only_data:  # exit here when dumping the data
+            return [longitude, latitude, grid_map]
+        if projection_type is not "3d":  # test for 3d plot
+            ret = plt.pcolormesh(
+                longitude,
+                latitude,
+                grid_map,
+                vmin=min,
+                vmax=max,
+                rasterized=True,
+                cmap=cmap,
+                shading="auto",
+                **kwargs
+            )
+        elif projection_type is "3d":  # test for 3d plot
+            LONGITUDE, LATITUDE = np.meshgrid(longitude, latitude)
+            ret = ax.plot_surface(
+                LONGITUDE,
+                LATITUDE,
+                grid_map,
+                cmap=cmap,
+                vmin=min,
+                vmax=max,
+                rasterized=True,
+                **kwargs
+            )
+    # graticule
+    if graticule_color is None:
         plt.grid(graticule)
+    else:
+        plt.grid(graticule, color=graticule_color)
 
-        if graticule:
-            if projection_type in geographic_projections:
-                longitude_grid_spacing = longitude_grid_spacing  # deg 60
-                ax.set_longitude_grid(longitude_grid_spacing)
-                ax.set_latitude_grid(latitude_grid_spacing)
-                ax.set_longitude_grid_ends(90)
-            else:
-                longitude_grid_spacing = longitude_grid_spacing  # deg
-                latitude_grid_spacing = latitude_grid_spacing  #  deg
-                ax.xaxis.set_major_locator(
-                    MultipleLocator(np.deg2rad(longitude_grid_spacing))
-                )  # longitude
-                ax.yaxis.set_major_locator(
-                    MultipleLocator(np.deg2rad(latitude_grid_spacing))
-                )  # lattitude
+    if graticule:
+        if projection_type in geographic_projections:
+            longitude_grid_spacing = longitude_grid_spacing  # deg 60
+            ax.set_longitude_grid(longitude_grid_spacing)
+            ax.set_latitude_grid(latitude_grid_spacing)
+            ax.set_longitude_grid_ends(90)
+        else:
+            longitude_grid_spacing = longitude_grid_spacing  # deg
+            latitude_grid_spacing = latitude_grid_spacing  #  deg
+            ax.xaxis.set_major_locator(
+                MultipleLocator(np.deg2rad(longitude_grid_spacing))
+            )  # longitude
+            ax.yaxis.set_major_locator(
+                MultipleLocator(np.deg2rad(latitude_grid_spacing))
+            )  # lattitude
 
-        if graticule_labels & graticule:
-            if projection_type in geographic_projections:
-                ax.xaxis.set_major_formatter(
-                    ThetaFormatterShiftPi(longitude_grid_spacing)
+    # labelling
+    if graticule_labels & graticule:
+        if phi_convention == "counterclockwise":
+            xtick_formatter = ThetaFormatterCounterclockwisePhi(longitude_grid_spacing)
+        elif phi_convention == "clockwise":
+            xtick_formatter = ThetaFormatterClockwisePhi(longitude_grid_spacing)
+        elif phi_convention == "symmetrical":
+            xtick_formatter = ThetaFormatterSymmetricPhi(longitude_grid_spacing)
+
+        ax.xaxis.set_major_formatter(xtick_formatter)
+        ax.yaxis.set_major_formatter(ThetaFormatterTheta(latitude_grid_spacing))
+
+        if custom_xtick_labels is not None:
+            try:
+                ax.xaxis.set_ticklabels(custom_xtick_labels)
+            except:
+                warnings.warn(
+                    "Put names for all "
+                    + str(len(ax.xaxis.get_ticklabels()))
+                    + " x-tick labels!. No re-labelling done."
                 )
-                ax.tick_params(axis="x", colors=lcolor)
-            else:
-                ax.xaxis.set_major_formatter(
-                    ThetaFormatterShiftPi(longitude_grid_spacing)
+        if custom_ytick_labels is not None:
+            try:
+                ax.yaxis.set_ticklabels(custom_ytick_labels)
+            except:
+                warnings.warn(
+                    "Put names for all "
+                    + str(len(ax.yaxis.get_ticklabels()))
+                    + " y-tick labels!. No re-labelling done."
                 )
-                ax.yaxis.set_major_formatter(ThetaFormatterTheta(latitude_grid_spacing))
-        if not graticule:
-            # remove longitude and latitude labels
-            ax.xaxis.set_ticklabels([])
-            ax.yaxis.set_ticklabels([])
-            ax.tick_params(axis=u"both", which=u"both", length=0)
+    if not graticule:
+        # remove longitude and latitude labels
+        ax.xaxis.set_ticklabels([])
+        ax.yaxis.set_ticklabels([])
+        ax.tick_params(axis=u"both", which=u"both", length=0)
 
-        ax.set_title(title, fontsize=fontsize_defaults["title"])
-        # tick font size
-        ax.tick_params(axis="x", labelsize=fontsize_defaults["xtick_label"])
-        ax.tick_params(axis="y", labelsize=fontsize_defaults["ytick_label"])
-        # colorbar
-        if projection_type is "cart":
-            ax.set_aspect(1)
-        extend = "neither"
-        if min > np.min(m):
-            extend = "min"
-        if max < np.max(m):
-            extend = "max"
-        if min > np.min(m) and max < np.max(m):
-            extend = "both"
-        cb = fig.colorbar(
-            ret,
-            orientation=cb_orientation,
-            shrink=plot_properties["cbar_shrink"],
-            pad=plot_properties["cbar_pad"],
-            ticks=[min, max],
-            extend=extend,
-        )
-        if cb_orientation == "horizontal":
-            cb.ax.xaxis.set_label_text(unit, fontsize=fontsize_defaults["cbar_label"])
-            cb.ax.tick_params(axis="x", labelsize=fontsize_defaults["cbar_tick_label"])
-            cb.ax.xaxis.labelpad = plot_properties["cbar_label_pad"]
-        if cb_orientation == "vertical":
-            cb.ax.yaxis.set_label_text(unit, fontsize=fontsize_defaults["cbar_label"])
-            cb.ax.tick_params(axis="y", labelsize=fontsize_defaults["cbar_tick_label"])
-            cb.ax.yaxis.labelpad = plot_properties["cbar_label_pad"]
-        # workaround for issue with viewers, see colorbar docstring
-        cb.solids.set_edgecolor("face")
-        ax.set_xlabel(xlabel, fontsize=fontsize_defaults["xlabel"])
-        ax.set_ylabel(ylabel, fontsize=fontsize_defaults["ylabel"])
-        plt.draw()
-    except:
-        pass
+    ax.set_title(title, fontsize=fontsize_defaults["title"])
+    # tick font size
+    ax.tick_params(
+        axis="x", labelsize=fontsize_defaults["xtick_label"], colors=xtick_label_color
+    )
+    ax.tick_params(
+        axis="y", labelsize=fontsize_defaults["ytick_label"], colors=ytick_label_color
+    )
+    # colorbar
+    if projection_type is "cart":
+        ax.set_aspect(1)
+    extend = "neither"
+    if min > np.min(m):
+        extend = "min"
+    if max < np.max(m):
+        extend = "max"
+    if min > np.min(m) and max < np.max(m):
+        extend = "both"
+    cb = fig.colorbar(
+        ret,
+        orientation=cb_orientation,
+        shrink=plot_properties["cbar_shrink"],
+        pad=plot_properties["cbar_pad"],
+        ticks=[min, max],
+        extend=extend,
+    )
+    if cb_orientation == "horizontal":
+        cb.ax.xaxis.set_label_text(unit, fontsize=fontsize_defaults["cbar_label"])
+        cb.ax.tick_params(axis="x", labelsize=fontsize_defaults["cbar_tick_label"])
+        cb.ax.xaxis.labelpad = plot_properties["cbar_label_pad"]
+    if cb_orientation == "vertical":
+        cb.ax.yaxis.set_label_text(unit, fontsize=fontsize_defaults["cbar_label"])
+        cb.ax.tick_params(axis="y", labelsize=fontsize_defaults["cbar_tick_label"])
+        cb.ax.yaxis.labelpad = plot_properties["cbar_label_pad"]
+    # workaround for issue with viewers, see colorbar docstring
+    cb.solids.set_edgecolor("face")
+    ax.set_xlabel(xlabel, fontsize=fontsize_defaults["xlabel"])
+    ax.set_ylabel(ylabel, fontsize=fontsize_defaults["ylabel"])
+    plt.draw()
+    #  except:
+    #     pass
 
     return ret
 
