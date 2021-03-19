@@ -1,8 +1,13 @@
 Release in progress
 
+* Improvements of the build system <https://github.com/healpy/healpy/pull/660> <https://github.com/healpy/healpy/pull/661>
+* Automatically build wheels for Linux/MacOS on Github actions <https://github.com/healpy/healpy/pull/656>
+* Drop support for Python 2.7-3.5 <https://github.com/healpy/healpy/pull/658>
+* Allow OBJECT FITS header not to be a string <https://github.com/healpy/healpy/pull/665>
+* Fixed indexing issue in `bl2beam` <https://github.com/healpy/healpy/pull/667>
 * Fixed `map2alm_spin` bug for masked input <https://github.com/healpy/healpy/pull/651>
 
-Release 1.14.0 22 July 2020, included in HEALPix 3.70
+Release 1.14.0 22 July 2020, included in HEALPix 3.70, Last release with Python 2 support
 
 * Fixed FITS files that were left open <https://github.com/healpy/healpy/pull/631>
 * Line Integral Convolution plots to plot polarization <https://github.com/healpy/healpy/pull/617>
