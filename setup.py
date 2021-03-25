@@ -421,7 +421,7 @@ setup(
                 "healpixsubmodule/src/cxx/Healpix_cxx/alice3.cc",
             ],
             language="c++",
-            extra_compile_args=["-std=c++11", "-Ihealpixsubmodule/src/cxx/cxxsupport"],
+            extra_compile_args=["-std=c++11", "-Ihealpixsubmodule/src/cxx/cxxsupport", "-Ihealpixsubmodule/src/cxx/Healpix_cxx"],
             cython_directives=dict(embedsignature=True),
         ),
     ],
