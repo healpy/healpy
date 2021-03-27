@@ -418,10 +418,10 @@ setup(
             "healpy._line_integral_convolution",
             [
                 "healpy/src/_line_integral_convolution.pyx",
-                "healpy/src/_line_integral_convolution_lib.cc",
+                "healpixsubmodule/src/cxx/Healpix_cxx/alice3.cc",
             ],
             language="c++",
-            extra_compile_args=["-std=c++11"],
+            extra_compile_args=["-std=c++11", "-Ihealpixsubmodule/src/cxx/cxxsupport", "-Ihealpixsubmodule/src/cxx/Healpix_cxx"],
             cython_directives=dict(embedsignature=True),
         ),
     ],
