@@ -975,8 +975,7 @@ def smoothing(
         ordering = "NESTED"
         map_in = pixelfunc.reorder(map_in, inp=None, out=None, r2n=None, n2r=True)
     else:
-        ordering = "RING" 
-    
+        ordering = "RING"    
 
     if pol or n_maps in (0, 1):
         # Treat the maps together (1 or 3 maps)
@@ -1036,7 +1035,6 @@ def smoothing(
         ordering = "RING" 
 
     return output_map
-
 
 
 def pixwin(nside, pol=False, lmax=None):
