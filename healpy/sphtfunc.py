@@ -905,6 +905,7 @@ def smoothing(
     use_pixel_weights=False,
     datapath=None,
     verbose=True,
+    nest=False,
 ):
     """Smooth a map with a Gaussian symmetric beam.
 
@@ -943,6 +944,11 @@ def smoothing(
       If given, the directory where to find the weights data.
     verbose : bool, optional
       If True prints diagnostic information. Default: True
+    nest : bool, optional
+      If True, ordering scheme is NESTED. Default: False (RING)
+      The map ordering is modified by this function, the input map array should
+      be in RING ordering, if not this function will convert it to RING ordering 
+      and order the output back to NESTED. 
 
     Returns
     -------
@@ -964,6 +970,13 @@ def smoothing(
         n_maps = 0
 
     check_max_nside(nside)
+    
+    if nest:
+        ordering = "NESTED"
+        map_in = pixelfunc.reorder(map_in, inp=None, out=None, r2n=None, n2r=True)
+    else:
+        ordering = "RING" 
+    
 
     if pol or n_maps in (0, 1):
         # Treat the maps together (1 or 3 maps)
@@ -1015,8 +1028,15 @@ def smoothing(
             output_map.append(alm2map(alm, nside, pixwin=False, verbose=verbose))
         output_map = np.array(output_map)
     output_map[masks] = UNSEEN
+    
+    if nest:
+        ordering = "NESTED"
+        output_map = pixelfunc.reorder(output_map, inp=None, out=None, r2n=True, n2r=False)
+    else:
+        ordering = "RING" 
 
     return output_map
+
 
 
 def pixwin(nside, pol=False, lmax=None):
