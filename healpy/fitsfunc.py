@@ -22,7 +22,7 @@
 from __future__ import division
 
 import sys
-import warnings
+import logging
 
 import pathlib
 import astropy.io.fits as pf
@@ -41,10 +41,6 @@ standard_column_names = {
 }
 
 allowed_paths = (str, pathlib.Path)
-
-
-class HealpixFitsWarning(Warning):
-    pass
 
 
 def read_cl(filename):
@@ -292,7 +288,6 @@ def read_map(
     partial=False,
     hdu=1,
     h=False,
-    verbose=True,
     memmap=False,
 ):
     """Read a healpix map from a fits file.  Partial-sky files,
@@ -334,9 +329,8 @@ def read_map(
       the header number to look at (start at 0)
     h : bool, optional
       If True, return also the header. Default: False.
-    verbose : bool, optional
-      If True, print a number of diagnostic messages, call hp.disable_warnings() to
-      disable warnings for all functions.
+    verbose : bool, not supported anymore
+      Configure the Python logging module instead
     memmap : bool, optional
       Argument passed to astropy.io.fits.open, if True, the map is not read into memory,
       but only the required pixels are read when needed. Default: False.
@@ -348,7 +342,7 @@ def read_map(
     """
     # Temporary warning for default dtype
     if dtype == np.float64:
-        warnings.warn(
+        logging.warning(
             "If you are not specifying the input dtype and using the default "
             "np.float64 dtype of read_map(), please consider that it will "
             "change in a future version to None as to keep the same dtype of "
@@ -364,23 +358,21 @@ def read_map(
     fits_hdu = _get_hdu(filename, hdu=hdu, memmap=memmap)
 
     nside = fits_hdu.header.get("NSIDE")
-    if nside is None and verbose:
-        warnings.warn(
-            "No NSIDE in the header file : will use length of array", HealpixFitsWarning
+    if nside is None:
+        logging.info(
+            "No NSIDE in the header file : will use length of array"
         )
     else:
         nside = int(nside)
-    if verbose:
-        warnings.warn("NSIDE = {0:d}".format(nside))
+    logging.info("NSIDE = %d", nside)
 
     if not pixelfunc.isnsideok(nside):
         raise ValueError("Wrong nside parameter.")
     ordering = fits_hdu.header.get("ORDERING", "UNDEF").strip()
     if ordering == "UNDEF":
         ordering = nest and "NESTED" or "RING"
-        warnings.warn("No ORDERING keyword in header file : " "assume %s" % ordering)
-    if verbose:
-        warnings.warn("ORDERING = {0:s} in fits file".format(ordering))
+        logging.info("No ORDERING keyword in header file : assume %s", ordering)
+    logging.info("ORDERING = %s in fits file", ordering)
 
     sz = pixelfunc.nside2npix(nside)
     ret = []
@@ -406,9 +398,8 @@ def read_map(
 
     if schm == "UNDEF":
         schm = partial and "EXPLICIT" or "IMPLICIT"
-        warnings.warn("No INDXSCHM keyword in header file : " "assume {}".format(schm))
-    if verbose:
-        warnings.warn("INDXSCHM = {0:s}".format(schm))
+        logging.info("No INDXSCHM keyword in header file: assume %s", schm)
+    logging.info("INDXSCHM = %s", schm)
 
     if field is None:
         field = range(len(fits_hdu.data.columns) - 1 * partial)
@@ -421,8 +412,8 @@ def read_map(
         try:
             pix = fits_hdu.data.field(0).astype(int, copy=False).ravel()
         except pf.VerifyError as e:
-            warnings.warn(e)
-            warnings.warn("Trying to fix a badly formatted header")
+            logging.warning(e)
+            logging.warning("Trying to fix a badly formatted header")
             fits_hdu.verify("fix")
             pix = fits_hdu.data.field(0).astype(int, copy=False).ravel()
 
@@ -440,8 +431,8 @@ def read_map(
             else:
                 m = fits_hdu.data.field(ff).astype(curr_dtype, copy=False).ravel()
         except pf.VerifyError as e:
-            warnings.warn(e)
-            warnings.warn("Trying to fix a badly formatted header")
+            logging.warning(e)
+            logging.warning("Trying to fix a badly formatted header")
             m = fits_hdu.verify("fix")
             if curr_dtype is None:
                 m = fits_hdu.data.field(ff).ravel()
@@ -453,20 +444,17 @@ def read_map(
             mnew[pix] = m
             m = mnew
 
-        if (not pixelfunc.isnpixok(m.size) or (sz > 0 and sz != m.size)) and verbose:
-            warnings.warn("nside={0:d}, sz={1:d}, m.size={2:d}".format(nside, sz, m.size))
-            raise ValueError("Wrong nside parameter.")
+        if (not pixelfunc.isnpixok(m.size) or (sz > 0 and sz != m.size)):
+            raise ValueError("Wrong nside parameter, nside={0:d}, sz={1:d}, m.size={2:d}".format(nside, sz, m.size))
         if not nest is None:  # no conversion with None
             if nest and ordering == "RING":
                 idx = pixelfunc.nest2ring(nside, np.arange(m.size, dtype=np.int32))
                 m = m[idx]
-                if verbose:
-                    warnings.warn("Ordering converted to NEST")
+                logging.info("Ordering converted to NEST")
             elif (not nest) and ordering == "NESTED":
                 idx = pixelfunc.ring2nest(nside, np.arange(m.size, dtype=np.int32))
                 m = m[idx]
-                if verbose:
-                    warnings.warn("Ordering converted to RING")
+                logging.info("Ordering converted to RING")
         try:
             m[pixelfunc.mask_bad(m)] = UNSEEN
         except OverflowError:
