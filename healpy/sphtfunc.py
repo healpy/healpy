@@ -17,7 +17,7 @@
 #
 #  For more information about Healpy, see http://code.google.com/p/healpy
 #
-import warnings
+import logging
 import numpy as np
 
 import astropy.io.fits as pf
@@ -35,10 +35,6 @@ import os.path
 from . import pixelfunc
 
 from .pixelfunc import maptype, UNSEEN, ma_to_array, accept_ma
-
-
-class FutureChangeWarning(UserWarning):
-    pass
 
 
 DATAPATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
@@ -165,7 +161,6 @@ def map2alm(
     datapath=None,
     gal_cut=0,
     use_pixel_weights=False,
-    verbose=True,
 ):
     """Computes the alm of a Healpix map. The input maps must all be
     in ring ordering.
@@ -215,8 +210,6 @@ def map2alm(
       pixels at latitude in [-gal_cut;+gal_cut] are not taken into account
     use_pixel_weights: bool, optional
       If True, use pixel by pixel weighting, healpy will automatically download the weights, if needed
-    verbose : bool, optional
-      If True prints diagnostic information. Default: True
 
     Returns
     -------
@@ -243,10 +236,7 @@ def map2alm(
         if datapath is not None:
             pixel_weights_filename = os.path.join(datapath, filename)
             if os.path.exists(pixel_weights_filename):
-                if verbose:
-                    warnings.warn(
-                        "Accessing pixel weights from {}".format(pixel_weights_filename)
-                    )
+                logging.info("Accessing pixel weights from %s", pixel_weights_filename)
             else:
                 raise RuntimeError(
                     "You specified datapath but pixel weights file"
@@ -299,7 +289,6 @@ def alm2map(
     sigma=None,
     pol=True,
     inplace=False,
-    verbose=True,
 ):
     """Computes a Healpix map given the alm.
 
@@ -354,7 +343,7 @@ def alm2map(
     check_max_nside(nside)
 
     alms = smoothalm(
-        alms, fwhm=fwhm, sigma=sigma, pol=pol, inplace=inplace, verbose=verbose
+        alms, fwhm=fwhm, sigma=sigma, pol=pol, inplace=inplace
     )
 
     if not cb.is_seq_of_seq(alms):
@@ -392,7 +381,7 @@ def alm2map(
         return np.array(output)
 
 
-def synalm(cls, lmax=None, mmax=None, new=False, verbose=True):
+def synalm(cls, lmax=None, mmax=None, new=False):
     """Generate a set of alm given cl.
     The cl are given as a float array. Corresponding alm are generated.
     If lmax is None, it is assumed lmax=cl.size-1
@@ -433,13 +422,12 @@ def synalm(cls, lmax=None, mmax=None, new=False, verbose=True):
     matrix. Eg, if fields are T, E, B, the spectra are TT, EE, BB, TE, EB, TB
     with new=True, and TT, TE, TB, EE, EB, BB if new=False.
     """
-    if (not new) and verbose:
-        warnings.warn(
+    if not new:
+        logging.warning(
             "The order of the input cl's will change in a future "
             "release.\n"
             "Use new=True keyword to start using the new order.\n"
             "See documentation of healpy.synalm.",
-            category=FutureChangeWarning,
         )
     if not cb.is_seq(cls):
         raise TypeError("cls must be an array or a sequence of arrays")
@@ -512,7 +500,6 @@ def synfast(
     fwhm=0.0,
     sigma=None,
     new=False,
-    verbose=True,
 ):
     """Create a map(s) from cl(s).
 
@@ -572,7 +559,7 @@ def synfast(
     cls_lmax = cb.len_array_or_arrays(cls) - 1
     if lmax is None or lmax < 0:
         lmax = min(cls_lmax, 3 * nside - 1)
-    alms = synalm(cls, lmax=lmax, mmax=mmax, new=new, verbose=verbose)
+    alms = synalm(cls, lmax=lmax, mmax=mmax, new=new)
     maps = alm2map(
         alms,
         nside,
@@ -583,7 +570,6 @@ def synfast(
         fwhm=fwhm,
         sigma=sigma,
         inplace=True,
-        verbose=verbose,
     )
     if alm:
         return np.array(maps), np.array(alms)
@@ -781,7 +767,6 @@ def smoothalm(
     beam_window=None,
     pol=True,
     mmax=None,
-    verbose=True,
     inplace=True,
 ):
     """Smooth alm with a Gaussian symmetric beam function.
@@ -810,9 +795,6 @@ def smoothalm(
     inplace : bool, optional
       If True, the alm's are modified inplace if they are contiguous arrays
       of type complex128. Otherwise, a copy of alm is made. Default: True.
-    verbose : bool, optional
-      If True prints diagnostic information. Default: True
-      Call hp.disable_warnings() to disable warnings for all functions.
 
     Returns
     -------
@@ -824,20 +806,12 @@ def smoothalm(
     if (sigma is None) & (beam_window is None):
         sigma = fwhm / (2.0 * np.sqrt(2.0 * np.log(2.0)))
 
-    if verbose:
-        if beam_window is None:
-            warnings.warn(
-                "Sigma is {0:f} arcmin ({1:f} rad) ".format(
-                    sigma * 60 * 180 / np.pi, sigma
-                )
-            )
-            warnings.warn(
-                "-> fwhm is {0:f} arcmin".format(
-                    sigma * 60 * 180 / np.pi * (2.0 * np.sqrt(2.0 * np.log(2.0)))
-                )
-            )
-        else:
-            warnings.warn("Using provided beam window function")
+    if beam_window is None:
+        logging.info("Sigma is %f arcmin (%f rad) ", sigma * 60 * 180 / np.pi, sigma)
+        logging.info(
+            "-> fwhm is {0:f} arcmin",
+            sigma * 60 * 180 / np.pi * (2.0 * np.sqrt(2.0 * np.log(2.0))),
+        )
 
     # Check alms
     if not cb.is_seq(alms):
@@ -904,7 +878,6 @@ def smoothing(
     use_weights=False,
     use_pixel_weights=False,
     datapath=None,
-    verbose=True,
     nest=False,
 ):
     """Smooth a map with a Gaussian symmetric beam.
@@ -942,13 +915,12 @@ def smoothing(
       See the map2alm docs for details about weighting
     datapath : None or str, optional
       If given, the directory where to find the weights data.
-    verbose : bool, optional
-      If True prints diagnostic information. Default: True
     nest : bool, optional
       If True, the input map ordering is assumed to be NESTED. Default: False (RING)
       This function will temporary reorder the NESTED map into RING to perform the
-      smoothing and order the output back to NESTED. If the map is in RING ordering 
-      no internal reordering will be performed. 
+      smoothing and order the output back to NESTED. If the map is in RING ordering
+      no internal reordering will be performed.
+>>>>>>> feat: sphtfunc module converted to logging
 
     Returns
     -------
@@ -993,11 +965,15 @@ def smoothing(
             beam_window=beam_window,
             pol=pol,
             mmax=mmax,
-            verbose=verbose,
             inplace=True,
         )
         output_map = alm2map(
-            alms, nside, lmax=lmax, mmax=mmax, pixwin=False, verbose=verbose, pol=pol,
+            alms,
+            nside,
+            lmax=lmax,
+            mmax=mmax,
+            pixwin=False,
+            pol=pol,
         )
     else:
         # Treat each map independently (any number)
@@ -1019,9 +995,8 @@ def smoothing(
                 sigma=sigma,
                 beam_window=beam_window,
                 inplace=True,
-                verbose=verbose,
             )
-            output_map.append(alm2map(alm, nside, pixwin=False, verbose=verbose))
+            output_map.append(alm2map(alm, nside, pixwin=False))
         output_map = np.array(output_map)
     output_map[masks] = UNSEEN
     
@@ -1041,7 +1016,7 @@ def pixwin(nside, pol=False, lmax=None):
     pol : bool, optional
       If True, return also the polar pixel window. Default: False
     lmax : int, optional
-        Maximum l of the power spectrum (default: 3*nside-1) 
+        Maximum l of the power spectrum (default: 3*nside-1)
 
     Returns
     -------
@@ -1071,27 +1046,27 @@ def pixwin(nside, pol=False, lmax=None):
 def alm2map_der1(alm, nside, lmax=None, mmax=None):
     """Computes a Healpix map and its first derivatives given the alm.
 
-   The alm are given as a complex array. You can specify lmax
-   and mmax, or they will be computed from array size (assuming
-   lmax==mmax).
+    The alm are given as a complex array. You can specify lmax
+    and mmax, or they will be computed from array size (assuming
+    lmax==mmax).
 
-   Parameters
-   ----------
-   alm : array, complex
-     A complex array of alm. Size must be of the form mmax(lmax-mmax+1)/2+lmax
-   nside : int
-     The nside of the output map.
-   lmax : None or int, optional
-     Explicitly define lmax (needed if mmax!=lmax)
-   mmax : None or int, optional
-     Explicitly define mmax (needed if mmax!=lmax)
+    Parameters
+    ----------
+    alm : array, complex
+      A complex array of alm. Size must be of the form mmax(lmax-mmax+1)/2+lmax
+    nside : int
+      The nside of the output map.
+    lmax : None or int, optional
+      Explicitly define lmax (needed if mmax!=lmax)
+    mmax : None or int, optional
+      Explicitly define mmax (needed if mmax!=lmax)
 
-   Returns
-   -------
-   m, d_theta, d_phi : tuple of arrays
-     The maps correponding to alm, and its derivatives with respect to
-     theta and phi. d_phi is already divided by sin(theta)
-   """
+    Returns
+    -------
+    m, d_theta, d_phi : tuple of arrays
+      The maps correponding to alm, and its derivatives with respect to
+      theta and phi. d_phi is already divided by sin(theta)
+    """
     check_max_nside(nside)
     if lmax is None:
         lmax = -1
@@ -1183,7 +1158,7 @@ def gauss_beam(fwhm, lmax=512, pol=False):
 
 
 def bl2beam(bl, theta):
-    """Computes a circular beam profile b(theta) in real space from 
+    """Computes a circular beam profile b(theta) in real space from
     its transfer (or window) function b(l) in spherical harmonic space.
 
     Parameters
@@ -1220,8 +1195,8 @@ def bl2beam(bl, theta):
 
 
 def beam2bl(beam, theta, lmax):
-    """Computes a transfer (or window) function b(l) in spherical 
-    harmonic space from its circular beam profile b(theta) in real 
+    """Computes a transfer (or window) function b(l) in spherical
+    harmonic space from its circular beam profile b(theta) in real
     space.
 
     Parameters
@@ -1229,7 +1204,7 @@ def beam2bl(beam, theta, lmax):
     beam : array
         Circular beam profile b(theta).
     theta : array
-        Radius at which the beam profile is given. Has to be given 
+        Radius at which the beam profile is given. Has to be given
         in radians with same size as beam.
     lmax : integer
         Maximum multipole moment at which to compute b(l).
@@ -1242,8 +1217,7 @@ def beam2bl(beam, theta, lmax):
 
     nx = len(theta)
     nb = len(beam)
-    if nb != nx:
-        warnings.warn("beam and theta must have same size!")
+    assert nb == nx, "beam and theta must have same size!"
 
     x = np.cos(theta)
     st = np.sin(theta)
