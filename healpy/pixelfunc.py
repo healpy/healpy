@@ -88,7 +88,7 @@ Map data manipulation
 
 import numpy as np
 from functools import wraps
-import warnings
+import logging
 
 UNSEEN = None
 
@@ -98,7 +98,7 @@ try:
     #: Special value used for masked pixels
     UNSEEN = pixlib.UNSEEN
 except:
-    warnings.warn("Warning: cannot import _healpy_pixel_lib module")
+    logging.warning("Warning: cannot import _healpy_pixel_lib module")
 
 # We are using 64-bit integer types.
 # nside > 2**29 requires extended integer types.
@@ -1541,8 +1541,7 @@ def remove_dipole(
     copy : bool
       whether to modify input map or not (by default, make a copy)
     verbose : bool
-      print values of monopole and dipole
-      call hp.disable_warnings() to disable warnings for all functions.
+      compute and print values of monopole and dipole
 
     Returns
     -------
@@ -1578,7 +1577,7 @@ def remove_dipole(
 
         lon, lat = R.vec2dir(dipole, lonlat=True)
         amp = np.sqrt((dipole * dipole).sum())
-        warnings.warn(
+        print(
             "monopole: {0:g}  dipole: lon: {1:g}, lat: {2:g}, amp: {3:g}".format(
                 mono, lon, lat, amp
             )
@@ -1641,7 +1640,7 @@ def fit_monopole(m, nest=False, bad=UNSEEN, gal_cut=0):
 
 
 def remove_monopole(
-    m, nest=False, bad=UNSEEN, gal_cut=0, fitval=False, copy=True, verbose=True
+    m, nest=False, bad=UNSEEN, gal_cut=0, fitval=False, copy=True
 ):
     """Fit and subtract the monopole from the given map m.
 
@@ -1659,8 +1658,6 @@ def remove_monopole(
       whether to return or not the fitted value of monopole
     copy : bool
       whether to modify input map or not (by default, make a copy)
-    verbose: bool
-      whether to print values of monopole
 
     Returns
     -------
@@ -1687,8 +1684,7 @@ def remove_monopole(
         ipix = ipix[(m.flat[ipix] != bad) & (np.isfinite(m.flat[ipix]))]
         x, y, z = pix2vec(nside, ipix, nest)
         m.flat[ipix] -= mono
-    if verbose:
-        warnings.warn("monopole: {0:g}".format(mono))
+    logging.info("monopole: %.3g", mono)
     if input_ma:
         m = ma(m)
     if fitval:
