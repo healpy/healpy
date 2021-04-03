@@ -167,9 +167,9 @@ def write_map(
       The datatype in which the columns will be stored. Will be converted
       internally from the numpy datatype to the fits convention. If a list,
       the length must correspond to the number of map arrays.
-      Default: use np.float32
-      (WARNING: in a future version this will change to
-      "use the data type of the input array(s)".)
+      Default: use the data type of the input array(s)
+      (WARNING: this changed in 1.15.0, previous versions saved in float32
+      by default)
     overwrite : bool, optional
       If True, existing file is silently overwritten. Otherwise trying to write
       an existing file raises an OSError (IOError for Python 2).
@@ -183,14 +183,8 @@ def write_map(
 
     # check the dtype and convert it
     if dtype is None:
-        warnings.warn(
-            "The default dtype of write_map() will change in a future version: "
-            "explicitly set the dtype if it is important to you",
-            category=FutureWarning,
-        )
-        dtype = [np.float32 for x in m]
-        # Change this at some point to:
-        # dtype = [x.dtype for x in m]
+        dtype = [x.dtype for x in m]
+        logging.info("setting the output map dtype to %s", str(dtype))
     try:
         fitsformat = []
         for curr_dtype in dtype:
