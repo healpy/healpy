@@ -945,10 +945,10 @@ def smoothing(
     verbose : bool, optional
       If True prints diagnostic information. Default: True
     nest : bool, optional
-      If True, ordering scheme is NESTED. Default: False (RING)
-      The map ordering is modified by this function, the input map array should
-      be in RING ordering, if not this function will convert it to RING ordering 
-      and order the output back to NESTED. 
+      If True, the input map ordering is assumed to be NESTED. Default: False (RING)
+      This function will temporary reorder the NESTED map into RING to perform the
+      smoothing and order the output back to NESTED. If the map is in RING ordering 
+      no internal reordering will be performed. 
 
     Returns
     -------
@@ -1029,10 +1029,7 @@ def smoothing(
     output_map[masks] = UNSEEN
     
     if nest:
-        ordering = "NESTED"
         output_map = pixelfunc.reorder(output_map, inp=None, out=None, r2n=True, n2r=False)
-    else:
-        ordering = "RING" 
 
     return output_map
 
