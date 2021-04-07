@@ -1,5 +1,6 @@
 Release in progress
 
+* Support nested maps `hp.smoothing` <https://github.com/healpy/healpy/pull/678>
 * Improvements of the build system <https://github.com/healpy/healpy/pull/660> <https://github.com/healpy/healpy/pull/661>
 * Automatically build wheels for Linux/MacOS on Github actions <https://github.com/healpy/healpy/pull/656>
 * Drop support for Python 2.7-3.5 <https://github.com/healpy/healpy/pull/658>
