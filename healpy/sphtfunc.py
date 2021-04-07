@@ -972,10 +972,7 @@ def smoothing(
     check_max_nside(nside)
     
     if nest:
-        ordering = "NESTED"
-        map_in = pixelfunc.reorder(map_in, inp=None, out=None, r2n=None, n2r=True)
-    else:
-        ordering = "RING"    
+        map_in = pixelfunc.reorder(map_in, inp=None, out=None, r2n=None, n2r=True) 
 
     if pol or n_maps in (0, 1):
         # Treat the maps together (1 or 3 maps)
