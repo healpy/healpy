@@ -18,7 +18,7 @@
 #  For more information about Healpy, see http://code.google.com/p/healpy
 #
 
-import warnings
+import logging
 from . import projaxes as PA
 from . import rotator as R
 import numpy as np
@@ -53,15 +53,15 @@ def mollzoom(
     sub=None,
 ):
     """Interactive mollweide plot with zoomed gnomview.
-    
+
     Parameters:
     -----------
     map : float, array-like shape (Npix,)
-      An array containing the map, 
+      An array containing the map,
       supports masked maps, see the `ma` function.
       if None, use map with inf value (white map), useful for
       overplotting
-    fig : a figure number. 
+    fig : a figure number.
       Default: create a new figure
     rot : scalar or sequence, optional
       Describe the rotation to apply.
@@ -306,8 +306,7 @@ def mollzoom(
 
 
 def set_g_clim(vmin, vmax):
-    """Set min/max value of the gnomview part of a mollzoom.
-    """
+    """Set min/max value of the gnomview part of a mollzoom."""
     import pylab
 
     f = pylab.gcf()
@@ -388,8 +387,10 @@ class ZoomTool(object):
             self._reso_idx = self.reso_list.index(self._gnom_ax.proj._arrayinfo["reso"])
         except ValueError as e:
             raise ValueError("Resolution not in %s" % self.reso_list)
-        self.zoomcenter, = self._moll_ax.plot([0], [0], "ok", mew=1, ms=15, alpha=0.1)
-        self.zoomcenter2, = self._moll_ax.plot([0], [0], "xr", ms=15, alpha=0.5, mew=3)
+        (self.zoomcenter,) = self._moll_ax.plot([0], [0], "ok", mew=1, ms=15, alpha=0.1)
+        (self.zoomcenter2,) = self._moll_ax.plot(
+            [0], [0], "xr", ms=15, alpha=0.5, mew=3
+        )
         self._text_range = self._gnom_ax.text(
             -0.4,
             -0.2,
@@ -426,12 +427,12 @@ class ZoomTool(object):
         elif ev.key == "t":
             self._increase_reso()
         elif ev.key == "p":
-            warnings.warn("lon,lat = %.17g,%.17g" % (self.lon, self.lat))
+            logging.info("lon,lat = %.17g,%.17g", self.lon, self.lat)
         elif ev.key == "c":
             self._move_zoom_center(0, 0)
             self.draw_gnom(0, 0)
         elif ev.key == "v":
-            warnings.warn("val = %.17g" % (self.lastval))
+            logging.info("val = %.17g", self.lastval)
         elif ev.key == "f":
             self._range_status += 1
             self._range_status %= 3

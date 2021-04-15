@@ -17,7 +17,7 @@
 #
 #  For more information about Healpy, see http://code.google.com/p/healpy
 #
-import warnings
+import logging
 from . import projector as P
 from . import rotator as R
 from . import pixelfunc
@@ -80,14 +80,12 @@ class SphericalProjAxes(matplotlib.axes.Axes):
         self._gratdef["dpar"] = 30.0
 
     def set_format(self, f):
-        """Set the format string for value display
-        """
+        """Set the format string for value display"""
         self._format = f
         return f
 
     def set_coordprec(self, n):
-        """Set the number of digits after floating point for coord display.
-        """
+        """Set the number of digits after floating point for coord display."""
         self._coordprec = n
 
     def format_coord(self, x, y):
@@ -113,14 +111,12 @@ class SphericalProjAxes(matplotlib.axes.Axes):
         return res
 
     def get_lonlat(self, x, y):
-        """Get the coordinate in the coord system of the image, in lon/lat in deg.
-        """
+        """Get the coordinate in the coord system of the image, in lon/lat in deg."""
         lon, lat = self.proj.xy2ang(x, y, lonlat=True)
         return lon, lat
 
     def get_value(self, x, y):
-        """Get the value of the map at position x,y
-        """
+        """Get the value of the map at position x,y"""
         if len(self.get_images()) < 1:
             return None
         im = self.get_images()[-1]
@@ -194,8 +190,9 @@ class SphericalProjAxes(matplotlib.axes.Axes):
         if vmin == vmax:
             vmin -= 1.0
             vmax += 1.0
-        cm, nn = get_color_table(vmin, vmax, img[w], cmap=cmap, norm=norm,
-                                 badcolor=badcolor, bgcolor=bgcolor)
+        cm, nn = get_color_table(
+            vmin, vmax, img[w], cmap=cmap, norm=norm, badcolor=badcolor, bgcolor=bgcolor
+        )
         ext = self.proj.get_extent()
         img = np.ma.masked_values(img, badval)
         aximg = self.imshow(
@@ -293,9 +290,11 @@ class SphericalProjAxes(matplotlib.axes.Axes):
                 try:  # works in matplotlib 1.3 and earlier
                     linestyle, marker, color = matplotlib.axes._process_plot_format(fmt)
                 except:  # matplotlib 1.4 and later
-                    linestyle, marker, color = matplotlib.axes._axes._process_plot_format(
-                        fmt
-                    )
+                    (
+                        linestyle,
+                        marker,
+                        color,
+                    ) = matplotlib.axes._axes._process_plot_format(fmt)
                 kwds.setdefault("linestyle", linestyle)
                 kwds.setdefault("marker", marker)
                 if color is not None:
@@ -489,9 +488,7 @@ class SphericalProjAxes(matplotlib.axes.Axes):
         phi0 = np.arctan2(vy, vx)
         return phi0 - fov / sth / 2.0, phi0 + fov / sth / 2.0
 
-    def graticule(
-        self, dpar=None, dmer=None, coord=None, local=None, verbose=True, **kwds
-    ):
+    def graticule(self, dpar=None, dmer=None, coord=None, local=None, **kwds):
         """Draw a graticule.
 
         Input:
@@ -536,16 +533,8 @@ class SphericalProjAxes(matplotlib.axes.Axes):
             mmin = u_mmin
         if u_mmax:
             mmax = u_pmax
-        if verbose:
-            warnings.warn(
-                "{0} {1} {2} {3}".format(
-                    pmin / dtor, pmax / dtor, mmin / dtor, mmax / dtor
-                )
-            )
         if not kwds.pop("force", False):
-            dpar, dmer = self._get_interv_graticule(
-                pmin, pmax, dpar, mmin, mmax, dmer, verbose=verbose
-            )
+            dpar, dmer = self._get_interv_graticule(pmin, pmax, dpar, mmin, mmax, dmer)
         theta_list = np.around(np.arange(pmin, pmax + 0.5 * dpar, dpar) / dpar) * dpar
         phi_list = np.around(np.arange(mmin, mmax + 0.5 * dmer, dmer) / dmer) * dmer
         theta = np.arange(
@@ -612,8 +601,7 @@ class SphericalProjAxes(matplotlib.axes.Axes):
         return dpar, dmer
 
     def delgraticules(self):
-        """Delete all graticules previously created on the Axes.
-        """
+        """Delete all graticules previously created on the Axes."""
         if hasattr(self, "_graticules"):
             for dum1, dum2, g in self._graticules:
                 for gl in g:
@@ -621,10 +609,10 @@ class SphericalProjAxes(matplotlib.axes.Axes):
                         if l in self.lines:
                             self.lines.remove(l)
                         else:
-                            warnings.warn("line not in lines")
+                            logging.warning("line not in lines")
             del self._graticules
 
-    def _get_interv_graticule(self, pmin, pmax, dpar, mmin, mmax, dmer, verbose=True):
+    def _get_interv_graticule(self, pmin, pmax, dpar, mmin, mmax, dmer):
         def set_prec(d, n, nn=2):
             arcmin = False
             if d / n < 1.0:
@@ -651,20 +639,10 @@ class SphericalProjAxes(matplotlib.axes.Axes):
             dmer = dpar = max(dmer, dpar)
         vdeg = int(np.floor(np.around(dpar / dtor, 10)))
         varcmin = (dpar / dtor - vdeg) * 60.0
-        if verbose:
-            warnings.warn(
-                "The interval between parallels is {0:d} deg {1:.2f}'.".format(
-                    vdeg, varcmin
-                )
-            )
+        logging.info("The interval between parallels is %d deg %.2f'.", vdeg, varcmin)
         vdeg = int(np.floor(np.around(dmer / dtor, 10)))
         varcmin = (dmer / dtor - vdeg) * 60.0
-        if verbose:
-            warnings.warn(
-                "The interval between meridians is {0:d} deg {1:.2f}'.".format(
-                    vdeg, varcmin
-                )
-            )
+        logging.info("The interval between meridians is %d deg %.2f'.", vdeg, varcmin)
         return dpar, dmer
 
 
@@ -736,8 +714,7 @@ class HpxMollweideAxes(MollweideAxes):
 
 
 class CartesianAxes(SphericalProjAxes):
-    """Define a cylindrical Axes to handle cylindrical projection.
-    """
+    """Define a cylindrical Axes to handle cylindrical projection."""
 
     def __init__(self, *args, **kwds):
         kwds.setdefault("coordprec", 2)
@@ -868,8 +845,9 @@ class HpxAzimuthalAxes(AzimuthalAxes):
 #   http://matplotlib.org/examples/pylab_examples/custom_cmap.html
 
 
-def get_color_table(vmin, vmax, val, cmap=None, norm=None,
-                    badcolor="gray", bgcolor="white"):
+def get_color_table(
+    vmin, vmax, val, cmap=None, norm=None, badcolor="gray", bgcolor="white"
+):
     # Create color table
     newcmap = create_colormap(cmap, badcolor=badcolor, bgcolor=bgcolor)
     if type(norm) is str:

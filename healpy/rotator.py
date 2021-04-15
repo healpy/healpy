@@ -18,7 +18,7 @@
 #  For more information about Healpy, see http://code.google.com/p/healpy
 #
 import numpy as np
-import warnings
+import logging
 from astropy.coordinates import SkyCoord
 from . import pixelfunc
 from . import sphtfunc
@@ -54,18 +54,6 @@ e2q = (
     .get_xyz()
     .value
 )
-
-
-class ConsistencyWarning(Warning):
-    """Warns for a problem in the consistency of data
-    """
-
-    pass
-
-
-if __name__ != "__main__":
-    warnings.filterwarnings("always", category=ConsistencyWarning, module=__name__)
-
 
 class Rotator(object):
     """Rotation operator, including astronomical coordinate systems.
@@ -174,9 +162,8 @@ class Rotator(object):
             self._coords.append(cn)  # append(cn) or insert(0, cn) ?
             self._invs.append(bool(i))
         if not self.consistent:
-            warnings.warn(
+            logging.warning(
                 "The chain of coord system rotations is not consistent",
-                category=ConsistencyWarning,
             )
         self._update_matrix()
 
