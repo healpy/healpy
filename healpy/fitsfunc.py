@@ -124,7 +124,12 @@ def write_map(
     extra_header=(),
     overwrite=False,
 ):
-    """Writes a healpix map into a healpix file.
+    """Writes a healpix map into a healpix FITS file.
+
+    WARNING: starting from healpy 1.15.0, if you do not specify `dtype`,
+    the map will be written to disk with the same precision it is stored in memory.
+    Previously, by default `healpy` wrote maps in `float32`.
+    To reproduce the same behaviour of `healpy` 1.14.0 and below, set `dtype=np.float32`.
 
     Parameters
     ----------
@@ -283,7 +288,7 @@ def write_map(
 def read_map(
     filename,
     field=0,
-    dtype=np.float64,
+    dtype=None,
     nest=False,
     partial=False,
     hdu=1,
@@ -292,6 +297,12 @@ def read_map(
 ):
     """Read a healpix map from a fits file.  Partial-sky files,
     if properly identified, are expanded to full size and filled with UNSEEN.
+
+    WARNING: starting from healpy 1.15.0, if you do not specify `dtype`,
+    the map will be read in memory with the same precision it is stored on disk.
+    Previously, by default `healpy` wrote maps in `float32` and then upcast to
+    `float64` when reading to memory. To reproduce the same behaviour of `healpy`
+    1.14.0 and below, set `dtype=np.float64` in `read_map`.
 
     Parameters
     ----------
@@ -309,9 +320,7 @@ def read_map(
       types for each field. In that case, the length of the list must
       correspond to the length of the field parameter.
       If None, keep the dtype of the input FITS file
-      Default: use np.float64
-      (WARNING: in a future version this will change to
-      "use the data type of the input FITS file".)
+      Default: None
     nest : bool, optional
       If True return the map in NEST ordering, otherwise in RING ordering;
       use fits keyword ORDERING to decide whether conversion is needed or not
@@ -340,15 +349,6 @@ def read_map(
     m | (m0, m1, ...) [, header] : array or a tuple of arrays, optionally with header appended
       The map(s) read from the file, and the header if *h* is True.
     """
-    # Temporary warning for default dtype
-    if dtype == np.float64:
-        logging.warning(
-            "If you are not specifying the input dtype and using the default "
-            "np.float64 dtype of read_map(), please consider that it will "
-            "change in a future version to None as to keep the same dtype of "
-            "the input file: please explicitly set the dtype if it is "
-            "important to you."
-        )
 
     opened_file = False
     if isinstance(filename, allowed_paths):
