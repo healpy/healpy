@@ -34,7 +34,7 @@ class TestLIC(unittest.TestCase):
         path = os.path.dirname(os.path.realpath(__file__))
         Q, U = read_map(
             os.path.join(path, "data", "wmap_band_iqumap_r9_7yr_W_v4_udgraded32.fits"),
-            (1, 2),
+            (1, 2), dtype=np.float64
         )
         lic_result = lic(Q, U, step_radian=0.01)
         np.testing.assert_almost_equal(
