@@ -920,7 +920,6 @@ def smoothing(
       This function will temporary reorder the NESTED map into RING to perform the
       smoothing and order the output back to NESTED. If the map is in RING ordering
       no internal reordering will be performed.
->>>>>>> feat: sphtfunc module converted to logging
 
     Returns
     -------

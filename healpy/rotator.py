@@ -415,7 +415,6 @@ class Rotator(object):
         lmax=None,
         mmax=None,
         datapath=None,
-        verbose=None,
     ):
         """Rotate a HEALPix map to a new reference frame in spherical harmonics space
 
@@ -442,7 +441,6 @@ class Rotator(object):
             lmax=lmax,
             mmax=mmax,
             datapath=datapath,
-            verbose=verbose,
         )
         rotated_alm = self.rotate_alm(alm, lmax=lmax, mmax=mmax)
         return sphtfunc.alm2map(
@@ -450,7 +448,6 @@ class Rotator(object):
             lmax=lmax,
             mmax=mmax,
             nside=pixelfunc.get_nside(m),
-            verbose=verbose,
         )
 
     def rotate_map_pixel(self, m):

@@ -119,11 +119,11 @@ def mollzoom(
         f.add_axes(ax)
         if remove_dip:
             map = pixelfunc.remove_dipole(
-                map, gal_cut=gal_cut, nest=nest, copy=True, verbose=True
+                map, gal_cut=gal_cut, nest=nest, copy=True
             )
         elif remove_mono:
             map = pixelfunc.remove_monopole(
-                map, gal_cut=gal_cut, nest=nest, copy=True, verbose=True
+                map, gal_cut=gal_cut, nest=nest, copy=True
             )
         ax.projmap(
             map,
@@ -447,9 +447,9 @@ class ZoomTool(object):
                 self._graton = False
             else:
                 (self._g_dpar, self._g_dmer) = self._gnom_ax.graticule(
-                    local=False, verbose=False
+                    local=False
                 )
-                (self._m_dpar, self._m_dmer) = self._moll_ax.graticule(verbose=False)
+                (self._m_dpar, self._m_dmer) = self._moll_ax.graticule()
                 self._graton = True
             self.draw_gnom()
 
@@ -567,7 +567,7 @@ class ZoomTool(object):
             if self._graton:
                 self._gnom_ax.delgraticules()
                 (self._g_dpar, self._g_dmer) = self._gnom_ax.graticule(
-                    local=False, verbose=False
+                    local=False
                 )
             self._gnom_cb_ax.cla()
             im = self._gnom_ax.images[0]
