@@ -67,6 +67,7 @@ Reference
    healpy_pix
    healpy_spht
    healpy_visu
+   healpy_newvisu
    healpy_fits
    healpy_query
 
