@@ -792,7 +792,7 @@ def smoothalm(
     if beam_window is None:
         log.info("Sigma is %f arcmin (%f rad) ", sigma * 60 * 180 / np.pi, sigma)
         log.info(
-            "-> fwhm is {0:f} arcmin",
+            "-> fwhm is %f arcmin",
             sigma * 60 * 180 / np.pi * (2.0 * np.sqrt(2.0 * np.log(2.0))),
         )
 
