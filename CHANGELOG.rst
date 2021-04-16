@@ -1,5 +1,7 @@
 Release in progress
 
+* Changed all warnings to using the `logging` module, removed all `verbose` keywords except `remove_dipole` (which computes and plots the amplitude) <https://github.com/healpy/healpy/pull/679>
+* `read_map` uses dtype of input map instead of float64 <https://github.com/healpy/healpy/pull/679>
 * `write_map` uses dtype of input map instead of float32 <https://github.com/healpy/healpy/pull/679>
 * `write_cl` uses dtype of input cl instead of float64 <https://github.com/healpy/healpy/pull/679>
 * Support nested maps `hp.smoothing` <https://github.com/healpy/healpy/pull/678>
