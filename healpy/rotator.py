@@ -19,8 +19,10 @@
 #
 import numpy as np
 import logging
+
 log = logging.getLogger("healpy")
 from astropy.coordinates import SkyCoord
+from astropy.utils.decorators import deprecated_renamed_argument
 from . import pixelfunc
 from . import sphtfunc
 from ._sphtools import rotate_alm
@@ -411,6 +413,7 @@ class Rotator(object):
         if not inplace:
             return rotated_alm
 
+    @deprecated_renamed_argument("verbose", None, "1.15.0")
     def rotate_map_alms(
         self,
         m,
@@ -418,6 +421,7 @@ class Rotator(object):
         lmax=None,
         mmax=None,
         datapath=None,
+        verbose=None,
     ):
         """Rotate a HEALPix map to a new reference frame in spherical harmonics space
 

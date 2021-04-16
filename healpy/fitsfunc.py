@@ -23,11 +23,13 @@ from __future__ import division
 
 import sys
 import logging
+
 log = logging.getLogger("healpy")
 
 import pathlib
 import astropy.io.fits as pf
 import numpy as np
+from astropy.utils.decorators import deprecated_renamed_argument
 
 from . import pixelfunc
 from .sphtfunc import Alm
@@ -287,6 +289,7 @@ def write_map(
     tbhdu.writeto(str(filename), overwrite=overwrite)
 
 
+@deprecated_renamed_argument("verbose", None, "1.15.0")
 def read_map(
     filename,
     field=0,
@@ -295,6 +298,7 @@ def read_map(
     partial=False,
     hdu=1,
     h=False,
+    verbose=True,
     memmap=False,
 ):
     """Read a healpix map from a fits file.  Partial-sky files,
@@ -340,8 +344,8 @@ def read_map(
       the header number to look at (start at 0)
     h : bool, optional
       If True, return also the header. Default: False.
-    verbose : bool, not supported anymore
-      Configure the Python logging module instead
+    verbose : bool, deprecated
+      It has no effect, see `hp.configure_logging`
     memmap : bool, optional
       Argument passed to astropy.io.fits.open, if True, the map is not read into memory,
       but only the required pixels are read when needed. Default: False.

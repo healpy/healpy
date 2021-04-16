@@ -21,6 +21,8 @@
 compute spherical harmonics tranforms on them.
 """
 
+import logging
+
 from .version import __version__
 
 from .pixelfunc import (
@@ -104,3 +106,55 @@ from .fitsfunc import write_map, read_map, read_alm, write_alm, write_cl, read_c
 from ._masktools import dist2holes_healpy as dist2holes
 from ._hotspots import hotspots_healpy as hotspots
 from ._line_integral_convolution import line_integral_convolution
+
+from astropy.utils.decorators import deprecated
+
+
+@deprecated("1.15.0", alternative="configure_logging")
+def disable_warnings():
+    """healpy uses logging now
+
+    See configure_logging
+    This function has no effect
+    """
+    pass
+
+
+@deprecated("1.15.0", alternative="configure_logging")
+def enable_warnings():
+    """healpy uses logging now
+
+    See configure_logging
+    This function has no effect
+    """
+    pass
+
+
+def configure_logging(
+    level=logging.DEBUG, log_format="%(name)s - %(levelname)s - %(message)s"
+):
+    """Configure logging
+
+    By default healpy only prints warning or error messages, to disable even
+    that, set the level to `logging.CRITICAL`.
+    Calling `configure_logging` with default arguments restores the same logging
+    messages of `healpy<=1.14.0`.
+
+    Parameters
+    ----------
+    level : int
+        Logging level, DEBUG, INFO, WARNING, ERROR, CRITICAL
+    log_format : str
+        Logging format string, see the logging module documentation
+    """
+    log = logging.getLogger("healpy")
+    log.setLevel(level)
+
+    # create console handler
+    handler = logging.StreamHandler()
+
+    # create formatter
+    formatter = logging.Formatter(log_format)
+    handler.setFormatter(formatter)
+
+    log.addHandler(handler)

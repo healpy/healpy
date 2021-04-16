@@ -89,7 +89,9 @@ Map data manipulation
 import numpy as np
 from functools import wraps
 import logging
+
 log = logging.getLogger("healpy")
+from astropy.utils.decorators import deprecated_renamed_argument
 
 UNSEEN = None
 
@@ -1634,8 +1636,9 @@ def fit_monopole(m, nest=False, bad=UNSEEN, gal_cut=0):
     return mono
 
 
+@deprecated_renamed_argument("verbose", None, "1.15.0")
 def remove_monopole(
-    m, nest=False, bad=UNSEEN, gal_cut=0, fitval=False, copy=True
+    m, nest=False, bad=UNSEEN, gal_cut=0, fitval=False, copy=True, verbose=True
 ):
     """Fit and subtract the monopole from the given map m.
 

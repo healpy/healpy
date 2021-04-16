@@ -22,6 +22,7 @@ log = logging.getLogger("healpy")
 import numpy as np
 
 import astropy.io.fits as pf
+from astropy.utils.decorators import deprecated_renamed_argument
 from scipy.integrate import trapz
 from astropy.utils import data
 
@@ -152,6 +153,7 @@ def anafast(
         return cls
 
 
+@deprecated_renamed_argument("verbose", None, "1.15.0")
 def map2alm(
     maps,
     lmax=None,
@@ -162,6 +164,7 @@ def map2alm(
     datapath=None,
     gal_cut=0,
     use_pixel_weights=False,
+    verbose=True,
 ):
     """Computes the alm of a Healpix map. The input maps must all be
     in ring ordering.
@@ -279,6 +282,7 @@ def map2alm(
     return np.array(alms)
 
 
+@deprecated_renamed_argument("verbose", None, "1.15.0")
 def alm2map(
     alms,
     nside,
@@ -289,6 +293,7 @@ def alm2map(
     sigma=None,
     pol=True,
     inplace=False,
+    verbose=True,
 ):
     """Computes a Healpix map given the alm.
 
@@ -386,7 +391,8 @@ def alm2map(
         return np.array(output)
 
 
-def synalm(cls, lmax=None, mmax=None, new=False):
+@deprecated_renamed_argument("verbose", None, "1.15.0")
+def synalm(cls, lmax=None, mmax=None, new=False, verbose=True):
     """Generate a set of alm given cl.
     The cl are given as a float array. Corresponding alm are generated.
     If lmax is None, it is assumed lmax=cl.size-1
@@ -479,6 +485,7 @@ def synalm(cls, lmax=None, mmax=None, new=False):
     return np.array(alms_list)
 
 
+@deprecated_renamed_argument("verbose", None, "1.15.0")
 def synfast(
     cls,
     nside,
@@ -490,6 +497,7 @@ def synfast(
     fwhm=0.0,
     sigma=None,
     new=False,
+    verbose=True,
 ):
     """Create a map(s) from cl(s).
 
@@ -747,6 +755,7 @@ def almxfl(alm, fl, mmax=None, inplace=False):
     return almout
 
 
+@deprecated_renamed_argument("verbose", None, "1.15.0")
 def smoothalm(
     alms,
     fwhm=0.0,
@@ -755,6 +764,7 @@ def smoothalm(
     pol=True,
     mmax=None,
     inplace=True,
+    verbose=True,
 ):
     """Smooth alm with a Gaussian symmetric beam function.
 
@@ -852,6 +862,7 @@ def smoothalm(
     return alms
 
 
+@deprecated_renamed_argument("verbose", None, "1.15.0")
 @accept_ma
 def smoothing(
     map_in,
@@ -866,6 +877,7 @@ def smoothing(
     use_pixel_weights=False,
     datapath=None,
     nest=False,
+    verbose=True,
 ):
     """Smooth a map with a Gaussian symmetric beam.
 
