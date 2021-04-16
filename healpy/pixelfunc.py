@@ -88,9 +88,14 @@ Map data manipulation
 
 import numpy as np
 from functools import wraps
-import warnings
+import logging
+
+log = logging.getLogger("healpy")
+
+from astropy.utils.decorators import deprecated_renamed_argument
 
 UNSEEN = None
+
 
 try:
     from . import _healpy_pixel_lib as pixlib
@@ -98,7 +103,7 @@ try:
     #: Special value used for masked pixels
     UNSEEN = pixlib.UNSEEN
 except:
-    warnings.warn("Warning: cannot import _healpy_pixel_lib module")
+    log.warning("Warning: cannot import _healpy_pixel_lib module")
 
 # We are using 64-bit integer types.
 # nside > 2**29 requires extended integer types.
@@ -1595,6 +1600,7 @@ def fit_dipole(m, nest=False, bad=UNSEEN, gal_cut=0):
     return mono, dipole
 
 
+@deprecated_renamed_argument("verbose", None, "1.15.0")
 def remove_dipole(
     m, nest=False, bad=UNSEEN, gal_cut=0, fitval=False, copy=True, verbose=True
 ):
@@ -1615,8 +1621,7 @@ def remove_dipole(
     copy : bool
       whether to modify input map or not (by default, make a copy)
     verbose : bool
-      print values of monopole and dipole
-      call hp.disable_warnings() to disable warnings for all functions.
+      deprecated, no effect
 
     Returns
     -------
@@ -1647,16 +1652,15 @@ def remove_dipole(
         m.flat[ipix] -= dipole[1] * y
         m.flat[ipix] -= dipole[2] * z
         m.flat[ipix] -= mono
-    if verbose:
-        from . import rotator as R
 
-        lon, lat = R.vec2dir(dipole, lonlat=True)
-        amp = np.sqrt((dipole * dipole).sum())
-        warnings.warn(
-            "monopole: {0:g}  dipole: lon: {1:g}, lat: {2:g}, amp: {3:g}".format(
-                mono, lon, lat, amp
-            )
-        )
+    # imported here to avoid circular import
+    from . import rotator as R
+
+    lon, lat = R.vec2dir(dipole, lonlat=True)
+    amp = np.sqrt((dipole * dipole).sum())
+    log.info(
+        "monopole: %.2g  dipole: lon: %.2g}, lat: %.2g}, amp: %.2g", mono, lon, lat, amp
+    )
     if is_ma:
         m = ma(m)
     if fitval:
@@ -1714,6 +1718,7 @@ def fit_monopole(m, nest=False, bad=UNSEEN, gal_cut=0):
     return mono
 
 
+@deprecated_renamed_argument("verbose", None, "1.15.0")
 def remove_monopole(
     m, nest=False, bad=UNSEEN, gal_cut=0, fitval=False, copy=True, verbose=True
 ):
@@ -1734,7 +1739,7 @@ def remove_monopole(
     copy : bool
       whether to modify input map or not (by default, make a copy)
     verbose: bool
-      whether to print values of monopole
+      deprecated, no effect
 
     Returns
     -------
@@ -1761,8 +1766,7 @@ def remove_monopole(
         ipix = ipix[(m.flat[ipix] != bad) & (np.isfinite(m.flat[ipix]))]
         x, y, z = pix2vec(nside, ipix, nest)
         m.flat[ipix] -= mono
-    if verbose:
-        warnings.warn("monopole: {0:g}".format(mono))
+    log.info("monopole: %.3g", mono)
     if input_ma:
         m = ma(m)
     if fitval:

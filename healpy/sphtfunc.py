@@ -17,10 +17,13 @@
 #
 #  For more information about Healpy, see http://code.google.com/p/healpy
 #
-import warnings
+import logging
+
+log = logging.getLogger("healpy")
 import numpy as np
 
 import astropy.io.fits as pf
+from astropy.utils.decorators import deprecated_renamed_argument
 from scipy.integrate import trapz
 from astropy.utils import data
 
@@ -158,6 +161,7 @@ def anafast(
         return cls
 
 
+@deprecated_renamed_argument("verbose", None, "1.15.0")
 def map2alm(
     maps,
     lmax=None,
@@ -219,7 +223,7 @@ def map2alm(
     use_pixel_weights: bool, optional
       If True, use pixel by pixel weighting, healpy will automatically download the weights, if needed
     verbose : bool, optional
-      If True prints diagnostic information. Default: True
+      Deprecated, has not effect.
 
     Returns
     -------
@@ -246,10 +250,7 @@ def map2alm(
         if datapath is not None:
             pixel_weights_filename = os.path.join(datapath, filename)
             if os.path.exists(pixel_weights_filename):
-                if verbose:
-                    warnings.warn(
-                        "Accessing pixel weights from {}".format(pixel_weights_filename)
-                    )
+                log.info("Accessing pixel weights from %s", pixel_weights_filename)
             else:
                 raise RuntimeError(
                     "You specified datapath but pixel weights file"
@@ -292,6 +293,7 @@ def map2alm(
     return np.array(alms)
 
 
+@deprecated_renamed_argument("verbose", None, "1.15.0")
 def alm2map(
     alms,
     nside,
@@ -357,7 +359,7 @@ def alm2map(
     check_max_nside(nside)
 
     alms = smoothalm(
-        alms, fwhm=fwhm, sigma=sigma, pol=pol, inplace=inplace, verbose=verbose
+        alms, fwhm=fwhm, sigma=sigma, pol=pol, inplace=inplace
     )
 
     if not cb.is_seq_of_seq(alms):
@@ -395,6 +397,7 @@ def alm2map(
         return np.array(output)
 
 
+@deprecated_renamed_argument("verbose", None, "1.15.0")
 def synalm(cls, lmax=None, mmax=None, new=False, verbose=True):
     """Generate a set of alm given cl.
     The cl are given as a float array. Corresponding alm are generated.
@@ -489,6 +492,7 @@ def synalm(cls, lmax=None, mmax=None, new=False, verbose=True):
     return np.array(alms_list)
 
 
+@deprecated_renamed_argument("verbose", None, "1.15.0")
 def synfast(
     cls,
     nside,
@@ -558,7 +562,7 @@ def synfast(
     cls_lmax = cb.len_array_or_arrays(cls) - 1
     if lmax is None or lmax < 0:
         lmax = min(cls_lmax, 3 * nside - 1)
-    alms = synalm(cls, lmax=lmax, mmax=mmax, new=new, verbose=verbose)
+    alms = synalm(cls, lmax=lmax, mmax=mmax, new=new)
     maps = alm2map(
         alms,
         nside,
@@ -569,7 +573,6 @@ def synfast(
         fwhm=fwhm,
         sigma=sigma,
         inplace=True,
-        verbose=verbose,
     )
     if alm:
         return np.array(maps), np.array(alms)
@@ -760,6 +763,7 @@ def almxfl(alm, fl, mmax=None, inplace=False):
     return almout
 
 
+@deprecated_renamed_argument("verbose", None, "1.15.0")
 def smoothalm(
     alms,
     fwhm=0.0,
@@ -797,8 +801,7 @@ def smoothalm(
       If True, the alm's are modified inplace if they are contiguous arrays
       of type complex128. Otherwise, a copy of alm is made. Default: True.
     verbose : bool, optional
-      If True prints diagnostic information. Default: True
-      Call hp.disable_warnings() to disable warnings for all functions.
+      Deprecated, has not effect.
 
     Returns
     -------
@@ -810,20 +813,12 @@ def smoothalm(
     if (sigma is None) & (beam_window is None):
         sigma = fwhm / (2.0 * np.sqrt(2.0 * np.log(2.0)))
 
-    if verbose:
-        if beam_window is None:
-            warnings.warn(
-                "Sigma is {0:f} arcmin ({1:f} rad) ".format(
-                    sigma * 60 * 180 / np.pi, sigma
-                )
-            )
-            warnings.warn(
-                "-> fwhm is {0:f} arcmin".format(
-                    sigma * 60 * 180 / np.pi * (2.0 * np.sqrt(2.0 * np.log(2.0)))
-                )
-            )
-        else:
-            warnings.warn("Using provided beam window function")
+    if beam_window is None:
+        log.info("Sigma is %f arcmin (%f rad) ", sigma * 60 * 180 / np.pi, sigma)
+        log.info(
+            "-> fwhm is %f arcmin",
+            sigma * 60 * 180 / np.pi * (2.0 * np.sqrt(2.0 * np.log(2.0)))
+        )
 
     # Check alms
     if not cb.is_seq(alms):
@@ -877,6 +872,7 @@ def smoothalm(
     return alms
 
 
+@deprecated_renamed_argument("verbose", None, "1.15.0")
 @accept_ma
 def smoothing(
     map_in,
@@ -929,7 +925,7 @@ def smoothing(
     datapath : None or str, optional
       If given, the directory where to find the weights data.
     verbose : bool, optional
-      If True prints diagnostic information. Default: True
+      Deprecated, has not effect.
     nest : bool, optional
       If True, the input map ordering is assumed to be NESTED. Default: False (RING)
       This function will temporary reorder the NESTED map into RING to perform the
@@ -979,7 +975,6 @@ def smoothing(
             beam_window=beam_window,
             pol=pol,
             mmax=mmax,
-            verbose=verbose,
             inplace=True,
         )
         output_map = alm2map(
@@ -988,7 +983,6 @@ def smoothing(
             lmax=lmax,
             mmax=mmax,
             pixwin=False,
-            verbose=verbose,
             pol=pol,
         )
     else:
@@ -1011,9 +1005,8 @@ def smoothing(
                 sigma=sigma,
                 beam_window=beam_window,
                 inplace=True,
-                verbose=verbose,
             )
-            output_map.append(alm2map(alm, nside, pixwin=False, verbose=verbose))
+            output_map.append(alm2map(alm, nside, pixwin=False))
         output_map = np.array(output_map)
     output_map[masks] = UNSEEN
 
@@ -1237,7 +1230,7 @@ def beam2bl(beam, theta, lmax):
     nx = len(theta)
     nb = len(beam)
     if nb != nx:
-        warnings.warn("beam and theta must have same size!")
+        raise ValueError("Beam and theta must have same size!")
 
     x = np.cos(theta)
     st = np.sin(theta)

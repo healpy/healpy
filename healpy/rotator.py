@@ -18,8 +18,12 @@
 #  For more information about Healpy, see http://code.google.com/p/healpy
 #
 import numpy as np
-import warnings
+import logging
+
+log = logging.getLogger("healpy")
+
 from astropy.coordinates import SkyCoord
+from astropy.utils.decorators import deprecated_renamed_argument
 from . import pixelfunc
 from . import sphtfunc
 from ._sphtools import rotate_alm
@@ -63,6 +67,7 @@ class ConsistencyWarning(Warning):
 
 
 if __name__ != "__main__":
+    import warnings
     warnings.filterwarnings("always", category=ConsistencyWarning, module=__name__)
 
 
@@ -173,10 +178,7 @@ class Rotator(object):
             self._coords.append(cn)  # append(cn) or insert(0, cn) ?
             self._invs.append(bool(i))
         if not self.consistent:
-            warnings.warn(
-                "The chain of coord system rotations is not consistent",
-                category=ConsistencyWarning,
-            )
+            log.warning("The chain of coord system rotations is not consistent")
         self._update_matrix()
 
     def _update_matrix(self):
@@ -411,6 +413,7 @@ class Rotator(object):
         if not inplace:
             return rotated_alm
 
+    @deprecated_renamed_argument("verbose", None, "1.15.0")
     def rotate_map_alms(
         self,
         m,
@@ -445,7 +448,6 @@ class Rotator(object):
             lmax=lmax,
             mmax=mmax,
             datapath=datapath,
-            verbose=verbose,
         )
         rotated_alm = self.rotate_alm(alm, lmax=lmax, mmax=mmax)
         return sphtfunc.alm2map(
@@ -453,7 +455,6 @@ class Rotator(object):
             lmax=lmax,
             mmax=mmax,
             nside=pixelfunc.get_nside(m),
-            verbose=verbose,
         )
 
     def rotate_map_pixel(self, m):
