@@ -476,10 +476,6 @@ def projplot(theta, phi, fmt=None, **kwargs):
     Notes
     -----
     Other keywords are passed to :func:`matplotlib.Axes.plot`.
-
-    See Also
-    --------
-    projscatter, projtext
     """
     import matplotlib.pyplot as plt
 
