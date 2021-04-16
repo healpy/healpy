@@ -1,7 +1,7 @@
 Release in progress
 
 * Removed the note that we will change order of cl in `synfast` and `synalm`, we will leave `new=False` default <https://github.com/healpy/healpy/pull/679>
-* Changed all warnings to using the `logging` module, removed all `verbose` keywords except `remove_dipole` (which computes and plots the amplitude) <https://github.com/healpy/healpy/pull/679>
+* Changed all warnings to using the `logging` module, deprecated all `verbose` keywords except `remove_dipole` (which computes and plots the amplitude) <https://github.com/healpy/healpy/pull/679>
 * `read_map` uses dtype of input map instead of float64 <https://github.com/healpy/healpy/pull/679>
 * `write_map` uses dtype of input map instead of float32 <https://github.com/healpy/healpy/pull/679>
 * `write_cl` uses dtype of input cl instead of float64 <https://github.com/healpy/healpy/pull/679>
