@@ -342,9 +342,7 @@ def alm2map(
 
     check_max_nside(nside)
 
-    alms = smoothalm(
-        alms, fwhm=fwhm, sigma=sigma, pol=pol, inplace=inplace
-    )
+    alms = smoothalm(alms, fwhm=fwhm, sigma=sigma, pol=pol, inplace=inplace)
 
     if not cb.is_seq_of_seq(alms):
         alms = [alms]
@@ -925,9 +923,9 @@ def smoothing(
         n_maps = 0
 
     check_max_nside(nside)
-    
+
     if nest:
-        map_in = pixelfunc.reorder(map_in, inp=None, out=None, r2n=None, n2r=True) 
+        map_in = pixelfunc.reorder(map_in, inp=None, out=None, r2n=None, n2r=True)
 
     if pol or n_maps in (0, 1):
         # Treat the maps together (1 or 3 maps)
@@ -982,9 +980,11 @@ def smoothing(
             output_map.append(alm2map(alm, nside, pixwin=False))
         output_map = np.array(output_map)
     output_map[masks] = UNSEEN
-    
+
     if nest:
-        output_map = pixelfunc.reorder(output_map, inp=None, out=None, r2n=True, n2r=False)
+        output_map = pixelfunc.reorder(
+            output_map, inp=None, out=None, r2n=True, n2r=False
+        )
 
     return output_map
 
