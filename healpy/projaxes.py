@@ -18,6 +18,7 @@
 #  For more information about Healpy, see http://code.google.com/p/healpy
 #
 import logging
+log = logging.getLogger("healpy")
 from . import projector as P
 from . import rotator as R
 from . import pixelfunc
@@ -607,7 +608,7 @@ class SphericalProjAxes(matplotlib.axes.Axes):
                         if l in self.lines:
                             self.lines.remove(l)
                         else:
-                            logging.warning("line not in lines")
+                            log.warning("line not in lines")
             del self._graticules
 
     def _get_interv_graticule(self, pmin, pmax, dpar, mmin, mmax, dmer):
@@ -637,10 +638,10 @@ class SphericalProjAxes(matplotlib.axes.Axes):
             dmer = dpar = max(dmer, dpar)
         vdeg = int(np.floor(np.around(dpar / dtor, 10)))
         varcmin = (dpar / dtor - vdeg) * 60.0
-        logging.info("The interval between parallels is %d deg %.2f'.", vdeg, varcmin)
+        log.info("The interval between parallels is %d deg %.2f'.", vdeg, varcmin)
         vdeg = int(np.floor(np.around(dmer / dtor, 10)))
         varcmin = (dmer / dtor - vdeg) * 60.0
-        logging.info("The interval between meridians is %d deg %.2f'.", vdeg, varcmin)
+        log.info("The interval between meridians is %d deg %.2f'.", vdeg, varcmin)
         return dpar, dmer
 
 

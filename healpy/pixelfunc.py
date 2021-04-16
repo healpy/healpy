@@ -89,6 +89,7 @@ Map data manipulation
 import numpy as np
 from functools import wraps
 import logging
+log = logging.getLogger("healpy")
 
 UNSEEN = None
 
@@ -98,7 +99,7 @@ try:
     #: Special value used for masked pixels
     UNSEEN = pixlib.UNSEEN
 except:
-    logging.warning("Warning: cannot import _healpy_pixel_lib module")
+    log.warning("Warning: cannot import _healpy_pixel_lib module")
 
 # We are using 64-bit integer types.
 # nside > 2**29 requires extended integer types.
@@ -1684,7 +1685,7 @@ def remove_monopole(
         ipix = ipix[(m.flat[ipix] != bad) & (np.isfinite(m.flat[ipix]))]
         x, y, z = pix2vec(nside, ipix, nest)
         m.flat[ipix] -= mono
-    logging.info("monopole: %.3g", mono)
+    log.info("monopole: %.3g", mono)
     if input_ma:
         m = ma(m)
     if fitval:

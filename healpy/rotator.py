@@ -19,6 +19,7 @@
 #
 import numpy as np
 import logging
+log = logging.getLogger("healpy")
 from astropy.coordinates import SkyCoord
 from . import pixelfunc
 from . import sphtfunc
@@ -162,7 +163,7 @@ class Rotator(object):
             self._coords.append(cn)  # append(cn) or insert(0, cn) ?
             self._invs.append(bool(i))
         if not self.consistent:
-            logging.warning(
+            log.warning(
                 "The chain of coord system rotations is not consistent",
             )
         self._update_matrix()

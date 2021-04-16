@@ -18,6 +18,7 @@
 #  For more information about Healpy, see http://code.google.com/p/healpy
 #
 import logging
+log = logging.getLogger("healpy")
 import numpy as np
 
 import astropy.io.fits as pf
@@ -236,7 +237,7 @@ def map2alm(
         if datapath is not None:
             pixel_weights_filename = os.path.join(datapath, filename)
             if os.path.exists(pixel_weights_filename):
-                logging.info("Accessing pixel weights from %s", pixel_weights_filename)
+                log.info("Accessing pixel weights from %s", pixel_weights_filename)
             else:
                 raise RuntimeError(
                     "You specified datapath but pixel weights file"
@@ -789,8 +790,8 @@ def smoothalm(
         sigma = fwhm / (2.0 * np.sqrt(2.0 * np.log(2.0)))
 
     if beam_window is None:
-        logging.info("Sigma is %f arcmin (%f rad) ", sigma * 60 * 180 / np.pi, sigma)
-        logging.info(
+        log.info("Sigma is %f arcmin (%f rad) ", sigma * 60 * 180 / np.pi, sigma)
+        log.info(
             "-> fwhm is {0:f} arcmin",
             sigma * 60 * 180 / np.pi * (2.0 * np.sqrt(2.0 * np.log(2.0))),
         )

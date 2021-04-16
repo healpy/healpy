@@ -19,6 +19,7 @@
 #
 
 import logging
+log = logging.getLogger("healpy")
 from . import projaxes as PA
 from . import rotator as R
 import numpy as np
@@ -427,12 +428,12 @@ class ZoomTool(object):
         elif ev.key == "t":
             self._increase_reso()
         elif ev.key == "p":
-            logging.info("lon,lat = %.17g,%.17g", self.lon, self.lat)
+            log.info("lon,lat = %.17g,%.17g", self.lon, self.lat)
         elif ev.key == "c":
             self._move_zoom_center(0, 0)
             self.draw_gnom(0, 0)
         elif ev.key == "v":
-            logging.info("val = %.17g", self.lastval)
+            log.info("val = %.17g", self.lastval)
         elif ev.key == "f":
             self._range_status += 1
             self._range_status %= 3

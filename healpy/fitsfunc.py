@@ -23,6 +23,7 @@ from __future__ import division
 
 import sys
 import logging
+log = logging.getLogger("healpy")
 
 import pathlib
 import astropy.io.fits as pf
@@ -185,7 +186,7 @@ def write_map(
     # check the dtype and convert it
     if dtype is None:
         dtype = [x.dtype for x in m]
-        logging.info("setting the output map dtype to %s", str(dtype))
+        log.info("setting the output map dtype to %s", str(dtype))
     try:
         fitsformat = []
         for curr_dtype in dtype:
@@ -359,20 +360,20 @@ def read_map(
 
     nside = fits_hdu.header.get("NSIDE")
     if nside is None:
-        logging.info(
+        log.info(
             "No NSIDE in the header file : will use length of array"
         )
     else:
         nside = int(nside)
-    logging.info("NSIDE = %d", nside)
+    log.info("NSIDE = %d", nside)
 
     if not pixelfunc.isnsideok(nside):
         raise ValueError("Wrong nside parameter.")
     ordering = fits_hdu.header.get("ORDERING", "UNDEF").strip()
     if ordering == "UNDEF":
         ordering = nest and "NESTED" or "RING"
-        logging.info("No ORDERING keyword in header file : assume %s", ordering)
-    logging.info("ORDERING = %s in fits file", ordering)
+        log.info("No ORDERING keyword in header file : assume %s", ordering)
+    log.info("ORDERING = %s in fits file", ordering)
 
     sz = pixelfunc.nside2npix(nside)
     ret = []
@@ -398,8 +399,8 @@ def read_map(
 
     if schm == "UNDEF":
         schm = partial and "EXPLICIT" or "IMPLICIT"
-        logging.info("No INDXSCHM keyword in header file: assume %s", schm)
-    logging.info("INDXSCHM = %s", schm)
+        log.info("No INDXSCHM keyword in header file: assume %s", schm)
+    log.info("INDXSCHM = %s", schm)
 
     if field is None:
         field = range(len(fits_hdu.data.columns) - 1 * partial)
@@ -412,8 +413,8 @@ def read_map(
         try:
             pix = fits_hdu.data.field(0).astype(int, copy=False).ravel()
         except pf.VerifyError as e:
-            logging.warning(e)
-            logging.warning("Trying to fix a badly formatted header")
+            log.warning(e)
+            log.warning("Trying to fix a badly formatted header")
             fits_hdu.verify("fix")
             pix = fits_hdu.data.field(0).astype(int, copy=False).ravel()
 
@@ -431,8 +432,8 @@ def read_map(
             else:
                 m = fits_hdu.data.field(ff).astype(curr_dtype, copy=False).ravel()
         except pf.VerifyError as e:
-            logging.warning(e)
-            logging.warning("Trying to fix a badly formatted header")
+            log.warning(e)
+            log.warning("Trying to fix a badly formatted header")
             m = fits_hdu.verify("fix")
             if curr_dtype is None:
                 m = fits_hdu.data.field(ff).ravel()
@@ -450,11 +451,11 @@ def read_map(
             if nest and ordering == "RING":
                 idx = pixelfunc.nest2ring(nside, np.arange(m.size, dtype=np.int32))
                 m = m[idx]
-                logging.info("Ordering converted to NEST")
+                log.info("Ordering converted to NEST")
             elif (not nest) and ordering == "NESTED":
                 idx = pixelfunc.ring2nest(nside, np.arange(m.size, dtype=np.int32))
                 m = m[idx]
-                logging.info("Ordering converted to RING")
+                log.info("Ordering converted to RING")
         try:
             m[pixelfunc.mask_bad(m)] = UNSEEN
         except OverflowError:
