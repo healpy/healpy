@@ -23,6 +23,28 @@ is very welcome to propose new features.
 * transform maps to Spherical Harmonics space and back using multi-threaded C++ routines
 * compute Auto and Cross Power Spectra from maps and create map realizations from spectra
 
+Verbosity
+---------
+
+Starting from 1.15.0, `healpy` uses the `logging` module instead of `warnings`.
+By default `healpy` will only print warnings and errors, to configure logging,
+you can use :py:func:configure_logging, which by default enables all logging as
+in `healpy` 1.14.0.
+For more advanced configuration you can access the "healpy" logger with::
+
+    import logging
+    log = logging.getLogger("healpy")
+
+For more details see the `Python documentation <https://docs.python.org/3/library/logging.html>`_.
+
+All the `verbose` keywords (except :py:func:remove_dipole) are now deprecated and
+will be removed in the future.
+You can disable deprecation warnings with::
+
+    import warnings
+    from astropy.utils.exceptions import AstropyDeprecationWarning
+    warnings.simplefilter('ignore', category=AstropyDeprecationWarning)
+
 Changelog
 ---------
 
