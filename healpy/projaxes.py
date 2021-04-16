@@ -205,8 +205,6 @@ class SphericalProjAxes(matplotlib.axes.Axes):
             norm=nn,
             interpolation="nearest",
             origin="lower",
-            vmin=vmin,
-            vmax=vmax,
             **kwds
         )
         xmin, xmax, ymin, ymax = self.proj.get_extent()
