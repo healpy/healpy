@@ -702,6 +702,8 @@ def getformat(t):
         np.dtype(np.complex64): "C",
         np.dtype(np.complex128): "M",
     }
+    if hasattr(t, "type"):
+        t = t.type
     try:
         if t in conv:
             return conv[t]
