@@ -23,6 +23,11 @@ is very welcome to propose new features.
 * transform maps to Spherical Harmonics space and back using multi-threaded C++ routines
 * compute Auto and Cross Power Spectra from maps and create map realizations from spectra
 
+Changelog
+---------
+
+Review the changes in each release in the `CHANGELOG on Github <https://github.com/healpy/healpy/blob/main/CHANGELOG.rst>`_.
+
 Citing
 ------
 
