@@ -120,7 +120,9 @@ class Rotator(object):
         - inv: whether to use inverse rotation or not
         - deg: if True, angles in rot are assumed in degree (default: True)
         - eulertype: the convention for Euler angles in rot.
-        Note: the coord system conversion is applied first, then the rotation.
+
+        .. note::
+           the coord system conversion is applied first, then the rotation.
         """
         rot_is_seq = hasattr(rot, "__len__") and hasattr(rot[0], "__len__")
         coord_is_seq = (

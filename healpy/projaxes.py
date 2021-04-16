@@ -47,9 +47,8 @@ class SphericalProjAxes(matplotlib.axes.Axes):
     coordprec : number of digit after floating point for coordinates display.
     format : format string for value display.
 
-    Notes
-    -----
-    Other keywords from Axes (see Axes).
+    .. note::
+       Other keywords from Axes (see Axes).
     """
 
     def __init__(self, ProjClass, *args, **kwds):
@@ -170,9 +169,8 @@ class SphericalProjAxes(matplotlib.axes.Axes):
           The coordinate system of the map ('G','E' or 'C'), rotate
           the map if different from the axes coord syst.
 
-        Notes
-        -----
-        Other keywords are transmitted to :func:`matplotlib.Axes.imshow`
+        .. note::
+           Other keywords are transmitted to :func:`matplotlib.Axes.imshow`
         """
         img = self.proj.projmap(map, vec2pix_func, rot=rot, coord=coord)
         w = ~(np.isnan(img) | np.isinf(img) | pixelfunc.mask_bad(img, badval=badval))
@@ -243,9 +241,8 @@ class SphericalProjAxes(matplotlib.axes.Axes):
           if True, the rotation to center the projection is not
           taken into account
 
-        Notes
-        -----
-        Other keywords are passed to :func:`matplotlib.Axes.plot`.
+        .. note::
+           Other keywords are passed to :func:`matplotlib.Axes.plot`.
 
         See Also
         --------
@@ -332,9 +329,8 @@ class SphericalProjAxes(matplotlib.axes.Axes):
           if True, the rotation to center the projection is not
           taken into account
 
-        Notes
-        -----
-        Other keywords are passed to :func:`matplotlib.Axes.plot`.
+        .. note::
+           Other keywords are passed to :func:`matplotlib.Axes.plot`.
 
         See Also
         --------
@@ -390,9 +386,8 @@ class SphericalProjAxes(matplotlib.axes.Axes):
           if True, the rotation to center the projection is not
           taken into account
 
-        Notes
-        -----
-        Other keywords are passed to :func:`matplotlib.Axes.text`.
+        .. note::
+           Other keywords are passed to :func:`matplotlib.Axes.text`.
 
         See Also
         --------

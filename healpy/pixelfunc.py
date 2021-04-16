@@ -843,9 +843,8 @@ def reorder(map_in, inp=None, out=None, r2n=None, n2r=None):
       the reordered map, as masked array if the input was a
       masked array
 
-    Notes
-    -----
-    if ``r2n`` or ``n2r`` is defined, override ``inp`` and ``out``.
+    .. note::
+       if ``r2n`` or ``n2r`` is defined, override ``inp`` and ``out``.
 
     See Also
     --------
@@ -973,9 +972,8 @@ def nside2order(nside):
     order : int
       corresponding order where nside = 2**(order)
 
-    Notes
-    -----
-    Raise a ValueError exception if nside is not valid.
+    .. note::
+       Raises a ValueError exception if nside is not valid.
 
     Examples
     --------
@@ -1014,9 +1012,8 @@ def nside2resol(nside, arcmin=False):
     resol : float
       approximate pixel size in radians or arcmin
 
-    Notes
-    -----
-    Raise a ValueError exception if nside is not valid.
+    .. note::
+       Raise a ValueError exception if nside is not valid.
 
     Examples
     --------
@@ -1054,9 +1051,8 @@ def nside2pixarea(nside, degrees=False):
     pixarea : float
       pixel area in square radian or square degree
 
-    Notes
-    -----
-    Raise a ValueError exception if nside is not valid.
+    .. note::
+       Raise a ValueError exception if nside is not valid.
 
     Examples
     --------
@@ -1092,10 +1088,9 @@ def npix2nside(npix):
     nside : int
       the nside parameter corresponding to npix
 
-    Notes
-    -----
-    Raise a ValueError exception if number of pixel does not correspond to
-    the number of pixel of a healpix map.
+    .. note::
+       Raises a ValueError exception if number of pixel does not correspond to
+       the number of pixel of a healpix map.
 
     Examples
     --------
@@ -1129,9 +1124,8 @@ def order2nside(order):
     nside : int
       the nside parameter corresponding to order
 
-    Notes
-    -----
-    Raise a ValueError exception if order produces an nside out of range.
+    .. note::
+       Raises a ValueError exception if order produces an nside out of range.
 
     Examples
     --------
@@ -1711,10 +1705,9 @@ def get_map_size(m):
      npix : int
        a valid number of pixel
 
-     Notes
-     -----
-     In implicit pixellization, raise a ValueError exception if the size of the input
-     is not a valid pixel number.
+     .. note::
+        In implicit pixellization, raise a ValueError exception if the size of the
+        input is not a valid pixel number.
 
      Examples
      --------
@@ -1783,11 +1776,10 @@ def get_nside(m):
     nside : int
       the healpix nside parameter of the map (or sequence of maps)
 
-    Notes
-    -----
-    If the input is a sequence of maps, all of them must have same size.
-    If the input is not a valid map (not a sequence, unvalid number of pixels),
-    a TypeError exception is raised.
+    .. note::
+       If the input is a sequence of maps, all of them must have same size.
+       If the input is not a valid map (not a sequence, unvalid number of pixels),
+       a TypeError exception is raised.
     """
     typ = maptype(m)
     if typ == 0:

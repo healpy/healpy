@@ -187,6 +187,12 @@ def map2alm(
     and add the NSIDE 8192 weight from https://github.com/healpy/healpy-data/releases
     and set datapath to the root of the repository.
 
+    .. note::
+       The pixels which have the special `UNSEEN` value are replaced by zeros
+       before spherical harmonic transform. They are converted back to `UNSEEN`
+       value, so that the input maps are not modified. Each map have its own,
+       independent mask.
+
     Parameters
     ----------
     maps : array-like, shape (Npix,) or (n, Npix)
@@ -216,13 +222,6 @@ def map2alm(
     -------
     alms : array or tuple of array
       alm or a tuple of 3 alm (almT, almE, almB) if polarized input.
-
-    Notes
-    -----
-    The pixels which have the special `UNSEEN` value are replaced by zeros
-    before spherical harmonic transform. They are converted back to `UNSEEN`
-    value, so that the input maps are not modified. Each map have its own,
-    independent mask.
     """
     maps = ma_to_array(maps)
     info = maptype(maps)
@@ -297,6 +296,16 @@ def alm2map(
     and mmax, or they will be computed from array size (assuming
     lmax==mmax).
 
+    .. note::
+       Running map2alm then alm2map will not return exactly the same map if
+       the discretized field you construct on the sphere is not band-limited
+       (for example, if you have a map containing pixel-based noise rather
+       than beam-smoothed noise). If you need a band-limited map, you have to
+       start with random numbers in lm space and transform these via alm2map.
+       With such an input, the accuracy of map2alm->alm2map should be quite good,
+       depending on your choices of lmax, mmax and nside (for some typical
+       values, see e.g., section 5.1 of https://arxiv.org/pdf/1010.2084).
+
     Parameters
     ----------
     alms : complex, array or sequence of arrays
@@ -334,9 +343,6 @@ def alm2map(
       A Healpix map in RING scheme at nside or a list of T,Q,U maps (if
       polarized input)
 
-    Notes
-    -----
-    Running map2alm then alm2map will not return exactly the same map if the discretized field you construct on the sphere is not band-limited (for example, if you have a map containing pixel-based noise rather than beam-smoothed noise). If you need a band-limited map, you have to start with random numbers in lm space and transform these via alm2map. With such an input, the accuracy of map2alm->alm2map should be quite good, depending on your choices of lmax, mmax and nside (for some typical values, see e.g., section 5.1 of https://arxiv.org/pdf/1010.2084).
     """
     if not cb.is_seq(alms):
         raise TypeError("alms must be a sequence")
@@ -409,10 +415,9 @@ def synalm(cls, lmax=None, mmax=None, new=False):
       the generated alm if one spectrum is given, or a list of n alms
       (with n(n+1)/2 the number of input cl, or n=3 if there are 4 input cl).
 
-    Notes
-    -----
-    We don't plan to change the default order anymore, that would break old
-    code in a way difficult to debug.
+    .. note::
+       We don't plan to change the default order anymore, that would break old
+       code in a way difficult to debug.
     """
     if not cb.is_seq(cls):
         raise TypeError("cls must be an array or a sequence of arrays")
@@ -530,10 +535,9 @@ def synfast(
       or, if alm is True, a tuple of (map,alm)
       (alm possibly a list of alm if polarized input)
 
-    Notes
-    -----
-    We don't plan to change the default order anymore, that would break old
-    code in a way difficult to debug.
+    .. note::
+       We don't plan to change the default order anymore, that would break old
+       code in a way difficult to debug.
     """
     if not pixelfunc.isnsideok(nside):
         raise ValueError("Wrong nside value (must be a power of two).")
