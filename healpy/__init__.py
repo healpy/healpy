@@ -104,10 +104,3 @@ from .fitsfunc import write_map, read_map, read_alm, write_alm, write_cl, read_c
 from ._masktools import dist2holes_healpy as dist2holes
 from ._hotspots import hotspots_healpy as hotspots
 from ._line_integral_convolution import line_integral_convolution
-
-# Default null handler prevents printing all log messages if the user doesn't
-# configure `logging`
-# See https://docs.python.org/3/howto/logging.html#configuring-logging-for-a-library
-import logging
-
-logging.getLogger("healpy").addHandler(logging.NullHandler())
