@@ -412,23 +412,9 @@ def synalm(cls, lmax=None, mmax=None, new=False):
 
     Notes
     -----
-    The order of the spectra will change in a future release. The new= parameter
-    help to make the transition smoother. You can start using the new order
-    by setting new=True.
-    In the next version of healpy, the default will be new=True.
-    This change is done for consistency between the different tools
-    (alm2cl, synfast, anafast).
-    In the new order, the spectra are ordered by diagonal of the correlation
-    matrix. Eg, if fields are T, E, B, the spectra are TT, EE, BB, TE, EB, TB
-    with new=True, and TT, TE, TB, EE, EB, BB if new=False.
+    We don't plan to change the default order anymore, that would break old
+    code in a way difficult to debug.
     """
-    if not new:
-        logging.warning(
-            "The order of the input cl's will change in a future "
-            "release.\n"
-            "Use new=True keyword to start using the new order.\n"
-            "See documentation of healpy.synalm.",
-        )
     if not cb.is_seq(cls):
         raise TypeError("cls must be an array or a sequence of arrays")
 
@@ -532,6 +518,11 @@ def synfast(
     sigma : float, scalar, optional
       The sigma of the Gaussian used to smooth the map (applied on alm)
       [in radians]
+    new : bool, optional
+      If True, use the new ordering of cl's, ie by diagonal
+      (e.g. TT, EE, BB, TE, EB, TB or TT, EE, BB, TE if 4 cl as input).
+      If False, use the old ordering, ie by row
+      (e.g. TT, TE, TB, EE, EB, BB or TT, TE, EE, BB if 4 cl as input).
 
     Returns
     -------
@@ -542,15 +533,8 @@ def synfast(
 
     Notes
     -----
-    The order of the spectra will change in a future release. The new= parameter
-    help to make the transition smoother. You can start using the new order
-    by setting new=True.
-    In the next version of healpy, the default will be new=True.
-    This change is done for consistency between the different tools
-    (alm2cl, synfast, anafast).
-    In the new order, the spectra are ordered by diagonal of the correlation
-    matrix. Eg, if fields are T, E, B, the spectra are TT, EE, BB, TE, EB, TB
-    with new=True, and TT, TE, TB, EE, EB, BB if new=False.
+    We don't plan to change the default order anymore, that would break old
+    code in a way difficult to debug.
     """
     if not pixelfunc.isnsideok(nside):
         raise ValueError("Wrong nside value (must be a power of two).")
