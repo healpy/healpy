@@ -1201,7 +1201,8 @@ def beam2bl(beam, theta, lmax):
 
     nx = len(theta)
     nb = len(beam)
-    assert nb == nx, "beam and theta must have same size!"
+    if nb != nx:
+        raise ValueError("Beam and theta must have same size!")
 
     x = np.cos(theta)
     st = np.sin(theta)
