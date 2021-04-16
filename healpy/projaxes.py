@@ -915,7 +915,7 @@ def create_colormap(cmap, badcolor="gray", bgcolor="white"):
             "newcm", cmap0._segmentdata, cmap0.N
         )
     else:
-        newcm = copy.deepcopy(cmap0)
+        newcm = copy.copy(cmap0)
     newcm.set_over(newcm(1.0))
     newcm.set_under(bgcolor)
     newcm.set_bad(badcolor)
