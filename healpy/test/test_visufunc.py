@@ -93,7 +93,7 @@ class TestNoCrash(unittest.TestCase):
     def test_cmap_colors(self):
         # Get a built-in colormap
         name = 'viridis'
-        cmap = matplotlib.cm.get_cmap(name)
+        cmap = copy.copy(matplotlib.cm.get_cmap(name))
 
         # Set outlier colors
         color = (0.25,0.75,0.95,1.0)
