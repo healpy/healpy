@@ -23,6 +23,7 @@ from . import rotator as R
 from . import pixelfunc
 import matplotlib
 import matplotlib.axes
+import matplotlib.pyplot as plt
 import numpy as np
 import copy
 
@@ -146,6 +147,7 @@ class SphericalProjAxes(matplotlib.axes.Axes):
         norm=None,
         rot=None,
         coord=None,
+        alpha=None,
         **kwds
     ):
         """Project a map on the SphericalProjAxes.
@@ -172,6 +174,8 @@ class SphericalProjAxes(matplotlib.axes.Axes):
         coord : {'G', 'E', 'C', None}
           The coordinate system of the map ('G','E' or 'C'), rotate
           the map if different from the axes coord syst.
+        map : array-like
+          The alpha (transparency) map.
 
         Notes
         -----
@@ -179,6 +183,12 @@ class SphericalProjAxes(matplotlib.axes.Axes):
         """
         img = self.proj.projmap(map, vec2pix_func, rot=rot, coord=coord)
         w = ~(np.isnan(img) | np.isinf(img) | pixelfunc.mask_bad(img, badval=badval))
+        if (alpha is not None):            
+            alpha_img = self.proj.projmap(alpha, vec2pix_func, rot=rot, coord=coord)
+            alpha_img[alpha_img == -np.inf] = 0
+            alpha = plt.Normalize()(alpha_img)
+        else:
+            alpha = None        
         try:
             if vmin is None:
                 vmin = img[w].min()
@@ -207,6 +217,7 @@ class SphericalProjAxes(matplotlib.axes.Axes):
             origin="lower",
             vmin=vmin,
             vmax=vmax,
+            alpha=alpha,
             **kwds
         )
         xmin, xmax, ymin, ymax = self.proj.get_extent()
