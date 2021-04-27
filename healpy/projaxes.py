@@ -174,7 +174,7 @@ class SphericalProjAxes(matplotlib.axes.Axes):
         coord : {'G', 'E', 'C', None}
           The coordinate system of the map ('G','E' or 'C'), rotate
           the map if different from the axes coord syst.
-        map : array-like
+        alpha : array-like
           The alpha (transparency) map.
 
         Notes
