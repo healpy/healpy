@@ -131,6 +131,8 @@ __all__ = [
     "npix2nside",
     "nside2order",
     "order2nside",
+    "order2npix",
+    "npix2order",
     "nside2resol",
     "nside2pixarea",
     "isnsideok",
@@ -1149,6 +1151,76 @@ def order2nside(order):
     nside = 1 << order
     check_nside(nside, nest=True)
     return nside
+
+def order2npix(order):
+    """Give the number of pixels for the given resolution order.
+
+    Parameters
+    ----------
+    order : int
+      the resolution order
+
+    Returns
+    -------
+    npix : int
+      corresponding number of pixels
+
+    Notes
+    -----
+    A convenience function that successively applies order2nside then nside2npix to order.
+
+    Examples
+    --------
+    >>> import healpy as hp
+    >>> hp.order2npix(7)
+    196608
+
+    >>> print(hp.order2npix(np.arange(8)))
+    [    12     48    192    768   3072  12288  49152 196608]
+
+    >>> hp.order2npix(31)
+    Traceback (most recent call last):
+        ...
+    ValueError: 2147483648 is not a valid nside parameter (must be a power of 2, less than 2**30)
+    """
+    nside = order2nside(order)
+    npix = nside2npix(nside)
+    return npix
+
+def npix2order(npix):
+    """Give the resolution order for the given number of pixels.
+
+    Parameters
+    ----------
+    npix : int
+      the number of pixels
+
+    Returns
+    -------
+    order : int
+      corresponding resolution order
+
+    Notes
+    -----
+    A convenience function that successively applies npix2nside then nside2order to npix.
+
+    Examples
+    --------
+    >>> import healpy as hp
+    >>> hp.npix2order(768)
+    3
+
+    >>> np.all([hp.npix2order(12 * 4**order) == order for order in range(12)])
+    True
+
+    >>> hp.npix2order(1000)
+    Traceback (most recent call last):
+        ...
+    ValueError: Wrong pixel number (it is not 12*nside**2)
+    """
+    nside = npix2nside(npix)
+    order = nside2order(nside)
+    return order
 
 
 def isnsideok(nside, nest=False):
