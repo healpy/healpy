@@ -41,6 +41,8 @@ from .pixelfunc import (
     npix2nside,
     nside2order,
     order2nside,
+    order2npix,
+    npix2order,
     isnsideok,
     isnpixok,
     ring2nest,
