@@ -311,5 +311,10 @@ def test_getformat():
     assert getformat(["DD", "CCC"]) == "A3"
 
 
+def test_writemap_newdefault():
+    m = np.zeros(12, dtype=">f4")
+    write_map("test_map.fits", m, overwrite=True)
+
+
 if __name__ == "__main__":
     unittest.main()
