@@ -9,7 +9,7 @@ def is_seq(o):
     ----------
     o : any object
       The object to check
-    
+
     Returns
     -------
     is_seq : bool, scalar
@@ -26,7 +26,7 @@ def is_seq_of_seq(o):
     ----------
     o : any object
       The object to check
-    
+
     Returns
     -------
     is_seq_of_seq : bool
@@ -47,7 +47,7 @@ def is_like2d(o):
     ----------
     o : any object
       The object to check
-   
+
     Returns
     -------
     is_like2d : bool, scalar
@@ -68,7 +68,7 @@ def is_like2d(o):
 
 def len_array_or_arrays(o):
     """Returns the length of a single array or list of arrays
-    
+
     Parameters
     ----------
     o : either array or sequence of arrays

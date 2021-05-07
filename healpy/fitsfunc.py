@@ -467,7 +467,9 @@ def read_map(
             m = mnew
 
         if (not pixelfunc.isnpixok(m.size) or (sz > 0 and sz != m.size)) and verbose:
-            warnings.warn("nside={0:d}, sz={1:d}, m.size={2:d}".format(nside, sz, m.size))
+            warnings.warn(
+                "nside={0:d}, sz={1:d}, m.size={2:d}".format(nside, sz, m.size)
+            )
             raise ValueError("Wrong nside parameter.")
         if not nest is None:  # no conversion with None
             if nest and ordering == "RING":

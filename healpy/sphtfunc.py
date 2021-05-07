@@ -947,8 +947,8 @@ def smoothing(
     nest : bool, optional
       If True, the input map ordering is assumed to be NESTED. Default: False (RING)
       This function will temporary reorder the NESTED map into RING to perform the
-      smoothing and order the output back to NESTED. If the map is in RING ordering 
-      no internal reordering will be performed. 
+      smoothing and order the output back to NESTED. If the map is in RING ordering
+      no internal reordering will be performed.
 
     Returns
     -------
@@ -970,9 +970,9 @@ def smoothing(
         n_maps = 0
 
     check_max_nside(nside)
-    
+
     if nest:
-        map_in = pixelfunc.reorder(map_in, inp=None, out=None, r2n=None, n2r=True) 
+        map_in = pixelfunc.reorder(map_in, inp=None, out=None, r2n=None, n2r=True)
 
     if pol or n_maps in (0, 1):
         # Treat the maps together (1 or 3 maps)
@@ -997,7 +997,13 @@ def smoothing(
             inplace=True,
         )
         output_map = alm2map(
-            alms, nside, lmax=lmax, mmax=mmax, pixwin=False, verbose=verbose, pol=pol,
+            alms,
+            nside,
+            lmax=lmax,
+            mmax=mmax,
+            pixwin=False,
+            verbose=verbose,
+            pol=pol,
         )
     else:
         # Treat each map independently (any number)
@@ -1024,9 +1030,11 @@ def smoothing(
             output_map.append(alm2map(alm, nside, pixwin=False, verbose=verbose))
         output_map = np.array(output_map)
     output_map[masks] = UNSEEN
-    
+
     if nest:
-        output_map = pixelfunc.reorder(output_map, inp=None, out=None, r2n=True, n2r=False)
+        output_map = pixelfunc.reorder(
+            output_map, inp=None, out=None, r2n=True, n2r=False
+        )
 
     return output_map
 
@@ -1041,7 +1049,7 @@ def pixwin(nside, pol=False, lmax=None):
     pol : bool, optional
       If True, return also the polar pixel window. Default: False
     lmax : int, optional
-        Maximum l of the power spectrum (default: 3*nside-1) 
+        Maximum l of the power spectrum (default: 3*nside-1)
 
     Returns
     -------
@@ -1071,27 +1079,27 @@ def pixwin(nside, pol=False, lmax=None):
 def alm2map_der1(alm, nside, lmax=None, mmax=None):
     """Computes a Healpix map and its first derivatives given the alm.
 
-   The alm are given as a complex array. You can specify lmax
-   and mmax, or they will be computed from array size (assuming
-   lmax==mmax).
+    The alm are given as a complex array. You can specify lmax
+    and mmax, or they will be computed from array size (assuming
+    lmax==mmax).
 
-   Parameters
-   ----------
-   alm : array, complex
-     A complex array of alm. Size must be of the form mmax(lmax-mmax+1)/2+lmax
-   nside : int
-     The nside of the output map.
-   lmax : None or int, optional
-     Explicitly define lmax (needed if mmax!=lmax)
-   mmax : None or int, optional
-     Explicitly define mmax (needed if mmax!=lmax)
+    Parameters
+    ----------
+    alm : array, complex
+      A complex array of alm. Size must be of the form mmax(lmax-mmax+1)/2+lmax
+    nside : int
+      The nside of the output map.
+    lmax : None or int, optional
+      Explicitly define lmax (needed if mmax!=lmax)
+    mmax : None or int, optional
+      Explicitly define mmax (needed if mmax!=lmax)
 
-   Returns
-   -------
-   m, d_theta, d_phi : tuple of arrays
-     The maps correponding to alm, and its derivatives with respect to
-     theta and phi. d_phi is already divided by sin(theta)
-   """
+    Returns
+    -------
+    m, d_theta, d_phi : tuple of arrays
+      The maps correponding to alm, and its derivatives with respect to
+      theta and phi. d_phi is already divided by sin(theta)
+    """
     check_max_nside(nside)
     if lmax is None:
         lmax = -1
@@ -1183,7 +1191,7 @@ def gauss_beam(fwhm, lmax=512, pol=False):
 
 
 def bl2beam(bl, theta):
-    """Computes a circular beam profile b(theta) in real space from 
+    """Computes a circular beam profile b(theta) in real space from
     its transfer (or window) function b(l) in spherical harmonic space.
 
     Parameters
@@ -1220,8 +1228,8 @@ def bl2beam(bl, theta):
 
 
 def beam2bl(beam, theta, lmax):
-    """Computes a transfer (or window) function b(l) in spherical 
-    harmonic space from its circular beam profile b(theta) in real 
+    """Computes a transfer (or window) function b(l) in spherical
+    harmonic space from its circular beam profile b(theta) in real
     space.
 
     Parameters
@@ -1229,7 +1237,7 @@ def beam2bl(beam, theta, lmax):
     beam : array
         Circular beam profile b(theta).
     theta : array
-        Radius at which the beam profile is given. Has to be given 
+        Radius at which the beam profile is given. Has to be given
         in radians with same size as beam.
     lmax : integer
         Maximum multipole moment at which to compute b(l).
