@@ -290,7 +290,6 @@ class GnomonicProj(SphericalProj):
             raise ValueError("vy and vz must be both defined or both not defined")
         flip = self._flip
         mask = np.asarray(vec[0]) <= 0.0
-        w = np.where(mask == False)
         if not mask.any():
             mask = np.ma.nomask
         if not hasattr(vec[0], "__len__"):
@@ -301,6 +300,7 @@ class GnomonicProj(SphericalProj):
                 x = flip * vec[1] / vec[0]
                 y = vec[2] / vec[0]
         else:
+            w = mask == False
             x = np.zeros(vec[0].shape) + np.nan
             y = np.zeros(vec[0].shape) + np.nan
             x[w] = flip * vec[1][w] / vec[0][w]
@@ -427,7 +427,6 @@ class MollweideProj(SphericalProj):
         if y is None:
             x, y = x
         mask = np.asarray(x) ** 2 / 4.0 + np.asarray(y) ** 2 > 1.0
-        w = np.where(mask == False)
         if not mask.any():
             mask = np.ma.nomask
         if not hasattr(x, "__len__"):
@@ -445,6 +444,7 @@ class MollweideProj(SphericalProj):
                 else:
                     return vec
         else:
+            w = mask == False
             vec = (
                 np.zeros(x.shape) + np.nan,
                 np.zeros(x.shape) + np.nan,
@@ -1097,9 +1097,8 @@ class AzimuthalProj(SphericalProj):
             if mask is not np.ma.nomask:
                 return np.nan, np.nan
         else:
-            w = np.where(mask)
-            x[w] = np.nan
-            y[w] = np.nan
+            x[mask] = np.nan
+            y[mask] = np.nan
         return x, y
 
     vec2xy.__doc__ = SphericalProj.vec2xy.__doc__ % (name, name)
@@ -1126,7 +1125,6 @@ class AzimuthalProj(SphericalProj):
             else:
                 r2max /= 4.0
         mask = np.asarray(x) ** 2 + np.asarray(y) ** 2 > r2max
-        w = np.where(mask == False)
         if not mask.any():
             mask = np.ma.nomask
         if not hasattr(x, "__len__"):
@@ -1147,6 +1145,7 @@ class AzimuthalProj(SphericalProj):
                 else:
                     return vec
         else:
+            w = mask == False
             vec = (
                 np.zeros(x.shape) + np.nan,
                 np.zeros(x.shape) + np.nan,
