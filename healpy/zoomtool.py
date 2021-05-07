@@ -53,15 +53,15 @@ def mollzoom(
     sub=None,
 ):
     """Interactive mollweide plot with zoomed gnomview.
-    
+
     Parameters:
     -----------
     map : float, array-like shape (Npix,)
-      An array containing the map, 
+      An array containing the map,
       supports masked maps, see the `ma` function.
       if None, use map with inf value (white map), useful for
       overplotting
-    fig : a figure number. 
+    fig : a figure number.
       Default: create a new figure
     rot : scalar or sequence, optional
       Describe the rotation to apply.
@@ -306,8 +306,7 @@ def mollzoom(
 
 
 def set_g_clim(vmin, vmax):
-    """Set min/max value of the gnomview part of a mollzoom.
-    """
+    """Set min/max value of the gnomview part of a mollzoom."""
     import pylab
 
     f = pylab.gcf()
@@ -388,8 +387,10 @@ class ZoomTool(object):
             self._reso_idx = self.reso_list.index(self._gnom_ax.proj._arrayinfo["reso"])
         except ValueError as e:
             raise ValueError("Resolution not in %s" % self.reso_list)
-        self.zoomcenter, = self._moll_ax.plot([0], [0], "ok", mew=1, ms=15, alpha=0.1)
-        self.zoomcenter2, = self._moll_ax.plot([0], [0], "xr", ms=15, alpha=0.5, mew=3)
+        (self.zoomcenter,) = self._moll_ax.plot([0], [0], "ok", mew=1, ms=15, alpha=0.1)
+        (self.zoomcenter2,) = self._moll_ax.plot(
+            [0], [0], "xr", ms=15, alpha=0.5, mew=3
+        )
         self._text_range = self._gnom_ax.text(
             -0.4,
             -0.2,

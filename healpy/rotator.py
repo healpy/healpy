@@ -57,8 +57,7 @@ e2q = (
 
 
 class ConsistencyWarning(Warning):
-    """Warns for a problem in the consistency of data
-    """
+    """Warns for a problem in the consistency of data"""
 
     pass
 
@@ -265,8 +264,7 @@ class Rotator(object):
             raise TypeError("Either 1, 2 or 3 arguments accepted")
 
     def __mul__(self, a):
-        """Composition of rotation.
-        """
+        """Composition of rotation."""
         if not isinstance(a, Rotator):
             raise TypeError(
                 "A Rotator can only multiply another Rotator "
@@ -309,14 +307,12 @@ class Rotator(object):
 
     @property
     def mat(self):
-        """The matrix representing the rotation.
-        """
+        """The matrix representing the rotation."""
         return np.asarray(self._matrix)
 
     @property
     def coordin(self):
-        """The input coordinate system.
-        """
+        """The input coordinate system."""
         if not self.consistent:
             return None
         for c, i in zip(self._coords, self._invs):
@@ -325,8 +321,7 @@ class Rotator(object):
 
     @property
     def coordout(self):
-        """The output coordinate system.
-        """
+        """The output coordinate system."""
         if not self.consistent:
             return None
         for c, i in zip(self._coords, self._invs):
@@ -335,31 +330,26 @@ class Rotator(object):
 
     @property
     def coordinstr(self):
-        """The input coordinate system in str.
-        """
+        """The input coordinate system in str."""
         return coordname.get(self.coordin, "")
 
     @property
     def coordoutstr(self):
-        """The output coordinate system in str.
-        """
+        """The output coordinate system in str."""
         return coordname.get(self.coordout, "")
 
     @property
     def rots(self):
-        """The sequence of rots defining the rotation.
-        """
+        """The sequence of rots defining the rotation."""
         return self._rots
 
     @property
     def coords(self):
-        """The sequence of coords defining the rotation.
-        """
+        """The sequence of coords defining the rotation."""
         return self._coords
 
     def do_rot(self, i):
-        """Returns True if rotation is not (close to) identity.
-        """
+        """Returns True if rotation is not (close to) identity."""
         return not np.allclose(self.rots[i], np.zeros(3), rtol=0.0, atol=1.0e-15)
 
     def angle_ref(self, *args, **kwds):
@@ -846,10 +836,10 @@ def normalise_coord(coord):
 
 def normalise_rot(rot, deg=False):
     """Return rot possibly completed with zeroes to reach size 3.
-   If rot is None, return a vector of 0.
-   If deg is True, convert from degree to radian, otherwise assume input
-   is in radian.
-   """
+    If rot is None, return a vector of 0.
+    If deg is True, convert from degree to radian, otherwise assume input
+    is in radian.
+    """
     if deg:
         convert = np.pi / 180.0
     else:
@@ -865,16 +855,16 @@ def normalise_rot(rot, deg=False):
 def get_rotation_matrix(rot, deg=False, eulertype="ZYX"):
     """Return the rotation matrix corresponding to angles given in rot.
 
-   Usage: matrot,do_rot,normrot = get_rotation_matrix(rot)
+    Usage: matrot,do_rot,normrot = get_rotation_matrix(rot)
 
-   Input:
-      - rot: either None, an angle or a tuple of 1,2 or 3 angles
-             corresponding to Euler angles.
-   Output:
-      - matrot: 3x3 rotation matrix
-      - do_rot: True if rotation is not identity, False otherwise
-      - normrot: the normalized version of the input rot.
-   """
+    Input:
+       - rot: either None, an angle or a tuple of 1,2 or 3 angles
+              corresponding to Euler angles.
+    Output:
+       - matrot: 3x3 rotation matrix
+       - do_rot: True if rotation is not identity, False otherwise
+       - normrot: the normalized version of the input rot.
+    """
     rot = normalise_rot(rot, deg=deg)
     if not np.allclose(rot, np.zeros(3), rtol=0.0, atol=1.0e-15):
         do_rot = True
@@ -892,20 +882,20 @@ def get_rotation_matrix(rot, deg=False, eulertype="ZYX"):
 
 def get_coordconv_matrix(coord):
     """Return the rotation matrix corresponding to coord systems given
-   in coord.
+    in coord.
 
-   Usage: matconv,do_conv,normcoord = get_coordconv_matrix(coord)
+    Usage: matconv,do_conv,normcoord = get_coordconv_matrix(coord)
 
-   Input:
-      - coord: a tuple with initial and final coord systems.
-               See normalise_coord.
-   Output:
-      - matconv: the euler matrix for coord sys conversion
-      - do_conv: True if matconv is not identity, False otherwise
-      - normcoord: the tuple of initial and final coord sys.
+    Input:
+       - coord: a tuple with initial and final coord systems.
+                See normalise_coord.
+    Output:
+       - matconv: the euler matrix for coord sys conversion
+       - do_conv: True if matconv is not identity, False otherwise
+       - normcoord: the tuple of initial and final coord sys.
 
-   History: adapted from CGIS IDL library.
-   """
+    History: adapted from CGIS IDL library.
+    """
 
     coord_norm = normalise_coord(coord)
 
@@ -974,57 +964,57 @@ def get_coordconv_matrix(coord):
 
 def euler(ai, bi, select, FK4=0):
     """
-   NAME:
-       euler
-   PURPOSE:
-       Transform between Galactic, celestial, and ecliptic coordinates.
-   EXPLANATION:
-       Use the procedure ASTRO to use this routine interactively
+    NAME:
+        euler
+    PURPOSE:
+        Transform between Galactic, celestial, and ecliptic coordinates.
+    EXPLANATION:
+        Use the procedure ASTRO to use this routine interactively
 
-   CALLING SEQUENCE:
-        EULER, AI, BI, AO, BO, [ SELECT, /FK4, SELECT = ]
+    CALLING SEQUENCE:
+         EULER, AI, BI, AO, BO, [ SELECT, /FK4, SELECT = ]
 
-   INPUTS:
-         AI - Input Longitude in DEGREES, scalar or vector.  If only two
-                 parameters are supplied, then  AI and BI will be modified
-                 to contain the output longitude and latitude.
-         BI - Input Latitude in DEGREES
+    INPUTS:
+          AI - Input Longitude in DEGREES, scalar or vector.  If only two
+                  parameters are supplied, then  AI and BI will be modified
+                  to contain the output longitude and latitude.
+          BI - Input Latitude in DEGREES
 
-   OPTIONAL INPUT:
-         SELECT - Integer (1-6) specifying type of coordinate
-                  transformation.
+    OPTIONAL INPUT:
+          SELECT - Integer (1-6) specifying type of coordinate
+                   transformation.
 
-        SELECT   From          To        |   SELECT      From         To
-         1     RA-Dec (2000)  Galactic   |     4       Ecliptic     RA-Dec
-         2     Galactic       RA-DEC     |     5       Ecliptic    Galactic
-         3     RA-Dec         Ecliptic   |     6       Galactic    Ecliptic
+         SELECT   From          To        |   SELECT      From         To
+          1     RA-Dec (2000)  Galactic   |     4       Ecliptic     RA-Dec
+          2     Galactic       RA-DEC     |     5       Ecliptic    Galactic
+          3     RA-Dec         Ecliptic   |     6       Galactic    Ecliptic
 
-        If not supplied as a parameter or keyword, then EULER will prompt
-        for the value of SELECT
-        Celestial coordinates (RA, Dec) should be given in equinox J2000
-        unless the /FK4 keyword is set.
-   OUTPUTS:
-         AO - Output Longitude in DEGREES
-         BO - Output Latitude in DEGREES
+         If not supplied as a parameter or keyword, then EULER will prompt
+         for the value of SELECT
+         Celestial coordinates (RA, Dec) should be given in equinox J2000
+         unless the /FK4 keyword is set.
+    OUTPUTS:
+          AO - Output Longitude in DEGREES
+          BO - Output Latitude in DEGREES
 
-   INPUT KEYWORD:
-         /FK4 - If this keyword is set and non-zero, then input and output
-               celestial and ecliptic coordinates should be given in
-               equinox B1950.
-         /SELECT  - The coordinate conversion integer (1-6) may
-                    alternatively be specified as a keyword
-   NOTES:
-         EULER was changed in December 1998 to use J2000 coordinates as the
-         default, ** and may be incompatible with earlier versions***.
-   REVISION HISTORY:
-         Written W. Landsman,  February 1987
-         Adapted from Fortran by Daryl Yentis NRL
-         Converted to IDL V5.0   W. Landsman   September 1997
-         Made J2000 the default, added /FK4 keyword
-          W. Landsman December 1998
-         Add option to specify SELECT as a keyword W. Landsman March 2003
-         Converted to python by K. Ganga December 2007
-   """
+    INPUT KEYWORD:
+          /FK4 - If this keyword is set and non-zero, then input and output
+                celestial and ecliptic coordinates should be given in
+                equinox B1950.
+          /SELECT  - The coordinate conversion integer (1-6) may
+                     alternatively be specified as a keyword
+    NOTES:
+          EULER was changed in December 1998 to use J2000 coordinates as the
+          default, ** and may be incompatible with earlier versions***.
+    REVISION HISTORY:
+          Written W. Landsman,  February 1987
+          Adapted from Fortran by Daryl Yentis NRL
+          Converted to IDL V5.0   W. Landsman   September 1997
+          Made J2000 the default, added /FK4 keyword
+           W. Landsman December 1998
+          Add option to specify SELECT as a keyword W. Landsman March 2003
+          Converted to python by K. Ganga December 2007
+    """
 
     # npar = N_params()
     #  if npar LT 2 then begin
@@ -1138,60 +1128,60 @@ def euler(ai, bi, select, FK4=0):
 
 def euler_matrix_new(a1, a2, a3, X=True, Y=False, ZYX=False, deg=False):
     """
-   NAME:
-     euler_matrix_new
+    NAME:
+      euler_matrix_new
 
-   PURPOSE:
-     computes the Euler matrix of an arbitrary rotation described
-     by 3 Euler angles
-     correct bugs present in Euler_Matrix
+    PURPOSE:
+      computes the Euler matrix of an arbitrary rotation described
+      by 3 Euler angles
+      correct bugs present in Euler_Matrix
 
-   CALLING SEQUENCE:
-     result = euler_matrix_new (a1, a2, a3 [,X, Y, ZYX, DEG ])
+    CALLING SEQUENCE:
+      result = euler_matrix_new (a1, a2, a3 [,X, Y, ZYX, DEG ])
 
-   INPUTS:
-     a1, a2, a3 = Euler angles, scalar
-                  (in radian by default, in degree if DEG is set)
-                  all the angles are measured counterclockwise
-                  correspond to x, y, zyx-conventions (see Goldstein)
-                  the default is x
+    INPUTS:
+      a1, a2, a3 = Euler angles, scalar
+                   (in radian by default, in degree if DEG is set)
+                   all the angles are measured counterclockwise
+                   correspond to x, y, zyx-conventions (see Goldstein)
+                   the default is x
 
-   KEYWORD PARAMETERS:
-      DEG : if set the angle are measured in degree
+    KEYWORD PARAMETERS:
+       DEG : if set the angle are measured in degree
 
-      X :       rotation a1 around original Z
-                rotation a2 around interm   X
-                rotation a3 around final    Z
-                DEFAULT,  classical mechanics convention
+       X :       rotation a1 around original Z
+                 rotation a2 around interm   X
+                 rotation a3 around final    Z
+                 DEFAULT,  classical mechanics convention
 
-      Y :       rotation a1 around original Z
-                rotation a2 around interm   Y
-                rotation a3 around final    Z
-                quantum mechanics convention (override X)
+       Y :       rotation a1 around original Z
+                 rotation a2 around interm   Y
+                 rotation a3 around final    Z
+                 quantum mechanics convention (override X)
 
-      ZYX :     rotation a1 around original Z
-                rotation a2 around interm   Y
-                rotation a3 around final    X
-                aeronautics convention (override X)
+       ZYX :     rotation a1 around original Z
+                 rotation a2 around interm   Y
+                 rotation a3 around final    X
+                 aeronautics convention (override X)
 
-      * these last three keywords are obviously mutually exclusive *
+       * these last three keywords are obviously mutually exclusive *
 
-   OUTPUTS:
-      result is a 3x3 matrix
+    OUTPUTS:
+       result is a 3x3 matrix
 
-   USAGE:
-     if vec is an Nx3 array containing N 3D vectors,
-     vec # euler_matrix_new(a1,a2,a3,/Y) will be the rotated vectors
+    USAGE:
+      if vec is an Nx3 array containing N 3D vectors,
+      vec # euler_matrix_new(a1,a2,a3,/Y) will be the rotated vectors
 
 
-   MODIFICATION HISTORY:
-      March 2002, EH, Caltech, rewritting of euler_matrix
+    MODIFICATION HISTORY:
+       March 2002, EH, Caltech, rewritting of euler_matrix
 
-      convention   euler_matrix_new           euler_matrix
-     X:       M_new(a,b,c,/X)  =  M_old(-a,-b,-c,/X) = Transpose( M_old(c, b, a,/X))
-     Y:       M_new(a,b,c,/Y)  =  M_old(-a, b,-c,/Y) = Transpose( M_old(c,-b, a,/Y))
-   ZYX:       M_new(a,b,c,/Z)  =  M_old(-a, b,-c,/Z)
-   """
+       convention   euler_matrix_new           euler_matrix
+      X:       M_new(a,b,c,/X)  =  M_old(-a,-b,-c,/X) = Transpose( M_old(c, b, a,/X))
+      Y:       M_new(a,b,c,/Y)  =  M_old(-a, b,-c,/Y) = Transpose( M_old(c,-b, a,/Y))
+    ZYX:       M_new(a,b,c,/Z)  =  M_old(-a, b,-c,/Z)
+    """
 
     t_k = 0
     if ZYX:

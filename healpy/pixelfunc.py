@@ -153,7 +153,7 @@ def check_theta_valid(theta):
 
 
 def lonlat2thetaphi(lon, lat):
-    """ Transform longitude and latitude (deg) into co-latitude and longitude (rad)
+    """Transform longitude and latitude (deg) into co-latitude and longitude (rad)
 
     Parameters
     ----------
@@ -171,7 +171,7 @@ def lonlat2thetaphi(lon, lat):
 
 
 def thetaphi2lonlat(theta, phi):
-    """ Transform co-latitude and longitude (rad) into longitude and latitude (deg)
+    """Transform co-latitude and longitude (rad) into longitude and latitude (deg)
 
     Parameters
     ----------
@@ -1152,6 +1152,7 @@ def order2nside(order):
     check_nside(nside, nest=True)
     return nside
 
+
 def order2npix(order):
     """Give the number of pixels for the given resolution order.
 
@@ -1186,6 +1187,7 @@ def order2npix(order):
     nside = order2nside(order)
     npix = nside2npix(nside)
     return npix
+
 
 def npix2order(npix):
     """Give the resolution order for the given number of pixels.

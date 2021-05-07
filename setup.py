@@ -29,7 +29,9 @@ if (
     get_config_var("MACOSX_DEPLOYMENT_TARGET")
     and not "MACOSX_DEPLOYMENT_TARGET" in os.environ
 ):
-    os.environ["MACOSX_DEPLOYMENT_TARGET"] = str(get_config_var("MACOSX_DEPLOYMENT_TARGET"))
+    os.environ["MACOSX_DEPLOYMENT_TARGET"] = str(
+        get_config_var("MACOSX_DEPLOYMENT_TARGET")
+    )
 
 
 class build_external_clib(build_clib):
@@ -421,7 +423,11 @@ setup(
                 "healpixsubmodule/src/cxx/Healpix_cxx/alice3.cc",
             ],
             language="c++",
-            extra_compile_args=["-std=c++11", "-Ihealpixsubmodule/src/cxx/cxxsupport", "-Ihealpixsubmodule/src/cxx/Healpix_cxx"],
+            extra_compile_args=[
+                "-std=c++11",
+                "-Ihealpixsubmodule/src/cxx/cxxsupport",
+                "-Ihealpixsubmodule/src/cxx/Healpix_cxx",
+            ],
             cython_directives=dict(embedsignature=True),
         ),
     ],
@@ -439,5 +445,5 @@ setup(
     test_suite="healpy",
     license="GPLv2",
     scripts=["bin/healpy_get_wmap_maps.sh"],
-    python_requires='>=3.6',
+    python_requires=">=3.6",
 )

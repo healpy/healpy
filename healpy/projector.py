@@ -40,8 +40,8 @@ dtor = np.pi / 180.0
 class SphericalProj(object):
     """
     This class defines functions for spherical projection.
-    
-    This class contains class method for spherical projection computation. It 
+
+    This class contains class method for spherical projection computation. It
     should not be instantiated. It should be inherited from and methods should
     be overloaded for desired projection.
     """
@@ -203,8 +203,8 @@ class SphericalProj(object):
 
     def set_flip(self, flipconv):
         """flipconv is either 'astro' or 'geo'. None will be default.
-        
-        With 'astro', east is toward left and west toward right. 
+
+        With 'astro', east is toward left and west toward right.
         It is the opposite for 'geo'
         """
         if flipconv is None:
@@ -259,8 +259,7 @@ class SphericalProj(object):
 
 
 class GnomonicProj(SphericalProj):
-    """This class provides class methods for Gnomonic projection.
-    """
+    """This class provides class methods for Gnomonic projection."""
 
     name = "Gnomonic"
 
@@ -394,8 +393,7 @@ class GnomonicProj(SphericalProj):
 
 
 class MollweideProj(SphericalProj):
-    """This class provides class methods for Mollweide projection.
-    """
+    """This class provides class methods for Mollweide projection."""
 
     name = "Mollweide"
     __molldata = []
@@ -585,8 +583,7 @@ class MollweideProj(SphericalProj):
 
 
 class CartesianProj(SphericalProj):
-    """This class provides class methods for Cartesian projection.
-    """
+    """This class provides class methods for Cartesian projection."""
 
     name = "Cartesian"
 
@@ -795,8 +792,7 @@ class CartesianProj(SphericalProj):
 
 
 class OrthographicProj(SphericalProj):
-    """This class provides methods for orthographic projection
-    """
+    """This class provides methods for orthographic projection"""
 
     name = "Orthographic"
 
@@ -948,7 +944,10 @@ class OrthographicProj(SphericalProj):
             if (half_sky and x ** 2 + y ** 2 > 1.0) or (
                 not half_sky and (np.mod(x + 2.0, 2.0) - 1.0) ** 2 + y ** 2 > 1.0
             ):
-                i, j, = np.nan, np.nan
+                i, j, = (
+                    np.nan,
+                    np.nan,
+                )
             else:
                 j = np.around(x * xc / ratio + xc).astype(np.long)
                 i = np.around(yc + y * yc).astype(np.long)
@@ -1212,7 +1211,10 @@ class AzimuthalProj(SphericalProj):
             i = np.ma.array(np.around(yc + y / dx).astype(np.long), mask=mask)
         else:
             if x ** 2 + y ** 2 > r2max:
-                i, j, = np.nan, np.nan
+                i, j, = (
+                    np.nan,
+                    np.nan,
+                )
             else:
                 j = np.around(xc + x / dx).astype(np.long)
                 i = np.around(yc + y / dx).astype(np.long)
