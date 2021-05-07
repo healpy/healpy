@@ -35,6 +35,7 @@ from . import pixelfunc
 from .sphtfunc import Alm
 from .pixelfunc import UNSEEN
 from . import cookbook as cb
+from astropy.utils.decorators import deprecated
 
 standard_column_names = {
     1: "TEMPERATURE",
@@ -46,6 +47,7 @@ standard_column_names = {
 allowed_paths = (str, pathlib.Path)
 
 
+@deprecated(since="1.15.0")
 class HealpixFitsWarning(Warning):
     pass
 
