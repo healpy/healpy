@@ -311,9 +311,9 @@ def test_getformat():
     assert getformat(["DD", "CCC"]) == "A3"
 
 
-def test_writemap_newdefault():
+def test_writemap_newdefault(tmp_path):
     m = np.zeros(12, dtype=">f4")
-    write_map("test_map.fits", m, overwrite=True)
+    write_map(tmp_path / "test_map.fits", m, overwrite=True)
 
 
 if __name__ == "__main__":
