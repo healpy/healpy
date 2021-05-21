@@ -3,6 +3,17 @@ Other tutorials
 
 Links to other tutorials about `healpy`
 
+New experimental visualization function
+---------------------------------------
+
+Experimental visualization function, the interface will change in future
+releases:
+
+.. toctree::
+   :maxdepth: 1
+
+   newvisufunc_example
+
 Map data to a HEALPix grid
 --------------------------
 

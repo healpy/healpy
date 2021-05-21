@@ -47,7 +47,6 @@ Tutorial
    :maxdepth: 1
 
    tutorial
-   newvisufunc_example
    other_tutorials
 
 Installation
