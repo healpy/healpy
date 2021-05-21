@@ -1,4 +1,6 @@
 name: readthedocs
+channels:
+    - conda-forge
 dependencies:
   - python=3.7
   - pip
@@ -15,3 +17,4 @@ dependencies:
   - pkg-config
   - cfitsio
   - libtool
+  - nbsphinx
