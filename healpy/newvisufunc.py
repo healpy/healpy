@@ -8,11 +8,6 @@ from matplotlib.projections.geo import GeoAxes
 from matplotlib.ticker import MultipleLocator, FormatStrFormatter, AutoMinorLocator
 import warnings
 
-###### WARNING #################
-# this module is work in progress, the aim is to reimplement the healpy
-# plot functions using the new features of matplotlib and remove most
-# of the custom projection code
-
 
 class ThetaFormatterCounterclockwisePhi(GeoAxes.ThetaFormatter):
     """Convert tick labels from rads to degs and shifts labelling from -180|-90|0|90|180 to conterclockwise periodic 180|90|0|270|180 """
@@ -102,6 +97,12 @@ def projview(
     **kwargs
 ):
     """Plot a healpix map (given as an array) in the chosen projection.
+
+    WARNING:
+    this function is work in progress, the aim is to reimplement the healpy
+    plot functions using the new features of matplotlib and remove most
+    of the custom projection code.
+    The interface will change in future releases.
 
     Parameters
     ----------
