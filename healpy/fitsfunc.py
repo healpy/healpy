@@ -85,21 +85,14 @@ def write_cl(filename, cl, dtype=None, overwrite=False):
       the cl array to write to file
     dtype : np.dtype (optional)
       The datatype in which the columns will be stored. If not supplied,
-      np.float64 will be assumed.
-      (WARNING: in some future version, the type of cl will be used instead.)
+      the dtype of the input cl will be used. This changed in `healpy` 1.15.0,
+      in previous versions, cl by default were saved in `float64`.
     overwrite : bool, optional
       If True, existing file is silently overwritten. Otherwise trying to write
-      an existing file raises an OSError (IOError for Python 2).
+      an existing file raises an OSError.
     """
     if dtype is None:
-        warnings.warn(
-            "The default dtype of write_cl() will change in a future version: "
-            "explicitly set the dtype if it is important to you",
-            category=FutureWarning,
-        )
-        dtype = np.float64
-        # At some poin change this to:
-        # dtype = cl.dtype if isinstance(cl, np.ndarray) else cl[0].dtype
+        dtype = cl.dtype if isinstance(cl, np.ndarray) else cl[0].dtype
     # check the dtype and convert it
     fitsformat = getformat(dtype)
     column_names = ["TEMPERATURE", "GRADIENT", "CURL", "G-T", "C-T", "C-G"]

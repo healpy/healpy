@@ -1,5 +1,6 @@
 Release in progress
 
+* `write_cl` uses dtype of input cl instead of float64 <https://github.com/healpy/healpy/pull/688>
 * Removed the note that we will change order of cl in `synfast` and `synalm`, we will leave `new=False` default <https://github.com/healpy/healpy/pull/687>
 * Support nested maps `hp.smoothing` <https://github.com/healpy/healpy/pull/678>
 * Improvements of the build system <https://github.com/healpy/healpy/pull/660> <https://github.com/healpy/healpy/pull/661>
