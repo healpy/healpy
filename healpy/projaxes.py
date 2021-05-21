@@ -80,14 +80,12 @@ class SphericalProjAxes(matplotlib.axes.Axes):
         self._gratdef["dpar"] = 30.0
 
     def set_format(self, f):
-        """Set the format string for value display
-        """
+        """Set the format string for value display"""
         self._format = f
         return f
 
     def set_coordprec(self, n):
-        """Set the number of digits after floating point for coord display.
-        """
+        """Set the number of digits after floating point for coord display."""
         self._coordprec = n
 
     def format_coord(self, x, y):
@@ -113,14 +111,12 @@ class SphericalProjAxes(matplotlib.axes.Axes):
         return res
 
     def get_lonlat(self, x, y):
-        """Get the coordinate in the coord system of the image, in lon/lat in deg.
-        """
+        """Get the coordinate in the coord system of the image, in lon/lat in deg."""
         lon, lat = self.proj.xy2ang(x, y, lonlat=True)
         return lon, lat
 
     def get_value(self, x, y):
-        """Get the value of the map at position x,y
-        """
+        """Get the value of the map at position x,y"""
         if len(self.get_images()) < 1:
             return None
         im = self.get_images()[-1]
@@ -194,8 +190,9 @@ class SphericalProjAxes(matplotlib.axes.Axes):
         if vmin == vmax:
             vmin -= 1.0
             vmax += 1.0
-        cm, nn = get_color_table(vmin, vmax, img[w], cmap=cmap, norm=norm,
-                                 badcolor=badcolor, bgcolor=bgcolor)
+        cm, nn = get_color_table(
+            vmin, vmax, img[w], cmap=cmap, norm=norm, badcolor=badcolor, bgcolor=bgcolor
+        )
         ext = self.proj.get_extent()
         img = np.ma.masked_values(img, badval)
         aximg = self.imshow(
@@ -291,9 +288,11 @@ class SphericalProjAxes(matplotlib.axes.Axes):
                 try:  # works in matplotlib 1.3 and earlier
                     linestyle, marker, color = matplotlib.axes._process_plot_format(fmt)
                 except:  # matplotlib 1.4 and later
-                    linestyle, marker, color = matplotlib.axes._axes._process_plot_format(
-                        fmt
-                    )
+                    (
+                        linestyle,
+                        marker,
+                        color,
+                    ) = matplotlib.axes._axes._process_plot_format(fmt)
                 kwds.setdefault("linestyle", linestyle)
                 kwds.setdefault("marker", marker)
                 if color is not None:
@@ -610,8 +609,7 @@ class SphericalProjAxes(matplotlib.axes.Axes):
         return dpar, dmer
 
     def delgraticules(self):
-        """Delete all graticules previously created on the Axes.
-        """
+        """Delete all graticules previously created on the Axes."""
         if hasattr(self, "_graticules"):
             for dum1, dum2, g in self._graticules:
                 for gl in g:
@@ -734,8 +732,7 @@ class HpxMollweideAxes(MollweideAxes):
 
 
 class CartesianAxes(SphericalProjAxes):
-    """Define a cylindrical Axes to handle cylindrical projection.
-    """
+    """Define a cylindrical Axes to handle cylindrical projection."""
 
     def __init__(self, *args, **kwds):
         kwds.setdefault("coordprec", 2)
@@ -866,8 +863,9 @@ class HpxAzimuthalAxes(AzimuthalAxes):
 #   http://matplotlib.org/examples/pylab_examples/custom_cmap.html
 
 
-def get_color_table(vmin, vmax, val, cmap=None, norm=None,
-                    badcolor="gray", bgcolor="white"):
+def get_color_table(
+    vmin, vmax, val, cmap=None, norm=None, badcolor="gray", bgcolor="white"
+):
     # Create color table
     newcmap = create_colormap(cmap, badcolor=badcolor, bgcolor=bgcolor)
     if type(norm) is str:

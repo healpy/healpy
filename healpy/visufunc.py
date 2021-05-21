@@ -101,7 +101,7 @@ def mollview(
     return_projected_map=False,
 ):
     """Plot a healpix map (given as an array) in Mollweide projection.
-    
+
     Parameters
     ----------
     map : float, array-like or None
@@ -427,7 +427,7 @@ def gnomview(
     return_projected_map : bool, optional
       if True returns the projected map in a 2d numpy array
     no_plot : bool, optional
-      if True no figure will be created      
+      if True no figure will be created
 
     See Also
     --------
@@ -641,7 +641,7 @@ def cartview(
     Parameters
     ----------
     map : float, array-like or None
-      An array containing the map, 
+      An array containing the map,
       supports masked maps, see the `ma` function.
       If None, will display a blank map, useful for overplotting.
     fig : int or None, optional
@@ -901,7 +901,7 @@ def orthview(
     return_projected_map=False,
 ):
     """Plot a healpix map (given as an array) in Orthographic projection.
-    
+
     Parameters
     ----------
     map : float, array-like or None
@@ -977,7 +977,7 @@ def orthview(
       Default: None
     return_projected_map : bool
       if True returns the projected map in a 2d numpy array
-    
+
     See Also
     --------
     mollview, gnomview, cartview, azeqview

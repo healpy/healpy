@@ -40,8 +40,8 @@ dtor = np.pi / 180.0
 class SphericalProj(object):
     """
     This class defines functions for spherical projection.
-    
-    This class contains class method for spherical projection computation. It 
+
+    This class contains class method for spherical projection computation. It
     should not be instantiated. It should be inherited from and methods should
     be overloaded for desired projection.
     """
@@ -203,8 +203,8 @@ class SphericalProj(object):
 
     def set_flip(self, flipconv):
         """flipconv is either 'astro' or 'geo'. None will be default.
-        
-        With 'astro', east is toward left and west toward right. 
+
+        With 'astro', east is toward left and west toward right.
         It is the opposite for 'geo'
         """
         if flipconv is None:
@@ -259,8 +259,7 @@ class SphericalProj(object):
 
 
 class GnomonicProj(SphericalProj):
-    """This class provides class methods for Gnomonic projection.
-    """
+    """This class provides class methods for Gnomonic projection."""
 
     name = "Gnomonic"
 
@@ -291,7 +290,6 @@ class GnomonicProj(SphericalProj):
             raise ValueError("vy and vz must be both defined or both not defined")
         flip = self._flip
         mask = np.asarray(vec[0]) <= 0.0
-        w = np.where(mask == False)
         if not mask.any():
             mask = np.ma.nomask
         if not hasattr(vec[0], "__len__"):
@@ -302,6 +300,7 @@ class GnomonicProj(SphericalProj):
                 x = flip * vec[1] / vec[0]
                 y = vec[2] / vec[0]
         else:
+            w = mask == False
             x = np.zeros(vec[0].shape) + np.nan
             y = np.zeros(vec[0].shape) + np.nan
             x[w] = flip * vec[1][w] / vec[0][w]
@@ -394,8 +393,7 @@ class GnomonicProj(SphericalProj):
 
 
 class MollweideProj(SphericalProj):
-    """This class provides class methods for Mollweide projection.
-    """
+    """This class provides class methods for Mollweide projection."""
 
     name = "Mollweide"
     __molldata = []
@@ -429,7 +427,6 @@ class MollweideProj(SphericalProj):
         if y is None:
             x, y = x
         mask = np.asarray(x) ** 2 / 4.0 + np.asarray(y) ** 2 > 1.0
-        w = np.where(mask == False)
         if not mask.any():
             mask = np.ma.nomask
         if not hasattr(x, "__len__"):
@@ -447,6 +444,7 @@ class MollweideProj(SphericalProj):
                 else:
                     return vec
         else:
+            w = mask == False
             vec = (
                 np.zeros(x.shape) + np.nan,
                 np.zeros(x.shape) + np.nan,
@@ -585,8 +583,7 @@ class MollweideProj(SphericalProj):
 
 
 class CartesianProj(SphericalProj):
-    """This class provides class methods for Cartesian projection.
-    """
+    """This class provides class methods for Cartesian projection."""
 
     name = "Cartesian"
 
@@ -795,8 +792,7 @@ class CartesianProj(SphericalProj):
 
 
 class OrthographicProj(SphericalProj):
-    """This class provides methods for orthographic projection
-    """
+    """This class provides methods for orthographic projection"""
 
     name = "Orthographic"
 
@@ -948,7 +944,10 @@ class OrthographicProj(SphericalProj):
             if (half_sky and x ** 2 + y ** 2 > 1.0) or (
                 not half_sky and (np.mod(x + 2.0, 2.0) - 1.0) ** 2 + y ** 2 > 1.0
             ):
-                i, j, = np.nan, np.nan
+                i, j, = (
+                    np.nan,
+                    np.nan,
+                )
             else:
                 j = np.around(x * xc / ratio + xc).astype(np.long)
                 i = np.around(yc + y * yc).astype(np.long)
@@ -1098,9 +1097,8 @@ class AzimuthalProj(SphericalProj):
             if mask is not np.ma.nomask:
                 return np.nan, np.nan
         else:
-            w = np.where(mask)
-            x[w] = np.nan
-            y[w] = np.nan
+            x[mask] = np.nan
+            y[mask] = np.nan
         return x, y
 
     vec2xy.__doc__ = SphericalProj.vec2xy.__doc__ % (name, name)
@@ -1127,7 +1125,6 @@ class AzimuthalProj(SphericalProj):
             else:
                 r2max /= 4.0
         mask = np.asarray(x) ** 2 + np.asarray(y) ** 2 > r2max
-        w = np.where(mask == False)
         if not mask.any():
             mask = np.ma.nomask
         if not hasattr(x, "__len__"):
@@ -1148,6 +1145,7 @@ class AzimuthalProj(SphericalProj):
                 else:
                     return vec
         else:
+            w = mask == False
             vec = (
                 np.zeros(x.shape) + np.nan,
                 np.zeros(x.shape) + np.nan,
@@ -1212,7 +1210,10 @@ class AzimuthalProj(SphericalProj):
             i = np.ma.array(np.around(yc + y / dx).astype(np.long), mask=mask)
         else:
             if x ** 2 + y ** 2 > r2max:
-                i, j, = np.nan, np.nan
+                i, j, = (
+                    np.nan,
+                    np.nan,
+                )
             else:
                 j = np.around(xc + x / dx).astype(np.long)
                 i = np.around(yc + y / dx).astype(np.long)

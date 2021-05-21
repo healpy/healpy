@@ -53,7 +53,7 @@ def mollview(
     **kwargs
 ):
     """Plot a healpix map (given as an array) in Mollweide projection.
-    
+
     Parameters
     ----------
     map : float, array-like or None
@@ -198,10 +198,10 @@ def projplot(theta, phi, fmt=None, **kwargs):
     spherical projection.
 
     You can call this function as::
-    
+
        projplot(theta, phi)        # plot a line going through points at coord (theta, phi)
        projplot(theta, phi, 'bo')  # plot 'o' in blue at coord (theta, phi)
-    
+
     Parameters
     ----------
     theta, phi : float, array-like
