@@ -1,5 +1,6 @@
 Release in progress
 
+* Removed the note that we will change order of cl in `synfast` and `synalm`, we will leave `new=False` default <https://github.com/healpy/healpy/pull/687>
 * Support nested maps `hp.smoothing` <https://github.com/healpy/healpy/pull/678>
 * Improvements of the build system <https://github.com/healpy/healpy/pull/660> <https://github.com/healpy/healpy/pull/661>
 * Automatically build wheels for Linux/MacOS on Github actions <https://github.com/healpy/healpy/pull/656>
