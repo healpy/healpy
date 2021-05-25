@@ -444,6 +444,8 @@ def gnomview(
     alpha : float, array-like or None
       An array containing the alpha channel, supports masked maps, see the `ma` function.
       If None, no transparency will be applied.
+      See an example usage of the alpha channel transparency in the documentation under
+      "Other tutorials"
 
     See Also
     --------
