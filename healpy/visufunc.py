@@ -237,7 +237,7 @@ def mollview(
     pylab.ioff()
     try:
         map = pixelfunc.ma_to_array(map)
-        if (alpha is not None):
+        if alpha is not None:
             alpha = pixelfunc.ma_to_array(alpha)
         if reuse_axes:
             ax = f.gca()
@@ -271,7 +271,10 @@ def mollview(
             im = ax.get_images()[0]
             b = im.norm.inverse(np.linspace(0, 1, im.cmap.N + 1))
             v = np.linspace(im.norm.vmin, im.norm.vmax, im.cmap.N)
-            mappable = plt.cm.ScalarMappable(norm=matplotlib.colors.Normalize(vmin=im.norm.vmin, vmax=im.norm.vmax), cmap=cmap)
+            mappable = plt.cm.ScalarMappable(
+                norm=matplotlib.colors.Normalize(vmin=im.norm.vmin, vmax=im.norm.vmax),
+                cmap=cmap,
+            )
             if matplotlib.__version__ >= "0.91.0":
                 cb = f.colorbar(
                     mappable,
@@ -530,7 +533,10 @@ def gnomview(
             im = ax.get_images()[0]
             b = im.norm.inverse(np.linspace(0, 1, im.cmap.N + 1))
             v = np.linspace(im.norm.vmin, im.norm.vmax, im.cmap.N)
-            mappable = plt.cm.ScalarMappable(norm=matplotlib.colors.Normalize(vmin=im.norm.vmin, vmax=im.norm.vmax), cmap=cmap)
+            mappable = plt.cm.ScalarMappable(
+                norm=matplotlib.colors.Normalize(vmin=im.norm.vmin, vmax=im.norm.vmax),
+                cmap=cmap,
+            )
             if matplotlib.__version__ >= "0.91.0":
                 cb = f.colorbar(
                     mappable,
@@ -830,7 +836,10 @@ def cartview(
             im = ax.get_images()[0]
             b = im.norm.inverse(np.linspace(0, 1, im.cmap.N + 1))
             v = np.linspace(im.norm.vmin, im.norm.vmax, im.cmap.N)
-            mappable = plt.cm.ScalarMappable(norm=matplotlib.colors.Normalize(vmin=im.norm.vmin, vmax=im.norm.vmax), cmap=cmap)
+            mappable = plt.cm.ScalarMappable(
+                norm=matplotlib.colors.Normalize(vmin=im.norm.vmin, vmax=im.norm.vmax),
+                cmap=cmap,
+            )
             if matplotlib.__version__ >= "0.91.0":
                 cb = f.colorbar(
                     mappable,
@@ -1002,7 +1011,7 @@ def orthview(
     alpha : float, array-like or None
       An array containing the alpha channel, supports masked maps, see the `ma` function.
       If None, no transparency will be applied.
-    
+
     See Also
     --------
     mollview, gnomview, cartview, azeqview
@@ -1091,7 +1100,10 @@ def orthview(
             im = ax.get_images()[0]
             b = im.norm.inverse(np.linspace(0, 1, im.cmap.N + 1))
             v = np.linspace(im.norm.vmin, im.norm.vmax, im.cmap.N)
-            mappable = plt.cm.ScalarMappable(norm=matplotlib.colors.Normalize(vmin=im.norm.vmin, vmax=im.norm.vmax), cmap=cmap)
+            mappable = plt.cm.ScalarMappable(
+                norm=matplotlib.colors.Normalize(vmin=im.norm.vmin, vmax=im.norm.vmax),
+                cmap=cmap,
+            )
             if matplotlib.__version__ >= "0.91.0":
                 cb = f.colorbar(
                     mappable,
@@ -1366,7 +1378,10 @@ def azeqview(
             im = ax.get_images()[0]
             b = im.norm.inverse(np.linspace(0, 1, im.cmap.N + 1))
             v = np.linspace(im.norm.vmin, im.norm.vmax, im.cmap.N)
-            mappable = plt.cm.ScalarMappable(norm=matplotlib.colors.Normalize(vmin=im.norm.vmin, vmax=im.norm.vmax), cmap=cmap)
+            mappable = plt.cm.ScalarMappable(
+                norm=matplotlib.colors.Normalize(vmin=im.norm.vmin, vmax=im.norm.vmax),
+                cmap=cmap,
+            )
             if matplotlib.__version__ >= "0.91.0":
                 cb = f.colorbar(
                     mappable,
