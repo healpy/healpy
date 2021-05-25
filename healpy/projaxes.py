@@ -179,12 +179,10 @@ class SphericalProjAxes(matplotlib.axes.Axes):
         """
         img = self.proj.projmap(map, vec2pix_func, rot=rot, coord=coord)
         w = ~(np.isnan(img) | np.isinf(img) | pixelfunc.mask_bad(img, badval=badval))
-        if (alpha is not None):            
+        if (alpha is not None):
             alpha_img = self.proj.projmap(alpha, vec2pix_func, rot=rot, coord=coord)
             alpha_img[alpha_img == -np.inf] = 0
             alpha = plt.Normalize()(alpha_img)
-        else:
-            alpha = None        
         try:
             if vmin is None:
                 vmin = img[w].min()
