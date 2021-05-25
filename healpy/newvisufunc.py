@@ -46,11 +46,9 @@ class ThetaFormatterTheta(GeoAxes.ThetaFormatter):
 
 
 def lonlat(theta, phi):
-    """Converts theta and phi to longitude and latitude
+    """Converts theta and phi to longitude and latitude"""
 
-    From colatitude to latitude and from astro longitude to geo longitude"""
-
-    longitude = -1 * np.asarray(phi)
+    longitude = np.asarray(phi)
     latitude = np.pi / 2 - np.asarray(theta)
     return longitude, latitude
 
@@ -98,10 +96,13 @@ def projview(
 ):
     """Plot a healpix map (given as an array) in the chosen projection.
 
+    Overplot points or lines using :func:`newprojplot`.
+
     WARNING:
     this function is work in progress, the aim is to reimplement the healpy
     plot functions using the new features of matplotlib and remove most
     of the custom projection code.
+    Please report bugs or submit feature requests via Github.
     The interface will change in future releases.
 
     Parameters
@@ -131,6 +132,7 @@ def projview(
     flip : {'astro', 'geo'}, optional
       Defines the convention of projection : 'astro' (default, east towards left, west towards right)
       or 'geo' (east towards roght, west towards left)
+      It creates the `healpy_flip` attribute on the Axes to save the convention in the figure.
     format : str, optional
       The format of the scale label. Default: '%g'
     cbar : bool, optional
@@ -165,7 +167,8 @@ def projview(
     fontsize:  dict
         Override fontsize of labels: "xlabel", "ylabel", "title", "xtick_label", "ytick_label", "cbar_label", "cbar_tick_label".
     phi_convention : string
-        convention on x-axis (phi), 'counterclockwise' (default), 'clockwise, 'symmetrical' (phi as it is truly given)
+        convention on x-axis (phi), 'counterclockwise' (default), 'clockwise', 'symmetrical' (phi as it is truly given)
+        if `flip` is "geo", `phi_convention` should be set to 'clockwise'.
     custom_xtick_labels : list
         override x-axis tick labels
     custom_ytick_labels : list
@@ -314,6 +317,10 @@ def projview(
     longitude = np.radians(np.linspace(-180, 180, xsize))
     if flip == "astro":
         longitude = longitude[::-1]
+    if not return_only_data:
+        # set property on ax so it can be used in newprojplot
+        ax.healpy_flip = flip
+
     latitude = np.radians(np.linspace(-90, 90, ysize))
     # project the map to a rectangular matrix xsize x ysize
     PHI, THETA = np.meshgrid(phi, theta)
@@ -459,8 +466,9 @@ def projview(
 
 
 def newprojplot(theta, phi, fmt=None, **kwargs):
-    """projplot is a wrapper around :func:`matplotlib.Axes.plot` to take into account the
-    spherical projection.
+    """newprojplot is a wrapper around :func:`matplotlib.Axes.plot` to support
+    colatitude theta and longitude phi and take into account the longitude convention
+    (see the `flip` keyword of :func:`projview`)
 
     You can call this function as::
 
@@ -480,7 +488,12 @@ def newprojplot(theta, phi, fmt=None, **kwargs):
     """
     import matplotlib.pyplot as plt
 
+    ax = plt.gca()
+    flip = getattr(ax, "healpy_flip", "astro")
+
     longitude, latitude = lonlat(theta, phi)
+    if flip == "astro":
+        longitude = longitude * -1
     if fmt is None:
         ret = plt.plot(longitude, latitude, **kwargs)
     else:
