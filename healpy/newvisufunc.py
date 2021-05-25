@@ -98,12 +98,12 @@ def projview(
 
     Overplot points or lines using :func:`newprojplot`.
 
-    WARNING:
-    this function is work in progress, the aim is to reimplement the healpy
-    plot functions using the new features of matplotlib and remove most
-    of the custom projection code.
-    Please report bugs or submit feature requests via Github.
-    The interface will change in future releases.
+    .. warning::
+        this function is work in progress, the aim is to reimplement the healpy
+        plot functions using the new features of matplotlib and remove most
+        of the custom projection code.
+        Please report bugs or submit feature requests via Github.
+        The interface will change in future releases.
 
     Parameters
     ----------
