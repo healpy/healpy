@@ -21,4 +21,4 @@ Tracing lines or points
 .. autosummary::
    :toctree: generated/
 
-   projplot
+   newprojplot

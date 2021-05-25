@@ -1,4 +1,4 @@
-__all__ = ["projview", "projplot"]
+__all__ = ["projview", "newprojplot"]
 
 import numpy as np
 from .pixelfunc import ang2pix, npix2nside
@@ -458,7 +458,7 @@ def projview(
     return ret
 
 
-def projplot(theta, phi, fmt=None, **kwargs):
+def newprojplot(theta, phi, fmt=None, **kwargs):
     """projplot is a wrapper around :func:`matplotlib.Axes.plot` to take into account the
     spherical projection.
 

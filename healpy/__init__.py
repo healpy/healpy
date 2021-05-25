@@ -109,7 +109,7 @@ from ._masktools import dist2holes_healpy as dist2holes
 from ._hotspots import hotspots_healpy as hotspots
 from ._line_integral_convolution import line_integral_convolution
 
-from .newvisufunc import projview
+from .newvisufunc import projview, newprojplot
 
 def disable_warnings():
     """Disable all healpy warnings messages for the current session
