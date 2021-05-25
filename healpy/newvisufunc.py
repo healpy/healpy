@@ -338,7 +338,7 @@ def projview(
         # plot
         if return_only_data:  # exit here when dumping the data
             return [longitude, latitude, grid_map]
-        if projection_type is not "3d":  # test for 3d plot
+        if projection_type != "3d":  # test for 3d plot
             ret = plt.pcolormesh(
                 longitude,
                 latitude,
@@ -350,7 +350,7 @@ def projview(
                 shading="auto",
                 **kwargs
             )
-        elif projection_type is "3d":  # test for 3d plot
+        elif projection_type == "3d":  # test for 3d plot
             LONGITUDE, LATITUDE = np.meshgrid(longitude, latitude)
             ret = ax.plot_surface(
                 LONGITUDE,
@@ -429,7 +429,7 @@ def projview(
         axis="y", labelsize=fontsize_defaults["ytick_label"], colors=ytick_label_color
     )
     # colorbar
-    if projection_type is "cart":
+    if projection_type == "cart":
         ax.set_aspect(1)
     extend = "neither"
     if min > np.min(m):
