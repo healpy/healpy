@@ -96,6 +96,7 @@ def projview(
 ):
     """Plot a healpix map (given as an array) in the chosen projection.
 
+    See examples of using this function in the documentation under "Other tutorials".
     Overplot points or lines using :func:`newprojplot`.
 
     .. warning::
