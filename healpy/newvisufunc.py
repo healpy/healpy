@@ -473,8 +473,8 @@ def newprojplot(theta, phi, fmt=None, **kwargs):
 
     You can call this function as::
 
-       projplot(theta, phi)        # plot a line going through points at coord (theta, phi)
-       projplot(theta, phi, 'bo')  # plot 'o' in blue at coord (theta, phi)
+       newprojplot(theta, phi)        # plot a line going through points at coord (theta, phi)
+       newprojplot(theta, phi, 'bo')  # plot 'o' in blue at coord (theta, phi)
 
     Parameters
     ----------
