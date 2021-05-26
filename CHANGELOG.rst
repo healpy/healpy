@@ -1,5 +1,6 @@
 Release in progress
 
+* Support transparency in plotting with the `alpha` parameter <https://github.com/healpy/healpy/pull/696>
 * Experimental `projview` function to plot maps using projections from `matplotlib` <https://github.com/healpy/healpy/pull/695>
 * `write_cl` uses dtype of input cl instead of float64 <https://github.com/healpy/healpy/pull/688>
 * Removed the note that we will change order of cl in `synfast` and `synalm`, we will leave `new=False` default <https://github.com/healpy/healpy/pull/687>
