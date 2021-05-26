@@ -3,6 +3,14 @@ Other tutorials
 
 Links to other tutorials about `healpy`
 
+Alpha channel in visualization for transparency
+-----------------------------------------------
+
+.. toctree::
+   :maxdepth: 1
+
+   alpha_channel_example
+
 New experimental visualization function
 ---------------------------------------
 

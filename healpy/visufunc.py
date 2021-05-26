@@ -64,6 +64,7 @@ __all__ = [
 from . import projaxes as PA
 import numpy as np
 import matplotlib
+import matplotlib.pyplot as plt
 from . import pixelfunc
 
 pi = np.pi
@@ -99,6 +100,7 @@ def mollview(
     sub=None,
     nlocs=2,
     return_projected_map=False,
+    alpha=None,
 ):
     """Plot a healpix map (given as an array) in Mollweide projection.
 
@@ -175,6 +177,9 @@ def mollview(
       Default: None
     return_projected_map : bool
       if True returns the projected map in a 2d numpy array
+    alpha : float, array-like or None
+      An array containing the alpha channel, supports masked maps, see the `ma` function.
+      If None, no transparency will be applied.
 
     See Also
     --------
@@ -232,6 +237,8 @@ def mollview(
     pylab.ioff()
     try:
         map = pixelfunc.ma_to_array(map)
+        if alpha is not None:
+            alpha = pixelfunc.ma_to_array(alpha)
         if reuse_axes:
             ax = f.gca()
         else:
@@ -258,14 +265,19 @@ def mollview(
             badcolor=badcolor,
             bgcolor=bgcolor,
             norm=norm,
+            alpha=alpha,
         )
         if cbar:
             im = ax.get_images()[0]
             b = im.norm.inverse(np.linspace(0, 1, im.cmap.N + 1))
             v = np.linspace(im.norm.vmin, im.norm.vmax, im.cmap.N)
+            mappable = plt.cm.ScalarMappable(
+                norm=matplotlib.colors.Normalize(vmin=im.norm.vmin, vmax=im.norm.vmax),
+                cmap=cmap,
+            )
             if matplotlib.__version__ >= "0.91.0":
                 cb = f.colorbar(
-                    im,
+                    mappable,
                     ax=ax,
                     orientation="horizontal",
                     shrink=0.5,
@@ -280,7 +292,7 @@ def mollview(
             else:
                 # for older matplotlib versions, no ax kwarg
                 cb = f.colorbar(
-                    im,
+                    mappable,
                     orientation="horizontal",
                     shrink=0.5,
                     aspect=25,
@@ -352,6 +364,7 @@ def gnomview(
     notext=False,
     return_projected_map=False,
     no_plot=False,
+    alpha=None,
 ):
     """Plot a healpix map (given as an array) in Gnomonic projection.
 
@@ -428,6 +441,11 @@ def gnomview(
       if True returns the projected map in a 2d numpy array
     no_plot : bool, optional
       if True no figure will be created
+    alpha : float, array-like or None
+      An array containing the alpha channel, supports masked maps, see the `ma` function.
+      If None, no transparency will be applied.
+      See an example usage of the alpha channel transparency in the documentation under
+      "Other tutorials"
 
     See Also
     --------
@@ -511,14 +529,19 @@ def gnomview(
             norm=norm,
             badcolor=badcolor,
             bgcolor=bgcolor,
+            alpha=alpha,
         )
         if cbar:
             im = ax.get_images()[0]
             b = im.norm.inverse(np.linspace(0, 1, im.cmap.N + 1))
             v = np.linspace(im.norm.vmin, im.norm.vmax, im.cmap.N)
+            mappable = plt.cm.ScalarMappable(
+                norm=matplotlib.colors.Normalize(vmin=im.norm.vmin, vmax=im.norm.vmax),
+                cmap=cmap,
+            )
             if matplotlib.__version__ >= "0.91.0":
                 cb = f.colorbar(
-                    im,
+                    mappable,
                     ax=ax,
                     orientation="horizontal",
                     shrink=0.5,
@@ -532,7 +555,7 @@ def gnomview(
                 )
             else:
                 cb = f.colorbar(
-                    im,
+                    mappable,
                     orientation="horizontal",
                     shrink=0.5,
                     aspect=25,
@@ -635,6 +658,7 @@ def cartview(
     margins=None,
     notext=False,
     return_projected_map=False,
+    alpha=None,
 ):
     """Plot a healpix map (given as an array) in Cartesian projection.
 
@@ -714,6 +738,9 @@ def cartview(
       Default: None
     return_projected_map : bool
       if True returns the projected map in a 2d numpy array
+    alpha : float, array-like or None
+      An array containing the alpha channel, supports masked maps, see the `ma` function.
+      If None, no transparency will be applied.
 
     See Also
     --------
@@ -805,14 +832,19 @@ def cartview(
             bgcolor=bgcolor,
             norm=norm,
             aspect=aspect,
+            alpha=alpha,
         )
         if cbar:
             im = ax.get_images()[0]
             b = im.norm.inverse(np.linspace(0, 1, im.cmap.N + 1))
             v = np.linspace(im.norm.vmin, im.norm.vmax, im.cmap.N)
+            mappable = plt.cm.ScalarMappable(
+                norm=matplotlib.colors.Normalize(vmin=im.norm.vmin, vmax=im.norm.vmax),
+                cmap=cmap,
+            )
             if matplotlib.__version__ >= "0.91.0":
                 cb = f.colorbar(
-                    im,
+                    mappable,
                     ax=ax,
                     orientation="horizontal",
                     shrink=0.5,
@@ -826,7 +858,7 @@ def cartview(
                 )
             else:
                 cb = f.colorbar(
-                    im,
+                    mappable,
                     orientation="horizontal",
                     shrink=0.5,
                     aspect=25,
@@ -899,6 +931,7 @@ def orthview(
     sub=None,
     reuse_axes=False,
     return_projected_map=False,
+    alpha=None,
 ):
     """Plot a healpix map (given as an array) in Orthographic projection.
 
@@ -977,6 +1010,9 @@ def orthview(
       Default: None
     return_projected_map : bool
       if True returns the projected map in a 2d numpy array
+    alpha : float, array-like or None
+      An array containing the alpha channel, supports masked maps, see the `ma` function.
+      If None, no transparency will be applied.
 
     See Also
     --------
@@ -1060,14 +1096,19 @@ def orthview(
             badcolor=badcolor,
             bgcolor=bgcolor,
             norm=norm,
+            alpha=alpha,
         )
         if cbar:
             im = ax.get_images()[0]
             b = im.norm.inverse(np.linspace(0, 1, im.cmap.N + 1))
             v = np.linspace(im.norm.vmin, im.norm.vmax, im.cmap.N)
+            mappable = plt.cm.ScalarMappable(
+                norm=matplotlib.colors.Normalize(vmin=im.norm.vmin, vmax=im.norm.vmax),
+                cmap=cmap,
+            )
             if matplotlib.__version__ >= "0.91.0":
                 cb = f.colorbar(
-                    im,
+                    mappable,
                     ax=ax,
                     orientation="horizontal",
                     shrink=0.5,
@@ -1082,7 +1123,7 @@ def orthview(
             else:
                 # for older matplotlib versions, no ax kwarg
                 cb = f.colorbar(
-                    im,
+                    mappable,
                     orientation="horizontal",
                     shrink=0.5,
                     aspect=25,
@@ -1157,6 +1198,7 @@ def azeqview(
     margins=None,
     notext=False,
     return_projected_map=False,
+    alpha=None,
 ):
     """Plot a healpix map (given as an array) in Azimuthal equidistant projection
     or Lambert azimuthal equal-area projection.
@@ -1243,6 +1285,9 @@ def azeqview(
       Default: None
     return_projected_map : bool
       if True returns the projected map in a 2d numpy array
+    alpha : float, array-like or None
+      An array containing the alpha channel, supports masked maps, see the `ma` function.
+      If None, no transparency will be applied.
 
     See Also
     --------
@@ -1329,14 +1374,19 @@ def azeqview(
             badcolor=badcolor,
             bgcolor=bgcolor,
             norm=norm,
+            alpha=alpha,
         )
         if cbar:
             im = ax.get_images()[0]
             b = im.norm.inverse(np.linspace(0, 1, im.cmap.N + 1))
             v = np.linspace(im.norm.vmin, im.norm.vmax, im.cmap.N)
+            mappable = plt.cm.ScalarMappable(
+                norm=matplotlib.colors.Normalize(vmin=im.norm.vmin, vmax=im.norm.vmax),
+                cmap=cmap,
+            )
             if matplotlib.__version__ >= "0.91.0":
                 cb = f.colorbar(
-                    im,
+                    mappable,
                     ax=ax,
                     orientation="horizontal",
                     shrink=0.5,
@@ -1351,7 +1401,7 @@ def azeqview(
             else:
                 # for older matplotlib versions, no ax kwarg
                 cb = f.colorbar(
-                    im,
+                    mappable,
                     orientation="horizontal",
                     shrink=0.5,
                     aspect=25,
