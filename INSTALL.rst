@@ -122,20 +122,20 @@ and build it with::
 
     tar -xzf healpy-*.tar.gz
     cd healpy-*
-    python setup.py install --user
+    pip install .
 
 If everything goes fine, you can test it::
 
     python
->>> import matplotlib.pyplot as plt
->>> import numpy as np
->>> import healpy as hp
->>> hp.mollview(np.arange(12))
->>> plt.show()
+    >>> import matplotlib.pyplot as plt
+    >>> import numpy as np
+    >>> import healpy as hp
+    >>> hp.mollview(np.arange(12))
+    >>> plt.show()
 
 or run the test suite with::
 
-    cd healpy-* && python setup.py test
+    cd healpy-* && pytest
 
 Building against external Healpix and cfitsio
 ---------------------------------------------

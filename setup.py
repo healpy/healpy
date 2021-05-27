@@ -17,6 +17,18 @@ from distutils.dir_util import mkpath
 from distutils.file_util import copy_file
 from distutils import log
 
+TEST_HELP = """
+Note: running tests is no longer done using 'python setup.py test'. Instead
+you will need to run:
+    pytest
+to also run the doctests:
+    pytest --doctest-plus --doctest-cython
+"""
+
+if "test" in sys.argv:
+    print(TEST_HELP)
+    sys.exit(1)
+
 # Apple switched default C++ standard libraries (from gcc's libstdc++ to
 # clang's libc++), but some pre-packaged Python environments such as Anaconda
 # are built against the old C++ standard library. Luckily, we don't have to
