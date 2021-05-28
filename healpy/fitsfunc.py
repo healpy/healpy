@@ -130,7 +130,8 @@ def write_map(
 ):
     """Writes a healpix map into a healpix FITS file.
 
-    WARNING: starting from healpy 1.15.0, if you do not specify `dtype`,
+    .. warning::
+    Starting from healpy 1.15.0, if you do not specify `dtype`,
     the map will be written to disk with the same precision it is stored in memory.
     Previously, by default `healpy` wrote maps in `float32`.
     To reproduce the same behaviour of `healpy` 1.14.0 and below, set `dtype=np.float32`.
@@ -173,8 +174,9 @@ def write_map(
       internally from the numpy datatype to the fits convention. If a list,
       the length must correspond to the number of map arrays.
       Default: use the data type of the input array(s)
-      (WARNING: this changed in 1.15.0, previous versions saved in float32
-      by default)
+      .. note::
+      this changed in 1.15.0, previous versions saved in float32
+      by default
     overwrite : bool, optional
       If True, existing file is silently overwritten. Otherwise trying to write
       an existing file raises an OSError (IOError for Python 2).
@@ -303,7 +305,8 @@ def read_map(
     """Read a healpix map from a fits file.  Partial-sky files,
     if properly identified, are expanded to full size and filled with UNSEEN.
 
-    WARNING: starting from healpy 1.15.0, if you do not specify `dtype`,
+    .. warning::
+    Starting from healpy 1.15.0, if you do not specify `dtype`,
     the map will be read in memory with the same precision it is stored on disk.
     Previously, by default `healpy` wrote maps in `float32` and then upcast to
     `float64` when reading to memory. To reproduce the same behaviour of `healpy`
