@@ -328,7 +328,7 @@ def read_map(
       types for each field. In that case, the length of the list must
       correspond to the length of the field parameter.
       If None, keep the dtype of the input FITS file
-      Default: None
+      Default: Preserve the data types in the file
     nest : bool, optional
       If True return the map in NEST ordering, otherwise in RING ordering;
       use fits keyword ORDERING to decide whether conversion is needed or not
