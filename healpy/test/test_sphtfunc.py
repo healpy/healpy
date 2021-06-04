@@ -276,7 +276,7 @@ class TestSphtFunc(unittest.TestCase):
         """rotate_alm also support rotation matrix instead of angles"""
         lmax = 32
         nalm = hp.Alm.getsize(lmax)
-        alm = np.zeros([3, nalm], dtype=np.complex)
+        alm = np.zeros([3, nalm], dtype=complex)
         alm[0, 1] = 1
         alm[1, 2] = 1
         alm_rotated_angles = alm.copy()
@@ -290,7 +290,7 @@ class TestSphtFunc(unittest.TestCase):
         # Test rotate_alm against the Fortran library
         lmax = 64
         nalm = hp.Alm.getsize(lmax)
-        alm = np.zeros([3, nalm], dtype=np.complex)
+        alm = np.zeros([3, nalm], dtype=complex)
         for i in range(3):
             for ell in range(lmax + 1):
                 for m in range(ell):

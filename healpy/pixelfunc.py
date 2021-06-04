@@ -1260,10 +1260,10 @@ def isnsideok(nside, nest=False):
         if not isinstance(nside, np.ndarray):
             nside = np.asarray(nside)
         is_nside_ok = (
-            (nside == nside.astype(np.int)) & (nside > 0) & (nside <= max_nside)
+            (nside == nside.astype(int)) & (nside > 0) & (nside <= max_nside)
         )
         if nest:
-            is_nside_ok &= (nside.astype(np.int) & (nside.astype(np.int) - 1)) == 0
+            is_nside_ok &= (nside.astype(int) & (nside.astype(int) - 1)) == 0
     else:
         is_nside_ok = nside == int(nside) and 0 < nside <= max_nside
         if nest:

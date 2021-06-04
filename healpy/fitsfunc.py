@@ -627,7 +627,7 @@ def read_alm(filename, hdu=1, return_mmax=False):
 
     for unit in np.atleast_1d(hdu):
         idx, almr, almi = [_get_hdu(filename, hdu=unit).data.field(i) for i in range(3)]
-        l = np.floor(np.sqrt(idx - 1)).astype(np.long)
+        l = np.floor(np.sqrt(idx - 1)).astype(int)
         m = idx - l ** 2 - l - 1
         if (m < 0).any():
             raise ValueError("Negative m value encountered !")

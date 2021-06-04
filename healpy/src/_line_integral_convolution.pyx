@@ -106,7 +106,7 @@ def line_integral_convolution(
         if ell is not None:
             if ell < 0:
                 ell = 2 * nside
-            alms = np.zeros(Alm.getsize(ell), dtype=np.complex)
+            alms = np.zeros(Alm.getsize(ell), dtype=complex)
             for m in range(ell + 1):
                 alms[Alm.getidx(ell, ell, m)] = rng.normal() + 1j * rng.normal()
             texture = alm2map(alms, nside)

@@ -279,15 +279,15 @@ def boundaries(nside, pix, step=1, nest=False):
     if not isnsideok(nside, nest):
         raise ValueError('Wrong nside value, must be a power of 2, less than 2**30')
     if np.isscalar(pix):
-        if not np.can_cast(type(pix), np.int):
+        if not np.can_cast(type(pix), int):
             raise ValueError('Array of pixels has to be integers')
         return _boundaries_single(nside, pix, step=step, nest=nest)
     else:
         pix = np.asarray(pix)
-        if np.can_cast(pix.dtype, np.int):
+        if np.can_cast(pix.dtype, int):
             if pix.ndim!=1:
                 raise ValueError('Array has to be one dimensional')
-            return _boundaries_multiple(nside, pix.astype(np.int), step=step, nest=nest)
+            return _boundaries_multiple(nside, pix.astype(int), step=step, nest=nest)
         else:
             raise ValueError('Array of pixels has to be integers')
 

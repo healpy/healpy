@@ -346,8 +346,8 @@ class GnomonicProj(SphericalProj):
             x, y = x
         dx = reso / 60.0 * dtor
         xc, yc = 0.5 * (xsize - 1), 0.5 * (ysize - 1)
-        j = np.around(xc + x / dx).astype(np.long)
-        i = np.around(yc + y / dx).astype(np.long)
+        j = np.around(xc + x / dx).astype(int)
+        i = np.around(yc + y / dx).astype(int)
         return i, j
 
     xy2ij.__doc__ = SphericalProj.xy2ij.__doc__ % (name, name)
@@ -486,8 +486,8 @@ class MollweideProj(SphericalProj):
             x, y = x
         xc, yc = (xsize - 1.0) / 2.0, (ysize - 1.0) / 2.0
         if hasattr(x, "__len__"):
-            j = np.around(x * xc / 2.0 + xc).astype(np.long)
-            i = np.around(yc + y * yc).astype(np.long)
+            j = np.around(x * xc / 2.0 + xc).astype(int)
+            i = np.around(yc + y * yc).astype(int)
             mask = x ** 2 / 4.0 + y ** 2 > 1.0
             if not mask.any():
                 mask = np.ma.nomask
@@ -497,8 +497,8 @@ class MollweideProj(SphericalProj):
             if x ** 2 / 4.0 + y ** 2 > 1.0:
                 i, j = np.nan, np.nan
             else:
-                j = np.around(x * xc / 2.0 + xc).astype(np.long)
-                i = np.around(yc + y * yc).astype(np.long)
+                j = np.around(x * xc / 2.0 + xc).astype(int)
+                i = np.around(yc + y * yc).astype(int)
         return i, j
 
     xy2ij.__doc__ = SphericalProj.xy2ij.__doc__ % (name, name)
@@ -631,12 +631,12 @@ class CartesianProj(SphericalProj):
             )
         lonra = self._flip * np.float64(lonra)[:: self._flip]
         latra = np.float64(latra)
-        xsize = np.long(xsize)
+        xsize = int(xsize)
         if ysize is None:
             ratio = (latra[1] - latra[0]) / (lonra[1] - lonra[0])
-            ysize = np.long(round(ratio * xsize))
+            ysize = int(round(ratio * xsize))
         else:
-            ysize = np.long(ysize)
+            ysize = int(ysize)
             ratio = float(ysize) / float(xsize)
         super(CartesianProj, self).set_proj_plane_info(
             xsize=xsize, lonra=lonra, latra=latra, ysize=ysize, ratio=ratio
@@ -938,8 +938,8 @@ class OrthographicProj(SphericalProj):
                 mask = (np.mod(x + 2.0, 2.0) - 1.0) ** 2 + y ** 2 > 1.0
             if not mask.any():
                 mask = np.ma.nomask
-            j = np.ma.array(np.around(x * xc / ratio + xc).astype(np.long), mask=mask)
-            i = np.ma.array(np.around(yc + y * yc).astype(np.long), mask=mask)
+            j = np.ma.array(np.around(x * xc / ratio + xc).astype(int), mask=mask)
+            i = np.ma.array(np.around(yc + y * yc).astype(int), mask=mask)
         else:
             if (half_sky and x ** 2 + y ** 2 > 1.0) or (
                 not half_sky and (np.mod(x + 2.0, 2.0) - 1.0) ** 2 + y ** 2 > 1.0
@@ -949,8 +949,8 @@ class OrthographicProj(SphericalProj):
                     np.nan,
                 )
             else:
-                j = np.around(x * xc / ratio + xc).astype(np.long)
-                i = np.around(yc + y * yc).astype(np.long)
+                j = np.around(x * xc / ratio + xc).astype(int)
+                i = np.around(yc + y * yc).astype(int)
         return i, j
 
     xy2ij.__doc__ = SphericalProj.xy2ij.__doc__ % (name, name)
@@ -1206,8 +1206,8 @@ class AzimuthalProj(SphericalProj):
             mask = x ** 2 + y ** 2 > r2max
             if not mask.any():
                 mask = np.ma.nomask
-            j = np.ma.array(np.around(xc + x / dx).astype(np.long), mask=mask)
-            i = np.ma.array(np.around(yc + y / dx).astype(np.long), mask=mask)
+            j = np.ma.array(np.around(xc + x / dx).astype(int), mask=mask)
+            i = np.ma.array(np.around(yc + y / dx).astype(int), mask=mask)
         else:
             if x ** 2 + y ** 2 > r2max:
                 i, j, = (
@@ -1215,8 +1215,8 @@ class AzimuthalProj(SphericalProj):
                     np.nan,
                 )
             else:
-                j = np.around(xc + x / dx).astype(np.long)
-                i = np.around(yc + y / dx).astype(np.long)
+                j = np.around(xc + x / dx).astype(int)
+                i = np.around(yc + y / dx).astype(int)
         return i, j
 
     xy2ij.__doc__ = SphericalProj.xy2ij.__doc__ % (name, name)
