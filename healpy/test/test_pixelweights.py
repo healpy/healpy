@@ -14,7 +14,7 @@ def create_reference_alm():
     lmax = 96
     alm_size = 4753
     np.random.seed(123)
-    input_alm = np.ones(alm_size, dtype=np.complex)
+    input_alm = np.ones(alm_size, dtype=complex)
     m = hp.alm2map(input_alm, nside=nside, lmax=lmax)
     return lmax, input_alm, m
 
