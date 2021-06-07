@@ -312,8 +312,30 @@ def test_getformat():
 
 
 def test_writemap_newdefault(tmp_path):
+    filename = tmp_path / "test_map.fits"
+    for dtype in (
+        "bool",
+        "uint8",
+        "int16",
+        "int32",
+        "int64",
+        "float32",
+        "float64",
+        "complex64",
+        "complex128",
+    ):
+        m = np.ones(12, dtype=dtype)
+        write_map(filename, m, overwrite=True)
+        with pf.open(filename) as f:
+            assert f[1].data.field(0).dtype.name == dtype
+            np.testing.assert_array_almost_equal(f[1].data.field(0), m)
+
+
+def test_writemap_typestr(tmp_path):
+    filename = tmp_path / "test_map.fits"
     m = np.zeros(12, dtype=">f4")
-    write_map(tmp_path / "test_map.fits", m, overwrite=True)
+    write_map(filename, m, overwrite=True)
+    assert pf.open(filename)[1].data.field(0).dtype.name == "float32"
 
 
 if __name__ == "__main__":
