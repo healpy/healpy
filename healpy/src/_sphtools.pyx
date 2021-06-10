@@ -542,6 +542,9 @@ def rotate_alm(alm not None, double psi=0, double theta=0, double phi=0, matrix=
     if not isinstance(alm, (list, tuple, np.ndarray)) or len(alm) == 0:
         raise ValueError('Invalid input.')
 
+    if alm[0].dtype != np.complex128:
+        raise ValueError('rotate_alm only supports double precision complex arrays')
+
     # C++ rotate_alm only handles 1 or 3 maps. The function handling 3 maps
     # is faster than running 3 times the 1-map function, but gives identical
     # results.
