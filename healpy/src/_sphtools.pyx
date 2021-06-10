@@ -554,7 +554,7 @@ def rotate_alm(alm not None, double psi=0, double theta=0, double phi=0, matrix=
         return
 
     lmax, mmax = alm_getlmmax(alm[0], lmax, mmax)
-    ai = np.ascontiguousarray(alm[0], dtype=np.complex128)
+    ai = np.ascontiguousarray(alm[0], dtype=alm[0].dtype)
     AI = ndarray2alm(ai, lmax, mmax)
     if len(alm) == 1:
         if matrix is None:
@@ -563,8 +563,8 @@ def rotate_alm(alm not None, double psi=0, double theta=0, double phi=0, matrix=
             c_rotate_alm(AI[0], rotation_matrix)
         del AI
     else:
-        ag = np.ascontiguousarray(alm[1], dtype=np.complex128)
-        ac = np.ascontiguousarray(alm[2], dtype=np.complex128)
+        ag = np.ascontiguousarray(alm[1], dtype=alm[1].dtype)
+        ac = np.ascontiguousarray(alm[2], dtype=alm[2].dtype)
         AG = ndarray2alm(ag, lmax, mmax)
         AC = ndarray2alm(ac, lmax, mmax)
         if matrix is None:
