@@ -433,6 +433,16 @@ class TestSphtFunc(unittest.TestCase):
         with self.assertRaises(AssertionError):
             hp.Alm.getlm(500, 125751)
 
+    def test_rotate_alm_complex64(self):
+        almigc = hp.map2alm(self.mapiqu)
+        alms = [almigc[0], almigc[0:2], almigc, np.vstack(almigc)]
+        for i in alms:
+            o = deepcopy(i)
+            o_complex64 = o.astype(np.complex64)
+            o_complex128 = o_complex64.astype(np.complex128)
+            hp.rotate_alm(o_complex128, 0.1, 0.2, 0.3)
+            hp.rotate_alm(o_complex64, 0.1, 0.2, 0.3)
+            np.testing.assert_allclose(o_complex128, o_complex64, rtol=1e-5)
 
 if __name__ == "__main__":
     unittest.main()
