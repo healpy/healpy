@@ -331,11 +331,14 @@ def test_writemap_newdefault(tmp_path):
             np.testing.assert_array_almost_equal(f[1].data.field(0), m)
 
 
-def test_writemap_typestr(tmp_path):
+def test_writemap_typestr_endianness(tmp_path):
     filename = tmp_path / "test_map.fits"
-    m = np.zeros(12, dtype=">f4")
-    write_map(filename, m, overwrite=True)
-    assert pf.open(filename)[1].data.field(0).dtype.name == "float32"
+    for endiannes in [">", "<"]:
+        m = np.ones(12, dtype=">f4")
+        write_map(filename, m, overwrite=True)
+        with pf.open(filename) as f:
+            assert f[1].data.field(0).dtype.name == "float32"
+            np.testing.assert_array_almost_equal(f[1].data.field(0), m)
 
 
 if __name__ == "__main__":
