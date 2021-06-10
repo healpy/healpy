@@ -355,7 +355,7 @@ class TestSphtFunc(unittest.TestCase):
                     ind = hp.Alm.getidx(lmax, ell, m)
                     mine.append(alm[i, ind])
 
-        mine = np.array(ref)
+        mine = np.array(mine)
 
         np.testing.assert_allclose(ref, mine, rtol=1e-10)
 
