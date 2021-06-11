@@ -719,8 +719,6 @@ def getformat(t):
         np.dtype(np.complex64): "C",
         np.dtype(np.complex128): "M",
     }
-    if hasattr(t, "type"):
-        t = t.type
     try:
         if t in conv:
             return conv[t]
@@ -755,5 +753,15 @@ def getformat(t):
         if type(t[0]) is str:
             l = max(len(s) for s in t)
             return "A%d" % (l)
+    except:
+        pass
+    try:
+        if np.dtype(t.type) in conv:
+            return conv[np.dtype(t.type)]
+    except:
+        pass
+    try:
+        if np.dtype(t[0].type) in conv:
+            return conv[np.dtype(t[0].type)]
     except:
         pass
