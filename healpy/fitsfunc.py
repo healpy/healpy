@@ -765,3 +765,9 @@ def getformat(t):
             return conv[np.dtype(t[0].type)]
     except:
         pass
+
+    raise ValueError(
+        "healpy could not understand the equivalent FITS datatype of {}, please open an issue on the healpy Github repository".format(
+            str(t)
+        )
+    )
