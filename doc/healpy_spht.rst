@@ -13,6 +13,7 @@ From map to spherical harmonics
 
    anafast
    map2alm
+   map2alm_spin
 
 From spherical harmonics to map
 -------------------------------
@@ -22,6 +23,7 @@ From spherical harmonics to map
    synfast
    alm2map
    alm2map_der1
+   alm2map_spin
 
 Spherical harmonic transform tools
 ----------------------------------
