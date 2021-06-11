@@ -3,6 +3,7 @@ import os
 import numpy as np
 from copy import deepcopy
 from itertools import chain
+import pytest
 
 import unittest
 
@@ -433,6 +434,12 @@ class TestSphtFunc(unittest.TestCase):
         with self.assertRaises(AssertionError):
             hp.Alm.getlm(500, 125751)
 
+    def test_rotate_alm_complex64(self):
+        lmax = 32
+        nalm = hp.Alm.getsize(lmax)
+        alm = np.zeros([3, nalm], dtype=np.complex64)
+        with pytest.raises(ValueError):
+            hp.rotate_alm(alm, 0.1, 0.2, 0.3)
 
 if __name__ == "__main__":
     unittest.main()
