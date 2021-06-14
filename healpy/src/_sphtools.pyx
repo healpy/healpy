@@ -88,16 +88,14 @@ def map2alm_spin_healpy(maps, spin, lmax = None, mmax = None):
 
     Warnings
     --------
-    This function previously made an exception for ``spin=0`` transforms, where
-    it flipped the sign of the output such that :math:`a_{lm}^+` matches the
-    output :math:`a_{lm}` of `map2alm`.  The new behaviour follows the HEALPix
-    convention, in which :math:`a_{lm}^+ = -a_{lm}` for a ``spin=0`` transform.
+    Previously, ``spin=0`` was an invalid parameter value, and silently
+    returned undefined results.
 
     """
     spin = int(spin)
 
     if spin == 0:
-        return [-map2alm(mm, niter=3, lmax=lmax, mmax=mmax) for mm in maps]
+        return [-map2alm(mm, niter=0, lmax=lmax, mmax=mmax) for mm in maps]
 
     maps_c = [np.ascontiguousarray(m, dtype=np.float64) for m in maps]
 
@@ -179,10 +177,8 @@ def alm2map_spin_healpy(alms, nside, spin, lmax, mmax=None):
 
     Warnings
     --------
-    This function previously made an exception for ``spin=0`` transforms, where
-    it flipped the sign of the input such that :math:`a_{lm}^+` matches the
-    input :math:`a_{lm}` of `alm2map`.  The new behaviour follows the HEALPix
-    convention, in which :math:`a_{lm}^+ = -a_{lm}` for a ``spin=0`` transform.
+    Previously, ``spin=0`` was an invalid parameter value, and silently
+    returned undefined results.
 
     """
     spin = int(spin)
