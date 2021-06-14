@@ -1044,11 +1044,17 @@ class TestSpinFunc(unittest.TestCase):
     def test_spin0(self):
         m1 = hp.alm2map(self.almg, self.nside, self.lmax)
         m2_r, m2_i = hp.alm2map_spin(
-            [self.almg, 0.0 * self.almg], self.nside, 0, self.lmax
+            [-self.almg, 0.0 * self.almg], self.nside, 0, self.lmax
         )
 
         np.testing.assert_array_almost_equal(m1, m2_r, decimal=8)
         np.testing.assert_array_almost_equal(m1 * 0.0, m2_i, decimal=8)
+
+        a1 = hp.map2alm(m1, lmax=self.lmax)
+        a2_g, a2_c = hp.map2alm_spin([m2_r, m2_i], 0, self.lmax)
+
+        np.testing.assert_array_almost_equal(a1, -a2_g, decimal=8)
+        np.testing.assert_array_almost_equal(a1 * 0.0, -a2_c, decimal=8)
 
     def test_alm2map_spin_precomputed(self):
         """ compare alm2map_spin outputs to some precomputed results for spin=1,2,3 """
