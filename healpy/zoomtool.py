@@ -18,7 +18,8 @@
 #  For more information about Healpy, see http://code.google.com/p/healpy
 #
 
-import warnings
+import logging
+log = logging.getLogger("healpy")
 from . import projaxes as PA
 from . import rotator as R
 import numpy as np
@@ -119,11 +120,11 @@ def mollzoom(
         f.add_axes(ax)
         if remove_dip:
             map = pixelfunc.remove_dipole(
-                map, gal_cut=gal_cut, nest=nest, copy=True, verbose=True
+                map, gal_cut=gal_cut, nest=nest, copy=True
             )
         elif remove_mono:
             map = pixelfunc.remove_monopole(
-                map, gal_cut=gal_cut, nest=nest, copy=True, verbose=True
+                map, gal_cut=gal_cut, nest=nest, copy=True
             )
         ax.projmap(
             map,
@@ -427,12 +428,12 @@ class ZoomTool(object):
         elif ev.key == "t":
             self._increase_reso()
         elif ev.key == "p":
-            warnings.warn("lon,lat = %.17g,%.17g" % (self.lon, self.lat))
+            log.info("lon,lat = %.17g,%.17g", self.lon, self.lat)
         elif ev.key == "c":
             self._move_zoom_center(0, 0)
             self.draw_gnom(0, 0)
         elif ev.key == "v":
-            warnings.warn("val = %.17g" % (self.lastval))
+            log.info("val = %.17g", self.lastval)
         elif ev.key == "f":
             self._range_status += 1
             self._range_status %= 3
@@ -447,9 +448,9 @@ class ZoomTool(object):
                 self._graton = False
             else:
                 (self._g_dpar, self._g_dmer) = self._gnom_ax.graticule(
-                    local=False, verbose=False
+                    local=False
                 )
-                (self._m_dpar, self._m_dmer) = self._moll_ax.graticule(verbose=False)
+                (self._m_dpar, self._m_dmer) = self._moll_ax.graticule()
                 self._graton = True
             self.draw_gnom()
 
@@ -567,7 +568,7 @@ class ZoomTool(object):
             if self._graton:
                 self._gnom_ax.delgraticules()
                 (self._g_dpar, self._g_dmer) = self._gnom_ax.graticule(
-                    local=False, verbose=False
+                    local=False
                 )
             self._gnom_cb_ax.cla()
             im = self._gnom_ax.images[0]

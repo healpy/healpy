@@ -1,5 +1,6 @@
 Release in progress
 
+* Changed all warnings to using the `logging` module, deprecated all `verbose` keywords <https://github.com/healpy/healpy/pull/693>
 * `write_map` keeps dtype of input map array instead of float32 <https://github.com/healpy/healpy/pull/688>
 * `read_map` keeps dtype of FITS file instead of upcasting to float64 <https://github.com/healpy/healpy/pull/688>
 * Flip sign for spin-0 `alm2map_spin` and `map2alm_spin` <https://github.com/healpy/healpy/issues/707>

@@ -17,7 +17,9 @@
 #
 #  For more information about Healpy, see http://code.google.com/p/healpy
 #
-import warnings
+import logging
+log = logging.getLogger("healpy")
+from astropy.utils.decorators import deprecated_renamed_argument
 from . import projector as P
 from . import rotator as R
 from . import pixelfunc
@@ -495,6 +497,7 @@ class SphericalProjAxes(matplotlib.axes.Axes):
         phi0 = np.arctan2(vy, vx)
         return phi0 - fov / sth / 2.0, phi0 + fov / sth / 2.0
 
+    @deprecated_renamed_argument("verbose", None, "1.15.0")
     def graticule(
         self, dpar=None, dmer=None, coord=None, local=None, verbose=True, **kwds
     ):
@@ -542,15 +545,14 @@ class SphericalProjAxes(matplotlib.axes.Axes):
             mmin = u_mmin
         if u_mmax:
             mmax = u_pmax
-        if verbose:
-            warnings.warn(
-                "{0} {1} {2} {3}".format(
-                    pmin / dtor, pmax / dtor, mmin / dtor, mmax / dtor
-                )
+        log.warning(
+            "{0} {1} {2} {3}".format(
+                pmin / dtor, pmax / dtor, mmin / dtor, mmax / dtor
             )
+        )
         if not kwds.pop("force", False):
             dpar, dmer = self._get_interv_graticule(
-                pmin, pmax, dpar, mmin, mmax, dmer, verbose=verbose
+                pmin, pmax, dpar, mmin, mmax, dmer
             )
         theta_list = np.around(np.arange(pmin, pmax + 0.5 * dpar, dpar) / dpar) * dpar
         phi_list = np.around(np.arange(mmin, mmax + 0.5 * dmer, dmer) / dmer) * dmer
@@ -626,9 +628,10 @@ class SphericalProjAxes(matplotlib.axes.Axes):
                         if l in self.lines:
                             self.lines.remove(l)
                         else:
-                            warnings.warn("line not in lines")
+                            log.warning("line not in lines")
             del self._graticules
 
+    @deprecated_renamed_argument("verbose", None, "1.15.0")
     def _get_interv_graticule(self, pmin, pmax, dpar, mmin, mmax, dmer, verbose=True):
         def set_prec(d, n, nn=2):
             arcmin = False
@@ -656,20 +659,10 @@ class SphericalProjAxes(matplotlib.axes.Axes):
             dmer = dpar = max(dmer, dpar)
         vdeg = int(np.floor(np.around(dpar / dtor, 10)))
         varcmin = (dpar / dtor - vdeg) * 60.0
-        if verbose:
-            warnings.warn(
-                "The interval between parallels is {0:d} deg {1:.2f}'.".format(
-                    vdeg, varcmin
-                )
-            )
+        log.info("The interval between parallels is %d deg %.2f'.", vdeg, varcmin)
         vdeg = int(np.floor(np.around(dmer / dtor, 10)))
         varcmin = (dmer / dtor - vdeg) * 60.0
-        if verbose:
-            warnings.warn(
-                "The interval between meridians is {0:d} deg {1:.2f}'.".format(
-                    vdeg, varcmin
-                )
-            )
+        log.info("The interval between meridians is %d deg %.2f'.", vdeg, varcmin)
         return dpar, dmer
 
 

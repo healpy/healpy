@@ -21,7 +21,7 @@
 compute spherical harmonics tranforms on them.
 """
 
-import warnings
+import logging
 
 from .version import __version__
 
@@ -112,15 +112,22 @@ from ._line_integral_convolution import line_integral_convolution
 from .newvisufunc import projview, newprojplot
 
 
+from astropy.utils.decorators import deprecated
+
+
+@deprecated("1.15.0")
 def disable_warnings():
-    """Disable all healpy warnings messages for the current session
+    """healpy uses logging now
 
-    Warnings from individual functions can be disabled setting
-    ``verbose=False``.
-    Warnings can be re-enabled calling ``hp.enable_warnings()``.
+    This function has no effect
     """
-    warnings.filterwarnings(action="ignore", module="healpy")
+    pass
 
 
+@deprecated("1.15.0")
 def enable_warnings():
-    warnings.simplefilter("always")
+    """healpy uses logging now
+
+    This function has no effect
+    """
+    pass

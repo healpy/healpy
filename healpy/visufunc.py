@@ -248,11 +248,11 @@ def mollview(
             f.add_axes(ax)
         if remove_dip:
             map = pixelfunc.remove_dipole(
-                map, gal_cut=gal_cut, nest=nest, copy=True, verbose=True
+                map, gal_cut=gal_cut, nest=nest, copy=True
             )
         elif remove_mono:
             map = pixelfunc.remove_monopole(
-                map, gal_cut=gal_cut, nest=nest, copy=True, verbose=True
+                map, gal_cut=gal_cut, nest=nest, copy=True
             )
         img = ax.projmap(
             map,
@@ -1078,11 +1078,11 @@ def orthview(
             f.add_axes(ax)
         if remove_dip:
             map = pixelfunc.remove_dipole(
-                map, gal_cut=gal_cut, nest=nest, copy=True, verbose=True
+                map, gal_cut=gal_cut, nest=nest, copy=True
             )
         elif remove_mono:
             map = pixelfunc.remove_monopole(
-                map, gal_cut=gal_cut, nest=nest, copy=True, verbose=True
+                map, gal_cut=gal_cut, nest=nest, copy=True
             )
         img = ax.projmap(
             map,
@@ -1353,11 +1353,11 @@ def azeqview(
             f.add_axes(ax)
         if remove_dip:
             map = pixelfunc.remove_dipole(
-                map, gal_cut=gal_cut, nest=nest, copy=True, verbose=True
+                map, gal_cut=gal_cut, nest=nest, copy=True
             )
         elif remove_mono:
             map = pixelfunc.remove_monopole(
-                map, gal_cut=gal_cut, nest=nest, copy=True, verbose=True
+                map, gal_cut=gal_cut, nest=nest, copy=True
             )
         img = ax.projmap(
             map,
