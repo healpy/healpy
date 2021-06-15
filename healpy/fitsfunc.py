@@ -128,7 +128,13 @@ def write_map(
     extra_header=(),
     overwrite=False,
 ):
-    """Writes a healpix map into a healpix file.
+    """Writes a healpix map into a healpix FITS file.
+
+    .. warning::
+    Starting from healpy 1.15.0, if you do not specify `dtype`,
+    the map will be written to disk with the same precision it is stored in memory.
+    Previously, by default `healpy` wrote maps in `float32`.
+    To reproduce the same behaviour of `healpy` 1.14.0 and below, set `dtype=np.float32`.
 
     Parameters
     ----------
@@ -167,9 +173,10 @@ def write_map(
       The datatype in which the columns will be stored. Will be converted
       internally from the numpy datatype to the fits convention. If a list,
       the length must correspond to the number of map arrays.
-      Default: use np.float32
-      (WARNING: in a future version this will change to
-      "use the data type of the input array(s)".)
+      Default: use the data type of the input array(s)
+      .. note::
+      this changed in 1.15.0, previous versions saved in float32
+      by default
     overwrite : bool, optional
       If True, existing file is silently overwritten. Otherwise trying to write
       an existing file raises an OSError (IOError for Python 2).
@@ -183,14 +190,8 @@ def write_map(
 
     # check the dtype and convert it
     if dtype is None:
-        warnings.warn(
-            "The default dtype of write_map() will change in a future version: "
-            "explicitly set the dtype if it is important to you",
-            category=FutureWarning,
-        )
-        dtype = [np.float32 for x in m]
-        # Change this at some point to:
-        # dtype = [x.dtype for x in m]
+        dtype = [x.dtype for x in m]
+        warnings.warn("setting the output map dtype to %s" % str(dtype))
     try:
         fitsformat = []
         for curr_dtype in dtype:
@@ -293,7 +294,7 @@ def write_map(
 def read_map(
     filename,
     field=0,
-    dtype=np.float64,
+    dtype=None,
     nest=False,
     partial=False,
     hdu=1,
@@ -303,6 +304,13 @@ def read_map(
 ):
     """Read a healpix map from a fits file.  Partial-sky files,
     if properly identified, are expanded to full size and filled with UNSEEN.
+
+    .. warning::
+    Starting from healpy 1.15.0, if you do not specify `dtype`,
+    the map will be read in memory with the same precision it is stored on disk.
+    Previously, by default `healpy` wrote maps in `float32` and then upcast to
+    `float64` when reading to memory. To reproduce the same behaviour of `healpy`
+    1.14.0 and below, set `dtype=np.float64` in `read_map`.
 
     Parameters
     ----------
@@ -320,9 +328,7 @@ def read_map(
       types for each field. In that case, the length of the list must
       correspond to the length of the field parameter.
       If None, keep the dtype of the input FITS file
-      Default: use np.float64
-      (WARNING: in a future version this will change to
-      "use the data type of the input FITS file".)
+      Default: Preserve the data types in the file
     nest : bool, optional
       If True return the map in NEST ordering, otherwise in RING ordering;
       use fits keyword ORDERING to decide whether conversion is needed or not
@@ -352,15 +358,6 @@ def read_map(
     m | (m0, m1, ...) [, header] : array or a tuple of arrays, optionally with header appended
       The map(s) read from the file, and the header if *h* is True.
     """
-    # Temporary warning for default dtype
-    if dtype == np.float64:
-        warnings.warn(
-            "If you are not specifying the input dtype and using the default "
-            "np.float64 dtype of read_map(), please consider that it will "
-            "change in a future version to None as to keep the same dtype of "
-            "the input file: please explicitly set the dtype if it is "
-            "important to you."
-        )
 
     opened_file = False
     if isinstance(filename, allowed_paths):
@@ -758,3 +755,19 @@ def getformat(t):
             return "A%d" % (l)
     except:
         pass
+    try:
+        if np.dtype(t.type) in conv:
+            return conv[np.dtype(t.type)]
+    except:
+        pass
+    try:
+        if np.dtype(t[0].type) in conv:
+            return conv[np.dtype(t[0].type)]
+    except:
+        pass
+
+    raise ValueError(
+        "healpy could not understand the equivalent FITS datatype of {}, please open an issue on the healpy Github repository".format(
+            str(t)
+        )
+    )
