@@ -15,6 +15,8 @@ from libcpp cimport bool as cbool
 
 from _common cimport tsize, arr, xcomplex, Healpix_Ordering_Scheme, RING, NEST, Healpix_Map, Alm, ndarray2map, ndarray2alm, rotmatrix
 
+from . import _healpy_sph_transform_lib as sphtlib
+
 cdef double UNSEEN = -1.6375e30
 cdef double rtol_UNSEEN = 1.e-7 * 1.6375e30
 
@@ -73,7 +75,7 @@ def map2alm_spin_healpy(maps, spin, lmax = None, mmax = None):
     m : list of 2 arrays
         list of 2 input maps as numpy arrays
     spin : int
-        spin of the alms (either 1, 2 or 3)
+        spin of the alms
     lmax : int, scalar, optional
       Maximum l of the power spectrum. Default: 3*nside-1
     mmax : int, scalar, optional
@@ -83,7 +85,18 @@ def map2alm_spin_healpy(maps, spin, lmax = None, mmax = None):
     -------
     alms : list of 2 arrays
       list of 2 alms
+
+    Warnings
+    --------
+    Previously, ``spin=0`` was an invalid parameter value, and silently
+    returned undefined results.
+
     """
+    spin = int(spin)
+
+    if spin == 0:
+        return [-map2alm(mm, niter=0, lmax=lmax, mmax=mmax) for mm in maps]
+
     maps_c = [np.ascontiguousarray(m, dtype=np.float64) for m in maps]
 
     # create UNSEEN mask for map
@@ -151,7 +164,7 @@ def alm2map_spin_healpy(alms, nside, spin, lmax, mmax=None):
     nside : int
         requested nside of the output map
     spin : int
-        spin of the alms (either 1, 2 or 3)
+        spin of the alms
     lmax : int, scalar
       Maximum l of the power spectrum.
     mmax : int, scalar, optional
@@ -161,7 +174,20 @@ def alm2map_spin_healpy(alms, nside, spin, lmax, mmax=None):
     -------
     m : list of 2 arrays
         list of 2 out maps in RING scheme as numpy arrays
+
+    Warnings
+    --------
+    Previously, ``spin=0`` was an invalid parameter value, and silently
+    returned undefined results.
+
     """
+    spin = int(spin)
+
+    if spin == 0:
+        if not mmax:
+            mmax = lmax
+        return [-sphtlib._alm2map(alm, nside, lmax=lmax, mmax=mmax) for alm in alms]
+
     alms_c = [np.ascontiguousarray(alm, dtype=np.complex128) for alm in alms]
 
     npix = nside2npix(nside)
