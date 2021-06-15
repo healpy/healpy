@@ -81,14 +81,14 @@ from .sphtfunc import (
     bl2beam,
     beam2bl,
     check_max_nside,
+    map2alm_spin,
+    alm2map_spin,
 )
 
 from ._query_disc import query_disc, query_strip, query_polygon, boundaries
 from ._pixelfunc import ringinfo, pix2ring
 
 from ._sphtools import rotate_alm
-from ._sphtools import alm2map_spin_healpy as alm2map_spin
-from ._sphtools import map2alm_spin_healpy as map2alm_spin
 from .rotator import Rotator, vec2dir, dir2vec
 from ._healpy_pixel_lib import UNSEEN
 from .visufunc import (

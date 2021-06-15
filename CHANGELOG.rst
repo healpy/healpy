@@ -2,6 +2,7 @@ Release in progress
 
 * `write_map` keeps dtype of input map array instead of float32 <https://github.com/healpy/healpy/pull/688>
 * `read_map` keeps dtype of FITS file instead of upcasting to float64 <https://github.com/healpy/healpy/pull/688>
+* Flip sign for spin-0 `alm2map_spin` and `map2alm_spin` <https://github.com/healpy/healpy/issues/707>
 * Support transparency in plotting with the `alpha` parameter <https://github.com/healpy/healpy/pull/696>
 * Experimental `projview` function to plot maps using projections from `matplotlib` <https://github.com/healpy/healpy/pull/695>
 * `write_cl` uses dtype of input cl instead of float64 <https://github.com/healpy/healpy/pull/688>
