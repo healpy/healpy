@@ -375,6 +375,8 @@ def read_map(
     nside = fits_hdu.header.get("NSIDE")
     if nside is None:
         log.info("No NSIDE in the header file : will use length of array")
+        pix = fits_hdu.data.field(0)
+        nside = pixelfunc.npix2nside(pix.size)
     else:
         nside = int(nside)
     log.info("NSIDE = %d", nside)
