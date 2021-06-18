@@ -18,7 +18,7 @@ def is_seq(o):
     return hasattr(o, "__len__")
 
 
-def is_seq_of_seq(o):
+def is_seq_of_seq(o, allow_none=False):
     """Check if the object is a sequence of sequences. No check is done on
     the sizes of the sequences.
 
@@ -26,6 +26,8 @@ def is_seq_of_seq(o):
     ----------
     o : any object
       The object to check
+    allow_none : bool, optional
+      Treat ``None`` entries as sequence.
 
     Returns
     -------
@@ -36,6 +38,8 @@ def is_seq_of_seq(o):
         return False
     for s in o:
         if not is_seq(s):
+            if allow_none and s is None:
+                continue
             return False
     return True
 
