@@ -435,7 +435,7 @@ def synalm(cls, lmax=None, mmax=None, new=False, verbose=True):
     if not cb.is_seq(cls):
         raise TypeError("cls must be an array or a sequence of arrays")
 
-    if not cb.is_seq_of_seq(cls):
+    if not cb.is_seq_of_seq(cls, True):
         # Only one spectrum
         if lmax is None or lmax < 0:
             lmax = cls.size - 1
@@ -452,7 +452,7 @@ def synalm(cls, lmax=None, mmax=None, new=False, verbose=True):
 
     # From here, we interpret cls as a list of spectra
     cls_list = list(cls)
-    maxsize = max([len(c) for c in cls])
+    maxsize = max([len(c) for c in cls if c is not None])
 
     if lmax is None or lmax < 0:
         lmax = maxsize - 1
