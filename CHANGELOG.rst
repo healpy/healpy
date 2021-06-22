@@ -1,13 +1,14 @@
-Release in progress
+Release 1.15.0 22 June 2021, included in HEALPix 3.8.0
 
-* Changed all warnings to using the `logging` module, deprecated all `verbose` keywords <https://github.com/healpy/healpy/pull/693>
 * `write_map` keeps dtype of input map array instead of float32 <https://github.com/healpy/healpy/pull/688>
 * `read_map` keeps dtype of FITS file instead of upcasting to float64 <https://github.com/healpy/healpy/pull/688>
+* `write_cl` uses dtype of input cl instead of float64 <https://github.com/healpy/healpy/pull/688>
+* Changed all warnings to using the `logging` module, deprecated all `verbose` keywords <https://github.com/healpy/healpy/pull/693>
+* Experimental `projview` function to plot maps using projections from `matplotlib` <https://github.com/healpy/healpy/pull/695>
 * Flip sign for spin-0 `alm2map_spin` and `map2alm_spin` <https://github.com/healpy/healpy/issues/707>
 * Support transparency in plotting with the `alpha` parameter <https://github.com/healpy/healpy/pull/696>
-* Experimental `projview` function to plot maps using projections from `matplotlib` <https://github.com/healpy/healpy/pull/695>
-* `write_cl` uses dtype of input cl instead of float64 <https://github.com/healpy/healpy/pull/688>
 * Removed the note that we will change order of cl in `synfast` and `synalm`, we will leave `new=False` default <https://github.com/healpy/healpy/pull/687>
+* Added convenice functions `order2npix` and `npix2order` <https://github.com/healpy/healpy/pull/685>
 * Support nested maps `hp.smoothing` <https://github.com/healpy/healpy/pull/678>
 * Improvements of the build system <https://github.com/healpy/healpy/pull/660> <https://github.com/healpy/healpy/pull/661>
 * Automatically build wheels for Linux/MacOS on Github actions <https://github.com/healpy/healpy/pull/656>
@@ -15,6 +16,7 @@ Release in progress
 * Allow OBJECT FITS header not to be a string <https://github.com/healpy/healpy/pull/665>
 * Fixed indexing issue in `bl2beam` <https://github.com/healpy/healpy/pull/667>
 * Fixed `map2alm_spin` bug for masked input <https://github.com/healpy/healpy/pull/651>
+* Minor bugfixes: Accept None for cls in `synalm` <https://github.com/healpy/healpy/pull/711>, Get nside from length of array in `read_map` <https://github.com/healpy/healpy/pull/710>, Fix spin 0 transforms in `alm2map_spin` <https://github.com/healpy/healpy/pull/708>, Raise exception for `rotate_alm` with `complex64` inputs <https://github.com/healpy/healpy/pull/704>, Replace deprecated numpy aliases <https://github.com/healpy/healpy/pull/698>
 
 Release 1.14.0 22 July 2020, included in HEALPix 3.70, Last release with Python 2 support
 
