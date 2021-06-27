@@ -439,24 +439,26 @@ def projview(
         extend = "max"
     if min > np.min(m) and max < np.max(m):
         extend = "both"
-    cb = fig.colorbar(
-        ret,
-        orientation=cb_orientation,
-        shrink=plot_properties["cbar_shrink"],
-        pad=plot_properties["cbar_pad"],
-        ticks=[min, max],
-        extend=extend,
-    )
-    if cb_orientation == "horizontal":
-        cb.ax.xaxis.set_label_text(unit, fontsize=fontsize_defaults["cbar_label"])
-        cb.ax.tick_params(axis="x", labelsize=fontsize_defaults["cbar_tick_label"])
-        cb.ax.xaxis.labelpad = plot_properties["cbar_label_pad"]
-    if cb_orientation == "vertical":
-        cb.ax.yaxis.set_label_text(unit, fontsize=fontsize_defaults["cbar_label"])
-        cb.ax.tick_params(axis="y", labelsize=fontsize_defaults["cbar_tick_label"])
-        cb.ax.yaxis.labelpad = plot_properties["cbar_label_pad"]
-    # workaround for issue with viewers, see colorbar docstring
-    cb.solids.set_edgecolor("face")
+
+    if cbar:
+        cb = fig.colorbar(
+            ret,
+            orientation=cb_orientation,
+            shrink=plot_properties["cbar_shrink"],
+            pad=plot_properties["cbar_pad"],
+            ticks=[min, max],
+            extend=extend,
+        )
+        if cb_orientation == "horizontal":
+            cb.ax.xaxis.set_label_text(unit, fontsize=fontsize_defaults["cbar_label"])
+            cb.ax.tick_params(axis="x", labelsize=fontsize_defaults["cbar_tick_label"])
+            cb.ax.xaxis.labelpad = plot_properties["cbar_label_pad"]
+        if cb_orientation == "vertical":
+            cb.ax.yaxis.set_label_text(unit, fontsize=fontsize_defaults["cbar_label"])
+            cb.ax.tick_params(axis="y", labelsize=fontsize_defaults["cbar_tick_label"])
+            cb.ax.yaxis.labelpad = plot_properties["cbar_label_pad"]
+        # workaround for issue with viewers, see colorbar docstring
+        cb.solids.set_edgecolor("face")
     ax.set_xlabel(xlabel, fontsize=fontsize_defaults["xlabel"])
     ax.set_ylabel(ylabel, fontsize=fontsize_defaults["ylabel"])
     plt.draw()
