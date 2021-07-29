@@ -15,7 +15,13 @@ def is_seq(o):
     is_seq : bool, scalar
       True if *o* is a sequence, False otherwise
     """
-    return hasattr(o, "__len__")
+    try:
+        len(o)
+    except:
+        is_seq = False
+    else:
+        is_seq = True
+    return is_seq
 
 
 def is_seq_of_seq(o, allow_none=False):
@@ -37,9 +43,7 @@ def is_seq_of_seq(o, allow_none=False):
     if not is_seq(o):
         return False
     for s in o:
-        if not is_seq(s):
-            if allow_none and s is None:
-                continue
+        if not (allow_none and s is None) and not is_seq(s):
             return False
     return True
 

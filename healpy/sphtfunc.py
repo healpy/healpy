@@ -438,7 +438,7 @@ def synalm(cls, lmax=None, mmax=None, new=False, verbose=True):
     if not cb.is_seq_of_seq(cls, True):
         # Only one spectrum
         if lmax is None or lmax < 0:
-            lmax = cls.size - 1
+            lmax = len(cls) - 1
         if mmax is None or mmax < 0:
             mmax = lmax
         cls_list = [np.asarray(cls, dtype=np.float64)]
