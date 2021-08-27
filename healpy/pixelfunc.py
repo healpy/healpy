@@ -95,7 +95,7 @@ log = logging.getLogger("healpy")
 
 from astropy.utils.decorators import deprecated_renamed_argument
 
-UNSEEN = -1.6375e30
+UNSEEN = _support.UNSEEN
 
 # We are using 64-bit integer types.
 # nside > 2**29 requires extended integer types.

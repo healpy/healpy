@@ -29,7 +29,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import copy
 
-from ._healpy_pixel_lib import UNSEEN
+from ._support import UNSEEN
 
 pi = np.pi
 dtor = pi / 180.0

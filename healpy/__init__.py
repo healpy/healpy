@@ -90,7 +90,7 @@ from ._pixelfunc import ringinfo, pix2ring
 
 from ._sphtools import rotate_alm
 from .rotator import Rotator, vec2dir, dir2vec
-from ._healpy_pixel_lib import UNSEEN
+from ._support import UNSEEN
 from .visufunc import (
     mollview,
     graticule,

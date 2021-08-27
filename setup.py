@@ -388,12 +388,6 @@ setup(
             extra_compile_args=["-std=c++17","-Ihealpy/support/src"],
         ),
         Extension(
-            "healpy._healpy_pixel_lib",
-            sources=["healpy/src/_healpy_pixel_lib.cc"],
-            language="c++",
-            extra_compile_args=["-std=c++11"],
-        ),
-        Extension(
             "healpy._healpy_sph_transform_lib",
             sources=["healpy/src/_healpy_sph_transform_lib.cc"],
             language="c++",

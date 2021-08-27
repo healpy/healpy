@@ -459,6 +459,7 @@ PYBIND11_MODULE(_support, m)
   {
   using namespace pybind11::literals;
 
+  m.attr("UNSEEN") = -1.6375e30;
   m.def("ang2pix", &ang2pix, "nside"_a, "theta"_a, "phi"_a, "nest"_a);
   m.def("pix2ang", &pix2ang, "nside"_a, "ipix"_a, "nest"_a);
   m.def("vec2pix", &vec2pix, "nside"_a, "x"_a, "y"_a, "z"_a, "nest"_a);
