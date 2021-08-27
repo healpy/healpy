@@ -4,7 +4,7 @@ requires-python = ">=3.7"
 [build-system]
 
 requires = ["setuptools",
-            "pybind11 >= 2.6.0"
+            "pybind11 >= 2.6.0",
             "cython>=0.16",
             "wheel",
             "oldest-supported-numpy"]
