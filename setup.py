@@ -382,6 +382,12 @@ setup(
     cmdclass={"build_ext": custom_build_ext, "build_clib": build_external_clib},
     ext_modules=[
         Extension(
+            "healpy._support",
+            sources=["healpy/support/python/ducc.cc"],
+            language="c++",
+            extra_compile_args=["-std=c++17","-Ihealpy/support/src"],
+        ),
+        Extension(
             "healpy._healpy_pixel_lib",
             sources=["healpy/src/_healpy_pixel_lib.cc"],
             language="c++",
