@@ -1,3 +1,7 @@
+Unreleased
+
+* improvement on `is_seq` to avoid `synalm` breaking on JAX input arrays, added unit tests <https://github.com/healpy/healpy/pull/716>
+
 Release 1.15.0 22 June 2021, included in HEALPix 3.8.0
 
 * `write_map` keeps dtype of input map array instead of float32 <https://github.com/healpy/healpy/pull/688>
