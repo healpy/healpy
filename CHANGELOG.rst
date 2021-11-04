@@ -2,6 +2,7 @@ Unreleased
 
 * explain how to create a local datapath for pixel weights <https://github.com/healpy/healpy/pull/720>
 * improvement on `is_seq` to avoid `synalm` breaking on JAX input arrays, added unit tests <https://github.com/healpy/healpy/pull/716>
+* upgraded HEALPix C++ sources to HEALPix 3.8.1, fixing incompatibility with CFITSIO 4 <https://github.com/healpy/healpy/pull/727>
 
 Release 1.15.0 22 June 2021, included in HEALPix 3.8.0
 
