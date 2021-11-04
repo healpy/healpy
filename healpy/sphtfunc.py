@@ -196,8 +196,11 @@ def map2alm(
     If datapath is specified, healpy will first check that local folder before downloading
     the weights.
     The easiest way to setup the folder is to clone the healpy-data repository:
+
     git clone --depth 1 https://github.com/healpy/healpy-data
+    cd healpy-data
     bash download_weights_8192.sh
+
     and set datapath to the root of the repository.
 
     Parameters
