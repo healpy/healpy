@@ -179,7 +179,7 @@ List of contributors: https://github.com/healpy/healpy/graphs/contributors
 Acknowledgements
 ----------------
 
-1. Cite the HEALPix and `healpy` papers, see the [CITATION file](https://github.com/healpy/healpy/blob/master/CITATION) in the repository.
+1. Cite the HEALPix and `healpy` papers, see the `CITATION file <https://github.com/healpy/healpy/blob/master/CITATION>`_ in the repository.
 
 2. Add an acknowledgment statement: "Some of the results in this paper have been
    derived using the `healpy` and `HEALPix` packages".
@@ -187,3 +187,5 @@ Acknowledgements
 3. at the first use of the `HEALPix` acronym, a footnote placed in the main body
    of the paper referring to the `HEALPix` web site, currently
    http://healpix.sf.net
+
+4. You can also directly support the maintenance and development of `healpy` via `Github Sponsors <https://github.com/sponsors/zonca>`_
