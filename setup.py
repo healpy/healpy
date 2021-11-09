@@ -5,7 +5,6 @@ import errno
 import fnmatch
 import sys
 import shlex
-from Cython.Distutils import build_ext, Extension
 from distutils.sysconfig import get_config_var, get_config_vars
 import pkg_resources
 from subprocess import check_output, CalledProcessError, check_call
@@ -16,6 +15,7 @@ from distutils.errors import DistutilsExecError
 from distutils.dir_util import mkpath
 from distutils.file_util import copy_file
 from distutils import log
+from Cython.Distutils import build_ext, Extension
 
 TEST_HELP = """
 Note: running tests is no longer done using 'python setup.py test'. Instead
