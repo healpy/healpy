@@ -41,7 +41,6 @@ jobs:
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.2.2
         env:
-          CIBW_BEFORE_ALL_LINUX: yum install -y openssl-devel
           CIBW_BEFORE_ALL_MACOS: brew install automake
           CIBW_ENVIRONMENT_MACOS: CC=gcc-9 CXX=g++-9
           CIBW_MANYLINUX_X86_64_IMAGE: quay.io/pypa/manylinux2014_x86_64
