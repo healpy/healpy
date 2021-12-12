@@ -89,21 +89,13 @@ Map data manipulation
 import numpy as np
 from functools import wraps
 import logging
+from . import _support
 
 log = logging.getLogger("healpy")
 
 from astropy.utils.decorators import deprecated_renamed_argument
 
-UNSEEN = None
-
-
-try:
-    from . import _healpy_pixel_lib as pixlib
-
-    #: Special value used for masked pixels
-    UNSEEN = pixlib.UNSEEN
-except:
-    log.warning("Warning: cannot import _healpy_pixel_lib module")
+UNSEEN = _support.UNSEEN
 
 # We are using 64-bit integer types.
 # nside > 2**29 requires extended integer types.
@@ -476,10 +468,7 @@ def ang2pix(nside, theta, phi, nest=False, lonlat=False):
         theta, phi = lonlat2thetaphi(theta, phi)
     check_theta_valid(theta)
     check_nside(nside, nest=nest)
-    if nest:
-        return pixlib._ang2pix_nest(nside, theta, phi)
-    else:
-        return pixlib._ang2pix_ring(nside, theta, phi)
+    return _support.ang2pix(nside, theta, phi, nest)
 
 
 def pix2ang(nside, ipix, nest=False, lonlat=False):
@@ -523,11 +512,9 @@ def pix2ang(nside, ipix, nest=False, lonlat=False):
     (array([ 315. ,  337.5,  337.5,  337.5]), array([-41.8103149 ,  41.8103149 ,  66.44353569,  78.28414761]))
     """
     check_nside(nside, nest=nest)
-    if nest:
-        theta, phi = pixlib._pix2ang_nest(nside, ipix)
-    else:
-        theta, phi = pixlib._pix2ang_ring(nside, ipix)
 
+    theta, phi = _support.pix2ang(nside, ipix, nest)
+    
     if lonlat:
         return thetaphi2lonlat(theta, phi)
     else:
@@ -568,10 +555,7 @@ def xyf2pix(nside, x, y, face, nest=False):
     [1440  427 1520    0 3068]
     """
     check_nside(nside, nest=nest)
-    if nest:
-        return pixlib._xyf2pix_nest(nside, x, y, face)
-    else:
-        return pixlib._xyf2pix_ring(nside, x, y, face)
+    return _support.xyf2pix(nside, x, y, face, nest)
 
 
 def pix2xyf(nside, ipix, nest=False):
@@ -610,10 +594,8 @@ def pix2xyf(nside, ipix, nest=False):
     (array([0, 1, 3, 7]), array([0, 0, 2, 6]), array([11,  3,  3,  3]))
     """
     check_nside(nside, nest=nest)
-    if nest:
-        return pixlib._pix2xyf_nest(nside, ipix)
-    else:
-        return pixlib._pix2xyf_ring(nside, ipix)
+    x, y, f = _support.pix2xyf(nside, ipix, nest)
+    return x,y,f
 
 
 def vec2pix(nside, x, y, z, nest=False):
@@ -650,10 +632,7 @@ def vec2pix(nside, x, y, z, nest=False):
     >>> print(hp.vec2pix([1, 2, 4, 8], 1, 0, 0))
     [  4  20  88 368]
     """
-    if nest:
-        return pixlib._vec2pix_nest(nside, x, y, z)
-    else:
-        return pixlib._vec2pix_ring(nside, x, y, z)
+    return _support.vec2pix(nside, x, y, z, nest)
 
 
 def pix2vec(nside, ipix, nest=False):
@@ -691,10 +670,7 @@ def pix2vec(nside, ipix, nest=False):
     (array([ 0.52704628,  0.68861915]), array([-0.52704628, -0.28523539]), array([-0.66666667,  0.66666667]))
     """
     check_nside(nside, nest=nest)
-    if nest:
-        return pixlib._pix2vec_nest(nside, ipix)
-    else:
-        return pixlib._pix2vec_ring(nside, ipix)
+    return _support.pix2vec(nside, ipix, nest)
 
 
 def ang2vec(theta, phi, lonlat=False):
@@ -790,7 +766,7 @@ def ring2nest(nside, ipix):
     [ 11  13  61 253]
     """
     check_nside(nside, nest=True)
-    return pixlib._ring2nest(nside, ipix)
+    return _support.ring2nest(nside, ipix)
 
 
 def nest2ring(nside, ipix):
@@ -825,7 +801,7 @@ def nest2ring(nside, ipix):
     [ 11   2  12 211]
     """
     check_nside(nside, nest=True)
-    return pixlib._nest2ring(nside, ipix)
+    return _support.nest2ring(nside, ipix)
 
 
 @accept_ma
@@ -1358,13 +1334,8 @@ def get_interp_val(m, theta, phi, nest=False, lonlat=False):
     nside = npix2nside(m2.size)
     if lonlat:
         theta, phi = lonlat2thetaphi(theta, phi)
-    if nest:
-        r = pixlib._get_interpol_nest(nside, theta, phi)
-    else:
-        r = pixlib._get_interpol_ring(nside, theta, phi)
-    p = np.array(r[0:4])
-    w = np.array(r[4:8])
-    del r
+    p, w = _support.get_interpol(nside, theta, phi, nest)
+    p, w = np.moveaxis(p, -1, 0), np.moveaxis(w, -1, 0)
     return np.sum(m2[p] * w, 0)
 
 
@@ -1440,13 +1411,8 @@ def get_interp_weights(nside, theta, phi=None, nest=False, lonlat=False):
         theta, phi = pix2ang(nside, theta, nest=nest)
     elif lonlat:
         theta, phi = lonlat2thetaphi(theta, phi)
-    if nest:
-        r = pixlib._get_interpol_nest(nside, theta, phi)
-    else:
-        r = pixlib._get_interpol_ring(nside, theta, phi)
-    p = np.array(r[0:4])
-    w = np.array(r[4:8])
-    return (p, w)
+    p, w = _support.get_interpol(nside, theta, phi, nest)
+    return (np.moveaxis(p, -1, 0), np.moveaxis(w, -1, 0))
 
 
 def get_all_neighbours(nside, theta, phi=None, nest=False, lonlat=False):
@@ -1492,12 +1458,8 @@ def get_all_neighbours(nside, theta, phi=None, nest=False, lonlat=False):
     check_nside(nside, nest=nest)
     if phi is not None:
         theta = ang2pix(nside, theta, phi, nest=nest, lonlat=lonlat)
-    if nest:
-        r = pixlib._get_neighbors_nest(nside, theta)
-    else:
-        r = pixlib._get_neighbors_ring(nside, theta)
-    res = np.array(r[0:8])
-    return res
+    res = _support.get_neighbors(nside, theta, nest)
+    return np.moveaxis(res, -1, 0)
 
 
 def max_pixrad(nside, degrees=False):
@@ -1525,9 +1487,9 @@ def max_pixrad(nside, degrees=False):
     check_nside(nside, nest=False)
 
     if degrees:
-        return np.rad2deg(pixlib._max_pixrad(nside))
+        return np.rad2deg(_support.max_pixrad(nside))
 
-    return pixlib._max_pixrad(nside)
+    return _support.max_pixrad(nside)
 
 
 def fit_dipole(m, nest=False, bad=UNSEEN, gal_cut=0):
