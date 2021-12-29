@@ -825,6 +825,9 @@ def smoothalm(
             "-> fwhm is %f arcmin",
             sigma * 60 * 180 / np.pi * (2.0 * np.sqrt(2.0 * np.log(2.0)))
         )
+    else:
+       if not isinstance(beam_window,(np.ndarray,list)):
+           raise ValueError("beam_window must be an array or list")
 
     # Check alms
     if not cb.is_seq(alms):
