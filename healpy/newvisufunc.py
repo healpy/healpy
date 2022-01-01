@@ -76,6 +76,8 @@ def projview(
     norm=None,
     graticule=False,
     graticule_labels=False,
+    rot_graticule=False,
+    override_rot_graticule_properties=None,
     return_only_data=False,
     projection_type="mollweide",
     cb_orientation="horizontal",
@@ -92,6 +94,7 @@ def projview(
     phi_convention="counterclockwise",
     custom_xtick_labels=None,
     custom_ytick_labels=None,
+    invRot=True,
     **kwargs
 ):
     """Plot a healpix map (given as an array) in the chosen projection.
@@ -108,7 +111,7 @@ def projview(
 
     Parameters
     ----------
-    map : float, array-like or None
+    m : float, array-like or None
       An array containing the map, supports masked maps, see the `ma` function.
       If None, will display a blank map, useful for overplotting.
     rot : scalar or sequence, optional
@@ -147,6 +150,11 @@ def projview(
       add graticule
     graticule_labels : bool
       longitude and latitude labels
+    rot_graticule : bool
+      rotate also the graticule when rotating the map
+    override_rot_graticule_properties : dict
+      Override the following rotated graticule properties: "g_linestyle", "g_linewidth", "g_color", 
+      "g_alpha", "t_step", "p_step".
     projection_type :  {'aitoff', 'hammer', 'lambert', 'mollweide', 'cart', '3d', 'polar'}
       type of the plot
     cb_orientation : {'horizontal', 'vertical'}
@@ -160,20 +168,24 @@ def projview(
     latitude_grid_spacing : float
       set y axis grid spacing
     override_plot_properties : dict
-      Override the following plot proporties: "cbar_shrink", "cbar_pad", "cbar_label_pad", "figure_width": width, "figure_size_ratio": ratio.
+      Override the following plot properties: "cbar_shrink", "cbar_pad", "cbar_label_pad", 
+      "figure_width": width, "figure_size_ratio": ratio.
     title : str
       set title of the plot
     lcolor : str
       change the color of the longitude tick labels, some color maps make it hard to read black tick labels
     fontsize:  dict
-        Override fontsize of labels: "xlabel", "ylabel", "title", "xtick_label", "ytick_label", "cbar_label", "cbar_tick_label".
+      Override fontsize of labels: "xlabel", "ylabel", "title", "xtick_label", "ytick_label", 
+      "cbar_label", "cbar_tick_label".
     phi_convention : string
-        convention on x-axis (phi), 'counterclockwise' (default), 'clockwise', 'symmetrical' (phi as it is truly given)
-        if `flip` is "geo", `phi_convention` should be set to 'clockwise'.
+      convention on x-axis (phi), 'counterclockwise' (default), 'clockwise', 'symmetrical' (phi as it is truly given)
+      if `flip` is "geo", `phi_convention` should be set to 'clockwise'.
     custom_xtick_labels : list
-        override x-axis tick labels
+      override x-axis tick labels
     custom_ytick_labels : list
-        override y-axis tick labels
+      override y-axis tick labels
+    invRot : bool
+      invert rotation
     """
 
     geographic_projections = ["aitoff", "hammer", "lambert", "mollweide"]
@@ -276,6 +288,30 @@ def projview(
         plot_properties = update_dictionary(plot_properties, override_plot_properties)
         warnings.warn("\n *** New plot properies: " + str(plot_properties) + " ***")
 
+    rot_graticule_properties = {
+        "g_linestyle": "-",
+        "g_color": "w",
+        "g_alpha": 0.75,
+        "g_linewidth": 0.75,
+        "t_step": 30,
+        "p_step": 30,
+    }
+
+    if override_rot_graticule_properties is not None:
+        warnings.warn(
+            "\n *** Overriding rotated graticule properies: "
+            + str(rot_graticule_properties)
+            + " ***"
+        )
+        rot_graticule_properties = update_dictionary(
+            rot_graticule_properties, override_rot_graticule_properties
+        )
+        warnings.warn(
+            "\n *** New rotated graticule properies: "
+            + str(rot_graticule_properties)
+            + " ***"
+        )
+
     # not implemented features
     if not (norm is None):
         raise NotImplementedError()
@@ -327,7 +363,7 @@ def projview(
     PHI, THETA = np.meshgrid(phi, theta)
     # coord or rotation
     if coord or rot:
-        r = Rotator(coord=coord, rot=rot, inv=True)
+        r = Rotator(coord=coord, rot=rot, inv=invRot)
         THETA, PHI = r(THETA.flatten(), PHI.flatten())
         THETA = THETA.reshape(ysize, xsize)
         PHI = PHI.reshape(ysize, xsize)
@@ -461,10 +497,29 @@ def projview(
         cb.solids.set_edgecolor("face")
     ax.set_xlabel(xlabel, fontsize=fontsize_defaults["xlabel"])
     ax.set_ylabel(ylabel, fontsize=fontsize_defaults["ylabel"])
-    plt.draw()
     #  except:
     #     pass
 
+    if rot_graticule == True:
+        rotated_grid_lines, where_zero = CreateRotatedGraticule(
+            rot,
+            t_step=rot_graticule_properties["t_step"],
+            p_step=rot_graticule_properties["p_step"],
+        )
+        for i, g_line in enumerate(rotated_grid_lines):
+            if i in where_zero:
+                linewidth = rot_graticule_properties["g_linewidth"] * 2.5
+            else:
+                linewidth = rot_graticule_properties["g_linewidth"]
+            plt.plot(
+                *g_line,
+                linewidth=linewidth,
+                linestyle=rot_graticule_properties["g_linestyle"],
+                color=rot_graticule_properties["g_color"],
+                alpha=rot_graticule_properties["g_alpha"]
+            )
+
+    plt.draw()
     return ret
 
 
@@ -502,3 +557,53 @@ def newprojplot(theta, phi, fmt=None, **kwargs):
     else:
         ret = plt.plot(longitude, latitude, fmt, **kwargs)
     return ret
+
+
+def CreateRotatedGraticule(rot, t_step=30, p_step=30):
+
+    phi = rot[0]
+    try:
+        theta = rot[1]
+    except:
+        theta = 0
+    pointDensity = 100
+    conventionThetaOffset = np.pi / 2
+    thetaSpacing = np.arange(-90, 90 + t_step, t_step)
+    phiSpacing = np.arange(-180, 180 + p_step, p_step)
+    where_zero = np.hstack(
+        (
+            np.where(thetaSpacing == 0)[0],
+            thetaSpacing.size + np.where(phiSpacing == 0)[0],
+        )
+    )
+    gline_phi_fixed = np.deg2rad(np.linspace(-180, 180, pointDensity))
+    gline_theta_fixed = (
+        np.deg2rad(np.linspace(-90, 90, pointDensity)) + conventionThetaOffset
+    )
+    rotated_grid_lines = []
+
+    for thetaSpace in thetaSpacing:
+        gline_theta = (
+            np.deg2rad(np.zeros(pointDensity) + thetaSpace) + conventionThetaOffset
+        )
+        r = Rotator(rot=(0, theta), inv=True)
+        gline_theta_rot, gline_phi_fixed_rot = r(gline_theta, gline_phi_fixed)
+        gline_theta = gline_theta - conventionThetaOffset
+        gline_theta_rot = gline_theta_rot - conventionThetaOffset
+        rotated_grid_lines.append([gline_phi_fixed_rot, gline_theta_rot])
+
+    for phiSpace in phiSpacing:
+        gline_phi = np.deg2rad(np.zeros(pointDensity) + phiSpace)
+        r = Rotator(rot=(phi, 0), inv=True)
+        gline_theta_fixed_rot, gline_phi_rot = r(gline_theta_fixed, gline_phi)
+        r = Rotator(rot=(0, theta), inv=True)
+        gline_theta_fixed_rot, gline_phi_rot = r(gline_theta_fixed_rot, gline_phi_rot)
+        gline_theta_fixed_rot = gline_theta_fixed_rot - conventionThetaOffset
+        rotated_grid_lines.append([gline_phi_rot, gline_theta_fixed_rot])
+
+    for g_lines in rotated_grid_lines:
+        mask = np.where((np.abs(np.diff(g_lines[0]))) > np.deg2rad(45))
+        g_lines[0] = np.ma.array(g_lines[0])
+        g_lines[0][mask] = np.ma.masked
+
+    return rotated_grid_lines, where_zero
