@@ -299,6 +299,87 @@ def map2alm(
     return np.array(alms)
 
 
+def map_analysis_lsq(map, lmax, mmax, tol=1e-10, maxiter=20):
+    """Runs an iterative map analysis up to (lmax, mmax) and returns the result
+    including its quality.
+
+    Healpix map analysis is often interpreted as "compute the `alm` for which
+    `alm2map(alm) == map`". Unfortunately this inversion problem is not solvable
+    in many cases, since `alm` typically has fewer elements than `map`, which
+    makes the equation system overdetermined, so that a solution only exists
+    for a vanishingly small subset of all possible maps. (Even if there were
+    more `alm` elements than map pixels it can happen that the problem is
+    unsolvable, but this situation should not be relevant for practical use.)
+
+    This function aims to compute instead the `alm` for which the L2 norm of
+    `alm2map(alm) - map` is minimal, i.e. it tries to find the best possible
+    least-squares approximation. Since this is an iterative procedure, the user
+    needs to specify a tolerance at which the iteration is stopped and a maximum
+    iteration count to avoid excessive run times in extreme cases.
+
+    Compared to `map2alm` this algorithm has the following advantages and
+    disadvantages:
+     - the exact number of iterations need not be specified beforehand, it will
+       stop automatically once the desired accuracy is reached.
+     - during calculation it requires more memory than `map2alm`.
+    
+    Parameters
+    ----------
+    map : numpy.ndarray(float)
+        The input map
+    lmax, mmax : int
+        The desired lmax and mmax parameters for the analysis
+    tol : float
+        The desired accuracy for the result. Once this is reached, the iteration
+        stops.
+    maxiter : int
+        maximum iteration count after which the minimization is stopped
+
+    Returns
+    -------
+    alm : numpy.ndarray(complex)
+        The reconstructed a_lm coefficients
+    rel_res : float
+        The norm of the residual map (i.e. `map-alm2map(alm)`), divided by the
+        norm of `map`. This is a measure for the fraction of the map signal that
+        could not be modeled by the a_lm
+    iter : int
+        the number of iterations required
+    converged : bool
+        if True, convergence was reached
+    """
+    from scipy.sparse.linalg import LinearOperator, lsqr, lsmr
+    from .pixelfunc import npix2nside
+
+    nside = npix2nside(map.shape[0])
+
+    # helper functions to convert between real- and complex-valued a_lm
+    def alm2realalm(alm):
+        res = np.zeros(len(alm)*2-lmax-1)
+        res[0:lmax+1] = alm[0:lmax+1].real
+        res[lmax+1:] = alm[lmax+1:].view(np.float64)*np.sqrt(2.)
+        return res
+    def realalm2alm(alm):
+        res = np.zeros((len(alm)+lmax+1)//2, dtype=np.complex128)
+        res[0:lmax+1] = alm[0:lmax+1]
+        res[lmax+1:] = alm[lmax+1:].view(np.complex128)*(np.sqrt(2.)/2)
+        return res
+   
+    def a2m2(x):
+        talm = realalm2alm(x)
+        return alm2map(talm, lmax=lmax, nside=nside)
+    def m2a2(x):
+        talm = map2alm(x, lmax=lmax, iter=0)*((12*nside**2)/(4*np.pi))
+        return alm2realalm(talm)
+
+    #initial guess
+    alm0 = m2a2(map)/len(map)*(4*np.pi)
+    op = LinearOperator(matvec=a2m2, rmatvec=m2a2, shape=(len(map),len(alm0)))
+    res = lsqr(A=op, b=map, x0=alm0, atol=tol, btol=tol, iter_lim=maxiter, show=False)
+#    res = lsmr(A=op, b=map, x0=alm0, atol=tol, btol=tol, maxiter=maxiter, show=False)
+    return realalm2alm(res[0])
+
+
 @deprecated_renamed_argument("verbose", None, "1.15.0")
 def alm2map(
     alms,
