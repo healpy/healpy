@@ -219,9 +219,30 @@ class TestSphtFunc(unittest.TestCase):
                 alm = hp.map2alm(input, iter=10, use_weights=use_weights)
                 output = hp.alm2map(alm, nside)
                 np.testing.assert_allclose(input, output, atol=1e-4)
-                alm = hp.map_analysis_lsq(input, lmax=lmax, mmax=lmax)[0]
-                output = hp.alm2map(alm, nside)
-                np.testing.assert_allclose(input, output, atol=1e-4)
+
+    def test_analysis_lsq(self):
+        nside = 32
+        lmax = 64
+        fwhm_deg = 7.0
+        seed = 12345
+        np.random.seed(seed)
+        orig = hp.synfast(
+            self.cla,
+            nside,
+            lmax=lmax,
+            pixwin=False,
+            fwhm=np.radians(fwhm_deg),
+            new=False,
+        )
+        tmp = np.empty(orig.size * 2)
+        tmp[::2] = orig
+        maps = [orig, orig.astype(np.float32), tmp[::2]]
+        for input in maps:
+            alm, l2, it = hp.map_analysis_lsq(input, tol=1e-4, lmax=lmax, mmax=lmax)
+            np.testing.assert_equal(l2 < 1e-3, True)
+            np.testing.assert_equal(it < 15, True)
+            output = hp.alm2map(alm, nside)
+            np.testing.assert_allclose(input, output, atol=1e-4)
 
     def test_map2alm_pol(self):
         tmp = [np.empty(o.size * 2) for o in self.mapiqu]
@@ -238,10 +259,25 @@ class TestSphtFunc(unittest.TestCase):
                 output = hp.alm2map(alm, 32)
                 for i, o in zip(input, output):
                     np.testing.assert_allclose(i, o, atol=1e-4)
-                alm = hp.map_analysis_lsq(input, lmax=self.lmax, mmax=self.lmax)[0]
-                output = hp.alm2map(alm, 32)
-                for i, o in zip(input, output):
-                    np.testing.assert_allclose(i, o, atol=1e-4)
+
+    def test_analysis_lsq_pol(self):
+        tmp = [np.empty(o.size * 2) for o in self.mapiqu]
+        for t, o in zip(tmp, self.mapiqu):
+            t[::2] = o
+        maps = [
+            self.mapiqu,
+            [o.astype(np.float32) for o in self.mapiqu],
+            [t[::2] for t in tmp],
+        ]
+        for input in maps:
+            alm, l2, it = hp.map_analysis_lsq(
+                input, tol=1e-4, lmax=self.lmax, mmax=self.lmax
+            )
+            np.testing.assert_equal(l2 < 1e-3, True)
+            np.testing.assert_equal(it < 15, True)
+            output = hp.alm2map(alm, 32)
+            for i, o in zip(input, output):
+                np.testing.assert_allclose(i, o, atol=1e-4)
 
     def test_map2alm_pol_gal_cut(self):
         tmp = [np.empty(o.size * 2) for o in self.mapiqu]

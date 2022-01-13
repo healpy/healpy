@@ -385,9 +385,8 @@ def map_analysis_lsq(maps, lmax, mmax, pol=True, tol=1e-10, maxiter=20):
         return res.reshape((-1,))
 
     def m2a2(x):
-        talm = map2alm(x.reshape((ncomp, -1)), lmax=lmax, iter=0, pol=pol) * (
-            (12 * nside ** 2) / (4 * np.pi)
-        )
+        talm = map2alm(x.reshape((ncomp, -1)), lmax=lmax, iter=0, pol=pol)
+        talm *= (12 * nside ** 2) / (4 * np.pi)
         res = alm2realalm(talm)
         return res
 
