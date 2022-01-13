@@ -219,6 +219,9 @@ class TestSphtFunc(unittest.TestCase):
                 alm = hp.map2alm(input, iter=10, use_weights=use_weights)
                 output = hp.alm2map(alm, nside)
                 np.testing.assert_allclose(input, output, atol=1e-4)
+                alm = hp.map_analysis_lsq(input, lmax=lmax, mmax=lmax)[0]
+                output = hp.alm2map(alm, nside)
+                np.testing.assert_allclose(input, output, atol=1e-4)
 
     def test_map2alm_pol(self):
         tmp = [np.empty(o.size * 2) for o in self.mapiqu]
@@ -232,6 +235,10 @@ class TestSphtFunc(unittest.TestCase):
         for use_weights in [False, True]:
             for input in maps:
                 alm = hp.map2alm(input, iter=10, use_weights=use_weights)
+                output = hp.alm2map(alm, 32)
+                for i, o in zip(input, output):
+                    np.testing.assert_allclose(i, o, atol=1e-4)
+                alm = hp.map_analysis_lsq(input, lmax=self.lmax, mmax=self.lmax)[0]
                 output = hp.alm2map(alm, 32)
                 for i, o in zip(input, output):
                     np.testing.assert_allclose(i, o, atol=1e-4)

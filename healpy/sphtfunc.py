@@ -299,7 +299,7 @@ def map2alm(
     return np.array(alms)
 
 
-def map_analysis_lsq(map, lmax, mmax, tol=1e-10, maxiter=20):
+def map_analysis_lsq(maps, lmax, mmax, pol=True, tol=1e-10, maxiter=20):
     """Runs an iterative map analysis up to (lmax, mmax) and returns the result
     including its quality.
 
@@ -322,11 +322,11 @@ def map_analysis_lsq(map, lmax, mmax, tol=1e-10, maxiter=20):
      - the exact number of iterations need not be specified beforehand, it will
        stop automatically once the desired accuracy is reached.
      - during calculation it requires more memory than `map2alm`.
-    
+
     Parameters
     ----------
-    map : numpy.ndarray(float)
-        The input map
+    maps : array-like, shape (Npix,) or (n, Npix)
+      The input map or a list of n input maps. Must be in ring ordering.
     lmax, mmax : int
         The desired lmax and mmax parameters for the analysis
     tol : float
@@ -341,43 +341,72 @@ def map_analysis_lsq(map, lmax, mmax, tol=1e-10, maxiter=20):
         The reconstructed a_lm coefficients
     rel_res : float
         The norm of the residual map (i.e. `map-alm2map(alm)`), divided by the
-        norm of `map`. This is a measure for the fraction of the map signal that
+        norm of `maps`. This is a measure for the fraction of the map signal that
         could not be modeled by the a_lm
     iter : int
         the number of iterations required
-    converged : bool
-        if True, convergence was reached
     """
     from scipy.sparse.linalg import LinearOperator, lsqr, lsmr
+    from scipy.linalg import norm
     from .pixelfunc import npix2nside
 
-    nside = npix2nside(map.shape[0])
+    maps = ma_to_array(maps)
+    info = maptype(maps)
+    ncomp = 1 if info == 0 else info
+    maps = np.array(maps)
+    npix = maps.size / ncomp
+    nside = pixelfunc.get_nside(maps)
+    check_max_nside(nside)
 
     # helper functions to convert between real- and complex-valued a_lm
     def alm2realalm(alm):
-        res = np.zeros(len(alm)*2-lmax-1)
-        res[0:lmax+1] = alm[0:lmax+1].real
-        res[lmax+1:] = alm[lmax+1:].view(np.float64)*np.sqrt(2.)
-        return res
+        alm = alm.reshape((ncomp, -1))
+        res = np.zeros((ncomp, alm.shape[1] * 2 - lmax - 1))
+        for i in range(ncomp):
+            res[i, 0 : lmax + 1] = alm[i, 0 : lmax + 1].real
+            res[i, lmax + 1 :] = alm[i, lmax + 1 :].view(np.float64) * np.sqrt(2.0)
+        return res.reshape((-1,))
+
     def realalm2alm(alm):
-        res = np.zeros((len(alm)+lmax+1)//2, dtype=np.complex128)
-        res[0:lmax+1] = alm[0:lmax+1]
-        res[lmax+1:] = alm[lmax+1:].view(np.complex128)*(np.sqrt(2.)/2)
+        alm = np.array(alm).reshape((ncomp, -1))
+        res = np.zeros((ncomp, (alm.shape[1] + lmax + 1) // 2), dtype=np.complex128)
+        for i in range(ncomp):
+            res[i, 0 : lmax + 1] = alm[i, 0 : lmax + 1]
+            res[i, lmax + 1 :] = alm[i, lmax + 1 :].view(np.complex128) * (
+                np.sqrt(2.0) / 2
+            )
+        if ncomp == 1:
+            res = res[0]
         return res
-   
+
     def a2m2(x):
         talm = realalm2alm(x)
-        return alm2map(talm, lmax=lmax, nside=nside)
-    def m2a2(x):
-        talm = map2alm(x, lmax=lmax, iter=0)*((12*nside**2)/(4*np.pi))
-        return alm2realalm(talm)
+        res = alm2map(talm, lmax=lmax, nside=nside, pol=pol)
+        return res.reshape((-1,))
 
-    #initial guess
-    alm0 = m2a2(map)/len(map)*(4*np.pi)
-    op = LinearOperator(matvec=a2m2, rmatvec=m2a2, shape=(len(map),len(alm0)))
-    res = lsqr(A=op, b=map, x0=alm0, atol=tol, btol=tol, iter_lim=maxiter, show=False)
-#    res = lsmr(A=op, b=map, x0=alm0, atol=tol, btol=tol, maxiter=maxiter, show=False)
-    return realalm2alm(res[0])
+    def m2a2(x):
+        talm = map2alm(x.reshape((ncomp, -1)), lmax=lmax, iter=0, pol=pol) * (
+            (12 * nside ** 2) / (4 * np.pi)
+        )
+        res = alm2realalm(talm)
+        return res
+
+    # initial guess
+    alm0 = m2a2(maps) / npix * (4 * np.pi)
+    op = LinearOperator(
+        matvec=a2m2, rmatvec=m2a2, shape=(len(maps) * maps[0].size, alm0.size)
+    )
+    res = lsqr(
+        A=op,
+        b=maps.reshape((-1,)),
+        x0=alm0,
+        atol=tol,
+        btol=tol,
+        iter_lim=maxiter,
+        show=False,
+    )
+    #    res = lsmr(A=op, b=maps, x0=alm0, atol=tol, btol=tol, maxiter=maxiter, show=False)
+    return realalm2alm(res[0]), res[3] / norm(maps.reshape((-1,))), res[2]
 
 
 @deprecated_renamed_argument("verbose", None, "1.15.0")

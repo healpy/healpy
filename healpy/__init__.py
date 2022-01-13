@@ -66,6 +66,7 @@ from .pixelfunc import (
 
 from .sphtfunc import (
     anafast,
+    map_analysis_lsq,
     map2alm,
     alm2map,
     Alm,
