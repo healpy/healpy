@@ -1267,3 +1267,46 @@ def check_max_nside(nside):
         )
 
     return 0
+
+
+def blm_gauss(fwhm, lmax, pol=False):
+    """Computes spherical harmonic coefficients of a circular Gaussian beam
+    pointing towards the North Pole
+
+    Parameters
+    ----------
+    fwhm : float, scalar
+        desired FWHM of the beam, in radians
+    lmax : int, scalar
+        maximum l multipole moment to compute
+    pol : bool, scalar
+        if True, E and B coefficients will also be computed
+
+    Returns
+    -------
+    blm : array with dtype numpy.complex128
+    """
+    fwhm = float(fwhm)
+    lmax = int(lmax)
+    pol = bool(pol)
+    mmax = 2 if pol else 1
+    ncomp = 3 if pol else 1
+    nval = Alm.getsize(lmax, mmax)
+
+    if mmax > lmax:
+        raise ValueError("lmax value too small")
+
+    blm = np.zeros((ncomp, nval), dtype=np.complex128)
+    sigmasq = fwhm * fwhm / (8 * np.log(2.0))
+
+    for l in range(0, lmax + 1):
+        blm[0, Alm.getidx(lmax, l, 0)] = np.sqrt((2 * l + 1) / (4.0 * np.pi)) * np.exp(
+            -0.5 * sigmasq * l * l
+        )
+
+    for l in range(2, lmax + 1):
+        val = np.sqrt((2 * l + 1) / (32 * np.pi)) * np.exp(-0.5 * sigmasq * l * l)
+        blm[1, Alm.getidx(lmax, l, 2)] = val
+        blm[2, Alm.getidx(lmax, l, 2)] = 1j * val
+
+    return blm
