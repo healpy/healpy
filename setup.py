@@ -7,10 +7,8 @@ import sys
 import shlex
 from Cython.Distutils import build_ext
 from distutils.sysconfig import get_config_var, get_config_vars
-import pkg_resources
 from subprocess import check_output, CalledProcessError, check_call
 from setuptools import setup, Extension
-from setuptools.dist import Distribution
 from distutils.command.build_clib import build_clib
 from distutils.errors import DistutilsExecError
 from distutils.dir_util import mkpath
