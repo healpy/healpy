@@ -6,3 +6,15 @@ requires = ["setuptools",
             "oldest-supported-numpy"]
 
 build-backend = 'setuptools.build_meta'
+
+[tool.cibuildwheel]
+skip = "*-musllinux_* pp* *_i686"
+test-command = "pytest --doctest-plus --doctest-cython -v --pyargs healpy"
+test-requires = ["pytest", "pytest-cython", "pytest-doctestplus", "requests"]
+
+[tool.cibuildwheel.linux]
+before-all = "yum install -y curl-devel openssl-devel"
+
+[tool.cibuildwheel.macos]
+before-all = "brew install automake"
+environment = {"CC" = "gcc-9", "CXX" = "g++-9"}
