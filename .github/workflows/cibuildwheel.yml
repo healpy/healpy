@@ -44,7 +44,7 @@ jobs:
           CIBW_BEFORE_ALL_LINUX: yum install -y curl-devel openssl-devel
           CIBW_BEFORE_ALL_MACOS: brew install automake
           CIBW_ENVIRONMENT_MACOS: CC=gcc-9 CXX=g++-9
-          CIBW_SKIP: pp* *_i686
+          CIBW_SKIP: "*-musllinux_* pp* *_i686"
           CIBW_TEST_COMMAND: pytest --doctest-plus --doctest-cython -v --pyargs healpy
           CIBW_TEST_REQUIRES: pytest pytest-cython pytest-doctestplus requests
 
