@@ -44,8 +44,6 @@ jobs:
           CIBW_BEFORE_ALL_LINUX: yum install -y openssl-devel
           CIBW_BEFORE_ALL_MACOS: brew install automake
           CIBW_ENVIRONMENT_MACOS: CC=gcc-9 CXX=g++-9
-          CIBW_MANYLINUX_X86_64_IMAGE: quay.io/pypa/manylinux1_x86_64
-          CIBW_MANYLINUX_I686_IMAGE: quay.io/pypa/manylinux1_i686
           CIBW_SKIP: pp*
           # Workaround for https://github.com/matthew-brett/delocate/pull/87.
           # Remove this when delocate>0.8.2 has been released.
