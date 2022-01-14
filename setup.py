@@ -362,7 +362,7 @@ setup(
         (
             "healpix_cxx",
             {
-                "pkg_config_name": "healpix_cxx >= 3.60.0",
+                "pkg_config_name": "healpix_cxx >= 3.80.0",
                 "local_source": "healpixsubmodule/src/cxx",
             },
         ),
