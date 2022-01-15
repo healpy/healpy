@@ -8,8 +8,8 @@ Healpy, a python wrapper for healpix
 .. image:: https://anaconda.org/conda-forge/healpy/badges/version.svg
     :target: https://anaconda.org/conda-forge/healpy
 
-.. image:: https://travis-ci.org/healpy/healpy.png?branch=master
-   :target: https://travis-ci.org/healpy/healpy
+.. image:: https://github.com/healpy/healpy/actions/workflows/cibuildwheel.yml/badge.svg
+   :target: https://github.com/healpy/healpy/actions/workflows/cibuildwheel.yml
 
 .. image:: https://readthedocs.org/projects/healpy/badge/?version=latest
    :target: https://readthedocs.org/projects/healpy/?badge=latest
