@@ -1304,10 +1304,11 @@ def blm_gauss(fwhm, lmax, pol=False):
             -0.5 * sigmasq * l * l
         )
 
-    for l in range(2, lmax + 1):
-        blm[1, Alm.getidx(lmax, l, 2)] = np.sqrt((2 * l + 1) / (32 * np.pi)) * np.exp(
-            -0.5 * sigmasq * l * l
-        )
-    blm[2] = 1j * blm[1]
+    if pol:
+        for l in range(2, lmax + 1):
+            blm[1, Alm.getidx(lmax, l, 2)] = np.sqrt((2 * l + 1) / (32 * np.pi)) * np.exp(
+                -0.5 * sigmasq * l * l
+            )
+        blm[2] = 1j * blm[1]
 
     return blm
