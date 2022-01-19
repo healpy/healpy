@@ -1285,11 +1285,13 @@ def blm_gauss(fwhm, lmax, pol=False):
     Returns
     -------
     blm : array with dtype numpy.complex128
+          lmax will be as specified
+          mmax is 0 for pol==False, else 2
     """
     fwhm = float(fwhm)
     lmax = int(lmax)
     pol = bool(pol)
-    mmax = 2 if pol else 1
+    mmax = 2 if pol else 0
     ncomp = 3 if pol else 1
     nval = Alm.getsize(lmax, mmax)
 
@@ -1306,9 +1308,9 @@ def blm_gauss(fwhm, lmax, pol=False):
 
     if pol:
         for l in range(2, lmax + 1):
-            blm[1, Alm.getidx(lmax, l, 2)] = np.sqrt((2 * l + 1) / (32 * np.pi)) * np.exp(
-                -0.5 * sigmasq * l * l
-            )
+            blm[1, Alm.getidx(lmax, l, 2)] = np.sqrt(
+                (2 * l + 1) / (32 * np.pi)
+            ) * np.exp(-0.5 * sigmasq * l * l)
         blm[2] = 1j * blm[1]
 
     return blm
