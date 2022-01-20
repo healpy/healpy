@@ -1273,6 +1273,9 @@ def blm_gauss(fwhm, lmax, pol=False):
     """Computes spherical harmonic coefficients of a circular Gaussian beam
     pointing towards the North Pole
 
+    See an example of usage
+    `in the documentation <https://healpy.readthedocs.io/en/latest/blm_gauss_plot.html>`_
+
     Parameters
     ----------
     fwhm : float, scalar
