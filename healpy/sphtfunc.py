@@ -77,7 +77,7 @@ def anafast(
     boundary effects.
 
     For recommendations about how to set `lmax`, `iter`, and weights, see the
-    `Anafast documentation <https://healpix.sourceforge.io/html/fac_anafast.htm>`
+    `Anafast documentation <https://healpix.sourceforge.io/html/fac_anafast.htm>`_
 
     Parameters
     ----------
@@ -179,7 +179,7 @@ def map2alm(
     in ring ordering.
 
     For recommendations about how to set `lmax`, `iter`, and weights, see the
-    `Anafast documentation <https://healpix.sourceforge.io/html/fac_anafast.htm>`
+    `Anafast documentation <https://healpix.sourceforge.io/html/fac_anafast.htm>`_
 
     Pixel values are weighted before applying the transform:
 
