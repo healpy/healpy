@@ -360,8 +360,8 @@ class TestSphtFunc(unittest.TestCase):
         np.testing.assert_allclose(ref, mine, rtol=1e-10)
 
     def test_accept_ma_allows_only_keywords(self):
-        """ Test whether 'smoothing' wrapped with accept_ma works with only
-            keyword arguments. """
+        """Test whether 'smoothing' wrapped with accept_ma works with only
+        keyword arguments."""
 
         ma = np.ones(12 * 16 ** 2)
         try:
@@ -370,7 +370,7 @@ class TestSphtFunc(unittest.TestCase):
             self.fail()
 
     def test_beam2bl(self):
-        """ Test beam2bl against analytical transform of Gaussian beam. """
+        """Test beam2bl against analytical transform of Gaussian beam."""
 
         theta = np.linspace(0, np.radians(1.0), 1000)
         sigma = np.radians(10.0 / 60.0) / np.sqrt(8.0 * np.log(2.0))
@@ -383,7 +383,7 @@ class TestSphtFunc(unittest.TestCase):
         np.testing.assert_allclose(gaussian_window, bl, rtol=1e-4)
 
     def test_bl2beam(self):
-        """ Test bl2beam against analytical transform of Gaussian beam. """
+        """Test bl2beam against analytical transform of Gaussian beam."""
 
         theta = np.linspace(0, np.radians(3.0), 1000)
         sigma = np.radians(1.0) / np.sqrt(8.0 * np.log(2.0))
@@ -396,7 +396,7 @@ class TestSphtFunc(unittest.TestCase):
         np.testing.assert_allclose(gaussian_beam, beam, rtol=1e-3)
 
     def test_max_nside_check(self):
-        """ Test whether the max_nside_check correctly raises ValueErrors for nsides
+        """Test whether the max_nside_check correctly raises ValueErrors for nsides
         that are too large."""
 
         # Test an nside that is too large
@@ -440,6 +440,7 @@ class TestSphtFunc(unittest.TestCase):
         alm = np.zeros([3, nalm], dtype=np.complex64)
         with pytest.raises(ValueError):
             hp.rotate_alm(alm, 0.1, 0.2, 0.3)
+
 
 if __name__ == "__main__":
     unittest.main()

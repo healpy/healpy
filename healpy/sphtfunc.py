@@ -364,9 +364,7 @@ def alm2map(
 
     check_max_nside(nside)
 
-    alms = smoothalm(
-        alms, fwhm=fwhm, sigma=sigma, pol=pol, inplace=inplace
-    )
+    alms = smoothalm(alms, fwhm=fwhm, sigma=sigma, pol=pol, inplace=inplace)
 
     if not cb.is_seq_of_seq(alms):
         alms = [alms]
@@ -823,11 +821,11 @@ def smoothalm(
         log.info("Sigma is %f arcmin (%f rad) ", sigma * 60 * 180 / np.pi, sigma)
         log.info(
             "-> fwhm is %f arcmin",
-            sigma * 60 * 180 / np.pi * (2.0 * np.sqrt(2.0 * np.log(2.0)))
+            sigma * 60 * 180 / np.pi * (2.0 * np.sqrt(2.0 * np.log(2.0))),
         )
     else:
-       if not isinstance(beam_window,(np.ndarray,list)):
-           raise ValueError("beam_window must be an array or list")
+        if not isinstance(beam_window, (np.ndarray, list)):
+            raise ValueError("beam_window must be an array or list")
 
     # Check alms
     if not cb.is_seq(alms):
@@ -987,14 +985,7 @@ def smoothing(
             mmax=mmax,
             inplace=True,
         )
-        output_map = alm2map(
-            alms,
-            nside,
-            lmax=lmax,
-            mmax=mmax,
-            pixwin=False,
-            pol=pol,
-        )
+        output_map = alm2map(alms, nside, lmax=lmax, mmax=mmax, pixwin=False, pol=pol)
     else:
         # Treat each map independently (any number)
         output_map = []
@@ -1010,11 +1001,7 @@ def smoothing(
                 datapath=datapath,
             )
             smoothalm(
-                alm,
-                fwhm=fwhm,
-                sigma=sigma,
-                beam_window=beam_window,
-                inplace=True,
+                alm, fwhm=fwhm, sigma=sigma, beam_window=beam_window, inplace=True
             )
             output_map.append(alm2map(alm, nside, pixwin=False))
         output_map = np.array(output_map)
