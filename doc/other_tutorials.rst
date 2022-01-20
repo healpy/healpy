@@ -3,32 +3,20 @@ Other tutorials
 
 Links to other tutorials about `healpy`
 
-Alpha channel in visualization for transparency
------------------------------------------------
+Visualization
+-------------
 
 .. toctree::
    :maxdepth: 1
 
    alpha_channel_example
-
-New experimental visualization function
----------------------------------------
-
-Experimental visualization function, the interface will change in future
-releases:
-
-.. toctree::
-   :maxdepth: 1
-
    newvisufunc_example
+   blm_gauss_plot
 
-Map data to a HEALPix grid
---------------------------
+Pixelization
+------------
 
-Start from data and pointing information and create a HEALPix
-map.
-
-See this `Jupyter Notebook on Github <https://gist.github.com/zonca/680c68c3d60697eb0cb669cf1b41c324>`_.
+* `Map data to a HEALPix grid <https://gist.github.com/zonca/680c68c3d60697eb0cb669cf1b41c324>`_.
 
 Power spectra
 -------------
