@@ -19,3 +19,4 @@ dist
 .eggs
 .idea
 .pytest_cache
+.vscode
