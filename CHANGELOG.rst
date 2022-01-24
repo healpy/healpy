@@ -1,6 +1,10 @@
 Unreleased
 
-Release 1.15.1 20 January 2022, included in HEALPix 3.8.1
+Release 1.15.2 24 January 2022, included in HEALPix 3.8.1
+
+* Fix the ABI version signature of the C++ sources <https://github.com/healpy/healpy/pull/746>
+
+Release 1.15.1 20 January 2022
 
 * new function `hp.blm_gauss` to generate alm of a gaussian beam <https://github.com/healpy/healpy/pull/735>
 * implement rotation in the graticule of projview <https://github.com/healpy/healpy/pull/732>
