@@ -220,7 +220,7 @@ class TestSphtFunc(unittest.TestCase):
                 output = hp.alm2map(alm, nside)
                 np.testing.assert_allclose(input, output, atol=1e-4)
 
-    def test_analysis_lsq(self):
+    def test_map2alm_lsq(self):
         nside = 32
         lmax = 64
         fwhm_deg = 7.0
@@ -238,7 +238,7 @@ class TestSphtFunc(unittest.TestCase):
         tmp[::2] = orig
         maps = [orig, orig.astype(np.float32), tmp[::2]]
         for input in maps:
-            alm, l2, it = hp.map_analysis_lsq(input, tol=1e-4, lmax=lmax, mmax=lmax)
+            alm, l2, it = hp.map2alm_lsq(input, tol=1e-4, lmax=lmax, mmax=lmax)
             np.testing.assert_equal(l2 < 1e-3, True)
             np.testing.assert_equal(it < 15, True)
             output = hp.alm2map(alm, nside)
@@ -260,7 +260,7 @@ class TestSphtFunc(unittest.TestCase):
                 for i, o in zip(input, output):
                     np.testing.assert_allclose(i, o, atol=1e-4)
 
-    def test_analysis_lsq_pol(self):
+    def test_map2alm_lsq_pol(self):
         tmp = [np.empty(o.size * 2) for o in self.mapiqu]
         for t, o in zip(tmp, self.mapiqu):
             t[::2] = o
@@ -270,7 +270,7 @@ class TestSphtFunc(unittest.TestCase):
             [t[::2] for t in tmp],
         ]
         for input in maps:
-            alm, l2, it = hp.map_analysis_lsq(
+            alm, l2, it = hp.map2alm_lsq(
                 input, tol=1e-4, lmax=self.lmax, mmax=self.lmax
             )
             np.testing.assert_equal(l2 < 1e-3, True)

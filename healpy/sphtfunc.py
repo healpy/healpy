@@ -299,7 +299,7 @@ def map2alm(
     return np.array(alms)
 
 
-def map_analysis_lsq(maps, lmax, mmax, pol=True, tol=1e-10, maxiter=20):
+def map2alm_lsq(maps, lmax, mmax, pol=True, tol=1e-10, maxiter=20):
     """Runs an iterative map analysis up to (lmax, mmax) and returns the result
     including its quality.
 
@@ -343,7 +343,7 @@ def map_analysis_lsq(maps, lmax, mmax, pol=True, tol=1e-10, maxiter=20):
         The norm of the residual map (i.e. `map-alm2map(alm)`), divided by the
         norm of `maps`. This is a measure for the fraction of the map signal that
         could not be modeled by the a_lm
-    iter : int
+    n_iter : int
         the number of iterations required
     """
     from scipy.sparse.linalg import LinearOperator, lsqr, lsmr
