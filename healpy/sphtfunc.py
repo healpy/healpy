@@ -329,6 +329,12 @@ def map2alm_lsq(maps, lmax, mmax, pol=True, tol=1e-10, maxiter=20):
       The input map or a list of n input maps. Must be in ring ordering.
     lmax, mmax : int
         The desired lmax and mmax parameters for the analysis
+    pol : bool, optional
+      If True, assumes input maps are TQU. Output will be TEB alm's.
+      (input must be 1 or 3 maps)
+      If False, apply spin 0 harmonic transform to each map.
+      (input can be any number of maps)
+      If there is only one input map, it has no effect. Default: True.
     tol : float
         The desired accuracy for the result. Once this is reached, the iteration
         stops.
