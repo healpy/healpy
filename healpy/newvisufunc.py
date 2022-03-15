@@ -210,8 +210,6 @@ def projview(
         if vmax is None:
             vmax = m.max()
 
-    print(vmin, vmax)
-    print(min, max)
     # do this to find how many decimals are in the colorbar labels, so that the padding in the vertical cbar can done properly
     def find_number_of_decimals(number):
         try:
@@ -511,6 +509,7 @@ def projview(
             shrink=plot_properties["cbar_shrink"],
             pad=plot_properties["cbar_pad"],
             extend=extend,
+            #ticks=ticks,
         )
 
         # Hide all tickslabels not in tick variable. Do not delete tick-markers
@@ -522,7 +521,6 @@ def projview(
         # If no ticks are specified:
         # Include min and max ticks
         # If min and max ticks span 0, include 0
-        """
         # If no ticks specified and min and max contain 0, include 0-label
         include_zero=False
         if all(x is None for x in ticks):
@@ -537,7 +535,6 @@ def projview(
             if include_zero and cbar_ticks[i]==0.0:
                 continue
             label.set_visible(False)
-        """
         
         if cb_orientation == "horizontal":
             cb.ax.xaxis.set_label_text(unit, fontsize=fontsize_defaults["cbar_label"])
