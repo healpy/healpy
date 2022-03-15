@@ -69,7 +69,7 @@ def projview(
     nest=False,
     min=None,
     max=None,
-    ticks=None,
+    ticks=[None,None],
     flip="astro",
     format="%g",
     cbar=True,
@@ -194,13 +194,24 @@ def projview(
 
     geographic_projections = ["aitoff", "hammer", "lambert", "mollweide"]
 
+    # If no min or max, set to ticks value. If ticks is None, values will be None
+    vmin = min
+    vmax = max
+    if ticks != [None, None]:
+        if min is None:
+            vmin=ticks[0]
+        if max is None:
+            vmax=ticks[-1]
+    
     if not m is None:
         # auto min and max
-        if min is None:
-            min = m.min()
-        if max is None:
-            max = m.max()
+        if vmin is None:
+            vmin = m.min()
+        if vmax is None:
+            vmax = m.max()
 
+    print(vmin, vmax)
+    print(min, max)
     # do this to find how many decimals are in the colorbar labels, so that the padding in the vertical cbar can done properly
     def find_number_of_decimals(number):
         try:
@@ -222,7 +233,7 @@ def projview(
         fontsize_defaults = update_dictionary(fontsize_defaults, fontsize)
 
     # default plot settings
-    decs = np.max([find_number_of_decimals(min), find_number_of_decimals(max)])
+    decs = np.max([find_number_of_decimals(vmin), find_number_of_decimals(vmax)])
     if decs >= 3:
         lpad = -27
     else:
@@ -380,13 +391,17 @@ def projview(
         # plot
         if return_only_data:  # exit here when dumping the data
             return [longitude, latitude, grid_map]
+        if norm is not None:
+            vmin = vmax = None
+            print("Norm is specified, setting vmin and vmax to None")
+            print("These should be set in Norm-call")
         if projection_type != "3d":  # test for 3d plot
             ret = plt.pcolormesh(
                 longitude,
                 latitude,
                 grid_map,
-                vmin=min,
-                vmax=max,
+                vmin=vmin,
+                vmax=vmax,
                 rasterized=True,
                 cmap=cmap,
                 norm=norm,
@@ -400,8 +415,9 @@ def projview(
                 LATITUDE,
                 grid_map,
                 cmap=cmap,
-                vmin=min,
-                vmax=max,
+                vmin=vmin,
+                vmax=vmax,
+                norm=norm,
                 rasterized=True,
                 **kwargs
             )
@@ -474,15 +490,20 @@ def projview(
     # colorbar
     if projection_type == "cart":
         ax.set_aspect(1)
-    extend = "neither"
-    if min > np.min(m):
-        extend = "min"
-    if max < np.max(m):
-        extend = "max"
-    if min > np.min(m) and max < np.max(m):
-        extend = "both"
 
     if cbar:
+        # Override automatic tick generation with tick variable
+        if ticks == [None, None]:
+            ticks = [vmin, vmax]
+
+        extend = "neither"
+        if ticks[0] is not None and ticks[0] > np.min(m):
+            extend = "min"
+        if ticks[-1] is not None and ticks[-1] < np.max(m):
+            extend = "max"
+        if None not in ticks and ticks[0] > np.min(m) and ticks[-1] < np.max(m):
+            extend = "both"
+
         # Create colorbar
         cb = fig.colorbar(
             ret,
@@ -492,25 +513,39 @@ def projview(
             extend=extend,
         )
 
-        # Override automatic tick generation with tick variable
-        if ticks is None:
-            if min<0 and max>0:
-                ticks = [min, 0.0, max]
-            else:
-                ticks = [min, max]
-
         # Hide all tickslabels not in tick variable. Do not delete tick-markers
+        N = len(cb.ax.xaxis.get_ticklabels())
+        cbar_ticks = cb.get_ticks()
+
+        print(cbar_ticks, ticks)
+        # Rules are:
+        # If no ticks are specified:
+        # Include min and max ticks
+        # If min and max ticks span 0, include 0
+        """
+        # If no ticks specified and min and max contain 0, include 0-label
+        include_zero=False
+        if all(x is None for x in ticks):
+            if cbar_ticks[0]<0 and cbar_ticks[-1]>0: 
+                include_zero=True
+
         for i, label in enumerate(cb.ax.xaxis.get_ticklabels()):
-            if label.get_position()[0]  not in ticks:
-                label.set_visible(False)
-            
+            if i == 0   and ticks[0] is None: continue
+            if i == N-1 and ticks[-1] is None: continue
+            if cbar_ticks[i] in ticks:
+                continue    
+            if include_zero and cbar_ticks[i]==0.0:
+                continue
+            label.set_visible(False)
+        """
+        
         if cb_orientation == "horizontal":
             cb.ax.xaxis.set_label_text(unit, fontsize=fontsize_defaults["cbar_label"])
-            cb.ax.tick_params(axis="x", labelsize=fontsize_defaults["cbar_tick_label"], direction=plot_properties["cbar_tick_direction"])
+            cb.ax.tick_params(axis="x", labelsize=fontsize_defaults["cbar_tick_label"], direction=plot_properties["cbar_tick_direction"], )
             cb.ax.xaxis.labelpad = plot_properties["cbar_label_pad"]
         if cb_orientation == "vertical":
             cb.ax.yaxis.set_label_text(unit, fontsize=fontsize_defaults["cbar_label"])
-            cb.ax.tick_params(axis="y", labelsize=fontsize_defaults["cbar_tick_label"], direction=plot_properties["cbar_tick_direction"])
+            cb.ax.tick_params(axis="y", labelsize=fontsize_defaults["cbar_tick_label"], direction=plot_properties["cbar_tick_direction"], )
             cb.ax.yaxis.labelpad = plot_properties["cbar_label_pad"]
         # workaround for issue with viewers, see colorbar docstring
         cb.solids.set_edgecolor("face")
