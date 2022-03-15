@@ -69,6 +69,7 @@ def projview(
     nest=False,
     min=None,
     max=None,
+    ticks=None,
     flip="astro",
     format="%g",
     cbar=True,
@@ -133,6 +134,9 @@ def projview(
       The minimum range value
     max : float, optional
       The maximum range value
+    ticks : sequence of int, optional
+      Tick values for colorbar. 
+      Overwrites min and max in colorbar.
     flip : {'astro', 'geo'}, optional
       Defines the convention of projection : 'astro' (default, east towards left, west towards right)
       or 'geo' (east towards roght, west towards left)
@@ -168,7 +172,7 @@ def projview(
     latitude_grid_spacing : float
       set y axis grid spacing
     override_plot_properties : dict
-      Override the following plot properties: "cbar_shrink", "cbar_pad", "cbar_label_pad", 
+      Override the following plot properties: "cbar_shrink", "cbar_pad", "cbar_label_pad", "cbar_tick_direction"
       "figure_width": width, "figure_size_ratio": ratio.
     title : str
       set title of the plot
@@ -277,6 +281,7 @@ def projview(
         "cbar_shrink": shrink,
         "cbar_pad": pad,
         "cbar_label_pad": lpad,
+        "cbar_tick_direction": "in",
         "figure_width": width,
         "figure_size_ratio": ratio,
     }
@@ -313,8 +318,8 @@ def projview(
         )
 
     # not implemented features
-    if not (norm is None):
-        raise NotImplementedError()
+    #if not (norm is None):
+    #    raise NotImplementedError()
 
     # Create the figure
     if not return_only_data:  # supress figure creation when only dumping the data
@@ -384,6 +389,7 @@ def projview(
                 vmax=max,
                 rasterized=True,
                 cmap=cmap,
+                norm=norm,
                 shading="auto",
                 **kwargs
             )
@@ -477,21 +483,34 @@ def projview(
         extend = "both"
 
     if cbar:
+        # Create colorbar
         cb = fig.colorbar(
             ret,
             orientation=cb_orientation,
             shrink=plot_properties["cbar_shrink"],
             pad=plot_properties["cbar_pad"],
-            ticks=[min, max],
             extend=extend,
         )
+
+        # Override automatic tick generation with tick variable
+        if ticks is None:
+            if min<0 and max>0:
+                ticks = [min, 0.0, max]
+            else:
+                ticks = [min, max]
+
+        # Hide all tickslabels not in tick variable. Do not delete tick-markers
+        for i, label in enumerate(cb.ax.xaxis.get_ticklabels()):
+            if label.get_position()[0]  not in ticks:
+                label.set_visible(False)
+            
         if cb_orientation == "horizontal":
             cb.ax.xaxis.set_label_text(unit, fontsize=fontsize_defaults["cbar_label"])
-            cb.ax.tick_params(axis="x", labelsize=fontsize_defaults["cbar_tick_label"])
+            cb.ax.tick_params(axis="x", labelsize=fontsize_defaults["cbar_tick_label"], direction=plot_properties["cbar_tick_direction"])
             cb.ax.xaxis.labelpad = plot_properties["cbar_label_pad"]
         if cb_orientation == "vertical":
             cb.ax.yaxis.set_label_text(unit, fontsize=fontsize_defaults["cbar_label"])
-            cb.ax.tick_params(axis="y", labelsize=fontsize_defaults["cbar_tick_label"])
+            cb.ax.tick_params(axis="y", labelsize=fontsize_defaults["cbar_tick_label"], direction=plot_properties["cbar_tick_direction"])
             cb.ax.yaxis.labelpad = plot_properties["cbar_label_pad"]
         # workaround for issue with viewers, see colorbar docstring
         cb.solids.set_edgecolor("face")
