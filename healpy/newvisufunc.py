@@ -1,11 +1,12 @@
 __all__ = ["projview", "newprojplot"]
 
+from curses import cbreak
 import numpy as np
 from .pixelfunc import ang2pix, npix2nside
 from .rotator import Rotator
 import matplotlib.pyplot as plt
 from matplotlib.projections.geo import GeoAxes
-from matplotlib.ticker import MultipleLocator, FormatStrFormatter, AutoMinorLocator
+from matplotlib.ticker import MultipleLocator, FormatStrFormatter, AutoLocator
 import warnings
 
 
@@ -205,10 +206,11 @@ def projview(
     
     if not m is None:
         # auto min and max
+        percentile = 97.5
         if vmin is None:
-            vmin = m.min()
+            vmin = np.percentile(m, 100.0 - percentile)
         if vmax is None:
-            vmax = m.max()
+            vmax = np.percentile(m, percentile)
 
     # do this to find how many decimals are in the colorbar labels, so that the padding in the vertical cbar can done properly
     def find_number_of_decimals(number):
@@ -389,10 +391,6 @@ def projview(
         # plot
         if return_only_data:  # exit here when dumping the data
             return [longitude, latitude, grid_map]
-        if norm is not None:
-            vmin = vmax = None
-            print("Norm is specified, setting vmin and vmax to None")
-            print("These should be set in Norm-call")
         if projection_type != "3d":  # test for 3d plot
             ret = plt.pcolormesh(
                 longitude,
@@ -493,48 +491,29 @@ def projview(
         # Override automatic tick generation with tick variable
         if ticks == [None, None]:
             ticks = [vmin, vmax]
+            if vmin<0 and vmax>0: ticks.append(0)
 
         extend = "neither"
-        if ticks[0] is not None and ticks[0] > np.min(m):
+        if vmin > np.min(m):
             extend = "min"
-        if ticks[-1] is not None and ticks[-1] < np.max(m):
+        if vmax < np.max(m):
             extend = "max"
-        if None not in ticks and ticks[0] > np.min(m) and ticks[-1] < np.max(m):
+        if vmin > np.min(m) and vmax < np.max(m):
             extend = "both"
 
-        # Create colorbar
         cb = fig.colorbar(
             ret,
             orientation=cb_orientation,
             shrink=plot_properties["cbar_shrink"],
             pad=plot_properties["cbar_pad"],
             extend=extend,
-            #ticks=ticks,
         )
 
         # Hide all tickslabels not in tick variable. Do not delete tick-markers
-        N = len(cb.ax.xaxis.get_ticklabels())
-        cbar_ticks = cb.get_ticks()
-
-        print(cbar_ticks, ticks)
-        # Rules are:
-        # If no ticks are specified:
-        # Include min and max ticks
-        # If min and max ticks span 0, include 0
-        # If no ticks specified and min and max contain 0, include 0-label
-        include_zero=False
-        if all(x is None for x in ticks):
-            if cbar_ticks[0]<0 and cbar_ticks[-1]>0: 
-                include_zero=True
-
-        for i, label in enumerate(cb.ax.xaxis.get_ticklabels()):
-            if i == 0   and ticks[0] is None: continue
-            if i == N-1 and ticks[-1] is None: continue
-            if cbar_ticks[i] in ticks:
-                continue    
-            if include_zero and cbar_ticks[i]==0.0:
-                continue
-            label.set_visible(False)
+        cbar_ticks = list(set(cb.get_ticks()) | set(ticks))
+        labels = [tick if tick in ticks else "" for tick in cbar_ticks]
+        cb.set_ticks(cbar_ticks, labels)
+        cb.set_ticklabels(labels)
         
         if cb_orientation == "horizontal":
             cb.ax.xaxis.set_label_text(unit, fontsize=fontsize_defaults["cbar_label"])
