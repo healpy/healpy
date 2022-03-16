@@ -95,6 +95,7 @@ def projview(
     xtick_label_color="black",
     ytick_label_color="black",
     graticule_color=None,
+    serif=True,
     fontsize=None,
     phi_convention="counterclockwise",
     custom_xtick_labels=None,
@@ -195,6 +196,9 @@ def projview(
       set label at top left corner of axis
     lcolor : str
       change the color of the longitude tick labels, some color maps make it hard to read black tick labels
+    serif : bool
+      Set fontstyle to serif
+      Default: True
     fontsize:  dict
       Override fontsize of labels: "xlabel", "ylabel", "title", "xtick_label", "ytick_label", 
       "cbar_label", "cbar_tick_label".
@@ -232,7 +236,16 @@ def projview(
       Removes points in latitude range [-gal_cut, +gal_cut]
     """
     geographic_projections = ["aitoff", "hammer", "lambert", "mollweide"]
-
+    if serif:
+        plt.rc(
+            "font",
+            family="serif",
+        )
+        plt.rcParams["mathtext.fontset"] = "stix"
+        plt.rc(
+            "text.latex",
+            preamble=r"\usepackage{sfmath}",
+        )
     # If no min or max, set to ticks value. If ticks is None, values will be None
     vmin = min
     vmax = max
@@ -274,7 +287,7 @@ def projview(
         "xtick_label": 12,
         "ytick_label": 12,
         "cbar_label": 12,
-        "cbar_tick_label": 12,
+        "cbar_tick_label": 10,
     }
     if fontsize is not None:
         fontsize_defaults = update_dictionary(fontsize_defaults, fontsize)
@@ -285,12 +298,14 @@ def projview(
         lpad = -27
     else:
         lpad = -9 * decs
+
     ratio = 0.63
+    ratio = 0.5
     if projection_type == "3d":
         if cb_orientation == "vertical":
             shrink = 0.55
             pad = 0.02
-            lpad = lpad
+            lpad = 4 #lpad
             width = 11.5
         if cb_orientation == "horizontal":
             shrink = 0.2
@@ -299,20 +314,20 @@ def projview(
             width = 14
     if projection_type in geographic_projections:
         if cb_orientation == "vertical":
-            shrink = 0.6
+            shrink = 0.8
             pad = 0.01
-            lpad = lpad
+            lpad = 4  #lpad
             width = 10
         if cb_orientation == "horizontal":
             shrink = 0.6
             pad = 0.05
-            lpad = -8
+            lpad = 0
             width = 8.5
     if projection_type == "cart":
         if cb_orientation == "vertical":
             shrink = 1
             pad = 0.01
-            lpad = lpad
+            lpad = 4 #lpad
             width = 9.6
             ratio = 0.42
         if cb_orientation == "horizontal":
@@ -327,7 +342,7 @@ def projview(
         if cb_orientation == "vertical":
             shrink = 1
             pad = 0.01
-            lpad = lpad
+            lpad = 4 #lpad
             width = 10
         if cb_orientation == "horizontal":
             shrink = 0.4
@@ -404,16 +419,20 @@ def projview(
                 raise ValueError("Wrong values for sub: %d, %d, %d" % (nrows, ncols, idx))
 
             if not plt.get_fignums():
+                wscale, hscale = (nrows, ncols) if ncols != nrows else (1,1)
                 fig = plt.figure(fig, figsize=(
-                    plot_properties["figure_width"]/nrows,
-                   (plot_properties["figure_width"] * plot_properties["figure_size_ratio"])/ncols,
+                    plot_properties["figure_width"]/wscale,
+                   (plot_properties["figure_width"]*plot_properties["figure_size_ratio"])/hscale,
                 ))
             else:
                 fig = plt.gcf()
-
+            """
+            # Subplot method 1
             c, r = (idx - 1) % ncols, (idx - 1) // ncols
             if not margins:
-                margins = (0.01, 0.0, 0.01, 0.0)
+                right_adjust = 0.045 if cb_orientation=="vertical" else 0.0
+                margins = (0.01, 0.0, 0.01-right_adjust, 0.0)
+
             extent = (
                 c * 1.0 / ncols + margins[0],
                 1.0 - (r + 1) * 1.0 / nrows + margins[1],
@@ -426,8 +445,9 @@ def projview(
                 extent[2] - margins[2] - margins[0],
                 extent[3] - margins[3] - margins[1],
             )
-        ax = fig.add_axes(extent, projection=projection_type)
-        
+            """
+        #ax = fig.add_axes(extent, projection=projection_type)
+        ax = fig.add_subplot(sub,projection=projection_type)
         #if projection_type == "cart":
         #    ax = fig.add_subplot(sub)
         #else:
@@ -436,10 +456,24 @@ def projview(
         #ax = plt.gcf().add_axes((.125, .1, .9, .9), projection="mollweide")
 
         # remove white space around the image
-        plt.subplots_adjust(left=0.02, right=0.98, top=0.95, bottom=0.05)
+        left=0.15
+        right=0.85
+        top=0.85
+        bottom=0.15
+        wspace=0.0
+        hspace=0.0
+        if cbar:
+            if cb_orientation=="horizontal":
+                bottom=0.05
+                top=0.95             
+            elif cb_orientation=="vertical":
+                left=0.1
+                right=0.9
+            plt.subplots_adjust(left=left, right=right, top=top, bottom=bottom, hspace=hspace, wspace=wspace)
     # end if not
     if graticule and graticule_labels:
-        plt.subplots_adjust(left=0.04, right=0.98, top=0.95, bottom=0.05)
+        left+=0.02
+        plt.subplots_adjust(left=left, right=right, top=top, bottom=bottom, hspace=hspace, wspace=wspace)
 
     ysize = xsize // 2
     theta = np.linspace(np.pi, 0, ysize)
@@ -599,7 +633,9 @@ def projview(
             cb.ax.tick_params(axis="x", labelsize=fontsize_defaults["cbar_tick_label"], direction=plot_properties["cbar_tick_direction"], )
             cb.ax.xaxis.labelpad = plot_properties["cbar_label_pad"]
         if cb_orientation == "vertical":
-            cb.ax.yaxis.set_label_text(unit, fontsize=fontsize_defaults["cbar_label"])
+            ylabels = cb.ax.get_yticklabels()
+            cb.ax.set_yticklabels(ylabels, rotation=90)
+            cb.ax.yaxis.set_label_text(unit, fontsize=fontsize_defaults["cbar_label"], rotation=90)
             cb.ax.tick_params(axis="y", labelsize=fontsize_defaults["cbar_tick_label"], direction=plot_properties["cbar_tick_direction"], )
             cb.ax.yaxis.labelpad = plot_properties["cbar_label_pad"]
         # workaround for issue with viewers, see colorbar docstring
