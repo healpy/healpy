@@ -374,21 +374,48 @@ def projview(
         if idx < 1 or idx > ncols * nrows:
             raise ValueError("Wrong values for sub: %d, %d, %d" % (nrows, ncols, idx))
 
-        # Create figure if it doesnt already exist
-        if plt.gcf().get_axes() or reuse_axes:
+        margins=None
+        hold = False
+        fig=None
+        if not (hold or sub or reuse_axes):
+            fig = plt.figure(fig, figsize=(8.5, 5.4))
+            extent = (0.02, 0.05, 0.96, 0.9)
+        elif hold:
             fig = plt.gcf()
-        else:
-            fig = plt.figure(
-                figsize=(
-                    plot_properties["figure_width"]/nrows,
-                    (plot_properties["figure_width"] * plot_properties["figure_size_ratio"])/ncols,
-                )
+            left, bottom, right, top = np.array(f.gca().get_position()).ravel()
+            extent = (left, bottom, right - left, top - bottom)
+            fig.delaxes(fig.gca())
+        elif reuse_axes:
+            fig = plt.gcf()
+        else:  # using subplot syntax
+            fig = plt.gcf()
+            if hasattr(sub, "__len__"):
+                nrows, ncols, idx = sub
+            else:
+                nrows, ncols, idx = sub // 100, (sub % 100) // 10, (sub % 10)
+            if idx < 1 or idx > ncols * nrows:
+                raise ValueError("Wrong values for sub: %d, %d, %d" % (nrows, ncols, idx))
+            c, r = (idx - 1) % ncols, (idx - 1) // ncols
+            if not margins:
+                margins = (0.01, 0.0, 0.0, 0.02)
+            extent = (
+                c * 1.0 / ncols + margins[0],
+                1.0 - (r + 1) * 1.0 / nrows + margins[1],
+                1.0 / ncols - margins[2] - margins[0],
+                1.0 / nrows - margins[3] - margins[1],
             )
+            extent = (
+                extent[0] + margins[0],
+                extent[1] + margins[1],
+                extent[2] - margins[2] - margins[0],
+                extent[3] - margins[3] - margins[1],
+            )
+        ax = fig.add_axes(extent, projection=projection_type)
         
-        if projection_type == "cart":
-            ax = fig.add_subplot(sub)
-        else:
-            ax = fig.add_subplot(sub, projection=projection_type)
+        #if projection_type == "cart":
+        #    ax = fig.add_subplot(sub)
+        #else:
+        #    ax = fig.add_subplot(sub, projection=projection_type)
         # FIXME: make a more general axes creation that works also with subplots
         #ax = plt.gcf().add_axes((.125, .1, .9, .9), projection="mollweide")
 
