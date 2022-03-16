@@ -2,7 +2,7 @@ __all__ = ["projview", "newprojplot"]
 
 from curses import cbreak
 import numpy as np
-from .pixelfunc import ang2pix, npix2nside
+from .pixelfunc import ang2pix, npix2nside, remove_dipole, remove_monopole
 from .rotator import Rotator
 import matplotlib.pyplot as plt
 from matplotlib.projections.geo import GeoAxes
@@ -89,6 +89,8 @@ def projview(
     latitude_grid_spacing=30,
     override_plot_properties=None,
     title=None,
+    rlabel=None,
+    llabel=None,
     xtick_label_color="black",
     ytick_label_color="black",
     graticule_color=None,
@@ -97,6 +99,11 @@ def projview(
     custom_xtick_labels=None,
     custom_ytick_labels=None,
     invRot=True,
+    sub=None,
+    reuse_axes=False,
+    remove_dip=False,
+    remove_mono=False,
+    gal_cut=0,
     **kwargs
 ):
     """Plot a healpix map (given as an array) in the chosen projection.
@@ -177,6 +184,10 @@ def projview(
       "figure_width": width, "figure_size_ratio": ratio.
     title : str
       set title of the plot
+    rlabel : str
+      set label at top right corner of axis
+    llabel : str
+      set label at top left corner of axis
     lcolor : str
       change the color of the longitude tick labels, some color maps make it hard to read black tick labels
     fontsize:  dict
@@ -191,8 +202,21 @@ def projview(
       override y-axis tick labels
     invRot : bool
       invert rotation
+    sub : int, scalar or sequence, optional
+      Use only a zone of the current figure (same syntax as subplot).
+      Default: None
+    reuse_axes : bool, optional
+      If True, reuse the current Axes (should be a MollweideAxes). This is
+      useful if you want to overplot with a partially transparent colormap,
+      such as for plotting a line integral convolution. Default: False
+    remove_dip : bool, optional
+      If :const:`True`, remove the dipole+monopole
+    remove_mono : bool, optional
+      If :const:`True`, remove the monopole
+    gal_cut : float, scalar, optional
+      Symmetric galactic cut for the dipole/monopole fit.
+      Removes points in latitude range [-gal_cut, +gal_cut]
     """
-
     geographic_projections = ["aitoff", "hammer", "lambert", "mollweide"]
 
     # If no min or max, set to ticks value. If ticks is None, values will be None
@@ -203,14 +227,23 @@ def projview(
             vmin=ticks[0]
         if max is None:
             vmax=ticks[-1]
-    
     if not m is None:
+        if remove_dip:
+            m = remove_dipole(
+                m, gal_cut=gal_cut, nest=nest, copy=True
+            )
+        elif remove_mono:
+            m = remove_monopole(
+                m, gal_cut=gal_cut, nest=nest, copy=True
+            )
+            
         # auto min and max
         percentile = 97.5
         if vmin is None:
             vmin = np.percentile(m, 100.0 - percentile)
         if vmax is None:
             vmax = np.percentile(m, percentile)
+
 
     # do this to find how many decimals are in the colorbar labels, so that the padding in the vertical cbar can done properly
     def find_number_of_decimals(number):
@@ -334,21 +367,30 @@ def projview(
 
     # Create the figure
     if not return_only_data:  # supress figure creation when only dumping the data
-
-        width = width  # 8.5
-        fig = plt.figure(
-            figsize=(
-                plot_properties["figure_width"],
-                plot_properties["figure_width"] * plot_properties["figure_size_ratio"],
-            )
-        )
-
-        if projection_type == "cart":
-            ax = fig.add_subplot(111)
+        if hasattr(sub, "__len__"):
+            nrows, ncols, idx = sub
         else:
-            ax = fig.add_subplot(111, projection=projection_type)
+            nrows, ncols, idx = sub // 100, (sub % 100) // 10, (sub % 10)
+        if idx < 1 or idx > ncols * nrows:
+            raise ValueError("Wrong values for sub: %d, %d, %d" % (nrows, ncols, idx))
+
+        # Create figure if it doesnt already exist
+        if plt.gcf().get_axes() or reuse_axes:
+            fig = plt.gcf()
+        else:
+            fig = plt.figure(
+                figsize=(
+                    plot_properties["figure_width"],
+                    plot_properties["figure_width"] * plot_properties["figure_size_ratio"],
+                )
+            )
+        
+        if projection_type == "cart":
+            ax = fig.add_subplot(sub)
+        else:
+            ax = fig.add_subplot(sub, projection=projection_type)
         # FIXME: make a more general axes creation that works also with subplots
-        # ax = plt.gcf().add_axes((.125, .1, .9, .9), projection="mollweide")
+        #ax = plt.gcf().add_axes((.125, .1, .9, .9), projection="mollweide")
 
         # remove white space around the image
         plt.subplots_adjust(left=0.02, right=0.98, top=0.95, bottom=0.05)
@@ -392,12 +434,13 @@ def projview(
         if return_only_data:  # exit here when dumping the data
             return [longitude, latitude, grid_map]
         if projection_type != "3d":  # test for 3d plot
+            vmin_, vmax_ = (None, None) if norm is not None else (vmin, vmax)
             ret = plt.pcolormesh(
                 longitude,
                 latitude,
                 grid_map,
-                vmin=vmin,
-                vmax=vmax,
+                vmin=vmin_,
+                vmax=vmax_,
                 rasterized=True,
                 cmap=cmap,
                 norm=norm,
@@ -548,6 +591,27 @@ def projview(
                 color=rot_graticule_properties["g_color"],
                 alpha=rot_graticule_properties["g_alpha"]
             )
+
+    #### Right label ####
+    plt.text(
+        0.975,
+        0.925,
+        rlabel,
+        ha="right",
+        va="center",
+        fontsize=fontsize_defaults["cbar_label"],
+        transform=ax.transAxes,
+    )
+    #### Left label ####
+    plt.text(
+        0.025,
+        0.925,
+        llabel,
+        ha="left",
+        va="center",
+        fontsize=fontsize_defaults["cbar_label"],
+        transform=ax.transAxes,
+    )
 
     plt.draw()
     return ret
