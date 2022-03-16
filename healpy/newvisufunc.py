@@ -63,6 +63,7 @@ def update_dictionary(main_dict, update_dict):
 
 def projview(
     m=None,
+    fig=None,
     rot=None,
     coord=None,
     unit="",
@@ -101,6 +102,8 @@ def projview(
     invRot=True,
     sub=None,
     reuse_axes=False,
+    margins= None,
+    hold=False,
     remove_dip=False,
     remove_mono=False,
     gal_cut=0,
@@ -123,6 +126,8 @@ def projview(
     m : float, array-like or None
       An array containing the map, supports masked maps, see the `ma` function.
       If None, will display a blank map, useful for overplotting.
+    fig : int or None, optional
+      The figure number to use. Default: create a new figure
     rot : scalar or sequence, optional
       Describe the rotation to apply.
       In the form (lon, lat, psi) (unit: degrees) : the point at
@@ -209,6 +214,15 @@ def projview(
       If True, reuse the current Axes (should be a MollweideAxes). This is
       useful if you want to overplot with a partially transparent colormap,
       such as for plotting a line integral convolution. Default: False
+    margins : None or sequence, optional
+      Either None, or a sequence (left,bottom,right,top)
+      giving the margins on left,bottom,right and top
+      of the axes. Values are relative to figure (0-1).
+      Default: None
+    hold : bool, optional
+      If True, replace the current Axes by new axis.
+      use this if you want to have multiple maps on the same
+      figure. Default: False
     remove_dip : bool, optional
       If :const:`True`, remove the dipole+monopole
     remove_mono : bool, optional
@@ -367,37 +381,39 @@ def projview(
 
     # Create the figure
     if not return_only_data:  # supress figure creation when only dumping the data
-        if hasattr(sub, "__len__"):
-            nrows, ncols, idx = sub
-        else:
-            nrows, ncols, idx = sub // 100, (sub % 100) // 10, (sub % 10)
-        if idx < 1 or idx > ncols * nrows:
-            raise ValueError("Wrong values for sub: %d, %d, %d" % (nrows, ncols, idx))
 
-        margins=None
-        hold = False
-        fig=None
         if not (hold or sub or reuse_axes):
-            fig = plt.figure(fig, figsize=(8.5, 5.4))
+            fig = plt.figure(fig, figsize=(
+                plot_properties["figure_width"],
+                (plot_properties["figure_width"] * plot_properties["figure_size_ratio"]),
+            ))
             extent = (0.02, 0.05, 0.96, 0.9)
         elif hold:
             fig = plt.gcf()
-            left, bottom, right, top = np.array(f.gca().get_position()).ravel()
+            left, bottom, right, top = np.array(fig.gca().get_position()).ravel()
             extent = (left, bottom, right - left, top - bottom)
             fig.delaxes(fig.gca())
         elif reuse_axes:
             fig = plt.gcf()
         else:  # using subplot syntax
-            fig = plt.gcf()
             if hasattr(sub, "__len__"):
                 nrows, ncols, idx = sub
             else:
                 nrows, ncols, idx = sub // 100, (sub % 100) // 10, (sub % 10)
             if idx < 1 or idx > ncols * nrows:
                 raise ValueError("Wrong values for sub: %d, %d, %d" % (nrows, ncols, idx))
+
+            if not plt.get_fignums():
+                fig = plt.figure(fig, figsize=(
+                    plot_properties["figure_width"]/nrows,
+                   (plot_properties["figure_width"] * plot_properties["figure_size_ratio"])/ncols,
+                ))
+            else:
+                fig = plt.gcf()
+
             c, r = (idx - 1) % ncols, (idx - 1) // ncols
             if not margins:
-                margins = (0.01, 0.0, 0.0, 0.02)
+                margins = (0.01, 0.0, 0.01, 0.0)
             extent = (
                 c * 1.0 / ncols + margins[0],
                 1.0 - (r + 1) * 1.0 / nrows + margins[1],
@@ -425,13 +441,6 @@ def projview(
     if graticule and graticule_labels:
         plt.subplots_adjust(left=0.04, right=0.98, top=0.95, bottom=0.05)
 
-    # allow callers to override the hold state by passing hold=True|False
-    # washold = ax.ishold() #  commented out
-    hold = kwargs.pop("hold", None)
-    # if hold is not None:
-    #    ax.hold(hold)
-
-    #    try:
     ysize = xsize // 2
     theta = np.linspace(np.pi, 0, ysize)
     phi = np.linspace(-np.pi, np.pi, xsize)
