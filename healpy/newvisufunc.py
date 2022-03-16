@@ -380,8 +380,8 @@ def projview(
         else:
             fig = plt.figure(
                 figsize=(
-                    plot_properties["figure_width"],
-                    plot_properties["figure_width"] * plot_properties["figure_size_ratio"],
+                    plot_properties["figure_width"]/nrows,
+                    (plot_properties["figure_width"] * plot_properties["figure_size_ratio"])/ncols,
                 )
             )
         
