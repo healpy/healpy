@@ -287,7 +287,7 @@ def projview(
         "xtick_label": 12,
         "ytick_label": 12,
         "cbar_label": 12,
-        "cbar_tick_label": 10,
+        "cbar_tick_label": 8,
     }
     if fontsize is not None:
         fontsize_defaults = update_dictionary(fontsize_defaults, fontsize)
@@ -611,6 +611,10 @@ def projview(
         # Hide all tickslabels not in tick variable. Do not delete tick-markers
         cbar_ticks = list(set(cb.get_ticks()) | set(ticks))
         labels = [tick if tick in ticks else "" for tick in cbar_ticks]
+        args = np.argsort(cbar_ticks)
+        cbar_ticks = list(np.array(cbar_ticks)[args])
+        labels = list(np.array(labels)[args])
+        
         cb.set_ticks(cbar_ticks, labels)
         cb.set_ticklabels(labels)
         
@@ -619,7 +623,9 @@ def projview(
             cb.ax.tick_params(axis="x", labelsize=fontsize_defaults["cbar_tick_label"], direction=plot_properties["cbar_tick_direction"], )
             cb.ax.xaxis.labelpad = plot_properties["cbar_label_pad"]
         if cb_orientation == "vertical":
-            cb.ax.set_yticklabels(cb.ax.get_yticklabels(), rotation=90, va="center", )
+            # Weird fix to keep labels from dissapearing
+            labels = cb.ax.get_yticklabels() if norm is not None else labels
+            cb.ax.set_yticklabels(labels, rotation=90, va="center",)
             cb.ax.yaxis.set_label_text(unit, fontsize=fontsize_defaults["cbar_label"], rotation=90)
             cb.ax.tick_params(axis="y", labelsize=fontsize_defaults["cbar_tick_label"], direction=plot_properties["cbar_tick_direction"], )
             cb.ax.yaxis.labelpad = plot_properties["cbar_label_pad"]
