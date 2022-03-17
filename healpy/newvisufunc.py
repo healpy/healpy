@@ -619,7 +619,7 @@ def projview(
             cb.ax.tick_params(axis="x", labelsize=fontsize_defaults["cbar_tick_label"], direction=plot_properties["cbar_tick_direction"], )
             cb.ax.xaxis.labelpad = plot_properties["cbar_label_pad"]
         if cb_orientation == "vertical":
-            cb.ax.set_yticklabels(labels, rotation=90, va="center")
+            cb.ax.set_yticklabels(cb.ax.get_yticklabels(), rotation=90, va="center", )
             cb.ax.yaxis.set_label_text(unit, fontsize=fontsize_defaults["cbar_label"], rotation=90)
             cb.ax.tick_params(axis="y", labelsize=fontsize_defaults["cbar_tick_label"], direction=plot_properties["cbar_tick_direction"], )
             cb.ax.yaxis.labelpad = plot_properties["cbar_label_pad"]
