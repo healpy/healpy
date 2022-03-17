@@ -101,7 +101,7 @@ def projview(
     custom_xtick_labels=None,
     custom_ytick_labels=None,
     invRot=True,
-    sub=None,
+    sub=111,
     reuse_axes=False,
     margins= None,
     hold=False,
@@ -213,7 +213,7 @@ def projview(
       invert rotation
     sub : int, scalar or sequence, optional
       Use only a zone of the current figure (same syntax as subplot).
-      Default: None
+      Default: 111
     reuse_axes : bool, optional
       If True, reuse the current Axes (should be a MollweideAxes). This is
       useful if you want to overplot with a partially transparent colormap,
@@ -389,11 +389,10 @@ def projview(
             + str(rot_graticule_properties)
             + " ***"
         )
-        
+
     # Create the figure
     if not return_only_data:  # supress figure creation when only dumping the data
-
-        if not (hold or sub or reuse_axes):
+        if not (hold or reuse_axes) and sub==111:
             fig = plt.figure(fig, figsize=(
                 plot_properties["figure_width"],
                 (plot_properties["figure_width"] * plot_properties["figure_size_ratio"]),
@@ -620,17 +619,15 @@ def projview(
             cb.ax.tick_params(axis="x", labelsize=fontsize_defaults["cbar_tick_label"], direction=plot_properties["cbar_tick_direction"], )
             cb.ax.xaxis.labelpad = plot_properties["cbar_label_pad"]
         if cb_orientation == "vertical":
-            ylabels = cb.ax.get_yticklabels()
-            cb.ax.set_yticklabels(ylabels, rotation=90)
+            cb.ax.set_yticklabels(labels, rotation=90, va="center")
             cb.ax.yaxis.set_label_text(unit, fontsize=fontsize_defaults["cbar_label"], rotation=90)
             cb.ax.tick_params(axis="y", labelsize=fontsize_defaults["cbar_tick_label"], direction=plot_properties["cbar_tick_direction"], )
             cb.ax.yaxis.labelpad = plot_properties["cbar_label_pad"]
+            
         # workaround for issue with viewers, see colorbar docstring
         cb.solids.set_edgecolor("face")
     ax.set_xlabel(xlabel, fontsize=fontsize_defaults["xlabel"])
     ax.set_ylabel(ylabel, fontsize=fontsize_defaults["ylabel"])
-    #  except:
-    #     pass
 
     if rot_graticule == True:
         rotated_grid_lines, where_zero = CreateRotatedGraticule(
