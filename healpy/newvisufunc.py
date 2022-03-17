@@ -389,11 +389,7 @@ def projview(
             + str(rot_graticule_properties)
             + " ***"
         )
-
-    # not implemented features
-    #if not (norm is None):
-    #    raise NotImplementedError()
-
+        
     # Create the figure
     if not return_only_data:  # supress figure creation when only dumping the data
 
@@ -419,15 +415,16 @@ def projview(
                 raise ValueError("Wrong values for sub: %d, %d, %d" % (nrows, ncols, idx))
 
             if not plt.get_fignums():
-                wscale, hscale = (nrows, ncols) if ncols != nrows else (1,1)
+                # Scale height depending on subplots
                 fig = plt.figure(fig, figsize=(
-                    plot_properties["figure_width"]/wscale,
-                   (plot_properties["figure_width"]*plot_properties["figure_size_ratio"])/hscale,
+                    plot_properties["figure_width"],
+                   (plot_properties["figure_width"]*plot_properties["figure_size_ratio"])*(nrows/ncols),
                 ))
             else:
                 fig = plt.gcf()
+
             """
-            # Subplot method 1
+            # Subplot method 1, copied from mollview
             c, r = (idx - 1) % ncols, (idx - 1) // ncols
             if not margins:
                 right_adjust = 0.045 if cb_orientation=="vertical" else 0.0
@@ -446,34 +443,24 @@ def projview(
                 extent[3] - margins[3] - margins[1],
             )
             """
-        #ax = fig.add_axes(extent, projection=projection_type)
-        ax = fig.add_subplot(sub,projection=projection_type)
-        #if projection_type == "cart":
-        #    ax = fig.add_subplot(sub)
-        #else:
-        #    ax = fig.add_subplot(sub, projection=projection_type)
         # FIXME: make a more general axes creation that works also with subplots
-        #ax = plt.gcf().add_axes((.125, .1, .9, .9), projection="mollweide")
+        #ax = fig.add_axes(extent, projection=projection_type)
+        if projection_type == "cart":
+            ax = fig.add_subplot(sub)
+        else:
+            ax = fig.add_subplot(sub, projection=projection_type)
+        
 
-        # remove white space around the image
-        left=0.15
-        right=0.85
-        top=0.85
-        bottom=0.15
-        wspace=0.0
-        hspace=0.0
-        if cbar:
-            if cb_orientation=="horizontal":
-                bottom=0.05
-                top=0.95             
-            elif cb_orientation=="vertical":
-                left=0.1
-                right=0.9
-            plt.subplots_adjust(left=left, right=right, top=top, bottom=bottom, hspace=hspace, wspace=wspace)
+    # Parameters for subplots
+    left=0.02
+    right=0.98
+    top=0.95
+    bottom=0.05
+
     # end if not
     if graticule and graticule_labels:
         left+=0.02
-        plt.subplots_adjust(left=left, right=right, top=top, bottom=bottom, hspace=hspace, wspace=wspace)
+    plt.subplots_adjust(left=left, right=right, top=top, bottom=bottom,)
 
     ysize = xsize // 2
     theta = np.linspace(np.pi, 0, ysize)
