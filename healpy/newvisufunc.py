@@ -729,22 +729,34 @@ def newprojplot(theta, phi, fmt=None, **kwargs):
 
 
 def CreateRotatedGraticule(rot, t_step=30, p_step=30, coordtransform=None):
-    #if rot is None: rot=(0,0)
+    if rot is None: rot=(0,0)
     # Transform graticule coordinate system
     #zyz = np.array(coordsys2euler_zyz(coordtransform))
     #rot = vec2dir(zyz*(180/np.pi),lonlat=True)
-    
+    coordtransform = "CG"
+    if coordtransform == "GE":
+        rot=(-90,0,-60)
+    elif coordtransform == "EG":
+        rot=(95,-60,0)
+    elif coordtransform == "GC":
+        rot=(-135,-45,-45)
+    elif coordtransform == "CG":
+        rot=(120,-60,10)
+
     phi = rot[0]
     try:
         theta = rot[1]
     except:
         theta = 0
+    try:
+        psi = rot[2]
+    except:
+        psi = 0
 
     pointDensity = 100
     conventionThetaOffset = np.pi / 2
     phiSpacing = np.arange(-180, 180 + p_step, p_step)
     thetaSpacing = np.arange(-90, 90 + t_step, t_step)
-
     where_zero = np.hstack(
         (
             np.where(thetaSpacing == 0)[0],
@@ -764,7 +776,7 @@ def CreateRotatedGraticule(rot, t_step=30, p_step=30, coordtransform=None):
         gline_theta = (
             np.deg2rad(np.zeros(pointDensity) + thetaSpace) + conventionThetaOffset
         )
-        r = Rotator(rot=(0, theta), inv=True)
+        r = Rotator(rot=(0, theta, psi), inv=True)
         gline_theta_rot, gline_phi_fixed_rot = r(gline_theta, gline_phi_fixed)
         gline_theta = gline_theta - conventionThetaOffset
         gline_theta_rot = gline_theta_rot - conventionThetaOffset
@@ -773,9 +785,9 @@ def CreateRotatedGraticule(rot, t_step=30, p_step=30, coordtransform=None):
 
     for phiSpace in phiSpacing:
         gline_phi = np.deg2rad(np.zeros(pointDensity) + phiSpace)
-        r = Rotator(rot=(phi, 0), inv=True)
+        r = Rotator(rot=(phi, 0,), inv=True)
         gline_theta_fixed_rot, gline_phi_rot = r(gline_theta_fixed, gline_phi)
-        r = Rotator(rot=(0, theta), inv=True)
+        r = Rotator(rot=(0, theta, psi), inv=True)
         gline_theta_fixed_rot, gline_phi_rot = r(gline_theta_fixed_rot, gline_phi_rot)
         gline_theta_fixed_rot = gline_theta_fixed_rot - conventionThetaOffset
 
