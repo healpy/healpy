@@ -3,7 +3,7 @@ __all__ = ["projview", "newprojplot"]
 from curses import cbreak
 import numpy as np
 from .pixelfunc import ang2pix, npix2nside, remove_dipole, remove_monopole
-from .rotator import Rotator
+from .rotator import Rotator, coordsys2euler_zyz, vec2dir
 import matplotlib.pyplot as plt
 from matplotlib.projections.geo import GeoAxes
 from matplotlib.ticker import MultipleLocator, FormatStrFormatter, AutoLocator
@@ -80,6 +80,7 @@ def projview(
     graticule=False,
     graticule_labels=False,
     rot_graticule=False,
+    graticule_coord = None,
     override_rot_graticule_properties=None,
     return_only_data=False,
     projection_type="mollweide",
@@ -138,6 +139,7 @@ def projview(
       Either one of 'G', 'E' or 'C' to describe the coordinate
       system of the map, or a sequence of 2 of these to rotate
       the map from the first to the second coordinate system.
+      default: 'G'
     unit : str, optional
       A text describing the unit of the data. Default: ''
     xsize : int, optional
@@ -170,6 +172,9 @@ def projview(
       longitude and latitude labels
     rot_graticule : bool
       rotate also the graticule when rotating the map
+    graticule_coord : str
+      Either one of 'G', 'E' or 'C' to describe the coordinate
+      system of the graticule
     override_rot_graticule_properties : dict
       Override the following rotated graticule properties: "g_linestyle", "g_linewidth", "g_color", 
       "g_alpha", "t_step", "p_step".
@@ -287,7 +292,7 @@ def projview(
         "xtick_label": 12,
         "ytick_label": 12,
         "cbar_label": 12,
-        "cbar_tick_label": 8,
+        "cbar_tick_label": 10,
     }
     if fontsize is not None:
         fontsize_defaults = update_dictionary(fontsize_defaults, fontsize)
@@ -314,12 +319,12 @@ def projview(
             width = 14
     if projection_type in geographic_projections:
         if cb_orientation == "vertical":
-            shrink = 0.8
+            shrink = 0.7
             pad = 0.01
             lpad = 4  #lpad
             width = 10
         if cb_orientation == "horizontal":
-            shrink = 0.6
+            shrink = 0.4
             pad = 0.05
             lpad = 0
             width = 8.5
@@ -517,10 +522,14 @@ def projview(
                 **kwargs
             )
     # graticule
-    if graticule_color is None:
-        plt.grid(graticule)
-    else:
-        plt.grid(graticule, color=graticule_color)
+    if rot_graticule or graticule_coord is not None:
+        graticule_labels=False
+
+    if rot_graticule or graticule_coord is None:
+        if graticule_color is None:
+            plt.grid(graticule)
+        else:
+            plt.grid(graticule, color=graticule_color)
 
     if graticule:
         if projection_type in geographic_projections:
@@ -568,7 +577,8 @@ def projview(
                     + str(len(ax.yaxis.get_ticklabels()))
                     + " y-tick labels!. No re-labelling done."
                 )
-    if not graticule:
+
+    if not graticule or not graticule_labels:
         # remove longitude and latitude labels
         ax.xaxis.set_ticklabels([])
         ax.yaxis.set_ticklabels([])
@@ -635,9 +645,12 @@ def projview(
     ax.set_xlabel(xlabel, fontsize=fontsize_defaults["xlabel"])
     ax.set_ylabel(ylabel, fontsize=fontsize_defaults["ylabel"])
 
-    if rot_graticule == True:
+    # Separate graticule coordinate rotation
+    if rot_graticule or graticule_coord is not None:
+        if coord is None: coord="G"
         rotated_grid_lines, where_zero = CreateRotatedGraticule(
             rot,
+            coordtransform=coord+graticule_coord,
             t_step=rot_graticule_properties["t_step"],
             p_step=rot_graticule_properties["p_step"],
         )
@@ -715,28 +728,37 @@ def newprojplot(theta, phi, fmt=None, **kwargs):
     return ret
 
 
-def CreateRotatedGraticule(rot, t_step=30, p_step=30):
-
+def CreateRotatedGraticule(rot, t_step=30, p_step=30, coordtransform=None):
+    #if rot is None: rot=(0,0)
+    # Transform graticule coordinate system
+    #zyz = np.array(coordsys2euler_zyz(coordtransform))
+    #rot = vec2dir(zyz*(180/np.pi),lonlat=True)
+    
     phi = rot[0]
     try:
         theta = rot[1]
     except:
         theta = 0
+
     pointDensity = 100
     conventionThetaOffset = np.pi / 2
-    thetaSpacing = np.arange(-90, 90 + t_step, t_step)
     phiSpacing = np.arange(-180, 180 + p_step, p_step)
+    thetaSpacing = np.arange(-90, 90 + t_step, t_step)
+
     where_zero = np.hstack(
         (
             np.where(thetaSpacing == 0)[0],
             thetaSpacing.size + np.where(phiSpacing == 0)[0],
         )
     )
+    
     gline_phi_fixed = np.deg2rad(np.linspace(-180, 180, pointDensity))
     gline_theta_fixed = (
         np.deg2rad(np.linspace(-90, 90, pointDensity)) + conventionThetaOffset
     )
+
     rotated_grid_lines = []
+
 
     for thetaSpace in thetaSpacing:
         gline_theta = (
@@ -746,6 +768,7 @@ def CreateRotatedGraticule(rot, t_step=30, p_step=30):
         gline_theta_rot, gline_phi_fixed_rot = r(gline_theta, gline_phi_fixed)
         gline_theta = gline_theta - conventionThetaOffset
         gline_theta_rot = gline_theta_rot - conventionThetaOffset
+
         rotated_grid_lines.append([gline_phi_fixed_rot, gline_theta_rot])
 
     for phiSpace in phiSpacing:
@@ -755,11 +778,15 @@ def CreateRotatedGraticule(rot, t_step=30, p_step=30):
         r = Rotator(rot=(0, theta), inv=True)
         gline_theta_fixed_rot, gline_phi_rot = r(gline_theta_fixed_rot, gline_phi_rot)
         gline_theta_fixed_rot = gline_theta_fixed_rot - conventionThetaOffset
+
         rotated_grid_lines.append([gline_phi_rot, gline_theta_fixed_rot])
 
     for g_lines in rotated_grid_lines:
         mask = np.where((np.abs(np.diff(g_lines[0]))) > np.deg2rad(45))
         g_lines[0] = np.ma.array(g_lines[0])
         g_lines[0][mask] = np.ma.masked
+
+
+
 
     return rotated_grid_lines, where_zero
