@@ -3,6 +3,7 @@ __all__ = ["projview", "newprojplot"]
 import numpy as np
 from .pixelfunc import ang2pix, npix2nside
 from .rotator import Rotator
+from .projaxes import get_color_table
 import matplotlib.pyplot as plt
 from matplotlib.projections.geo import GeoAxes
 from matplotlib.ticker import MultipleLocator, FormatStrFormatter, AutoMinorLocator
@@ -94,6 +95,7 @@ def projview(
     phi_convention="counterclockwise",
     custom_xtick_labels=None,
     custom_ytick_labels=None,
+    cbar_ticks=None,
     invRot=True,
     **kwargs
 ):
@@ -184,18 +186,13 @@ def projview(
       override x-axis tick labels
     custom_ytick_labels : list
       override y-axis tick labels
+    cbar_ticks : list
+      custom ticks on the colorbar
     invRot : bool
       invert rotation
     """
 
     geographic_projections = ["aitoff", "hammer", "lambert", "mollweide"]
-
-    if not m is None:
-        # auto min and max
-        if min is None:
-            min = m.min()
-        if max is None:
-            max = m.max()
 
     # do this to find how many decimals are in the colorbar labels, so that the padding in the vertical cbar can done properly
     def find_number_of_decimals(number):
@@ -244,7 +241,10 @@ def projview(
         if cb_orientation == "horizontal":
             shrink = 0.6
             pad = 0.05
-            lpad = -8
+            if cbar_ticks is not None:
+                lpad = 0
+            else:
+                lpad = -8
             width = 8.5
     if projection_type == "cart":
         if cb_orientation == "vertical":
@@ -312,10 +312,6 @@ def projview(
             + " ***"
         )
 
-    # not implemented features
-    if not (norm is None):
-        raise NotImplementedError()
-
     # Create the figure
     if not return_only_data:  # supress figure creation when only dumping the data
 
@@ -369,6 +365,14 @@ def projview(
         PHI = PHI.reshape(ysize, xsize)
     nside = npix2nside(len(m))
     if not m is None:
+        w = ~(np.isnan(m) | np.isinf(m))
+        if not m is None:
+            # auto min and max
+            if min is None:
+                min = m[w].min()
+            if max is None:
+                max = m[w].max()
+        cm, nn = get_color_table(min, max, m[w], cmap=cmap, norm=norm)
         grid_pix = ang2pix(nside, THETA, PHI, nest=nest)
         grid_map = m[grid_pix]
 
@@ -380,10 +384,9 @@ def projview(
                 longitude,
                 latitude,
                 grid_map,
-                vmin=min,
-                vmax=max,
+                norm=nn,
                 rasterized=True,
-                cmap=cmap,
+                cmap=cm,
                 shading="auto",
                 **kwargs
             )
@@ -393,9 +396,8 @@ def projview(
                 LONGITUDE,
                 LATITUDE,
                 grid_map,
-                cmap=cmap,
-                vmin=min,
-                vmax=max,
+                cmap=cm,
+                norm=nn,
                 rasterized=True,
                 **kwargs
             )
@@ -475,14 +477,15 @@ def projview(
         extend = "max"
     if min > np.min(m) and max < np.max(m):
         extend = "both"
-
+    if cbar_ticks is None:
+        cbar_ticks = [min, max]
     if cbar:
         cb = fig.colorbar(
             ret,
             orientation=cb_orientation,
             shrink=plot_properties["cbar_shrink"],
             pad=plot_properties["cbar_pad"],
-            ticks=[min, max],
+            ticks=cbar_ticks,
             extend=extend,
         )
         if cb_orientation == "horizontal":
