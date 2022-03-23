@@ -308,11 +308,11 @@ def projview(
             width = 14
     if projection_type in geographic_projections:
         if cb_orientation == "vertical":
-            shrink = 0.7
+            shrink = 0.6
             pad = 0.01
             width = 10
         if cb_orientation == "horizontal":
-            shrink = 0.4
+            shrink = 0.6
             pad = 0.05
             if cbar_ticks is not None:
                 lpad = 0
