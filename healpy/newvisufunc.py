@@ -1,14 +1,12 @@
 __all__ = ["projview", "newprojplot"]
 
-from curses import cbreak
-from logging import Formatter
 import numpy as np
 from .pixelfunc import ang2pix, npix2nside, remove_dipole, remove_monopole
 from .rotator import Rotator, coordsys2euler_zyz
 from .projaxes import get_color_table
 import matplotlib.pyplot as plt
 from matplotlib.projections.geo import GeoAxes
-from matplotlib.ticker import MultipleLocator, FormatStrFormatter, AutoLocator
+from matplotlib.ticker import MultipleLocator
 import warnings
 
 
@@ -165,11 +163,12 @@ def projview(
       The format of the scale label. Default: '%g'
     cbar : bool, optional
       Display the colorbar. Default: True
+    cmap : str, optional
+        Specify the colormap.
+        default: Viridis
     norm : {'hist', 'log', None}
       Color normalization, hist= histogram equalized color mapping,
       log= logarithmic color mapping, default: None (linear color mapping)
-    kwargs : keywords
-      any additional keyword is passed to pcolormesh
     graticule : bool
       add graticule
     graticule_labels : bool
@@ -182,6 +181,8 @@ def projview(
     override_rot_graticule_properties : dict
       Override the following rotated graticule properties: "g_linestyle", "g_linewidth", "g_color", 
       "g_alpha", "t_step", "p_step".
+    return_only_data : bool, optional
+        Return array of data
     projection_type :  {'aitoff', 'hammer', 'lambert', 'mollweide', 'cart', '3d', 'polar'}
       type of the plot
     cb_orientation : {'horizontal', 'vertical'}
@@ -204,11 +205,14 @@ def projview(
       set label at top right corner of axis
     llabel : str
       set label at top left corner of axis
-    lcolor : str
-      change the color of the longitude tick labels, some color maps make it hard to read black tick labels
-    serif : bool
-      Set fontstyle to serif
-      Default: True
+    xtick_label_color : str
+        Change the color of the graticule xticks
+    ytick_label_color : str
+        Change the color of the graticule yticks
+    graticule_color : str
+        Change the color of the graticule
+    fontname : str
+        Change the fontname of the text
     fontsize:  dict
       Override fontsize of labels: "xlabel", "ylabel", "title", "xtick_label", "ytick_label", 
       "cbar_label", "cbar_tick_label".
@@ -249,6 +253,8 @@ def projview(
     gal_cut : float, scalar, optional
       Symmetric galactic cut for the dipole/monopole fit.
       Removes points in latitude range [-gal_cut, +gal_cut]
+    kwargs : dict
+        any leftover arguments will be passed to pcolormesh
     """
     geographic_projections = ["aitoff", "hammer", "lambert", "mollweide"]
 
@@ -373,7 +379,7 @@ def projview(
 
     rot_graticule_properties = {
         "g_linestyle": "-",
-        "g_color": "grey",
+        "g_color": graticule_color,
         "g_alpha": 0.75,
         "g_linewidth": 0.75,
         "t_step": latitude_grid_spacing,
