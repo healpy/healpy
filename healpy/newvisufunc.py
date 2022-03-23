@@ -1,9 +1,11 @@
 __all__ = ["projview", "newprojplot"]
 
 from curses import cbreak
+from logging import Formatter
 import numpy as np
 from .pixelfunc import ang2pix, npix2nside, remove_dipole, remove_monopole
-from .rotator import Rotator, coordsys2euler_zyz, vec2dir
+from .rotator import Rotator, coordsys2euler_zyz
+from .projaxes import get_color_table
 import matplotlib.pyplot as plt
 from matplotlib.projections.geo import GeoAxes
 from matplotlib.ticker import MultipleLocator, FormatStrFormatter, AutoLocator
@@ -68,10 +70,10 @@ def projview(
     coord=None,
     unit="",
     xsize=1000,
+    width=None,
     nest=False,
     min=None,
     max=None,
-    ticks=[None,None],
     flip="astro",
     format="%g",
     cbar=True,
@@ -96,11 +98,13 @@ def projview(
     xtick_label_color="black",
     ytick_label_color="black",
     graticule_color=None,
-    serif=True,
+    fontname=None,
     fontsize=None,
     phi_convention="counterclockwise",
     custom_xtick_labels=None,
     custom_ytick_labels=None,
+    cbar_ticks=None,
+    show_tickmarkers=False,
     invRot=True,
     sub=111,
     reuse_axes=False,
@@ -144,15 +148,15 @@ def projview(
       A text describing the unit of the data. Default: ''
     xsize : int, optional
       The size of the image. Default: 800
+    width : float, optional
+        Sets the width of the figure. Use override_plot_properties for more.
+        Overrides the default width of the figure
     nest : bool, optional
       If True, ordering scheme is NESTED. Default: False (RING)
     min : float, optional
       The minimum range value
     max : float, optional
       The maximum range value
-    ticks : sequence of int, optional
-      Tick values for colorbar. 
-      Overwrites min and max in colorbar.
     flip : {'astro', 'geo'}, optional
       Defines the convention of projection : 'astro' (default, east towards left, west towards right)
       or 'geo' (east towards roght, west towards left)
@@ -191,7 +195,8 @@ def projview(
     latitude_grid_spacing : float
       set y axis grid spacing
     override_plot_properties : dict
-      Override the following plot properties: "cbar_shrink", "cbar_pad", "cbar_label_pad", "cbar_tick_direction"
+      Override the following plot properties: 
+      "cbar_shrink", "cbar_pad", "cbar_label_pad", "cbar_tick_direction", "vertical_tick_rotation"
       "figure_width": width, "figure_size_ratio": ratio.
     title : str
       set title of the plot
@@ -214,6 +219,11 @@ def projview(
       override x-axis tick labels
     custom_ytick_labels : list
       override y-axis tick labels
+    cbar_ticks : list
+      custom ticks on the colorbar
+    show_tickmarkers : bool, optional
+      Preserve tickmarkers for the full bar with labels specified by ticks
+      default: None
     invRot : bool
       invert rotation
     sub : int, scalar or sequence, optional
@@ -241,41 +251,20 @@ def projview(
       Removes points in latitude range [-gal_cut, +gal_cut]
     """
     geographic_projections = ["aitoff", "hammer", "lambert", "mollweide"]
-    if serif:
-        plt.rc(
-            "font",
-            family="serif",
-        )
-        plt.rcParams["mathtext.fontset"] = "stix"
-        plt.rc(
-            "text.latex",
-            preamble=r"\usepackage{sfmath}",
-        )
-    # If no min or max, set to ticks value. If ticks is None, values will be None
-    vmin = min
-    vmax = max
-    if ticks != [None, None]:
-        if min is None:
-            vmin=ticks[0]
-        if max is None:
-            vmax=ticks[-1]
-    if not m is None:
-        if remove_dip:
-            m = remove_dipole(
-                m, gal_cut=gal_cut, nest=nest, copy=True
-            )
-        elif remove_mono:
-            m = remove_monopole(
-                m, gal_cut=gal_cut, nest=nest, copy=True
-            )
-            
-        # auto min and max
-        percentile = 97.5
-        if vmin is None:
-            vmin = np.percentile(m, 100.0 - percentile)
-        if vmax is None:
-            vmax = np.percentile(m, percentile)
 
+    # Set min and max values if ticks are specified and min and max are not
+    if min is None and cbar_ticks is not None: min = np.min(cbar_ticks)
+    if max is None and cbar_ticks is not None: max = np.max(cbar_ticks)
+
+    # Remove monopole and dipole
+    if remove_dip:
+        m = remove_dipole(
+            m, gal_cut=gal_cut, nest=nest, copy=True
+            )
+    elif remove_mono:
+        m = remove_monopole(
+            m, gal_cut=gal_cut, nest=nest, copy=True
+            )
 
     # do this to find how many decimals are in the colorbar labels, so that the padding in the vertical cbar can done properly
     def find_number_of_decimals(number):
@@ -298,19 +287,19 @@ def projview(
         fontsize_defaults = update_dictionary(fontsize_defaults, fontsize)
 
     # default plot settings
-    decs = np.max([find_number_of_decimals(vmin), find_number_of_decimals(vmax)])
+    decs = np.max([find_number_of_decimals(min), find_number_of_decimals(max)])
     if decs >= 3:
         lpad = -27
     else:
         lpad = -9 * decs
 
     ratio = 0.63
-    ratio = 0.5
+    
+    custom_width = width
     if projection_type == "3d":
         if cb_orientation == "vertical":
             shrink = 0.55
             pad = 0.02
-            lpad = 4 #lpad
             width = 11.5
         if cb_orientation == "horizontal":
             shrink = 0.2
@@ -321,18 +310,19 @@ def projview(
         if cb_orientation == "vertical":
             shrink = 0.7
             pad = 0.01
-            lpad = 4  #lpad
             width = 10
         if cb_orientation == "horizontal":
             shrink = 0.4
             pad = 0.05
-            lpad = 0
+            if cbar_ticks is not None:
+                lpad = 0
+            else:
+                lpad = -8
             width = 8.5
     if projection_type == "cart":
         if cb_orientation == "vertical":
             shrink = 1
             pad = 0.01
-            lpad = 4 #lpad
             width = 9.6
             ratio = 0.42
         if cb_orientation == "horizontal":
@@ -347,19 +337,29 @@ def projview(
         if cb_orientation == "vertical":
             shrink = 1
             pad = 0.01
-            lpad = 4 #lpad
             width = 10
         if cb_orientation == "horizontal":
             shrink = 0.4
             pad = 0.01
             lpad = 0
             width = 12
+
+    # If width was passed as an input argument
+    if custom_width is not None: width = custom_width
+
+    if cb_orientation == "vertical":
+        # If using rotated ticklabels, pad less.
+        if override_plot_properties is not None and "vertical_tick_rotation" in override_plot_properties:
+            lpad = 4 if override_plot_properties["vertical_tick_rotation"] != 90 else lpad
+
+
     # pass the default settings to the plot_properties dictionary
     plot_properties = {
         "cbar_shrink": shrink,
         "cbar_pad": pad,
         "cbar_label_pad": lpad,
-        "cbar_tick_direction": "in",
+        "cbar_tick_direction": "out",
+        "vertical_tick_rotation": 90,
         "figure_width": width,
         "figure_size_ratio": ratio,
     }
@@ -373,11 +373,11 @@ def projview(
 
     rot_graticule_properties = {
         "g_linestyle": "-",
-        "g_color": "w",
+        "g_color": "grey",
         "g_alpha": 0.75,
         "g_linewidth": 0.75,
-        "t_step": 30,
-        "p_step": 30,
+        "t_step": latitude_grid_spacing,
+        "p_step": longitude_grid_spacing,
     }
 
     if override_rot_graticule_properties is not None:
@@ -488,6 +488,14 @@ def projview(
         PHI = PHI.reshape(ysize, xsize)
     nside = npix2nside(len(m))
     if not m is None:
+        w = ~(np.isnan(m) | np.isinf(m))
+        if not m is None:
+            # auto min and max
+            if min is None:
+                min = m[w].min()
+            if max is None:
+                max = m[w].max()
+        cm, nn = get_color_table(min, max, m[w], cmap=cmap, norm=norm)
         grid_pix = ang2pix(nside, THETA, PHI, nest=nest)
         grid_map = m[grid_pix]
 
@@ -495,16 +503,13 @@ def projview(
         if return_only_data:  # exit here when dumping the data
             return [longitude, latitude, grid_map]
         if projection_type != "3d":  # test for 3d plot
-            vmin_, vmax_ = (None, None) if norm is not None else (vmin, vmax)
             ret = plt.pcolormesh(
                 longitude,
                 latitude,
                 grid_map,
-                vmin=vmin_,
-                vmax=vmax_,
+                norm=nn,
                 rasterized=True,
-                cmap=cmap,
-                norm=norm,
+                cmap=cm,
                 shading="auto",
                 **kwargs
             )
@@ -514,10 +519,8 @@ def projview(
                 LONGITUDE,
                 LATITUDE,
                 grid_map,
-                cmap=cmap,
-                vmin=vmin,
-                vmax=vmax,
-                norm=norm,
+                cmap=cm,
+                norm=nn,
                 rasterized=True,
                 **kwargs
             )
@@ -556,12 +559,12 @@ def projview(
         elif phi_convention == "symmetrical":
             xtick_formatter = ThetaFormatterSymmetricPhi(longitude_grid_spacing)
 
-        ax.xaxis.set_major_formatter(xtick_formatter)
+        ax.xaxis.set_major_formatter(xtick_formatter, )
         ax.yaxis.set_major_formatter(ThetaFormatterTheta(latitude_grid_spacing))
 
         if custom_xtick_labels is not None:
             try:
-                ax.xaxis.set_ticklabels(custom_xtick_labels)
+                ax.xaxis.set_ticklabels(custom_xtick_labels, fontname=fontname)
             except:
                 warnings.warn(
                     "Put names for all "
@@ -570,7 +573,7 @@ def projview(
                 )
         if custom_ytick_labels is not None:
             try:
-                ax.yaxis.set_ticklabels(custom_ytick_labels)
+                ax.yaxis.set_ticklabels(custom_ytick_labels, fontname=fontname)
             except:
                 warnings.warn(
                     "Put names for all "
@@ -578,13 +581,14 @@ def projview(
                     + " y-tick labels!. No re-labelling done."
                 )
 
+
     if not graticule or not graticule_labels:
         # remove longitude and latitude labels
         ax.xaxis.set_ticklabels([])
         ax.yaxis.set_ticklabels([])
         ax.tick_params(axis=u"both", which=u"both", length=0)
 
-    ax.set_title(title, fontsize=fontsize_defaults["title"])
+    ax.set_title(title, fontsize=fontsize_defaults["title"], fontname=fontname)
     # tick font size
     ax.tick_params(
         axis="x", labelsize=fontsize_defaults["xtick_label"], colors=xtick_label_color
@@ -592,65 +596,80 @@ def projview(
     ax.tick_params(
         axis="y", labelsize=fontsize_defaults["ytick_label"], colors=ytick_label_color
     )
+
     # colorbar
     if projection_type == "cart":
         ax.set_aspect(1)
-
+    extend = "neither"
+    if min > np.min(m):
+        extend = "min"
+    if max < np.max(m):
+        extend = "max"
+    if min > np.min(m) and max < np.max(m):
+        extend = "both"
+    if cbar_ticks is None:
+        cbar_ticks = [min, max]
     if cbar:
-        # Override automatic tick generation with tick variable
-        if ticks == [None, None]:
-            ticks = [vmin, vmax]
-            if vmin<0 and vmax>0: ticks.append(0)
-
         extend = "neither"
-        if vmin > np.min(m):
+        if min > np.min(m):
             extend = "min"
-        if vmax < np.max(m):
+        if max < np.max(m):
             extend = "max"
-        if vmin > np.min(m) and vmax < np.max(m):
+        if min > np.min(m) and max < np.max(m):
             extend = "both"
 
+        # For preserving automatic tickmarkers
+        ticks = None if show_tickmarkers else cbar_ticks
+
+        # Create colorbar
         cb = fig.colorbar(
             ret,
             orientation=cb_orientation,
             shrink=plot_properties["cbar_shrink"],
             pad=plot_properties["cbar_pad"],
+            ticks=ticks,
             extend=extend,
         )
 
         # Hide all tickslabels not in tick variable. Do not delete tick-markers
-        cbar_ticks = list(set(cb.get_ticks()) | set(ticks))
-        labels = [tick if tick in ticks else "" for tick in cbar_ticks]
-        args = np.argsort(cbar_ticks)
-        cbar_ticks = list(np.array(cbar_ticks)[args])
-        labels = list(np.array(labels)[args])
-        
-        cb.set_ticks(cbar_ticks, labels)
-        cb.set_ticklabels(labels)
-        
+        if show_tickmarkers:
+            ticks = list(set(cb.get_ticks()) | set(cbar_ticks))
+            labels = [format%tick if tick in cbar_ticks else "" for tick in ticks]
+            args = np.argsort(ticks)
+            ticks = list(np.array(ticks)[args])
+            labels = list(np.array(labels)[args])
+            cb.set_ticks(ticks, labels)
+            cb.set_ticklabels(labels)
+        else:
+            labels=[format%tick for tick in cbar_ticks]
+
+
         if cb_orientation == "horizontal":
-            cb.ax.xaxis.set_label_text(unit, fontsize=fontsize_defaults["cbar_label"])
-            cb.ax.tick_params(axis="x", labelsize=fontsize_defaults["cbar_tick_label"], direction=plot_properties["cbar_tick_direction"], )
+            #labels = cb.ax.get_xticklabels() if norm is not None else labels
+            cb.ax.set_xticklabels(labels, fontname=fontname,)
+
+            cb.ax.xaxis.set_label_text(unit, fontsize=fontsize_defaults["cbar_label"], fontname=fontname)
+            cb.ax.tick_params(axis="x", labelsize=fontsize_defaults["cbar_tick_label"], direction=plot_properties["cbar_tick_direction"],)
             cb.ax.xaxis.labelpad = plot_properties["cbar_label_pad"]
         if cb_orientation == "vertical":
-            # Weird fix to keep labels from dissapearing
-            labels = cb.ax.get_yticklabels() if norm is not None else labels
-            cb.ax.set_yticklabels(labels, rotation=90, va="center",)
-            cb.ax.yaxis.set_label_text(unit, fontsize=fontsize_defaults["cbar_label"], rotation=90)
-            cb.ax.tick_params(axis="y", labelsize=fontsize_defaults["cbar_tick_label"], direction=plot_properties["cbar_tick_direction"], )
+            #labels = cb.ax.get_yticklabels() if norm is not None else labels
+            cb.ax.set_yticklabels(labels, rotation=plot_properties["vertical_tick_rotation"], va="center", fontname=fontname)
+
+            cb.ax.yaxis.set_label_text(unit, fontsize=fontsize_defaults["cbar_label"], rotation=90, fontname=fontname)
+            cb.ax.tick_params(axis="y", labelsize=fontsize_defaults["cbar_tick_label"], direction=plot_properties["cbar_tick_direction"],)
             cb.ax.yaxis.labelpad = plot_properties["cbar_label_pad"]
-            
+
         # workaround for issue with viewers, see colorbar docstring
         cb.solids.set_edgecolor("face")
-    ax.set_xlabel(xlabel, fontsize=fontsize_defaults["xlabel"])
-    ax.set_ylabel(ylabel, fontsize=fontsize_defaults["ylabel"])
+    ax.set_xlabel(xlabel, fontsize=fontsize_defaults["xlabel"], fontname=fontname)
+    ax.set_ylabel(ylabel, fontsize=fontsize_defaults["ylabel"], fontname=fontname)
 
     # Separate graticule coordinate rotation
     if rot_graticule or graticule_coord is not None:
-        if coord is None: coord="G"
+        if coord is None: coord="G" # TODO: Not implemented coordinate rotation!
         rotated_grid_lines, where_zero = CreateRotatedGraticule(
             rot,
-            coordtransform=coord+graticule_coord,
+            #coordtransform=coord+graticule_coord,
             t_step=rot_graticule_properties["t_step"],
             p_step=rot_graticule_properties["p_step"],
         )
@@ -667,7 +686,7 @@ def projview(
                 alpha=rot_graticule_properties["g_alpha"]
             )
 
-    #### Right label ####
+    # Top right label
     plt.text(
         0.975,
         0.925,
@@ -675,9 +694,10 @@ def projview(
         ha="right",
         va="center",
         fontsize=fontsize_defaults["cbar_label"],
+        fontname=fontname,
         transform=ax.transAxes,
     )
-    #### Left label ####
+    # Top left label
     plt.text(
         0.025,
         0.925,
@@ -685,6 +705,7 @@ def projview(
         ha="left",
         va="center",
         fontsize=fontsize_defaults["cbar_label"],
+        fontname=fontname,
         transform=ax.transAxes,
     )
 
@@ -727,78 +748,51 @@ def newprojplot(theta, phi, fmt=None, **kwargs):
         ret = plt.plot(longitude, latitude, fmt, **kwargs)
     return ret
 
-
-def CreateRotatedGraticule(rot, t_step=30, p_step=30, coordtransform=None):
-    if rot is None: rot=(0,0)
-    # Transform graticule coordinate system
-    #zyz = np.array(coordsys2euler_zyz(coordtransform))
-    #rot = vec2dir(zyz*(180/np.pi),lonlat=True)
-    coordtransform = "CG"
-    if coordtransform == "GE":
-        rot=(-90,0,-60)
-    elif coordtransform == "EG":
-        rot=(95,-60,0)
-    elif coordtransform == "GC":
-        rot=(-135,-45,-45)
-    elif coordtransform == "CG":
-        rot=(120,-60,10)
+def CreateRotatedGraticule(rot, t_step=30, p_step=30):
 
     phi = rot[0]
     try:
         theta = rot[1]
     except:
         theta = 0
-    try:
-        psi = rot[2]
-    except:
-        psi = 0
-
     pointDensity = 100
     conventionThetaOffset = np.pi / 2
-    phiSpacing = np.arange(-180, 180 + p_step, p_step)
     thetaSpacing = np.arange(-90, 90 + t_step, t_step)
+    phiSpacing = np.arange(-180, 180 + p_step, p_step)
     where_zero = np.hstack(
         (
             np.where(thetaSpacing == 0)[0],
             thetaSpacing.size + np.where(phiSpacing == 0)[0],
         )
     )
-    
     gline_phi_fixed = np.deg2rad(np.linspace(-180, 180, pointDensity))
     gline_theta_fixed = (
         np.deg2rad(np.linspace(-90, 90, pointDensity)) + conventionThetaOffset
     )
-
     rotated_grid_lines = []
-
 
     for thetaSpace in thetaSpacing:
         gline_theta = (
             np.deg2rad(np.zeros(pointDensity) + thetaSpace) + conventionThetaOffset
         )
-        r = Rotator(rot=(0, theta, psi), inv=True)
+        r = Rotator(rot=(0, theta), inv=True)
         gline_theta_rot, gline_phi_fixed_rot = r(gline_theta, gline_phi_fixed)
         gline_theta = gline_theta - conventionThetaOffset
         gline_theta_rot = gline_theta_rot - conventionThetaOffset
-
         rotated_grid_lines.append([gline_phi_fixed_rot, gline_theta_rot])
 
     for phiSpace in phiSpacing:
         gline_phi = np.deg2rad(np.zeros(pointDensity) + phiSpace)
-        r = Rotator(rot=(phi, 0,), inv=True)
+        r = Rotator(rot=(phi, 0), inv=True)
         gline_theta_fixed_rot, gline_phi_rot = r(gline_theta_fixed, gline_phi)
-        r = Rotator(rot=(0, theta, psi), inv=True)
+        r = Rotator(rot=(0, theta), inv=True)
         gline_theta_fixed_rot, gline_phi_rot = r(gline_theta_fixed_rot, gline_phi_rot)
         gline_theta_fixed_rot = gline_theta_fixed_rot - conventionThetaOffset
-
         rotated_grid_lines.append([gline_phi_rot, gline_theta_fixed_rot])
 
     for g_lines in rotated_grid_lines:
         mask = np.where((np.abs(np.diff(g_lines[0]))) > np.deg2rad(45))
         g_lines[0] = np.ma.array(g_lines[0])
         g_lines[0][mask] = np.ma.masked
-
-
-
 
     return rotated_grid_lines, where_zero
