@@ -866,13 +866,15 @@ class HpxAzimuthalAxes(AzimuthalAxes):
 
 
 def get_color_table(
-    vmin, vmax, val, cmap=None, norm=None, badcolor="gray", bgcolor="white"
+    vmin, vmax, val, cmap=None, norm=None, badcolor="gray", bgcolor="white", linthresh=1, base=10, linscale=1,
 ):
     # Create color table
     newcmap = create_colormap(cmap, badcolor=badcolor, bgcolor=bgcolor)
     if type(norm) is str:
         if norm.lower().startswith("log"):
             norm = LogNorm2(clip=False)
+        elif norm.lower().startswith("symlog"):
+            norm = matplotlib.colors.SymLogNorm(clip=True, linthresh=linthresh,linscale=linscale, base=base)
         elif norm.lower().startswith("hist"):
             norm = HistEqNorm(clip=False)
         else:

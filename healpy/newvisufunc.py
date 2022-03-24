@@ -77,6 +77,7 @@ def projview(
     cbar=True,
     cmap="viridis",
     norm=None,
+    linthresh=1.0,
     graticule=False,
     graticule_labels=False,
     rot_graticule=False,
@@ -166,9 +167,12 @@ def projview(
     cmap : str, optional
         Specify the colormap.
         default: Viridis
-    norm : {'hist', 'log', None}
+    norm : {'hist', 'log', 'symlog', None}
       Color normalization, hist= histogram equalized color mapping,
       log= logarithmic color mapping, default: None (linear color mapping)
+    linthresh : float, optional
+        Linear threshold in symlog normalization
+        default: 1
     graticule : bool
       add graticule
     graticule_labels : bool
@@ -501,7 +505,7 @@ def projview(
                 min = m[w].min()
             if max is None:
                 max = m[w].max()
-        cm, nn = get_color_table(min, max, m[w], cmap=cmap, norm=norm)
+        cm, nn = get_color_table(min, max, m[w], cmap=cmap, norm=norm, linthresh=linthresh)
         grid_pix = ang2pix(nside, THETA, PHI, nest=nest)
         grid_map = m[grid_pix]
 
