@@ -77,7 +77,7 @@ def projview(
     cbar=True,
     cmap="viridis",
     norm=None,
-    linthresh=1.0,
+    linthresh=1,
     graticule=False,
     graticule_labels=False,
     rot_graticule=False,
@@ -381,9 +381,10 @@ def projview(
         plot_properties = update_dictionary(plot_properties, override_plot_properties)
         warnings.warn("\n *** New plot properies: " + str(plot_properties) + " ***")
 
+    g_col="grey" if graticule_color is None else graticule_color
     rot_graticule_properties = {
         "g_linestyle": "-",
-        "g_color": graticule_color,
+        "g_color": g_col,
         "g_alpha": 0.75,
         "g_linewidth": 0.75,
         "t_step": latitude_grid_spacing,
