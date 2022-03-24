@@ -865,16 +865,19 @@ class HpxAzimuthalAxes(AzimuthalAxes):
 #   http://matplotlib.org/examples/pylab_examples/custom_cmap.html
 
 
+
 def get_color_table(
-    vmin, vmax, val, cmap=None, norm=None, badcolor="gray", bgcolor="white", linthresh=1, base=10, linscale=1,
+    vmin, vmax, val, cmap=None, norm=None, linthresh=1, base=10, linscale=1, badcolor="gray", bgcolor="white"
 ):
     # Create color table
     newcmap = create_colormap(cmap, badcolor=badcolor, bgcolor=bgcolor)
     if type(norm) is str:
         if norm.lower().startswith("log"):
             norm = LogNorm2(clip=False)
+        elif norm.lower().startswith("symlog2"):
+            norm = matplotlib.colors.FuncNorm((symlog_forward,symlog_backward),vmin=vmin, vmax=vmax, clip=True)
         elif norm.lower().startswith("symlog"):
-            norm = matplotlib.colors.SymLogNorm(clip=True, linthresh=linthresh,linscale=linscale, base=base)
+            norm = matplotlib.colors.SymLogNorm(clip=True, linthresh=linthresh, linscale=linscale, base=base)
         elif norm.lower().startswith("hist"):
             norm = HistEqNorm(clip=False)
         else:
@@ -888,6 +891,19 @@ def get_color_table(
 
     return newcmap, norm
 
+def symlog_forward(m,linthresh=1.0):
+    """
+    Alternative symmetric logarithmic function used in Planck
+    """
+    # Extra fact of 2 ln 10 makes symlog(m) = m in linear regime
+    x = m / linthresh / (2 * np.log(10))
+    return np.log10(0.5 * (x + np.sqrt(4.0 + x * x)))
+
+def symlog_backward(y,linthresh=1.0):
+    z = 10**y
+    x = ((z**2-1)/z)
+    m = 2*linthresh*np.log(10)*x
+    return m
 
 def create_colormap(cmap, badcolor="gray", bgcolor="white"):
     """Create a new colormap with specified bad/background colors.
@@ -1093,10 +1109,7 @@ class HistEqNorm(matplotlib.colors.Normalize):
         return yy
 
 
-##################################################################
-#
-#   A normalization class to get logarithmic color table
-#
+
 
 
 class LogNorm2(matplotlib.colors.Normalize):
@@ -1155,6 +1168,7 @@ class LogNorm2(matplotlib.colors.Normalize):
             return vmin * np.ma.power((vmax / vmin), val)
         else:
             return vmin * np.pow((vmax / vmin), value)
+
 
 
 ##################################################################
