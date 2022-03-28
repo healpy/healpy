@@ -104,6 +104,7 @@ def projview(
     custom_ytick_labels=None,
     cbar_ticks=None,
     show_tickmarkers=False,
+    extend=None,
     invRot=True,
     sub=111,
     reuse_axes=False,
@@ -116,8 +117,8 @@ def projview(
 ):
     """Plot a healpix map (given as an array) in the chosen projection.
 
-    See examples of using this function in the documentation under "Other tutorials".
-    Overplot points or lines using :func:`newprojplot`.
+    See examples of using this function in the documentation under "Other
+    tutorials". Overplot points or lines using :func:`newprojplot`.
 
     .. warning::
         this function is work in progress, the aim is to reimplement the healpy
@@ -134,15 +135,14 @@ def projview(
     fig : int or None, optional
       The figure number to use. Default: create a new figure
     rot : scalar or sequence, optional
-      Describe the rotation to apply.
-      In the form (lon, lat, psi) (unit: degrees) : the point at
-      longitude *lon* and latitude *lat* will be at the center. An additional rotation
-      of angle *psi* around this direction is applied.
+      Describe the rotation to apply. In the form (lon, lat, psi) (unit:
+      degrees) : the point at longitude *lon* and latitude *lat* will be at the
+      center. An additional rotation of angle *psi* around this direction is
+      applied.
     coord : sequence of character, optional
-      Either one of 'G', 'E' or 'C' to describe the coordinate
-      system of the map, or a sequence of 2 of these to rotate
-      the map from the first to the second coordinate system.
-      default: 'G'
+      Either one of 'G', 'E' or 'C' to describe the coordinate system of the
+      map, or a sequence of 2 of these to rotate the map from the first to the
+      second coordinate system. default: 'G'
     unit : str, optional
       A text describing the unit of the data. Default: ''
     xsize : int, optional
@@ -157,22 +157,21 @@ def projview(
     max : float, optional
       The maximum range value
     flip : {'astro', 'geo'}, optional
-      Defines the convention of projection : 'astro' (default, east towards left, west towards right)
-      or 'geo' (east towards roght, west towards left)
-      It creates the `healpy_flip` attribute on the Axes to save the convention in the figure.
+      Defines the convention of projection : 'astro' (default, east towards
+      left, west towards right) or 'geo' (east towards roght, west towards left)
+      It creates the `healpy_flip` attribute on the Axes to save the convention
+      in the figure.
     format : str, optional
       The format of the scale label. Default: '%g'
     cbar : bool, optional
       Display the colorbar. Default: True
     cmap : str, optional
-        Specify the colormap.
-        default: Viridis
-    norm : {'hist', 'log', 'symlog', None}
-      Color normalization, hist= histogram equalized color mapping,
-      log= logarithmic color mapping, default: None (linear color mapping)
+        Specify the colormap. default: Viridis
+    norm : {'hist', 'log', 'symlog', 'symlog2', None}
+      Color normalization, hist= histogram equalized color mapping, log=
+      logarithmic color mapping, default: None (linear color mapping)
     linthresh : float, optional
-        Linear threshold in symlog normalization
-        default: 1
+        Linear threshold in symlog normalization default: 1
     graticule : bool
       add graticule
     graticule_labels : bool
@@ -180,14 +179,15 @@ def projview(
     rot_graticule : bool
       rotate also the graticule when rotating the map
     graticule_coord : str
-      Either one of 'G', 'E' or 'C' to describe the coordinate
-      system of the graticule
+      Either one of 'G', 'E' or 'C' to describe the coordinate system of the
+      graticule
     override_rot_graticule_properties : dict
-      Override the following rotated graticule properties: "g_linestyle", "g_linewidth", "g_color", 
-      "g_alpha", "t_step", "p_step".
+      Override the following rotated graticule properties: "g_linestyle",
+      "g_linewidth", "g_color", "g_alpha", "t_step", "p_step".
     return_only_data : bool, optional
         Return array of data
-    projection_type :  {'aitoff', 'hammer', 'lambert', 'mollweide', 'cart', '3d', 'polar'}
+    projection_type :  {'aitoff', 'hammer', 'lambert', 'mollweide', 'cart',
+    '3d', 'polar'}
       type of the plot
     cb_orientation : {'horizontal', 'vertical'}
       color bar orientation
@@ -200,8 +200,8 @@ def projview(
     latitude_grid_spacing : float
       set y axis grid spacing
     override_plot_properties : dict
-      Override the following plot properties: 
-      "cbar_shrink", "cbar_pad", "cbar_label_pad", "cbar_tick_direction", "vertical_tick_rotation"
+      Override the following plot properties: "cbar_shrink", "cbar_pad",
+      "cbar_label_pad", "cbar_tick_direction", "vertical_tick_rotation"
       "figure_width": width, "figure_size_ratio": ratio.
     title : str
       set title of the plot
@@ -218,11 +218,12 @@ def projview(
     fontname : str
         Change the fontname of the text
     fontsize:  dict
-      Override fontsize of labels: "xlabel", "ylabel", "title", "xtick_label", "ytick_label", 
-      "cbar_label", "cbar_tick_label".
+      Override fontsize of labels: "xlabel", "ylabel", "title", "xtick_label",
+      "ytick_label", "cbar_label", "cbar_tick_label".
     phi_convention : string
-      convention on x-axis (phi), 'counterclockwise' (default), 'clockwise', 'symmetrical' (phi as it is truly given)
-      if `flip` is "geo", `phi_convention` should be set to 'clockwise'.
+      convention on x-axis (phi), 'counterclockwise' (default), 'clockwise',
+      'symmetrical' (phi as it is truly given) if `flip` is "geo",
+      `phi_convention` should be set to 'clockwise'.
     custom_xtick_labels : list
       override x-axis tick labels
     custom_ytick_labels : list
@@ -232,31 +233,33 @@ def projview(
     show_tickmarkers : bool, optional
       Preserve tickmarkers for the full bar with labels specified by ticks
       default: None
+    extend : str, optional
+      Whether to extend the colorbar to mark where min or max tick is less than
+      the min or max of the data.
+      Options are "min", "max", "neither", or "both"
     invRot : bool
       invert rotation
     sub : int, scalar or sequence, optional
-      Use only a zone of the current figure (same syntax as subplot).
-      Default: 111
+      Use only a zone of the current figure (same syntax as subplot). Default:
+      111
     reuse_axes : bool, optional
       If True, reuse the current Axes (should be a MollweideAxes). This is
-      useful if you want to overplot with a partially transparent colormap,
-      such as for plotting a line integral convolution. Default: False
+      useful if you want to overplot with a partially transparent colormap, such
+      as for plotting a line integral convolution. Default: False
     margins : None or sequence, optional
-      Either None, or a sequence (left,bottom,right,top)
-      giving the margins on left,bottom,right and top
-      of the axes. Values are relative to figure (0-1).
-      Default: None
+      Either None, or a sequence (left,bottom,right,top) giving the margins on
+      left,bottom,right and top of the axes. Values are relative to figure
+      (0-1). Default: None
     hold : bool, optional
-      If True, replace the current Axes by new axis.
-      use this if you want to have multiple maps on the same
-      figure. Default: False
+      If True, replace the current Axes by new axis. use this if you want to
+      have multiple maps on the same figure. Default: False
     remove_dip : bool, optional
       If :const:`True`, remove the dipole+monopole
     remove_mono : bool, optional
       If :const:`True`, remove the monopole
     gal_cut : float, scalar, optional
-      Symmetric galactic cut for the dipole/monopole fit.
-      Removes points in latitude range [-gal_cut, +gal_cut]
+      Symmetric galactic cut for the dipole/monopole fit. Removes points in
+      latitude range [-gal_cut, +gal_cut]
     kwargs : dict
         any leftover arguments will be passed to pcolormesh
     """
@@ -406,7 +409,7 @@ def projview(
             + " ***"
         )
 
-    # Create the figure
+    # Create the figure, this method is inspired by the Mollview approach
     if not return_only_data:  # supress figure creation when only dumping the data
         if not (hold or reuse_axes) and sub==111:
             fig = plt.figure(fig, figsize=(
@@ -611,23 +614,19 @@ def projview(
     # colorbar
     if projection_type == "cart":
         ax.set_aspect(1)
-    extend = "neither"
-    if min > np.min(m):
-        extend = "min"
-    if max < np.max(m):
-        extend = "max"
-    if min > np.min(m) and max < np.max(m):
-        extend = "both"
-    if cbar_ticks is None:
-        cbar_ticks = [min, max]
+    
     if cbar:
-        extend = "neither"
-        if min > np.min(m):
-            extend = "min"
-        if max < np.max(m):
-            extend = "max"
-        if min > np.min(m) and max < np.max(m):
-            extend = "both"
+        if cbar_ticks is None:
+            cbar_ticks = [min, max]
+
+        if extend is None:
+            extend = "neither"
+            if min > np.min(m):
+                extend = "min"
+            if max < np.max(m):
+                extend = "max"
+            if min > np.min(m) and max < np.max(m):
+                extend = "both"
 
         # For preserving automatic tickmarkers
         ticks = None if show_tickmarkers else cbar_ticks
@@ -672,6 +671,7 @@ def projview(
 
         # workaround for issue with viewers, see colorbar docstring
         cb.solids.set_edgecolor("face")
+
     ax.set_xlabel(xlabel, fontsize=fontsize_defaults["xlabel"], fontname=fontname)
     ax.set_ylabel(ylabel, fontsize=fontsize_defaults["ylabel"], fontname=fontname)
 
