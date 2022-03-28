@@ -509,7 +509,7 @@ def projview(
                 min = m[w].min()
             if max is None:
                 max = m[w].max()
-        cm, nn = get_color_table(min, max, m[w], cmap=cmap, norm=norm, linthresh=linthresh)
+        cm, nn = get_color_table(min, max, m[w], cmap=cmap, norm=norm, linthresh=linthresh, linscale=0.1, base=10)
         grid_pix = ang2pix(nside, THETA, PHI, nest=nest)
         grid_map = m[grid_pix]
 

@@ -867,7 +867,7 @@ class HpxAzimuthalAxes(AzimuthalAxes):
 
 
 def get_color_table(
-    vmin, vmax, val, cmap=None, norm=None, linthresh=1, base=10, linscale=1, badcolor="gray", bgcolor="white"
+    vmin, vmax, val, cmap=None, norm=None, linthresh=1, base=10, linscale=0.1, badcolor="gray", bgcolor="white"
 ):
     # Create color table
     newcmap = create_colormap(cmap, badcolor=badcolor, bgcolor=bgcolor)
