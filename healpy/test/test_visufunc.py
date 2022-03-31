@@ -108,3 +108,15 @@ class TestNoCrash(unittest.TestCase):
         assert cmap._rgba_bad == color
         assert cmap._rgba_over == color
         assert cmap._rgba_under == color
+
+    def test_reuse_axes(self):
+        cartview(self.m)
+        cartview(self.m, reuse_axes=True)
+        mollview(self.m)
+        mollview(self.m, reuse_axes=True)
+        gnomview(self.m)
+        gnomview(self.m, reuse_axes=True)
+        orthview(self.m)
+        orthview(self.m, reuse_axes=True)
+        azeqview(self.m)
+        azeqview(self.m, reuse_axes=True)

@@ -492,12 +492,13 @@ def gnomview(
             1.0 / ncols - margins[2] - margins[0],
             1.0 / nrows - margins[3] - margins[1],
         )
-    extent = (
-        extent[0] + margins[0],
-        extent[1] + margins[1],
-        extent[2] - margins[2] - margins[0],
-        extent[3] - margins[3] - margins[1],
-    )
+    if not reuse_axes:
+        extent = (
+            extent[0] + margins[0],
+            extent[1] + margins[1],
+            extent[2] - margins[2] - margins[0],
+            extent[3] - margins[3] - margins[1],
+        )
     # f=pylab.figure(fig,figsize=(5.5,6))
 
     # Starting to draw : turn interactive off
@@ -787,12 +788,13 @@ def cartview(
             1.0 / ncols - margins[2] - margins[0],
             1.0 / nrows - margins[3] - margins[1],
         )
-    extent = (
-        extent[0] + margins[0],
-        extent[1] + margins[1],
-        extent[2] - margins[2] - margins[0],
-        extent[3] - margins[3] - margins[1],
-    )
+    if not reuse_axes:
+        extent = (
+            extent[0] + margins[0],
+            extent[1] + margins[1],
+            extent[2] - margins[2] - margins[0],
+            extent[3] - margins[3] - margins[1],
+        )
 
     # f=pylab.figure(fig,figsize=(5.5,6))
     # Starting to draw : turn interactive off
