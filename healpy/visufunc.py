@@ -198,10 +198,14 @@ def mollview(
 
     if not (hold or sub or reuse_axes):
         f = pylab.figure(fig, figsize=(8.5, 5.4))
-        extent = (0.02, 0.05, 0.96, 0.9)
+        if not margins:
+            margins = (0.02, 0.05, 0.02, 0.05)
+        extent = (0.0, 0.0, 1.0, 1.0)
     elif hold:
         f = pylab.gcf()
         left, bottom, right, top = np.array(f.gca().get_position()).ravel()
+        if not margins:
+            margins = (0.0, 0.0, 0.0, 0.0)
         extent = (left, bottom, right - left, top - bottom)
         f.delaxes(f.gca())
     elif reuse_axes:
@@ -218,19 +222,18 @@ def mollview(
         if not margins:
             margins = (0.01, 0.0, 0.0, 0.02)
         extent = (
-            c * 1.0 / ncols + margins[0],
-            1.0 - (r + 1) * 1.0 / nrows + margins[1],
-            1.0 / ncols - margins[2] - margins[0],
-            1.0 / nrows - margins[3] - margins[1],
+            c * 1.0 / ncols,
+            1.0 - (r + 1) * 1.0 / nrows,
+            1.0 / ncols,
+            1.0 / nrows,
         )
+    if not reuse_axes:
         extent = (
             extent[0] + margins[0],
             extent[1] + margins[1],
             extent[2] - margins[2] - margins[0],
             extent[3] - margins[3] - margins[1],
         )
-        # extent = (c*1./ncols, 1.-(r+1)*1./nrows,1./ncols,1./nrows)
-    # f=pylab.figure(fig,figsize=(8.5,5.4))
 
     # Starting to draw : turn interactive off
     wasinteractive = pylab.isinteractive()
@@ -487,10 +490,10 @@ def gnomview(
         if not margins:
             margins = (0.01, 0.0, 0.0, 0.02)
         extent = (
-            c * 1.0 / ncols + margins[0],
-            1.0 - (r + 1) * 1.0 / nrows + margins[1],
-            1.0 / ncols - margins[2] - margins[0],
-            1.0 / nrows - margins[3] - margins[1],
+            c * 1.0 / ncols,
+            1.0 - (r + 1) * 1.0 / nrows,
+            1.0 / ncols,
+            1.0 / nrows,
         )
     if not reuse_axes:
         extent = (
@@ -783,10 +786,10 @@ def cartview(
         if not margins:
             margins = (0.01, 0.0, 0.0, 0.02)
         extent = (
-            c * 1.0 / ncols + margins[0],
-            1.0 - (r + 1) * 1.0 / nrows + margins[1],
-            1.0 / ncols - margins[2] - margins[0],
-            1.0 / nrows - margins[3] - margins[1],
+            c * 1.0 / ncols,
+            1.0 - (r + 1) * 1.0 / nrows,
+            1.0 / ncols,
+            1.0 / nrows,
         )
     if not reuse_axes:
         extent = (
@@ -1033,10 +1036,14 @@ def orthview(
 
     if not (hold or sub or reuse_axes):
         f = pylab.figure(fig, figsize=(8.5, 5.4))
-        extent = (0.02, 0.05, 0.96, 0.9)
+        if not margins:
+            margins = (0.02, 0.05, 0.02, 0.05)
+        extent = (0.0, 0.0, 1.0, 1.0)
     elif hold:
         f = pylab.gcf()
         left, bottom, right, top = np.array(f.gca().get_position()).ravel()
+        if not margins:
+            margins = (0.0, 0.0, 0.0, 0.0)
         extent = (left, bottom, right - left, top - bottom)
         f.delaxes(f.gca())
     elif reuse_axes:
@@ -1053,19 +1060,18 @@ def orthview(
         if not margins:
             margins = (0.01, 0.0, 0.0, 0.02)
         extent = (
-            c * 1.0 / ncols + margins[0],
-            1.0 - (r + 1) * 1.0 / nrows + margins[1],
-            1.0 / ncols - margins[2] - margins[0],
-            1.0 / nrows - margins[3] - margins[1],
+            c * 1.0 / ncols,
+            1.0 - (r + 1) * 1.0 / nrows,
+            1.0 / ncols,
+            1.0 / nrows,
         )
+    if not reuse_axes:
         extent = (
             extent[0] + margins[0],
             extent[1] + margins[1],
             extent[2] - margins[2] - margins[0],
             extent[3] - margins[3] - margins[1],
         )
-        # extent = (c*1./ncols, 1.-(r+1)*1./nrows,1./ncols,1./nrows)
-    # f=pylab.figure(fig,figsize=(8.5,5.4))
 
     # Starting to draw : turn interactive off
     wasinteractive = pylab.isinteractive()
@@ -1308,10 +1314,14 @@ def azeqview(
 
     if not (hold or sub or reuse_axes):
         f = pylab.figure(fig, figsize=(8.5, 5.4))
-        extent = (0.02, 0.05, 0.96, 0.9)
+        if not margins:
+            margins = (0.02, 0.05, 0.02, 0.05)
+        extent = (0.0, 0.0, 1.0, 1.0)
     elif hold:
         f = pylab.gcf()
         left, bottom, right, top = np.array(f.gca().get_position()).ravel()
+        if not margins:
+            margins = (0.0, 0.0, 0.0, 0.0)
         extent = (left, bottom, right - left, top - bottom)
         f.delaxes(f.gca())
     elif reuse_axes:
@@ -1328,19 +1338,18 @@ def azeqview(
         if not margins:
             margins = (0.01, 0.0, 0.0, 0.02)
         extent = (
-            c * 1.0 / ncols + margins[0],
-            1.0 - (r + 1) * 1.0 / nrows + margins[1],
-            1.0 / ncols - margins[2] - margins[0],
-            1.0 / nrows - margins[3] - margins[1],
+            c * 1.0 / ncols,
+            1.0 - (r + 1) * 1.0 / nrows,
+            1.0 / ncols,
+            1.0 / nrows,
         )
+    if not reuse_axes:
         extent = (
             extent[0] + margins[0],
             extent[1] + margins[1],
             extent[2] - margins[2] - margins[0],
             extent[3] - margins[3] - margins[1],
         )
-        # extent = (c*1./ncols, 1.-(r+1)*1./nrows,1./ncols,1./nrows)
-    # f=pylab.figure(fig,figsize=(8.5,5.4))
 
     # Starting to draw : turn interactive off
     wasinteractive = pylab.isinteractive()
