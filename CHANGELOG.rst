@@ -1,5 +1,8 @@
 Unreleased
 
+* Fixed double application of `margins` in visualization functions when using subplot syntax and implemented `margins` parameter for `mollview`, `orthview`, and `azeqview` when subplot syntax is not used <https://github.com/healpy/healpy/pull/757>
+* Fixed `reuse_axes=True` for `cartview` and `gnomview` <https://github.com/healpy/healpy/pull/755>
+
 Release 1.15.2 24 January 2022, included in HEALPix 3.8.1
 
 * Fix the ABI version signature of the C++ sources <https://github.com/healpy/healpy/pull/746>
