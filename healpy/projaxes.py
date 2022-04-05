@@ -18,6 +18,7 @@
 #  For more information about Healpy, see http://code.google.com/p/healpy
 #
 import logging
+
 log = logging.getLogger("healpy")
 from astropy.utils.decorators import deprecated_renamed_argument
 from . import projector as P
@@ -77,7 +78,7 @@ class SphericalProjAxes(matplotlib.axes.Axes):
         self.set_xlim(xmin, xmax)
         self.set_ylim(ymin, ymax)
         dx, dy = self.proj.ang2xy(pi / 2.0, 1.0 * dtor, direct=True)
-        self._segment_threshold = 16.0 * np.sqrt(dx ** 2 + dy ** 2)
+        self._segment_threshold = 16.0 * np.sqrt(dx**2 + dy**2)
         self._segment_step_rad = 0.1 * pi / 180
         self._do_border = True
         self._gratdef = {}
@@ -548,14 +549,10 @@ class SphericalProjAxes(matplotlib.axes.Axes):
         if u_mmax:
             mmax = u_pmax
         log.warning(
-            "{0} {1} {2} {3}".format(
-                pmin / dtor, pmax / dtor, mmin / dtor, mmax / dtor
-            )
+            "{0} {1} {2} {3}".format(pmin / dtor, pmax / dtor, mmin / dtor, mmax / dtor)
         )
         if not kwds.pop("force", False):
-            dpar, dmer = self._get_interv_graticule(
-                pmin, pmax, dpar, mmin, mmax, dmer
-            )
+            dpar, dmer = self._get_interv_graticule(pmin, pmax, dpar, mmin, mmax, dmer)
         theta_list = np.around(np.arange(pmin, pmax + 0.5 * dpar, dpar) / dpar) * dpar
         phi_list = np.around(np.arange(mmin, mmax + 0.5 * dmer, dmer) / dmer) * dmer
         theta = np.arange(
@@ -644,7 +641,7 @@ class SphericalProjAxes(matplotlib.axes.Axes):
             x = d / n
             y = nn * x
             ex = np.floor(np.log10(y))
-            z = np.around(y / 10 ** ex) * 10 ** ex / nn
+            z = np.around(y / 10**ex) * 10**ex / nn
             if arcmin:
                 z = 1.0 / np.around(60.0 / z)
             return z
@@ -867,9 +864,17 @@ class HpxAzimuthalAxes(AzimuthalAxes):
 #   http://matplotlib.org/examples/pylab_examples/custom_cmap.html
 
 
-
 def get_color_table(
-    vmin, vmax, val, cmap=None, norm=None, linthresh=1, base=10, linscale=1, badcolor="gray", bgcolor="white"
+    vmin,
+    vmax,
+    val,
+    cmap=None,
+    norm=None,
+    linthresh=1,
+    base=10,
+    linscale=0.1,
+    badcolor="gray",
+    bgcolor="white",
 ):
     # Create color table
     newcmap = create_colormap(cmap, badcolor=badcolor, bgcolor=bgcolor)
@@ -877,9 +882,19 @@ def get_color_table(
         if norm.lower().startswith("log"):
             norm = LogNorm2(clip=False)
         elif norm.lower().startswith("symlog2"):
-            norm = matplotlib.colors.FuncNorm((symlog_forward,symlog_backward),vmin=vmin, vmax=vmax, clip=True)
+            norm = matplotlib.colors.FuncNorm(
+                (
+                    symlog_forward,
+                    symlog_backward,
+                ),
+                vmin=vmin,
+                vmax=vmax,
+                clip=True,
+            )
         elif norm.lower().startswith("symlog"):
-            norm = matplotlib.colors.SymLogNorm(clip=True, linthresh=linthresh, linscale=linscale, base=base)
+            norm = matplotlib.colors.SymLogNorm(
+                clip=True, linthresh=linthresh, linscale=linscale, base=base
+            )
         elif norm.lower().startswith("hist"):
             norm = HistEqNorm(clip=False)
         else:
@@ -893,19 +908,21 @@ def get_color_table(
 
     return newcmap, norm
 
-def symlog_forward(m,linthresh=1.0):
+
+def symlog_forward(m, linthresh=1.0):
     """
     Alternative symmetric logarithmic function used in Planck
     """
-    # Extra fact of 2 ln 10 makes symlog(m) = m in linear regime
-    x = m / linthresh / (2 * np.log(10))
+    x = m / linthresh
     return np.log10(0.5 * (x + np.sqrt(4.0 + x * x)))
 
-def symlog_backward(y,linthresh=1.0):
+
+def symlog_backward(y, linthresh=1.0):
     z = 10**y
-    x = ((z**2-1)/z)
-    m = 2*linthresh*np.log(10)*x
+    x = (z**2 - 1) / z
+    m = linthresh * x
     return m
+
 
 def create_colormap(cmap, badcolor="gray", bgcolor="white"):
     """Create a new colormap with specified bad/background colors.
@@ -920,15 +937,15 @@ def create_colormap(cmap, badcolor="gray", bgcolor="white"):
         color for background (passed to set_under)
     """
     if type(cmap) == str:
-        if cmap=="planck":
+        if cmap == "planck":
             cmap_path = os.path.join(DATAPATH, "planck_cmap.dat")
             planck_cmap = np.loadtxt(cmap_path) / 255.0
             cmap0 = matplotlib.colors.ListedColormap(planck_cmap, "planck")
-        elif cmap=="planck_log":
+        elif cmap == "planck_log":
             cmap_path = os.path.join(DATAPATH, "planck_cmap_logscale.dat")
             planck_log_cmap = np.loadtxt(cmap_path) / 255.0
             cmap0 = matplotlib.colors.ListedColormap(planck_log_cmap, "planck_log")
-        elif cmap=="wmap":
+        elif cmap == "wmap":
             cmap_path = os.path.join(DATAPATH, "wmap_cmap.dat")
             wmap_cmap = np.loadtxt(cmap_path) / 255.0
             cmap0 = matplotlib.colors.ListedColormap(wmap_cmap, "wmap")
@@ -1124,9 +1141,6 @@ class HistEqNorm(matplotlib.colors.Normalize):
         return yy
 
 
-
-
-
 class LogNorm2(matplotlib.colors.Normalize):
     """
     Normalize a given value to the 0-1 range on a log scale
@@ -1168,7 +1182,7 @@ class LogNorm2(matplotlib.colors.Normalize):
         return result
 
     def autoscale_None(self, A):
-        " autoscale only None-valued vmin or vmax"
+        "autoscale only None-valued vmin or vmax"
         if self.vmin is None or self.vmax is None:
             val = np.ma.masked_where(np.isinf(A.data), A)
             matplotlib.colors.Normalize.autoscale_None(self, val)
@@ -1183,7 +1197,6 @@ class LogNorm2(matplotlib.colors.Normalize):
             return vmin * np.ma.power((vmax / vmin), val)
         else:
             return vmin * np.pow((vmax / vmin), value)
-
 
 
 ##################################################################
@@ -1232,7 +1245,7 @@ class LinNorm2(matplotlib.colors.Normalize):
         return result
 
     def autoscale_None(self, A):
-        " autoscale only None-valued vmin or vmax"
+        "autoscale only None-valued vmin or vmax"
         if self.vmin is None or self.vmax is None:
             val = np.ma.masked_where(np.isinf(A.data), A)
             matplotlib.colors.Normalize.autoscale_None(self, val)

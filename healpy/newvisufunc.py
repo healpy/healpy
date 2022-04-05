@@ -11,7 +11,7 @@ import warnings
 
 
 class ThetaFormatterCounterclockwisePhi(GeoAxes.ThetaFormatter):
-    """Convert tick labels from rads to degs and shifts labelling from -180|-90|0|90|180 to conterclockwise periodic 180|90|0|270|180 """
+    """Convert tick labels from rads to degs and shifts labelling from -180|-90|0|90|180 to conterclockwise periodic 180|90|0|270|180"""
 
     def __call__(self, x, pos=None):
         if x != 0:
@@ -22,7 +22,7 @@ class ThetaFormatterCounterclockwisePhi(GeoAxes.ThetaFormatter):
 
 
 class ThetaFormatterClockwisePhi(GeoAxes.ThetaFormatter):
-    """Convert tick labels from rads to degs and shifts labelling from -180|-90|0|90|180 to clockwise periodic 180|270|0|90|180 """
+    """Convert tick labels from rads to degs and shifts labelling from -180|-90|0|90|180 to clockwise periodic 180|270|0|90|180"""
 
     def __call__(self, x, pos=None):
 
@@ -33,7 +33,7 @@ class ThetaFormatterClockwisePhi(GeoAxes.ThetaFormatter):
 
 
 class ThetaFormatterSymmetricPhi(GeoAxes.ThetaFormatter):
-    """Just convert phi ticks from rad to degs and keep the true -180|-90|0|90|180 """
+    """Just convert phi ticks from rad to degs and keep the true -180|-90|0|90|180"""
 
     def __call__(self, x, pos=None):
         return super(ThetaFormatterSymmetricPhi, self).__call__(x, pos)
@@ -77,11 +77,11 @@ def projview(
     cbar=True,
     cmap="viridis",
     norm=None,
-    linthresh=1,
+    norm_dict=None,
     graticule=False,
     graticule_labels=False,
     rot_graticule=False,
-    graticule_coord = None,
+    graticule_coord=None,
     override_rot_graticule_properties=None,
     return_only_data=False,
     projection_type="mollweide",
@@ -108,7 +108,7 @@ def projview(
     invRot=True,
     sub=111,
     reuse_axes=False,
-    margins= None,
+    margins=None,
     hold=False,
     remove_dip=False,
     remove_mono=False,
@@ -168,10 +168,18 @@ def projview(
     cmap : str, optional
         Specify the colormap. default: Viridis
     norm : {'hist', 'log', 'symlog', 'symlog2', None}
-      Color normalization, hist= histogram equalized color mapping, log=
-      logarithmic color mapping, default: None (linear color mapping)
-    linthresh : float, optional
-        Linear threshold in symlog normalization default: 1
+      Color normalization:
+      hist = histogram equalized color mapping.
+      log = logarithmic color mapping.
+      symlog = symmetric logarithmic, linear between -linthresh and linthresh.
+      symlog2 = similar to symlog, used for plack log colormap.
+      default: None (linear color mapping)
+    norm_dict : dict, optional
+        Parameters for normalization:
+        default is set to {"linthresh": 1, "base": 10, "linscale": 0.1}
+        where linthresh determines the linear regime of symlog norm,
+        and linscale sets the size of the linear regime on the cbar.
+        default: None
     graticule : bool
       add graticule
     graticule_labels : bool
@@ -235,8 +243,7 @@ def projview(
       default: None
     extend : str, optional
       Whether to extend the colorbar to mark where min or max tick is less than
-      the min or max of the data.
-      Options are "min", "max", "neither", or "both"
+      the min or max of the data. Options are "min", "max", "neither", or "both"
     invRot : bool
       invert rotation
     sub : int, scalar or sequence, optional
@@ -266,18 +273,21 @@ def projview(
     geographic_projections = ["aitoff", "hammer", "lambert", "mollweide"]
 
     # Set min and max values if ticks are specified and min and max are not
-    if min is None and cbar_ticks is not None: min = np.min(cbar_ticks)
-    if max is None and cbar_ticks is not None: max = np.max(cbar_ticks)
+    if min is None and cbar_ticks is not None:
+        min = np.min(cbar_ticks)
+    if max is None and cbar_ticks is not None:
+        max = np.max(cbar_ticks)
+
+    # Update values for symlog normalization if specified
+    norm_dict_defaults = {"linthresh": 1, "base": 10, "linscale": 0.1}
+    if norm_dict is not None:
+        norm_dict_defaults = update_dictionary(norm_dict_defaults, norm_dict)
 
     # Remove monopole and dipole
     if remove_dip:
-        m = remove_dipole(
-            m, gal_cut=gal_cut, nest=nest, copy=True
-            )
+        m = remove_dipole(m, gal_cut=gal_cut, nest=nest, copy=True)
     elif remove_mono:
-        m = remove_monopole(
-            m, gal_cut=gal_cut, nest=nest, copy=True
-            )
+        m = remove_monopole(m, gal_cut=gal_cut, nest=nest, copy=True)
 
     # do this to find how many decimals are in the colorbar labels, so that the padding in the vertical cbar can done properly
     def find_number_of_decimals(number):
@@ -307,7 +317,6 @@ def projview(
         lpad = -9 * decs
 
     ratio = 0.63
-    
     custom_width = width
     if projection_type == "3d":
         if cb_orientation == "vertical":
@@ -358,13 +367,21 @@ def projview(
             width = 12
 
     # If width was passed as an input argument
-    if custom_width is not None: width = custom_width
+    if custom_width is not None:
+        width = custom_width
 
     if cb_orientation == "vertical":
         # If using rotated ticklabels, pad less.
-        if override_plot_properties is not None and "vertical_tick_rotation" in override_plot_properties:
-            lpad = 4 if override_plot_properties["vertical_tick_rotation"] != 90 else lpad
-
+        if (
+            override_plot_properties is not None
+            and "vertical_tick_rotation" in override_plot_properties
+        ):
+            lpad = (
+                4 if override_plot_properties["vertical_tick_rotation"] != 90 else lpad
+            )
+        if title is not None:
+            lpad += 8
+            print("padding")
 
     # pass the default settings to the plot_properties dictionary
     plot_properties = {
@@ -384,7 +401,7 @@ def projview(
         plot_properties = update_dictionary(plot_properties, override_plot_properties)
         warnings.warn("\n *** New plot properies: " + str(plot_properties) + " ***")
 
-    g_col="grey" if graticule_color is None else graticule_color
+    g_col = "grey" if graticule_color is None else graticule_color
     rot_graticule_properties = {
         "g_linestyle": "-",
         "g_color": g_col,
@@ -411,11 +428,16 @@ def projview(
 
     # Create the figure, this method is inspired by the Mollview approach
     if not return_only_data:  # supress figure creation when only dumping the data
-        if not (hold or reuse_axes) and sub==111:
-            fig = plt.figure(fig, figsize=(
-                plot_properties["figure_width"],
-                (plot_properties["figure_width"] * plot_properties["figure_size_ratio"]),
-            ))
+        if not (hold or reuse_axes) and sub == 111:
+            fig = plt.figure(
+                figsize=(
+                    plot_properties["figure_width"],
+                    (
+                        plot_properties["figure_width"]
+                        * plot_properties["figure_size_ratio"]
+                    ),
+                ),
+            )
             extent = (0.02, 0.05, 0.96, 0.9)
         elif hold:
             fig = plt.gcf()
@@ -430,14 +452,22 @@ def projview(
             else:
                 nrows, ncols, idx = sub // 100, (sub % 100) // 10, (sub % 10)
             if idx < 1 or idx > ncols * nrows:
-                raise ValueError("Wrong values for sub: %d, %d, %d" % (nrows, ncols, idx))
+                raise ValueError(
+                    "Wrong values for sub: %d, %d, %d" % (nrows, ncols, idx)
+                )
 
             if not plt.get_fignums():
                 # Scale height depending on subplots
-                fig = plt.figure(fig, figsize=(
-                    plot_properties["figure_width"],
-                   (plot_properties["figure_width"]*plot_properties["figure_size_ratio"])*(nrows/ncols),
-                ))
+                fig = plt.figure(
+                    figsize=(
+                        plot_properties["figure_width"],
+                        (
+                            plot_properties["figure_width"]
+                            * plot_properties["figure_size_ratio"]
+                        )
+                        * (nrows / ncols),
+                    ),
+                )
             else:
                 fig = plt.gcf()
 
@@ -462,23 +492,27 @@ def projview(
             )
             """
         # FIXME: make a more general axes creation that works also with subplots
-        #ax = fig.add_axes(extent, projection=projection_type)
+        # ax = fig.add_axes(extent, projection=projection_type)
         if projection_type == "cart":
             ax = fig.add_subplot(sub)
         else:
             ax = fig.add_subplot(sub, projection=projection_type)
-        
 
     # Parameters for subplots
-    left=0.02
-    right=0.98
-    top=0.95
-    bottom=0.05
+    left = 0.02
+    right = 0.98
+    top = 0.95
+    bottom = 0.05
 
     # end if not
     if graticule and graticule_labels:
-        left+=0.02
-    plt.subplots_adjust(left=left, right=right, top=top, bottom=bottom,)
+        left += 0.02
+    plt.subplots_adjust(
+        left=left,
+        right=right,
+        top=top,
+        bottom=bottom,
+    )
 
     ysize = xsize // 2
     theta = np.linspace(np.pi, 0, ysize)
@@ -509,7 +543,15 @@ def projview(
                 min = m[w].min()
             if max is None:
                 max = m[w].max()
-        cm, nn = get_color_table(min, max, m[w], cmap=cmap, norm=norm, linthresh=linthresh, linscale=0.1, base=10)
+
+        cm, nn = get_color_table(
+            min,
+            max,
+            m[w],
+            cmap=cmap,
+            norm=norm,
+            **norm_dict_defaults,
+        )
         grid_pix = ang2pix(nside, THETA, PHI, nest=nest)
         grid_map = m[grid_pix]
 
@@ -525,7 +567,7 @@ def projview(
                 rasterized=True,
                 cmap=cm,
                 shading="auto",
-                **kwargs
+                **kwargs,
             )
         elif projection_type == "3d":  # test for 3d plot
             LONGITUDE, LATITUDE = np.meshgrid(longitude, latitude)
@@ -536,11 +578,11 @@ def projview(
                 cmap=cm,
                 norm=nn,
                 rasterized=True,
-                **kwargs
+                **kwargs,
             )
     # graticule
     if rot_graticule or graticule_coord is not None:
-        graticule_labels=False
+        graticule_labels = False
 
     if rot_graticule or graticule_coord is None:
         if graticule_color is None:
@@ -573,7 +615,9 @@ def projview(
         elif phi_convention == "symmetrical":
             xtick_formatter = ThetaFormatterSymmetricPhi(longitude_grid_spacing)
 
-        ax.xaxis.set_major_formatter(xtick_formatter, )
+        ax.xaxis.set_major_formatter(
+            xtick_formatter,
+        )
         ax.yaxis.set_major_formatter(ThetaFormatterTheta(latitude_grid_spacing))
 
         if custom_xtick_labels is not None:
@@ -595,12 +639,11 @@ def projview(
                     + " y-tick labels!. No re-labelling done."
                 )
 
-
     if not graticule or not graticule_labels:
         # remove longitude and latitude labels
         ax.xaxis.set_ticklabels([])
         ax.yaxis.set_ticklabels([])
-        ax.tick_params(axis=u"both", which=u"both", length=0)
+        ax.tick_params(axis="both", which="both", length=0)
 
     ax.set_title(title, fontsize=fontsize_defaults["title"], fontname=fontname)
     # tick font size
@@ -614,7 +657,7 @@ def projview(
     # colorbar
     if projection_type == "cart":
         ax.set_aspect(1)
-    
+
     if cbar:
         if cbar_ticks is None:
             cbar_ticks = [min, max]
@@ -644,29 +687,51 @@ def projview(
         # Hide all tickslabels not in tick variable. Do not delete tick-markers
         if show_tickmarkers:
             ticks = list(set(cb.get_ticks()) | set(cbar_ticks))
-            labels = [format%tick if tick in cbar_ticks else "" for tick in ticks]
+            labels = [format % tick if tick in cbar_ticks else "" for tick in ticks]
             args = np.argsort(ticks)
             ticks = list(np.array(ticks)[args])
             labels = list(np.array(labels)[args])
             cb.set_ticks(ticks, labels)
             cb.set_ticklabels(labels)
         else:
-            labels=[format%tick for tick in cbar_ticks]
-
+            labels = [format % tick for tick in cbar_ticks]
 
         if cb_orientation == "horizontal":
-            #labels = cb.ax.get_xticklabels() if norm is not None else labels
-            cb.ax.set_xticklabels(labels, fontname=fontname,)
+            # labels = cb.ax.get_xticklabels() if norm is not None else labels
+            cb.ax.set_xticklabels(
+                labels,
+                fontname=fontname,
+            )
 
-            cb.ax.xaxis.set_label_text(unit, fontsize=fontsize_defaults["cbar_label"], fontname=fontname)
-            cb.ax.tick_params(axis="x", labelsize=fontsize_defaults["cbar_tick_label"], direction=plot_properties["cbar_tick_direction"],)
+            cb.ax.xaxis.set_label_text(
+                unit, fontsize=fontsize_defaults["cbar_label"], fontname=fontname
+            )
+            cb.ax.tick_params(
+                axis="x",
+                labelsize=fontsize_defaults["cbar_tick_label"],
+                direction=plot_properties["cbar_tick_direction"],
+            )
             cb.ax.xaxis.labelpad = plot_properties["cbar_label_pad"]
         if cb_orientation == "vertical":
-            #labels = cb.ax.get_yticklabels() if norm is not None else labels
-            cb.ax.set_yticklabels(labels, rotation=plot_properties["vertical_tick_rotation"], va="center", fontname=fontname)
+            # labels = cb.ax.get_yticklabels() if norm is not None else labels
+            cb.ax.set_yticklabels(
+                labels,
+                rotation=plot_properties["vertical_tick_rotation"],
+                va="center",
+                fontname=fontname,
+            )
 
-            cb.ax.yaxis.set_label_text(unit, fontsize=fontsize_defaults["cbar_label"], rotation=90, fontname=fontname)
-            cb.ax.tick_params(axis="y", labelsize=fontsize_defaults["cbar_tick_label"], direction=plot_properties["cbar_tick_direction"],)
+            cb.ax.yaxis.set_label_text(
+                unit,
+                fontsize=fontsize_defaults["cbar_label"],
+                rotation=90,
+                fontname=fontname,
+            )
+            cb.ax.tick_params(
+                axis="y",
+                labelsize=fontsize_defaults["cbar_tick_label"],
+                direction=plot_properties["cbar_tick_direction"],
+            )
             cb.ax.yaxis.labelpad = plot_properties["cbar_label_pad"]
 
         # workaround for issue with viewers, see colorbar docstring
@@ -677,10 +742,11 @@ def projview(
 
     # Separate graticule coordinate rotation
     if rot_graticule or graticule_coord is not None:
-        if coord is None: coord="G" # TODO: Not implemented coordinate rotation!
+        if coord is None:
+            coord = "G"  # TODO: Not implemented coordinate rotation!
         rotated_grid_lines, where_zero = CreateRotatedGraticule(
             rot,
-            #coordtransform=coord+graticule_coord,
+            # coordtransform=coord+graticule_coord,
             t_step=rot_graticule_properties["t_step"],
             p_step=rot_graticule_properties["p_step"],
         )
@@ -694,31 +760,33 @@ def projview(
                 linewidth=linewidth,
                 linestyle=rot_graticule_properties["g_linestyle"],
                 color=rot_graticule_properties["g_color"],
-                alpha=rot_graticule_properties["g_alpha"]
+                alpha=rot_graticule_properties["g_alpha"],
             )
 
     # Top right label
-    plt.text(
-        0.975,
-        0.925,
-        rlabel,
-        ha="right",
-        va="center",
-        fontsize=fontsize_defaults["cbar_label"],
-        fontname=fontname,
-        transform=ax.transAxes,
-    )
+    if rlabel is not None:
+        plt.text(
+            0.975,
+            0.925,
+            rlabel,
+            ha="right",
+            va="center",
+            fontsize=fontsize_defaults["cbar_label"],
+            fontname=fontname,
+            transform=ax.transAxes,
+        )
     # Top left label
-    plt.text(
-        0.025,
-        0.925,
-        llabel,
-        ha="left",
-        va="center",
-        fontsize=fontsize_defaults["cbar_label"],
-        fontname=fontname,
-        transform=ax.transAxes,
-    )
+    if llabel is not None:
+        plt.text(
+            0.025,
+            0.925,
+            llabel,
+            ha="left",
+            va="center",
+            fontsize=fontsize_defaults["cbar_label"],
+            fontname=fontname,
+            transform=ax.transAxes,
+        )
 
     plt.draw()
     return ret
@@ -758,6 +826,7 @@ def newprojplot(theta, phi, fmt=None, **kwargs):
     else:
         ret = plt.plot(longitude, latitude, fmt, **kwargs)
     return ret
+
 
 def CreateRotatedGraticule(rot, t_step=30, p_step=30):
 
