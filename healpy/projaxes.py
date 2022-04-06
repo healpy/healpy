@@ -881,6 +881,8 @@ def get_color_table(
         if norm.lower().startswith("log"):
             norm = LogNorm2(clip=False)
         elif norm.lower().startswith("symlog2"):
+            global linthresh_
+            linthresh_ = linthresh
             norm = matplotlib.colors.FuncNorm(
                 (
                     symlog_forward,
@@ -908,18 +910,18 @@ def get_color_table(
     return newcmap, norm
 
 
-def symlog_forward(m, linthresh=1.0):
+def symlog_forward(m):
     """
     Alternative symmetric logarithmic function used in Planck
     """
-    x = m / linthresh
+    x = m / linthresh_
     return np.log10(0.5 * (x + np.sqrt(4.0 + x * x)))
 
 
-def symlog_backward(y, linthresh=1.0):
+def symlog_backward(y):
     z = 10**y
     x = (z**2 - 1) / z
-    m = linthresh * x
+    m = linthresh_ * x
     return m
 
 
