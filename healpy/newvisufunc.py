@@ -379,10 +379,9 @@ def projview(
             lpad = (
                 4 if override_plot_properties["vertical_tick_rotation"] != 90 else lpad
             )
-        if title is not None:
+        if title is not None: 
             lpad += 8
-            print("padding")
-
+    
     # pass the default settings to the plot_properties dictionary
     plot_properties = {
         "cbar_shrink": shrink,
@@ -492,7 +491,7 @@ def projview(
             )
             """
         # FIXME: make a more general axes creation that works also with subplots
-        # ax = fig.add_axes(extent, projection=projection_type)
+        #ax = fig.add_axes(extent, projection=projection_type)
         if projection_type == "cart":
             ax = fig.add_subplot(sub)
         else:
