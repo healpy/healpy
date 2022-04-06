@@ -24,7 +24,6 @@ from astropy.utils.decorators import deprecated_renamed_argument
 from . import projector as P
 from . import rotator as R
 from . import pixelfunc
-from .sphtfunc import DATAPATH
 import matplotlib
 import matplotlib.axes
 import matplotlib.pyplot as plt
@@ -937,18 +936,10 @@ def create_colormap(cmap, badcolor="gray", bgcolor="white"):
         color for background (passed to set_under)
     """
     if type(cmap) == str:
-        if cmap == "planck":
-            cmap_path = os.path.join(DATAPATH, "planck_cmap.dat")
-            planck_cmap = np.loadtxt(cmap_path) / 255.0
-            cmap0 = matplotlib.colors.ListedColormap(planck_cmap, "planck")
-        elif cmap == "planck_log":
-            cmap_path = os.path.join(DATAPATH, "planck_cmap_logscale.dat")
-            planck_log_cmap = np.loadtxt(cmap_path) / 255.0
-            cmap0 = matplotlib.colors.ListedColormap(planck_log_cmap, "planck_log")
-        elif cmap == "wmap":
-            cmap_path = os.path.join(DATAPATH, "wmap_cmap.dat")
-            wmap_cmap = np.loadtxt(cmap_path) / 255.0
-            cmap0 = matplotlib.colors.ListedColormap(wmap_cmap, "wmap")
+        if cmap in ["planck", "planck_log", "wmap"]:
+            datapath = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
+            cmap_path = os.path.join(datapath, f"{cmap}_cmap.dat")
+            cmap0 = matplotlib.colors.ListedColormap(np.loadtxt(cmap_path) / 255.0, cmap)
         else:
             cmap0 = matplotlib.cm.get_cmap(cmap)
     elif type(cmap) in [
