@@ -1,4 +1,5 @@
 recursive-include healpy/data *.fits
+recursive-include healpy/data *_cmap.dat
 recursive-include healpy/test/data *
 exclude healpy/test/data/ipython*
 exclude cfitsio/*pdf cfitsio/*ps cfitsio/*doc cfitsio/*tex
