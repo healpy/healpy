@@ -427,6 +427,17 @@ def projview(
 
     # Create the figure, this method is inspired by the Mollview approach
     if not return_only_data:  # supress figure creation when only dumping the data
+        if hasattr(sub, "__len__"):
+            nrows, ncols, idx = sub
+        else:
+            nrows, ncols, idx = sub // 100, (sub % 100) // 10, (sub % 10)
+        if idx < 1 or idx > ncols * nrows:
+            raise ValueError(
+                "Wrong values for sub: %d, %d, %d" % (nrows, ncols, idx)
+            )
+
+
+            
         if not (hold or reuse_axes) and sub == 111:
             fig = plt.figure(
                 figsize=(
@@ -446,14 +457,6 @@ def projview(
         elif reuse_axes:
             fig = plt.gcf()
         else:  # using subplot syntax
-            if hasattr(sub, "__len__"):
-                nrows, ncols, idx = sub
-            else:
-                nrows, ncols, idx = sub // 100, (sub % 100) // 10, (sub % 10)
-            if idx < 1 or idx > ncols * nrows:
-                raise ValueError(
-                    "Wrong values for sub: %d, %d, %d" % (nrows, ncols, idx)
-                )
 
             if not plt.get_fignums():
                 # Scale height depending on subplots
@@ -493,9 +496,9 @@ def projview(
         # FIXME: make a more general axes creation that works also with subplots
         #ax = fig.add_axes(extent, projection=projection_type)
         if projection_type == "cart":
-            ax = fig.add_subplot(sub)
+            ax = fig.add_subplot(nrows, ncols, idx)
         else:
-            ax = fig.add_subplot(sub, projection=projection_type)
+            ax = fig.add_subplot(nrows, ncols, idx, projection=projection_type)
 
     # Parameters for subplots
     left = 0.02
@@ -685,11 +688,12 @@ def projview(
 
         # Hide all tickslabels not in tick variable. Do not delete tick-markers
         if show_tickmarkers:
-            ticks = list(set(cb.get_ticks()) | set(cbar_ticks))
+            ticks = list(set(cb.get_ticks()) | set(cbar_ticks))            
+            ticks = np.sort(ticks)
+            ticks = ticks[ticks>=min]
+            ticks = ticks[ticks<=max]
             labels = [format % tick if tick in cbar_ticks else "" for tick in ticks]
-            args = np.argsort(ticks)
-            ticks = list(np.array(ticks)[args])
-            labels = list(np.array(labels)[args])
+
             cb.set_ticks(ticks, labels)
             cb.set_ticklabels(labels)
         else:
