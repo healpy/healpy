@@ -1,13 +1,15 @@
 __all__ = ["projview", "newprojplot"]
 
+import warnings
 import numpy as np
-from .pixelfunc import ang2pix, npix2nside
-from .rotator import Rotator
-from .projaxes import get_color_table
 import matplotlib.pyplot as plt
 from matplotlib.projections.geo import GeoAxes
-from matplotlib.ticker import MultipleLocator, FormatStrFormatter, AutoMinorLocator
-import warnings
+from matplotlib.ticker import MultipleLocator
+from matplotlib.colors import Colormap, Normalize
+from matplotlib import colors
+from typing import Union, Sequence
+from .rotator import Rotator
+from .pixelfunc import ang2pix, npix2nside
 
 
 class ThetaFormatterCounterclockwisePhi(GeoAxes.ThetaFormatter):
@@ -60,45 +62,196 @@ def update_dictionary(main_dict, update_dict):
             main_dict[key] = update_dict[key]
     return main_dict
 
+class DummyNorm(Normalize):
+    """ A template to generate a new Matplotlib Norm transformation
+
+    Basically you only need to derive this class and set the
+    `_transform` and `_inverse_transform` methods.
+    """
+    def _transform(self, value, out=None):
+        delta = self.vmax - self.vmin
+        return (value - self.vmin) / float(delta)
+
+    def _inverse_transform(self, value, out=None):
+        delta = self.vmax - self.vmin
+        return delta * value + self.vmin
+
+    def __call__(self, value, clip=None):
+        if clip is None:
+            clip = self.clip
+
+        # Normalize initial recipe to clean inputs
+        if clip:
+            result, is_scalar = self.process_value(np.clip(value),
+                                                   self.vmin,
+                                                   self.vmax)
+        else:
+            result, is_scalar = self.process_value(value)
+
+        resdat = result.data
+        resdat = self._transform(resdat)
+        result = np.ma.array(resdat, mask=result.mask, copy=False)
+        if is_scalar:
+            return result[0]
+        return result
+
+    def inverse(self, value):
+        result, is_scalar = self.process_value(value)
+        resdat = result.data
+        resdat = self._inverse_transform(resdat)
+        result = np.ma.array(resdat, mask=result.mask, copy=False)
+        if is_scalar:
+            return result[0]
+        return result
+
+
+class HistEq(DummyNorm):
+    """
+    Histogram equalizer normalization
+
+    Attributes
+    ----------
+    artist: Artist instance or ndarray
+        artist or image to normalize
+    bins: int, optional
+        number of bins to calculate the histogram
+    """
+    def __init__(self, artist, *args, **kwargs):
+        bins = kwargs.pop('bins', 1024)
+        super().__init__(*args, **kwargs)
+        try:
+            image = artist._A
+        except AttributeError:
+            image = artist
+        values, bins = np.histogram(image.ravel(), bins=bins)
+        centers = 0.5 * (bins[:-1] + bins[1:])
+        csum = values.cumsum()
+        self.histogram = centers, csum / csum[-1], values
+
+    def _transform(self, value, out=None):
+        return np.interp(value, self.histogram[0], self.histogram[1])
+
+    def _inverse_transform(self, value, out=None):
+        return np.interp(value, self.histogram[1], self.histogram[0])
+
+
+class Arcsinh(DummyNorm):
+    """ Arcsinh normalization """
+    def _transform(self, value, out=None):
+        delta = np.arcsinh(self.vmax) - np.arcsinh(self.vmin)
+        return (np.arcsinh(value) - np.arcsinh(self.vmin)) / float(delta)
+
+    def _inverse_transform(self, value, out=None):
+        delta = np.arcsinh(self.vmax) - np.arcsinh(self.vmin)
+        return np.sinh(delta * value + np.arcsinh(self.vmin))
+
+
+class MidpointNormalize(Normalize):
+    """ Normalize to a central point """
+    def __init__(self, vmin=None, vmax=None, midpoint=None, clip=False):
+        self.midpoint = midpoint
+        Normalize.__init__(self, vmin, vmax, clip)
+
+    def __call__(self, value, clip=None):
+        # I'm ignoring masked values and all kinds of edge cases to make a
+        # simple example...
+        x, y = [self.vmin, self.midpoint, self.vmax], [0, 0.5, 1]
+        return np.ma.masked_array(np.interp(value, x, y))
+
+
+class Sqrt(DummyNorm):
+    """ Sqrt normalization """
+    def _transform(self, value, out=None):
+        delta = np.sqrt(self.vmax) - np.sqrt(self.vmin)
+        return (np.sqrt(value) - np.sqrt(self.vmin)) / float(delta)
+
+    def _inverse_transform(self, value, out=None):
+        delta = np.power(self.vmax, 2) - np.power(self.vmin, 2)
+        return np.power(delta * value + np.power(self.vmin, 2))
+
+
+class Power(DummyNorm):
+    """ Power normalization """
+    def __init__(self, power_value=2, vmin=None, vmax=None, clip=False):
+        self.power_ = power_value
+        self.inv_power_ = 1. / power_value
+        Normalize.__init__(self, vmin, vmax, clip)
+
+    def _transform(self, value, out=None):
+        delta = np.power(self.vmax, self.power_) - np.power(self.vmin, self.power_)
+        return (np.power(value, self.power_) - np.power(self.vmin, self.power_)) / float(delta)
+
+    def _inverse_transform(self, value, out=None):
+        delta = np.power(self.vmax, self.inv_power_) - np.power(self.vmin, self.inv_power_)
+        return np.power(delta * value + np.power(self.vmin, self.inv_power_))
+
+
+def parse_norm(norm, data=None, **kwargs):
+        """ Allows one to use a string shortcut to defined the norm keyword
+        e.g.: parse_norm('log10')
+        Parameters
+        ----------
+        kwargs: dict
+            keywords given to the artist
+        Returns
+        -------
+        norm: Normalize object
+        """
+
+        mapped = {'arcsinh': Arcsinh,
+                  'log': colors.LogNorm,
+                  'log10': colors.LogNorm,
+                  'sqrt': Sqrt,
+                  'pow': Power,
+                  'histeq': HistEq,
+                  'midpoint': MidpointNormalize,
+                  }
+        if norm in (None, 'None', 'none', ''):
+            return Normalize(**kwargs)
+        try:
+            norm_ = eval(norm, mapped, colors.__dict__)
+            if isinstance(norm_, type):
+                if norm_ == HistEq:
+                    return norm_(data, **kwargs)
+                return norm_(**kwargs)
+            return norm_
+        except Exception:
+            return norm
+
 
 def projview(
-    m=None,
-    rot=None,
-    coord=None,
-    unit="",
-    xsize=1000,
-    nest=False,
-    min=None,
-    max=None,
-    flip="astro",
-    format="%g",
-    cbar=True,
-    cmap="viridis",
-    norm=None,
-    graticule=False,
-    graticule_labels=False,
-    rot_graticule=False,
-    override_rot_graticule_properties=None,
-    return_only_data=False,
-    projection_type="mollweide",
-    cb_orientation="horizontal",
-    xlabel=None,
-    ylabel=None,
-    longitude_grid_spacing=60,
-    latitude_grid_spacing=30,
-    override_plot_properties=None,
-    title=None,
-    xtick_label_color="black",
-    ytick_label_color="black",
-    graticule_color=None,
-    fontsize=None,
-    phi_convention="counterclockwise",
-    custom_xtick_labels=None,
-    custom_ytick_labels=None,
-    cbar_ticks=None,
-    invRot=True,
+    m: Union[float, np.array] = None,
+    rot: Sequence[float] = None,
+    coord: Sequence[str] = None,
+    unit: str = "",
+    xsize: int = 1000,
+    nest: bool = False,
+    norm: Union[str, Normalize] = None,
+    vmin: float = None,
+    vmax: float = None,
+    flip: str = "astro",
+    cbar: bool = True,
+    cmap: Union[str, Colormap] = "viridis",
+    graticule: bool = False,
+    graticule_labels: bool = False,
+    return_only_data: bool = False,
+    projection_type: str = "mollweide",
+    cb_orientation: str = "horizontal",
+    xlabel: str = None,
+    ylabel: str = None,
+    longitude_grid_spacing: float = 60,
+    latitude_grid_spacing: float = 30,
+    override_plot_properties: dict = None,
+    title: str = None,
+    xtick_label_color: str = "black",
+    ytick_label_color: str = "black",
+    graticule_color: str = None,
+    fontsize: dict = None,
+    phi_convention: str = "counterclockwise",
+    custom_xtick_labels: Sequence[str] = None,
+    custom_ytick_labels: Sequence[str] = None,
     **kwargs
-):
+) -> Union[Sequence, None]:
     """Plot a healpix map (given as an array) in the chosen projection.
 
     See examples of using this function in the documentation under "Other tutorials".
@@ -131,9 +284,9 @@ def projview(
       The size of the image. Default: 800
     nest : bool, optional
       If True, ordering scheme is NESTED. Default: False (RING)
-    min : float, optional
+    vmin : float, optional
       The minimum range value
-    max : float, optional
+    vmax : float, optional
       The maximum range value
     flip : {'astro', 'geo'}, optional
       Defines the convention of projection : 'astro' (default, east towards left, west towards right)
@@ -143,21 +296,20 @@ def projview(
       The format of the scale label. Default: '%g'
     cbar : bool, optional
       Display the colorbar. Default: True
-    norm : {'hist', 'log', None}
-      Color normalization, hist= histogram equalized color mapping,
-      log= logarithmic color mapping, default: None (linear color mapping)
+    norm : str, colors.Normalize or None, optional
+      Color normalization,
+      available values: 'arcsinh', 'log', 'log10', 'sqrt', 'pow', 'histeq', 'midpoint'
+      (log and log10 are base 10)
+      any colors.Normalize object is also valid
     kwargs : keywords
       any additional keyword is passed to pcolormesh
     graticule : bool
       add graticule
     graticule_labels : bool
       longitude and latitude labels
-    rot_graticule : bool
-      rotate also the graticule when rotating the map
-    override_rot_graticule_properties : dict
-      Override the following rotated graticule properties: "g_linestyle", "g_linewidth", "g_color", 
-      "g_alpha", "t_step", "p_step".
-    projection_type :  {'aitoff', 'hammer', 'lambert', 'mollweide', 'cart', '3d', 'polar'}
+    projection_type :  str
+     valid values in
+        {'aitoff', 'hammer', 'lambert', 'mollweide', 'cart', '3d', 'polar'}
       type of the plot
     cb_orientation : {'horizontal', 'vertical'}
       color bar orientation
@@ -170,31 +322,36 @@ def projview(
     latitude_grid_spacing : float
       set y axis grid spacing
     override_plot_properties : dict
-      Override the following plot properties: "cbar_shrink", "cbar_pad", "cbar_label_pad", 
-      "figure_width": width, "figure_size_ratio": ratio.
+      Override the following plot properties: "cbar_shrink", "cbar_pad",
+      "cbar_label_pad", "figure_width": width, "figure_size_ratio": ratio.
     title : str
       set title of the plot
     lcolor : str
-      change the color of the longitude tick labels, some color maps make it hard to read black tick labels
+      change the color of the longitude tick labels, some color maps make it
+      hard to read black tick labels
     fontsize:  dict
-      Override fontsize of labels: "xlabel", "ylabel", "title", "xtick_label", "ytick_label", 
-      "cbar_label", "cbar_tick_label".
+        Override fontsize of labels: "xlabel", "ylabel", "title", "xtick_label",
+        "ytick_label", "cbar_label", "cbar_tick_label".
     phi_convention : string
-      convention on x-axis (phi), 'counterclockwise' (default), 'clockwise', 'symmetrical' (phi as it is truly given)
-      if `flip` is "geo", `phi_convention` should be set to 'clockwise'.
+        convention on x-axis (phi), 'counterclockwise' (default), 'clockwise',
+        'symmetrical' (phi as it is truly given) if `flip` is "geo",
+        `phi_convention` should be set to 'clockwise'.
     custom_xtick_labels : list
-      override x-axis tick labels
+        override x-axis tick labels
     custom_ytick_labels : list
-      override y-axis tick labels
-    cbar_ticks : list
-      custom ticks on the colorbar
-    invRot : bool
-      invert rotation
+        override y-axis tick labels
     """
-
     geographic_projections = ["aitoff", "hammer", "lambert", "mollweide"]
 
-    # do this to find how many decimals are in the colorbar labels, so that the padding in the vertical cbar can done properly
+    if not m is None:
+        # auto min and max
+        if vmin is None:
+            vmin = m.min()
+        if max is None:
+            vmax = m.max()
+
+    # do this to find how many decimals are in the colorbar labels,
+    # so that the padding in the vertical cbar can done properly
     def find_number_of_decimals(number):
         try:
             return len(str(number).split(".")[1])
@@ -212,10 +369,10 @@ def projview(
         "cbar_tick_label": 12,
     }
     if fontsize is not None:
-        fontsize_defaults = update_dictionary(fontsize_defaults, fontsize)
+        fontsize_defaults.update(fontsize_defaults)
 
     # default plot settings
-    decs = np.max([find_number_of_decimals(min), find_number_of_decimals(max)])
+    decs = np.max([find_number_of_decimals(vmin), find_number_of_decimals(vmax)])
     if decs >= 3:
         lpad = -27
     else:
@@ -241,10 +398,7 @@ def projview(
         if cb_orientation == "horizontal":
             shrink = 0.6
             pad = 0.05
-            if cbar_ticks is not None:
-                lpad = 0
-            else:
-                lpad = -8
+            lpad = -8
             width = 8.5
     if projection_type == "cart":
         if cb_orientation == "vertical":
@@ -285,35 +439,37 @@ def projview(
         warnings.warn(
             "\n *** Overriding default plot properies: " + str(plot_properties) + " ***"
         )
-        plot_properties = update_dictionary(plot_properties, override_plot_properties)
+        plot_properties.update(override_plot_properties)
         warnings.warn("\n *** New plot properies: " + str(plot_properties) + " ***")
 
-    rot_graticule_properties = {
-        "g_linestyle": "-",
-        "g_color": "w",
-        "g_alpha": 0.75,
-        "g_linewidth": 0.75,
-        "t_step": 30,
-        "p_step": 30,
-    }
+    ysize = xsize // 2
+    theta = np.linspace(np.pi, 0, ysize)
+    phi = np.linspace(-np.pi, np.pi, xsize)
 
-    if override_rot_graticule_properties is not None:
-        warnings.warn(
-            "\n *** Overriding rotated graticule properies: "
-            + str(rot_graticule_properties)
-            + " ***"
-        )
-        rot_graticule_properties = update_dictionary(
-            rot_graticule_properties, override_rot_graticule_properties
-        )
-        warnings.warn(
-            "\n *** New rotated graticule properies: "
-            + str(rot_graticule_properties)
-            + " ***"
-        )
+    longitude = np.radians(np.linspace(-180, 180, xsize))
+    if flip == "astro":
+        longitude = longitude[::-1]
 
-    # Create the figure
-    if not return_only_data:  # supress figure creation when only dumping the data
+    latitude = np.radians(np.linspace(-90, 90, ysize))
+    # project the map to a rectangular matrix xsize x ysize
+    PHI, THETA = np.meshgrid(phi, theta)
+    # coord or rotation
+    if coord or rot:
+        r = Rotator(coord=coord, rot=rot, inv=True)
+        THETA, PHI = r(THETA.flatten(), PHI.flatten())
+        THETA = THETA.reshape(ysize, xsize)
+        PHI = PHI.reshape(ysize, xsize)
+
+    if m is not None:
+        nside = npix2nside(len(m))
+        grid_pix = ang2pix(nside, THETA, PHI, nest=nest)
+        grid_map = m[grid_pix]
+
+        # plot
+        if return_only_data:  # exit here when dumping the data
+            return [longitude, latitude, grid_map]
+
+        # Create the figure
 
         width = width  # 8.5
         fig = plt.figure(
@@ -330,63 +486,23 @@ def projview(
         # FIXME: make a more general axes creation that works also with subplots
         # ax = plt.gcf().add_axes((.125, .1, .9, .9), projection="mollweide")
 
-        # remove white space around the image
-        plt.subplots_adjust(left=0.02, right=0.98, top=0.95, bottom=0.05)
-    # end if not
-    if graticule and graticule_labels:
-        plt.subplots_adjust(left=0.04, right=0.98, top=0.95, bottom=0.05)
-
-    # allow callers to override the hold state by passing hold=True|False
-    # washold = ax.ishold() #  commented out
-    hold = kwargs.pop("hold", None)
-    # if hold is not None:
-    #    ax.hold(hold)
-
-    #    try:
-    ysize = xsize // 2
-    theta = np.linspace(np.pi, 0, ysize)
-    phi = np.linspace(-np.pi, np.pi, xsize)
-
-    longitude = np.radians(np.linspace(-180, 180, xsize))
-    if flip == "astro":
-        longitude = longitude[::-1]
-    if not return_only_data:
         # set property on ax so it can be used in newprojplot
         ax.healpy_flip = flip
 
-    latitude = np.radians(np.linspace(-90, 90, ysize))
-    # project the map to a rectangular matrix xsize x ysize
-    PHI, THETA = np.meshgrid(phi, theta)
-    # coord or rotation
-    if coord or rot:
-        r = Rotator(coord=coord, rot=rot, inv=invRot)
-        THETA, PHI = r(THETA.flatten(), PHI.flatten())
-        THETA = THETA.reshape(ysize, xsize)
-        PHI = PHI.reshape(ysize, xsize)
-    nside = npix2nside(len(m))
-    if not m is None:
-        w = ~(np.isnan(m) | np.isinf(m))
-        if not m is None:
-            # auto min and max
-            if min is None:
-                min = m[w].min()
-            if max is None:
-                max = m[w].max()
-        cm, nn = get_color_table(min, max, m[w], cmap=cmap, norm=norm)
-        grid_pix = ang2pix(nside, THETA, PHI, nest=nest)
-        grid_map = m[grid_pix]
+        if graticule and graticule_labels:
+            plt.subplots_adjust(left=0.04, right=0.98, top=0.95, bottom=0.05)
+    # end if not
 
-        # plot
-        if return_only_data:  # exit here when dumping the data
-            return [longitude, latitude, grid_map]
+        norm_ = parse_norm(norm, data=grid_map, vmin=vmin, vmax=vmax)
+
         if projection_type != "3d":  # test for 3d plot
             ret = plt.pcolormesh(
                 longitude,
                 latitude,
                 grid_map,
-                norm=nn,
+                norm=norm_,
                 rasterized=True,
-                cmap=cm,
+                cmap=cmap,
                 shading="auto",
                 **kwargs
             )
@@ -396,8 +512,8 @@ def projview(
                 LONGITUDE,
                 LATITUDE,
                 grid_map,
-                cmap=cm,
-                norm=nn,
+                cmap=cmap,
+                norm=norm_,
                 rasterized=True,
                 **kwargs
             )
@@ -467,27 +583,28 @@ def projview(
     ax.tick_params(
         axis="y", labelsize=fontsize_defaults["ytick_label"], colors=ytick_label_color
     )
+
     # colorbar
-    if projection_type == "cart":
-        ax.set_aspect(1)
-    extend = "neither"
-    if min > np.min(m):
-        extend = "min"
-    if max < np.max(m):
-        extend = "max"
-    if min > np.min(m) and max < np.max(m):
-        extend = "both"
-    if cbar_ticks is None:
-        cbar_ticks = [min, max]
     if cbar:
+        if projection_type == "cart":
+            ax.set_aspect(1)
+        extend = "neither"
+
+        if norm_.vmin > np.min(m):
+            extend = "min"
+        if norm_.vmax < np.max(m):
+            extend = "max"
+        if norm_.vmin > np.min(m) and norm_.vmax < np.max(m):
+            extend = "both"
+
         cb = fig.colorbar(
             ret,
             orientation=cb_orientation,
             shrink=plot_properties["cbar_shrink"],
             pad=plot_properties["cbar_pad"],
-            ticks=cbar_ticks,
             extend=extend,
         )
+
         if cb_orientation == "horizontal":
             cb.ax.xaxis.set_label_text(unit, fontsize=fontsize_defaults["cbar_label"])
             cb.ax.tick_params(axis="x", labelsize=fontsize_defaults["cbar_tick_label"])
@@ -500,33 +617,11 @@ def projview(
         cb.solids.set_edgecolor("face")
     ax.set_xlabel(xlabel, fontsize=fontsize_defaults["xlabel"])
     ax.set_ylabel(ylabel, fontsize=fontsize_defaults["ylabel"])
-    #  except:
-    #     pass
 
-    if rot_graticule == True:
-        rotated_grid_lines, where_zero = CreateRotatedGraticule(
-            rot,
-            t_step=rot_graticule_properties["t_step"],
-            p_step=rot_graticule_properties["p_step"],
-        )
-        for i, g_line in enumerate(rotated_grid_lines):
-            if i in where_zero:
-                linewidth = rot_graticule_properties["g_linewidth"] * 2.5
-            else:
-                linewidth = rot_graticule_properties["g_linewidth"]
-            plt.plot(
-                *g_line,
-                linewidth=linewidth,
-                linestyle=rot_graticule_properties["g_linestyle"],
-                color=rot_graticule_properties["g_color"],
-                alpha=rot_graticule_properties["g_alpha"]
-            )
-
-    plt.draw()
     return ret
 
 
-def newprojplot(theta, phi, fmt=None, **kwargs):
+def newprojplot(theta, phi, fmt=None, lonlat=True, ax=None, **kwargs):
     """newprojplot is a wrapper around :func:`matplotlib.Axes.plot` to support
     colatitude theta and longitude phi and take into account the longitude convention
     (see the `flip` keyword of :func:`projview`)
@@ -542,6 +637,8 @@ def newprojplot(theta, phi, fmt=None, **kwargs):
       Coordinates of point to plot in radians.
     fmt : str
       A format string (see :func:`matplotlib.Axes.plot` for details)
+    lonlat : bool
+        Assume theta and phi to longitude and latitude in degrees.
 
     Notes
     -----
@@ -549,10 +646,16 @@ def newprojplot(theta, phi, fmt=None, **kwargs):
     """
     import matplotlib.pyplot as plt
 
-    ax = plt.gca()
+    if ax is None:
+        ax = plt.gca()
+
     flip = getattr(ax, "healpy_flip", "astro")
 
-    longitude, latitude = lonlat(theta, phi)
+    if lonlat:
+        longitude, latitude = np.deg2rad(np.array(theta)), np.deg2rad(np.array(phi))
+    else:
+        longitude, latitude = lonlat(theta, phi)
+
     if flip == "astro":
         longitude = longitude * -1
     if fmt is None:
@@ -560,6 +663,44 @@ def newprojplot(theta, phi, fmt=None, **kwargs):
     else:
         ret = plt.plot(longitude, latitude, fmt, **kwargs)
     return ret
+
+
+def newprojtext(theta, phi, text, lonlat=True, ax=None, **kwargs):
+    """newprojplot is a wrapper around :func:`matplotlib.Axes.plot` to support
+    colatitude theta and longitude phi and take into account the longitude convention
+    (see the `flip` keyword of :func:`projview`)
+
+    You can call this function as::
+
+       newprojplot(theta, phi)        # plot a line going through points at coord (theta, phi)
+       newprojplot(theta, phi, 'bo')  # plot 'o' in blue at coord (theta, phi)
+
+    Parameters
+    ----------
+    theta, phi : float, array-like
+      Coordinates of point to plot in radians.
+    text: str
+        text to show
+    lonlat : bool
+        Assume theta and phi to longitude and latitude in degrees.
+
+    Notes
+    -----
+    Other keywords are passed to :func:`matplotlib.Axes.plot`.
+    """
+    import matplotlib.pyplot as plt
+
+    if ax is None:
+        ax = plt.gca()
+    flip = getattr(ax, "healpy_flip", "astro")
+
+    if lonlat:
+        longitude, latitude = np.deg2rad(np.array(theta)), np.deg2rad(np.array(phi))
+    else:
+        longitude, latitude = lonlat(theta, phi)
+    if flip == "astro":
+        longitude = longitude * -1
+    return ax.text(longitude, latitude, text, **kwargs)
 
 
 def CreateRotatedGraticule(rot, t_step=30, p_step=30):
