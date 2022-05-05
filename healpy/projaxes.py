@@ -18,6 +18,7 @@
 #  For more information about Healpy, see http://code.google.com/p/healpy
 #
 import logging
+
 log = logging.getLogger("healpy")
 from astropy.utils.decorators import deprecated_renamed_argument
 from . import projector as P
@@ -28,6 +29,7 @@ import matplotlib.axes
 import matplotlib.pyplot as plt
 import numpy as np
 import copy
+import os
 
 from ._healpy_pixel_lib import UNSEEN
 
@@ -75,7 +77,7 @@ class SphericalProjAxes(matplotlib.axes.Axes):
         self.set_xlim(xmin, xmax)
         self.set_ylim(ymin, ymax)
         dx, dy = self.proj.ang2xy(pi / 2.0, 1.0 * dtor, direct=True)
-        self._segment_threshold = 16.0 * np.sqrt(dx ** 2 + dy ** 2)
+        self._segment_threshold = 16.0 * np.sqrt(dx**2 + dy**2)
         self._segment_step_rad = 0.1 * pi / 180
         self._do_border = True
         self._gratdef = {}
@@ -546,14 +548,10 @@ class SphericalProjAxes(matplotlib.axes.Axes):
         if u_mmax:
             mmax = u_pmax
         log.warning(
-            "{0} {1} {2} {3}".format(
-                pmin / dtor, pmax / dtor, mmin / dtor, mmax / dtor
-            )
+            "{0} {1} {2} {3}".format(pmin / dtor, pmax / dtor, mmin / dtor, mmax / dtor)
         )
         if not kwds.pop("force", False):
-            dpar, dmer = self._get_interv_graticule(
-                pmin, pmax, dpar, mmin, mmax, dmer
-            )
+            dpar, dmer = self._get_interv_graticule(pmin, pmax, dpar, mmin, mmax, dmer)
         theta_list = np.around(np.arange(pmin, pmax + 0.5 * dpar, dpar) / dpar) * dpar
         phi_list = np.around(np.arange(mmin, mmax + 0.5 * dmer, dmer) / dmer) * dmer
         theta = np.arange(
@@ -642,7 +640,7 @@ class SphericalProjAxes(matplotlib.axes.Axes):
             x = d / n
             y = nn * x
             ex = np.floor(np.log10(y))
-            z = np.around(y / 10 ** ex) * 10 ** ex / nn
+            z = np.around(y / 10**ex) * 10**ex / nn
             if arcmin:
                 z = 1.0 / np.around(60.0 / z)
             return z
@@ -866,13 +864,38 @@ class HpxAzimuthalAxes(AzimuthalAxes):
 
 
 def get_color_table(
-    vmin, vmax, val, cmap=None, norm=None, badcolor="gray", bgcolor="white"
+    vmin,
+    vmax,
+    val,
+    cmap=None,
+    norm=None,
+    linthresh=1,
+    base=10,
+    linscale=0.1,
+    badcolor="gray",
+    bgcolor="white",
 ):
     # Create color table
     newcmap = create_colormap(cmap, badcolor=badcolor, bgcolor=bgcolor)
     if type(norm) is str:
         if norm.lower().startswith("log"):
             norm = LogNorm2(clip=False)
+        elif norm.lower().startswith("symlog2"):
+            global linthresh_
+            linthresh_ = linthresh
+            norm = matplotlib.colors.FuncNorm(
+                (
+                    symlog_forward,
+                    symlog_backward,
+                ),
+                vmin=vmin,
+                vmax=vmax,
+                clip=True,
+            )
+        elif norm.lower().startswith("symlog"):
+            norm = matplotlib.colors.SymLogNorm(
+                clip=True, linthresh=linthresh, linscale=linscale, base=base
+            )
         elif norm.lower().startswith("hist"):
             norm = HistEqNorm(clip=False)
         else:
@@ -885,6 +908,21 @@ def get_color_table(
     norm.autoscale_None(val)
 
     return newcmap, norm
+
+
+def symlog_forward(m):
+    """
+    Alternative symmetric logarithmic function used in Planck
+    """
+    x = m / linthresh_
+    return np.log10(0.5 * (x + np.sqrt(4.0 + x * x)))
+
+
+def symlog_backward(y):
+    z = 10**y
+    x = (z**2 - 1) / z
+    m = linthresh_ * x
+    return m
 
 
 def create_colormap(cmap, badcolor="gray", bgcolor="white"):
@@ -900,7 +938,12 @@ def create_colormap(cmap, badcolor="gray", bgcolor="white"):
         color for background (passed to set_under)
     """
     if type(cmap) == str:
-        cmap0 = matplotlib.cm.get_cmap(cmap)
+        if cmap in ["planck", "planck_log", "wmap"]:
+            datapath = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
+            cmap_path = os.path.join(datapath, f"{cmap}_cmap.dat")
+            cmap0 = matplotlib.colors.ListedColormap(np.loadtxt(cmap_path) / 255.0, cmap)
+        else:
+            cmap0 = matplotlib.cm.get_cmap(cmap)
     elif type(cmap) in [
         matplotlib.colors.LinearSegmentedColormap,
         matplotlib.colors.ListedColormap,
@@ -1091,12 +1134,6 @@ class HistEqNorm(matplotlib.colors.Normalize):
         return yy
 
 
-##################################################################
-#
-#   A normalization class to get logarithmic color table
-#
-
-
 class LogNorm2(matplotlib.colors.Normalize):
     """
     Normalize a given value to the 0-1 range on a log scale
@@ -1138,7 +1175,7 @@ class LogNorm2(matplotlib.colors.Normalize):
         return result
 
     def autoscale_None(self, A):
-        " autoscale only None-valued vmin or vmax"
+        "autoscale only None-valued vmin or vmax"
         if self.vmin is None or self.vmax is None:
             val = np.ma.masked_where(np.isinf(A.data), A)
             matplotlib.colors.Normalize.autoscale_None(self, val)
@@ -1201,7 +1238,7 @@ class LinNorm2(matplotlib.colors.Normalize):
         return result
 
     def autoscale_None(self, A):
-        " autoscale only None-valued vmin or vmax"
+        "autoscale only None-valued vmin or vmax"
         if self.vmin is None or self.vmax is None:
             val = np.ma.masked_where(np.isinf(A.data), A)
             matplotlib.colors.Normalize.autoscale_None(self, val)

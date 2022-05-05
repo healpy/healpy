@@ -444,6 +444,7 @@ setup(
     package_data={
         "healpy": [
             "data/*.fits",
+            "data/*_cmap.dat",
             "data/totcls.dat",
             "test/data/*.fits",
             "test/data/*.fits.gz",
