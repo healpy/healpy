@@ -1,5 +1,7 @@
 Unreleased
 
+* New features in `projview`: subplots, remove monopole-dipole, labels, tickmarks, graticule, Planck and WMAP colormaps <https://github.com/healpy/healpy/pull/752>
+
 Release 1.15.2 24 January 2022, included in HEALPix 3.8.1
 
 * Fix the ABI version signature of the C++ sources <https://github.com/healpy/healpy/pull/746>
