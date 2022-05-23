@@ -547,7 +547,7 @@ class SphericalProjAxes(matplotlib.axes.Axes):
             mmin = u_mmin
         if u_mmax:
             mmax = u_pmax
-        log.warning(
+        log.info(
             "{0} {1} {2} {3}".format(pmin / dtor, pmax / dtor, mmin / dtor, mmax / dtor)
         )
         if not kwds.pop("force", False):
