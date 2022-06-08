@@ -186,7 +186,12 @@ class SphericalProjAxes(matplotlib.axes.Axes):
         if alpha is not None:
             alpha_img = self.proj.projmap(alpha, vec2pix_func, rot=rot, coord=coord)
             alpha_img[alpha_img == -np.inf] = 0
-            alpha = plt.Normalize()(alpha_img)
+            # If the alpha array is binary (e.g. 0's and some other value), do
+            # not normalize it
+            if np.unique(alpha_img).size <= 2:
+                alpha = alpha_img
+            else:
+                alpha = plt.Normalize()(alpha_img)
         try:
             if vmin is None:
                 vmin = img[w].min()
