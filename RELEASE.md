@@ -9,7 +9,7 @@ We should **only update the C++ sources after HEALPix has been released**, other
 Once new version of HEALPix C++ has been released, we can update `healpixmirror` with:
 
     git svn rebase
-    git svn push
+    git push
 
 then in `healpy`:
 
