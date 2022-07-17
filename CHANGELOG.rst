@@ -1,5 +1,8 @@
 Unreleased
 
+Release 1.16.0 17 July 2022, included in HEALPix 3.8.2
+
+* Update HEALPix C++ sources to revision 1206 (just maintenance commits) <https://github.com/healpy/healpy/pull/772>
 * Do not normalize binary arrays <https://github.com/healpy/healpy/pull/767>
 * Fix unncessary log warning message in plots <https://github.com/healpy/healpy/pull/763>
 * Fixed double application of `margins` in visualization functions when using subplot syntax and implemented `margins` parameter for `mollview`, `orthview`, and `azeqview` when subplot syntax is not used <https://github.com/healpy/healpy/pull/757>
