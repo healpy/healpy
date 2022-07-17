@@ -23,7 +23,8 @@ then in `healpy`:
 
 * Review recent pull requests and update `CHANGELOG.rst`
 * Edit `healpy/version.py` and create a git tag
-* Draft a new release on Github using the same version name of the tag, add the same details added in the Changelog to the release description
+* Draft a new release on Github using the same version name of the tag, in the description just put `See [CHANGELOG.rst](./CHANGELOG.rst)` so we don't duplicate
+* Once the source `tar.gz` is uploaded to PyPI, download it and attach it to the Github release, this avoids people downloading the automatically created Github release dump which does not include the source of the submodules.
 
 ## PyPI - binary wheels, source
 
@@ -39,24 +40,9 @@ review and merge the Pull Request at <https://github.com/conda-forge/healpy-feed
 Template:
 
 Release:
-* [ ] Github: https://github.com/healpy/healpy/releases/tag/1.13.0
-* [ ] PyPI: https://pypi.org/project/healpy/1.13.0/
+* [ ] Github: https://github.com/healpy/healpy/releases/
+* [ ] PyPI: https://pypi.org/project/healpy
 * [ ] conda-forge: https://anaconda.org/conda-forge/healpy
 * [ ] wheels on PyPI for linux and Mac OS 
 
-```
-healpy-1.13.0-cp27-cp27m-macosx_10_14_x86_64.whl
-healpy-1.13.0-cp27-cp27m-manylinux1_x86_64.whl
-healpy-1.13.0-cp27-cp27mu-manylinux1_x86_64.whl
-healpy-1.13.0-cp34-cp34m-manylinux1_x86_64.whl
-healpy-1.13.0-cp35-cp35m-macosx_10_14_x86_64.whl
-healpy-1.13.0-cp35-cp35m-manylinux1_x86_64.whl
-healpy-1.13.0-cp36-cp36m-macosx_10_14_x86_64.whl
-healpy-1.13.0-cp36-cp36m-manylinux1_x86_64.whl
-healpy-1.13.0-cp37-cp37m-macosx_10_14_x86_64.whl
-healpy-1.13.0-cp37-cp37m-manylinux1_x86_64.whl
-healpy-1.13.0-cp38-cp38-macosx_10_14_x86_64.whl
-healpy-1.13.0-cp38-cp38-manylinux1_x86_64.whl
-```
-
-@zonca @DanielLenz @lpsinger @hivon @mreineck @lpsinger 
+@zonca @lpsinger @hivon @mreineck @lpsinger 
