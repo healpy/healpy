@@ -151,9 +151,6 @@ google.
 If you think you found a bug or you have install issues, open an issue on GitHub:
 https://github.com/healpy/healpy/issues
 
-For more general discussion, you can write to the healpy mailing list:
-https://groups.google.com/d/forum/healpy
-
 .. _StackOverflow: http://stackoverflow.com/questions/ask
 
 Contribute
