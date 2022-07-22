@@ -1,6 +1,10 @@
 Unreleased
 
-Release 1.16.0 17 July 2022, included in HEALPix 3.8.2
+Release 1.16.1 22 July 2022, included in HEALPix 3.8.2
+
+* Updated CFITSIO included in `healpy` to 4.1.0, necessary for compatibility with Apple ARM chips https://github.com/healpy/healpy/pull/776
+
+Release 1.16.0 17 July 2022
 
 * Update HEALPix C++ sources to revision 1206 (just maintenance commits) https://github.com/healpy/healpy/pull/772
 * Do not normalize binary arrays https://github.com/healpy/healpy/pull/767
