@@ -378,8 +378,8 @@ static void
     {
       int64 nside = *(int64*)ip1;
       if (nside!=oldnside)
-        { oldnside=nside; hb.SetNside(nside, NEST);
-        	/* ring and nest should give the same result */
+        { oldnside=nside; hb.SetNside(nside, RING);
+          /* RING and NEST should give the same result but use RING because NEST only allows power of 2 nside */
         }
       double max_pixrad = hb.max_pixrad();
       *(double *)op1 = max_pixrad;
