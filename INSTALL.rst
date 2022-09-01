@@ -239,8 +239,8 @@ Using pre-compiled wheels is typically the easiest and quickest way
 to install ``healpy`` on a system. However, the performance of the installed
 package may not be optimal, since the wheel has to work on all CPUs of a given
 architecture (e.g. x86_64) and will therefore probably not use all features
-present in your local CPU. A healpy installation which is custom-tailored for
-a spcific target CPU may be two or three times faster for some operations
+present in your local CPU. A ``healpy`` installation which is custom-tailored
+for a specific target CPU may be two or three times faster for some operations
 (most notably ``alm2map*`` and ``map2alm*`` calls).
 
 To achieve target-specific compilation, ``healpy`` must be installed from source
