@@ -245,10 +245,10 @@ for a specific target CPU may be two or three times faster for some operations
 
 To achieve target-specific compilation, ``healpy`` must be installed from source
 and the ``-march=native`` flag has to be passed to the compilers.
-While details may vary slighhtly depending on the target platform,
+While details may vary slightly depending on the target platform,
 the installation command will have this basic form::
 
-    CC=gcc CXX=g++ CFLAGS="-fPIC -O3 -march=native" CXXFLAGS="-fPIC -O3 -march=native" pip3 install --user --verbose --no-binary healpy healpy
+    CC=gcc CXX=g++ CFLAGS="-fPIC -O3 -march=native" CXXFLAGS="-fPIC -O3 -march=native" pip3 install --user --no-binary healpy healpy
 
 Clean
 -----
