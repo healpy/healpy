@@ -3,7 +3,7 @@ Installation procedure for Healpy
 
 (NOTE: if high performance of the installed package is important, e.g. when
 installing in computing centers or for performing benchmarks, please be sure
-to read the `Generatig native binaries`_ section below.)
+to read the `Generating native binaries`_ section below.)
 
 
 Requirements
