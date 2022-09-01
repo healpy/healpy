@@ -3,7 +3,7 @@ Installation procedure for Healpy
 
 (NOTE: if high performance of the installed package is important, e.g. when
 installing in computing centers or for performing benchmarks, please be sure
-to read the "Generatig native binaries" section below.)
+to read the `Generatig native binaries`_ section below.)
 
 
 Requirements
@@ -236,21 +236,19 @@ Generating native binaries
 --------------------------
 
 Using pre-compiled wheels is typically the easiest and quickest way
-to install `healpy` on a system. However, the performance of the installed
+to install ``healpy`` on a system. However, the performance of the installed
 package may not be optimal, since the wheel has to work on all CPUs of a given
 architecture (e.g. x86_64) and will therefore probably not use all features
 present in your local CPU. A healpy installation which is custom-tailored for
 a spcific target CPU may be two or three times faster for some operations
-(most notably `alm2map*` and `map2alm*` calls).
+(most notably ``alm2map*`` and ``map2alm*`` calls).
 
-To achieve target-specific compilation, `healpy` must be installed from source
-and the `-march=native` flag has to be passed to the compilers.
+To achieve target-specific compilation, ``healpy`` must be installed from source
+and the ``-march=native`` flag has to be passed to the compilers.
 While details may vary slighhtly depending on the target platform,
 the installation command will have this basic form:
 
-```
-CC=gcc CXX=g++ CFLAGS='-fPIC -O3 -march=native' CXXFLAGS='-fPIC -O3 -march=native' pip3 install --user --verbose --no-binary healpy healpy
-```
+    CC=gcc CXX=g++ CFLAGS="-fPIC -O3 -march=native" CXXFLAGS="-fPIC -O3 -march=native" pip3 install --user --verbose --no-binary healpy healpy
 
 Clean
 -----
