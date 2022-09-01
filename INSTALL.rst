@@ -235,7 +235,7 @@ In case of compilation errors, see the note above in the ``pip`` section.
 Generating native binaries
 --------------------------
 
-While using pre-compiled wheels is typically the easiest and quickest way
+Using pre-compiled wheels is typically the easiest and quickest way
 to install `healpy` on a system. However, the performance of the installed
 package may not be optimal, since the wheel has to work on all CPUs of a given
 architecture (e.g. x86_64) and will therefore probably not use all features
