@@ -1,6 +1,11 @@
 Installation procedure for Healpy
 =================================
 
+(NOTE: if high performance of the installed package is important, e.g. when
+installing in computing centers or for performing benchmarks, please be sure
+to read the `Generating native binaries`_ section below.)
+
+
 Requirements
 ------------
 
@@ -226,6 +231,24 @@ cloned this repository to ``$REPOS`` such that ``$REPOS/healpy/INSTALL.rst``
 exists, then add ``$REPOS/healpy`` to your ``PYTHONPATH``).
 
 In case of compilation errors, see the note above in the ``pip`` section.
+
+Generating native binaries
+--------------------------
+
+Using pre-compiled wheels is typically the easiest and quickest way
+to install ``healpy`` on a system. However, the performance of the installed
+package may not be optimal, since the wheel has to work on all CPUs of a given
+architecture (e.g. x86_64) and will therefore probably not use all features
+present in your local CPU. A ``healpy`` installation which is custom-tailored
+for a specific target CPU may be two or three times faster for some operations
+(most notably ``alm2map*`` and ``map2alm*`` calls).
+
+To achieve target-specific compilation, ``healpy`` must be installed from source
+and the ``-march=native`` flag has to be passed to the compilers.
+While details may vary slightly depending on the target platform,
+the installation command will have this basic form::
+
+    CC=gcc CXX=g++ CFLAGS="-fPIC -O3 -march=native" CXXFLAGS="-fPIC -O3 -march=native" pip3 install --user --no-binary healpy healpy
 
 Clean
 -----
