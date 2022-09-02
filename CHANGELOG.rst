@@ -1,5 +1,7 @@
 Unreleased
 
+* Instructions on how to build an optimized package for healpy https://github.com/healpy/healpy/pull/779
+
 Release 1.16.1 22 July 2022, included in HEALPix 3.8.2
 
 * Updated CFITSIO included in `healpy` to 4.1.0, necessary for compatibility with Apple ARM chips https://github.com/healpy/healpy/pull/776
