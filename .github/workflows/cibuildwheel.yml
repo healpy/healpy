@@ -43,7 +43,8 @@ jobs:
         env:
           # Skip Python 3.11 builds; Scipy wheels are not yet built for Python 3.11
           # Skip PyPy builds; Astropy wheels are not built for PyPy.
-          CIBW_SKIP: 'cp311-* pp*'
+          # Skip i686 builds.
+          CIBW_SKIP: 'cp311-* pp* *_i686'
 
       - uses: actions/upload-artifact@v3
         with:
