@@ -40,6 +40,9 @@ jobs:
 
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.10.2
+        env:
+          # Skip Python 3.11 builds; Scipy wheels are not yet built for Python 3.11
+          CIBW_SKIP: 'cp311-*'
 
       - uses: actions/upload-artifact@v3
         with:
