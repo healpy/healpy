@@ -44,7 +44,8 @@ jobs:
           # Skip Python 3.11 builds; Scipy wheels are not yet built for Python 3.11
           # Skip PyPy builds; Astropy wheels are not built for PyPy.
           # Skip i686 builds.
-          CIBW_SKIP: 'cp311-* pp* *_i686'
+          # Skip MUSL libc builds.
+          CIBW_SKIP: 'cp311-* pp* *_i686 *-musllinux_*'
 
       - uses: actions/upload-artifact@v3
         with:
