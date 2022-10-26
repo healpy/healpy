@@ -113,7 +113,7 @@ def projview(
     remove_dip=False,
     remove_mono=False,
     gal_cut=0,
-    **kwargs
+    **kwargs,
 ):
     """Plot a healpix map (given as an array) in the chosen projection.
 
@@ -379,9 +379,9 @@ def projview(
             lpad = (
                 4 if override_plot_properties["vertical_tick_rotation"] != 90 else lpad
             )
-        if title is not None: 
+        if title is not None:
             lpad += 8
-    
+
     # pass the default settings to the plot_properties dictionary
     plot_properties = {
         "cbar_shrink": shrink,
@@ -432,12 +432,8 @@ def projview(
         else:
             nrows, ncols, idx = sub // 100, (sub % 100) // 10, (sub % 10)
         if idx < 1 or idx > ncols * nrows:
-            raise ValueError(
-                "Wrong values for sub: %d, %d, %d" % (nrows, ncols, idx)
-            )
+            raise ValueError("Wrong values for sub: %d, %d, %d" % (nrows, ncols, idx))
 
-
-            
         if not (hold or reuse_axes) and sub == 111:
             fig = plt.figure(
                 figsize=(
@@ -446,7 +442,7 @@ def projview(
                         plot_properties["figure_width"]
                         * plot_properties["figure_size_ratio"]
                     ),
-                ),
+                )
             )
             extent = (0.02, 0.05, 0.96, 0.9)
         elif hold:
@@ -468,7 +464,7 @@ def projview(
                             * plot_properties["figure_size_ratio"]
                         )
                         * (nrows / ncols),
-                    ),
+                    )
                 )
             else:
                 fig = plt.gcf()
@@ -494,7 +490,7 @@ def projview(
             )
             """
         # FIXME: make a more general axes creation that works also with subplots
-        #ax = fig.add_axes(extent, projection=projection_type)
+        # ax = fig.add_axes(extent, projection=projection_type)
         if projection_type == "cart":
             ax = fig.add_subplot(nrows, ncols, idx)
         else:
@@ -509,12 +505,7 @@ def projview(
     # end if not
     if graticule and graticule_labels:
         left += 0.02
-    plt.subplots_adjust(
-        left=left,
-        right=right,
-        top=top,
-        bottom=bottom,
-    )
+    plt.subplots_adjust(left=left, right=right, top=top, bottom=bottom)
 
     ysize = xsize // 2
     theta = np.linspace(np.pi, 0, ysize)
@@ -547,12 +538,7 @@ def projview(
                 max = m[w].max()
 
         cm, nn = get_color_table(
-            min,
-            max,
-            m[w],
-            cmap=cmap,
-            norm=norm,
-            **norm_dict_defaults,
+            min, max, m[w], cmap=cmap, norm=norm, **norm_dict_defaults
         )
         grid_pix = ang2pix(nside, THETA, PHI, nest=nest)
         grid_map = m[grid_pix]
@@ -617,9 +603,7 @@ def projview(
         elif phi_convention == "symmetrical":
             xtick_formatter = ThetaFormatterSymmetricPhi(longitude_grid_spacing)
 
-        ax.xaxis.set_major_formatter(
-            xtick_formatter,
-        )
+        ax.xaxis.set_major_formatter(xtick_formatter)
         ax.yaxis.set_major_formatter(ThetaFormatterTheta(latitude_grid_spacing))
 
         if custom_xtick_labels is not None:
@@ -688,10 +672,10 @@ def projview(
 
         # Hide all tickslabels not in tick variable. Do not delete tick-markers
         if show_tickmarkers:
-            ticks = list(set(cb.get_ticks()) | set(cbar_ticks))            
+            ticks = list(set(cb.get_ticks()) | set(cbar_ticks))
             ticks = np.sort(ticks)
-            ticks = ticks[ticks>=min]
-            ticks = ticks[ticks<=max]
+            ticks = ticks[ticks >= min]
+            ticks = ticks[ticks <= max]
             labels = [format % tick if tick in cbar_ticks else "" for tick in ticks]
 
             cb.set_ticks(ticks, labels)
@@ -701,10 +685,7 @@ def projview(
 
         if cb_orientation == "horizontal":
             # labels = cb.ax.get_xticklabels() if norm is not None else labels
-            cb.ax.set_xticklabels(
-                labels,
-                fontname=fontname,
-            )
+            cb.ax.set_xticklabels(labels, fontname=fontname)
 
             cb.ax.xaxis.set_label_text(
                 unit, fontsize=fontsize_defaults["cbar_label"], fontname=fontname
