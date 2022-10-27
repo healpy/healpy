@@ -505,7 +505,9 @@ def projview(
     # end if not
     if graticule and graticule_labels:
         left += 0.02
-    plt.subplots_adjust(left=left, right=right, top=top, bottom=bottom)
+
+    if not return_only_data:
+        plt.subplots_adjust(left=left, right=right, top=top, bottom=bottom)
 
     ysize = xsize // 2
     theta = np.linspace(np.pi, 0, ysize)
