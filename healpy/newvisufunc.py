@@ -505,7 +505,6 @@ def projview(
     # end if not
     if graticule and graticule_labels:
         left += 0.02
-    plt.subplots_adjust(left=left, right=right, top=top, bottom=bottom)
 
     ysize = xsize // 2
     theta = np.linspace(np.pi, 0, ysize)
@@ -515,6 +514,7 @@ def projview(
     if flip == "astro":
         longitude = longitude[::-1]
     if not return_only_data:
+        plt.subplots_adjust(left=left, right=right, top=top, bottom=bottom)
         # set property on ax so it can be used in newprojplot
         ax.healpy_flip = flip
 
