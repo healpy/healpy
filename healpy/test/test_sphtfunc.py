@@ -645,34 +645,32 @@ class TestSphtFunc(unittest.TestCase):
 
         np.testing.assert_allclose(blm, blm_ref, atol=1e-7)
 
-    def test_resize_alm(self):
-        def singletest(lmax, mmax, lmax_out, mmax_out):
-            alm = np.random.uniform(size=hp.Alm.getsize(lmax,mmax)).astype(np.complex128)
-            alm_out = hp.resize_alm(alm, lmax, mmax, lmax_out, mmax_out)
-            print(alm)
-            lmaxmax = max(lmax, lmax_out)
-            lmaxmin = min(lmax, lmax_out)
-            for m in range(0,mmax+1):
-                for l in range(m,lmax+1):
-                    idx1 = hp.Alm.getidx(lmax,l,m)
-                    if l <= lmax_out and m <= mmax_out:
-                        idx2 = hp.Alm.getidx(lmax_out,l,m)
-                        self.assertEqual(alm[idx1], alm_out[idx2])
-            for m in range(0,mmax_out+1):
-                for l in range(m,lmax_out+1):
-                    idx2 = hp.Alm.getidx(lmax_out,l,m)
-                    if l <= lmax and m <= mmax:
-                        idx1 = hp.Alm.getidx(lmax,l,m)
-                        self.assertEqual(alm[idx1], alm_out[idx2])
-                    else:
-                        self.assertEqual(alm_out[idx2], 0)
-            alm_out2 = hp.resize_alm([alm,2*alm], lmax, mmax, lmax_out, mmax_out)
-            np.testing.assert_allclose(alm_out,alm_out2[0])
-            np.testing.assert_allclose(2*alm_out,alm_out2[1])
 
-        singletest(5, 5, 10, 10)
-        singletest(5, 5, 3, 3)
-        singletest(8, 5, 7, 6)
+@pytest.mark.parametrize(
+    "lmax, mmax, lmax_out, mmax_out", [(5, 5, 10, 10), (5, 5, 3, 3), (8, 5, 7, 6)]
+)
+def test_resize_alm(lmax, mmax, lmax_out, mmax_out):
+    alm = np.random.uniform(size=hp.Alm.getsize(lmax, mmax)).astype(np.complex128)
+    alm_out = hp.resize_alm(alm, lmax, mmax, lmax_out, mmax_out)
+    lmaxmax = max(lmax, lmax_out)
+    lmaxmin = min(lmax, lmax_out)
+    for m in range(0, mmax + 1):
+        for l in range(m, lmax + 1):
+            idx1 = hp.Alm.getidx(lmax, l, m)
+            if l <= lmax_out and m <= mmax_out:
+                idx2 = hp.Alm.getidx(lmax_out, l, m)
+                assert alm[idx1] == alm_out[idx2]
+    for m in range(0, mmax_out + 1):
+        for l in range(m, lmax_out + 1):
+            idx2 = hp.Alm.getidx(lmax_out, l, m)
+            if l <= lmax and m <= mmax:
+                idx1 = hp.Alm.getidx(lmax, l, m)
+                assert alm[idx1] == alm_out[idx2]
+            else:
+                assert alm_out[idx2] == 0
+    alm_out2 = hp.resize_alm([alm, 2 * alm], lmax, mmax, lmax_out, mmax_out)
+    np.testing.assert_allclose(alm_out, alm_out2[0])
+    np.testing.assert_allclose(2 * alm_out, alm_out2[1])
 
 
 if __name__ == "__main__":
