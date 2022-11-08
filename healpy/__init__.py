@@ -84,7 +84,8 @@ from .sphtfunc import (
     check_max_nside,
     map2alm_spin,
     alm2map_spin,
-    blm_gauss
+    blm_gauss,
+    resize_alm
 )
 
 from ._query_disc import query_disc, query_strip, query_polygon, boundaries
