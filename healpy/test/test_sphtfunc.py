@@ -406,7 +406,7 @@ class TestSphtFunc(unittest.TestCase):
         """Test whether 'smoothing' wrapped with accept_ma works with only
         keyword arguments."""
 
-        ma = np.ones(12 * 16 ** 2)
+        ma = np.ones(12 * 16**2)
         try:
             hp.smoothing(map_in=ma)
         except IndexError:
@@ -417,10 +417,10 @@ class TestSphtFunc(unittest.TestCase):
 
         theta = np.linspace(0, np.radians(1.0), 1000)
         sigma = np.radians(10.0 / 60.0) / np.sqrt(8.0 * np.log(2.0))
-        gaussian_beam = np.exp(-0.5 * (theta / sigma) ** 2) / (2 * np.pi * sigma ** 2)
+        gaussian_beam = np.exp(-0.5 * (theta / sigma) ** 2) / (2 * np.pi * sigma**2)
 
         ell = np.arange(512 + 1.0)
-        gaussian_window = np.exp(-0.5 * ell * (ell + 1) * sigma ** 2)
+        gaussian_window = np.exp(-0.5 * ell * (ell + 1) * sigma**2)
 
         bl = hp.beam2bl(gaussian_beam, theta, 512)
         np.testing.assert_allclose(gaussian_window, bl, rtol=1e-4)
@@ -430,10 +430,10 @@ class TestSphtFunc(unittest.TestCase):
 
         theta = np.linspace(0, np.radians(3.0), 1000)
         sigma = np.radians(1.0) / np.sqrt(8.0 * np.log(2.0))
-        gaussian_beam = np.exp(-0.5 * (theta / sigma) ** 2) / (2 * np.pi * sigma ** 2)
+        gaussian_beam = np.exp(-0.5 * (theta / sigma) ** 2) / (2 * np.pi * sigma**2)
 
         ell = np.arange(2048 + 1.0)
-        gaussian_window = np.exp(-0.5 * ell * (ell + 1) * sigma ** 2)
+        gaussian_window = np.exp(-0.5 * ell * (ell + 1) * sigma**2)
 
         beam = hp.bl2beam(gaussian_window, theta)
         np.testing.assert_allclose(gaussian_beam, beam, rtol=1e-3)
@@ -452,7 +452,7 @@ class TestSphtFunc(unittest.TestCase):
 
     def test_pixwin_base(self):
         # Base case
-        nsides = [2 ** p for p in np.arange(1, 14)]
+        nsides = [2**p for p in np.arange(1, 14)]
         [hp.pixwin(nside) for nside in nsides]
 
         # Test invalid nside

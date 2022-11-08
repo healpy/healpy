@@ -1457,7 +1457,7 @@ def resize_alm(alm, lmax, mmax, lmax_out, mmax_out):
     alm = np.array(alm)
     if alm.ndim < 1 or alm.ndim > 2:
         raise ValueError("incorrect dimensionality of the input a_lm")
-    if alm.ndim==2:
+    if alm.ndim == 2:
         return [resize_alm(almi, lmax, mmax, lmax_out, mmax_out) for almi in alm]
     # alm is a 1D array
     if alm.shape[0] != Alm.getsize(lmax, mmax):
@@ -1466,9 +1466,9 @@ def resize_alm(alm, lmax, mmax, lmax_out, mmax_out):
     lmaxmin = min(lmax, lmax_out)
     mmaxmin = min(mmax, mmax_out)
     ofs_i, ofs_o = 0, 0
-    for m in range(0,mmaxmin+1):
-        nval = lmaxmin-m+1
-        res[ofs_o:ofs_o+nval] = alm[ofs_i:ofs_i+nval]
-        ofs_i += lmax-m+1
-        ofs_o += lmax_out-m+1
+    for m in range(0, mmaxmin + 1):
+        nval = lmaxmin - m + 1
+        res[ofs_o : ofs_o + nval] = alm[ofs_i : ofs_i + nval]
+        ofs_i += lmax - m + 1
+        ofs_o += lmax_out - m + 1
     return res
