@@ -285,7 +285,7 @@ class Rotator(object):
             )
         rots = b._rots + self._rots
         coords = b._coords + self._coords
-        invs = self._invs + a._invs
+        invs = self._invs + b._invs
         return Rotator(rot=rots, coord=coords, inv=invs, deg=False)
 
     def __nonzero__(self):
