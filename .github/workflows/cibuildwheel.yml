@@ -39,7 +39,7 @@ jobs:
           submodules: true
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v2.11.3
+        uses: pypa/cibuildwheel@v2.11.4
         env:
           # Skip PyPy builds; Astropy wheels are not built for PyPy.
           # Skip i686 builds.
