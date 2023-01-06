@@ -1315,12 +1315,12 @@ def isnpixok(npix):
 
 
 def get_interp_val(m, theta, phi, nest=False, lonlat=False):
-    """Return the bi-linear interpolation value of a map using 4 nearest neighbours.
+    """Return the bi-linear interpolation value of map(s) using 4 nearest neighbours.
 
     Parameters
     ----------
-    m : array-like
-      a healpix map, accepts masked arrays
+    m : array-like, shape (npix,) or (nmaps, npix)
+      a healpix map or sequence thereof, accepts masked arrays
     theta, phi : float, scalar or array-like
       angular coordinates of point at which to interpolate the map
     nest : bool
@@ -1331,8 +1331,8 @@ def get_interp_val(m, theta, phi, nest=False, lonlat=False):
 
     Returns
     -------
-      val : float, scalar or arry-like
-        the interpolated value(s), usual numpy broadcasting rules apply.
+    val : float, scalar or array-like
+      the interpolated value(s), usual numpy broadcasting rules apply.
 
     See Also
     --------
@@ -1353,9 +1353,17 @@ def get_interp_val(m, theta, phi, nest=False, lonlat=False):
     >>> hp.get_interp_val(np.arange(12.), 0, np.linspace(90, -90, 10), lonlat=True)
     array([ 1.5       ,  1.5       ,  1.5       ,  2.20618428,  3.40206143,
             5.31546486,  7.94639458,  9.5       ,  9.5       ,  9.5       ])
+    >>> hp.get_interp_val(
+    ...     [np.arange(12.), 2 * np.arange(12.)], np.linspace(0, np.pi, 10), 0
+    ... )
+    array([[ 1.5       ,  1.5       ,  1.5       ,  2.20618428,  3.40206143,
+             5.31546486,  7.94639458,  9.5       ,  9.5       ,  9.5       ],
+           [ 3.        ,  3.        ,  3.        ,  4.41236857,  6.80412286,
+            10.63092972, 15.89278916, 19.        , 19.        , 19.        ]])
     """
-    m2 = m.ravel()
-    nside = npix2nside(m2.size)
+    m = np.atleast_2d(m)
+    nmaps, npix = m.shape
+    nside = npix2nside(npix)
     if lonlat:
         theta, phi = lonlat2thetaphi(theta, phi)
     if nest:
@@ -1365,7 +1373,7 @@ def get_interp_val(m, theta, phi, nest=False, lonlat=False):
     p = np.array(r[0:4])
     w = np.array(r[4:8])
     del r
-    return np.sum(m2[p] * w, 0)
+    return np.squeeze(np.sum(m[:, p] * w, axis=1))[()]
 
 
 def get_interp_weights(nside, theta, phi=None, nest=False, lonlat=False):
