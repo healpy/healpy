@@ -406,7 +406,7 @@ class TestSphtFunc(unittest.TestCase):
         """Test whether 'smoothing' wrapped with accept_ma works with only
         keyword arguments."""
 
-        ma = np.ones(12 * 16 ** 2)
+        ma = np.ones(12 * 16**2)
         try:
             hp.smoothing(map_in=ma)
         except IndexError:
@@ -417,10 +417,10 @@ class TestSphtFunc(unittest.TestCase):
 
         theta = np.linspace(0, np.radians(1.0), 1000)
         sigma = np.radians(10.0 / 60.0) / np.sqrt(8.0 * np.log(2.0))
-        gaussian_beam = np.exp(-0.5 * (theta / sigma) ** 2) / (2 * np.pi * sigma ** 2)
+        gaussian_beam = np.exp(-0.5 * (theta / sigma) ** 2) / (2 * np.pi * sigma**2)
 
         ell = np.arange(512 + 1.0)
-        gaussian_window = np.exp(-0.5 * ell * (ell + 1) * sigma ** 2)
+        gaussian_window = np.exp(-0.5 * ell * (ell + 1) * sigma**2)
 
         bl = hp.beam2bl(gaussian_beam, theta, 512)
         np.testing.assert_allclose(gaussian_window, bl, rtol=1e-4)
@@ -430,10 +430,10 @@ class TestSphtFunc(unittest.TestCase):
 
         theta = np.linspace(0, np.radians(3.0), 1000)
         sigma = np.radians(1.0) / np.sqrt(8.0 * np.log(2.0))
-        gaussian_beam = np.exp(-0.5 * (theta / sigma) ** 2) / (2 * np.pi * sigma ** 2)
+        gaussian_beam = np.exp(-0.5 * (theta / sigma) ** 2) / (2 * np.pi * sigma**2)
 
         ell = np.arange(2048 + 1.0)
-        gaussian_window = np.exp(-0.5 * ell * (ell + 1) * sigma ** 2)
+        gaussian_window = np.exp(-0.5 * ell * (ell + 1) * sigma**2)
 
         beam = hp.bl2beam(gaussian_window, theta)
         np.testing.assert_allclose(gaussian_beam, beam, rtol=1e-3)
@@ -452,7 +452,7 @@ class TestSphtFunc(unittest.TestCase):
 
     def test_pixwin_base(self):
         # Base case
-        nsides = [2 ** p for p in np.arange(1, 14)]
+        nsides = [2**p for p in np.arange(1, 14)]
         [hp.pixwin(nside) for nside in nsides]
 
         # Test invalid nside
@@ -644,6 +644,34 @@ class TestSphtFunc(unittest.TestCase):
         )
 
         np.testing.assert_allclose(blm, blm_ref, atol=1e-7)
+
+
+@pytest.mark.parametrize(
+    "lmax, mmax, lmax_out, mmax_out", [(5, 5, 10, 10), (5, 5, 3, 3), (8, 5, 7, 6)]
+)
+def test_resize_alm(lmax, mmax, lmax_out, mmax_out):
+    alm = np.random.uniform(size=hp.Alm.getsize(lmax, mmax)).astype(np.complex128)
+    alm_out = hp.resize_alm(alm, lmax, mmax, lmax_out, mmax_out)
+    lmaxmax = max(lmax, lmax_out)
+    lmaxmin = min(lmax, lmax_out)
+    for m in range(0, mmax + 1):
+        for l in range(m, lmax + 1):
+            idx1 = hp.Alm.getidx(lmax, l, m)
+            if l <= lmax_out and m <= mmax_out:
+                idx2 = hp.Alm.getidx(lmax_out, l, m)
+                assert alm[idx1] == alm_out[idx2]
+    for m in range(0, mmax_out + 1):
+        for l in range(m, lmax_out + 1):
+            idx2 = hp.Alm.getidx(lmax_out, l, m)
+            if l <= lmax and m <= mmax:
+                idx1 = hp.Alm.getidx(lmax, l, m)
+                assert alm[idx1] == alm_out[idx2]
+            else:
+                assert alm_out[idx2] == 0
+    alm_out2 = hp.resize_alm([alm, 2 * alm], lmax, mmax, lmax_out, mmax_out)
+    np.testing.assert_allclose(alm_out, alm_out2[0])
+    np.testing.assert_allclose(2 * alm_out, alm_out2[1])
+
 
 if __name__ == "__main__":
     unittest.main()

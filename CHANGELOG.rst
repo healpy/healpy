@@ -1,5 +1,6 @@
 Unreleased
 
+* Add `resize_alm` function to change a Alm array to a different ell max https://github.com/healpy/healpy/pull/803
 * Instructions on how to build an optimized package for healpy https://github.com/healpy/healpy/pull/779
 
 Release 1.16.1 22 July 2022, included in HEALPix 3.8.2
