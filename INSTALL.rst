@@ -35,7 +35,7 @@ environment installing ``healpy`` alongside said packages. For instance if one
 wishes to install ``healpy`` alongside Spyder and My_Package into newly created
 environment env_healpy, the command will be::
 
-    conda create --name env_healpy python=3.7 healpy spyder my_package
+    conda create --name env_healpy python=3.8 healpy spyder my_package
 
 Binary installation with Pip (recommended for most other Python users)
 ----------------------------------------------------------------------
