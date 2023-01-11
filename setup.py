@@ -332,7 +332,6 @@ setup(
         "License :: OSI Approved :: GNU General Public License v2 or later (GPLv2+)",
         "Operating System :: POSIX",
         "Programming Language :: C++",
-        "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
@@ -457,5 +456,5 @@ setup(
     test_suite="healpy",
     license="GPLv2",
     scripts=["bin/healpy_get_wmap_maps.sh"],
-    python_requires=">=3.7",
+    python_requires=">=3.8",
 )
