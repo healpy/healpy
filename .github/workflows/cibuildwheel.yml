@@ -38,9 +38,17 @@ jobs:
         with:
           submodules: true
 
+      - name: Set up QEMU
+        if: runner.os == 'Linux'
+        uses: docker/setup-qemu-action@v2
+        with:
+          platforms: arm64
+
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.11.4
         env:
+          # Build wheels for aarch64 under emulation.
+          CIBW_ARCHS_LINUX: "auto aarch64"
           # Skip PyPy builds; Astropy wheels are not built for PyPy.
           # Skip i686 builds.
           # Skip MUSL libc builds.
