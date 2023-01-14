@@ -5,5 +5,5 @@ You have to import sub-modules of `healpy.utils` directly,
 the `healpy.utils` namespace is empty.
 
 Examples::
-    from gammapy.utils.deprecation import HealpyDeprecationWarning
+    from healpy.utils.deprecation import HealpyDeprecationWarning
 """
