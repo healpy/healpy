@@ -115,7 +115,7 @@ from ._line_integral_convolution import line_integral_convolution
 from .newvisufunc import projview, newprojplot
 
 
-from astropy.utils.decorators import deprecated
+from .utils.deprecation import deprecated
 
 
 @deprecated("1.15.0")

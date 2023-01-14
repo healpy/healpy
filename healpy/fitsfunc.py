@@ -29,13 +29,13 @@ log = logging.getLogger("healpy")
 import pathlib
 import astropy.io.fits as pf
 import numpy as np
-from astropy.utils.decorators import deprecated_renamed_argument
+from .utils.deprecation import deprecated_renamed_argument
 
 from . import pixelfunc
 from .sphtfunc import Alm
 from .pixelfunc import UNSEEN
 from . import cookbook as cb
-from astropy.utils.decorators import deprecated
+from .utils.deprecation import deprecated
 
 standard_column_names = {
     1: "TEMPERATURE",

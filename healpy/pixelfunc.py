@@ -92,7 +92,7 @@ import logging
 
 log = logging.getLogger("healpy")
 
-from astropy.utils.decorators import deprecated_renamed_argument
+from .utils.deprecation import deprecated_renamed_argument
 
 UNSEEN = None
 
