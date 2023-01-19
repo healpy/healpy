@@ -20,7 +20,7 @@ Release 1.16.0 17 July 2022
 * New features in `projview`: subplots, remove monopole-dipole, labels, tickmarks, graticule, Planck and WMAP colormaps https://github.com/healpy/healpy/pull/752
 * Fixed the CFITSIO version mismatch warning https://github.com/healpy/healpy/pull/764
 * Added colorbar ticks and normalization https://github.com/healpy/healpy/pull/751
-
+* New `map2alm_lsq` function to iteratively estimate Alm from a map and assess residual error https://github.com/healpy/healpy/pull/734
 
 Release 1.15.2 24 January 2022, included in HEALPix 3.8.1
 
