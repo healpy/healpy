@@ -1,5 +1,7 @@
 Unreleased
 
+* Add `healpy`-specific `HealpyDeprecationWarning` instead of using `astropy`'s https://github.com/healpy/healpy/pull/822
+
 Release 1.16.2 26 October 2022
 
 * Add `resize_alm` function to change a Alm array to a different ell max https://github.com/healpy/healpy/pull/803

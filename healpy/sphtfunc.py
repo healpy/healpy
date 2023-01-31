@@ -23,7 +23,7 @@ log = logging.getLogger("healpy")
 import numpy as np
 
 import astropy.io.fits as pf
-from astropy.utils.decorators import deprecated_renamed_argument
+from .utils.deprecation import deprecated_renamed_argument
 from scipy.integrate import trapz
 from astropy.utils import data
 

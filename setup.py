@@ -375,6 +375,7 @@ setup(
         "healpy.projector",
         "healpy.rotator",
         "healpy.projaxes",
+        "healpy.utils.deprecation",
         "healpy.version",
     ],
     cmdclass={"build_ext": custom_build_ext, "build_clib": build_external_clib},
