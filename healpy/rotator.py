@@ -23,7 +23,7 @@ import logging
 log = logging.getLogger("healpy")
 
 from astropy.coordinates import SkyCoord
-from astropy.utils.decorators import deprecated_renamed_argument
+from .utils.deprecation import deprecated_renamed_argument
 from . import pixelfunc
 from . import sphtfunc
 from ._sphtools import rotate_alm

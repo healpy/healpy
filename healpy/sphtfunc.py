@@ -23,7 +23,7 @@ log = logging.getLogger("healpy")
 import numpy as np
 
 import astropy.io.fits as pf
-from astropy.utils.decorators import deprecated_renamed_argument
+from .utils.deprecation import deprecated_renamed_argument
 from scipy.integrate import trapz
 from astropy.utils import data
 
@@ -1432,3 +1432,43 @@ def blm_gauss(fwhm, lmax, pol=False):
         blm[2] = 1j * blm[1]
 
     return blm
+
+
+def resize_alm(alm, lmax, mmax, lmax_out, mmax_out):
+    """Returns a resized copy of the input a_lm, either truncated or
+    padded with zeros.
+
+    Parameters
+    ----------
+    alm : array or sequence of arrays, complex
+        A complex array of alm, or a sequence of such arrays.
+        Size of each array must be of the form mmax*(lmax-mmax+1)/2+lmax
+    lmax, mmax: int, scalar
+        maximum l and m multipole moments of the input alm
+    lmax_out, mmax_out: int, scalar
+        maximum l and m multipole moments of the output alm
+
+    Returns
+    -------
+    array or sequence of arrays, complex
+        A complex array of alm, or a sequence of such arrays.
+        Size of each array will be of the form mmax_out*(lmax_out-mmax_out+1)/2+lmax_out
+    """
+    alm = np.array(alm)
+    if alm.ndim < 1 or alm.ndim > 2:
+        raise ValueError("incorrect dimensionality of the input a_lm")
+    if alm.ndim == 2:
+        return [resize_alm(almi, lmax, mmax, lmax_out, mmax_out) for almi in alm]
+    # alm is a 1D array
+    if alm.shape[0] != Alm.getsize(lmax, mmax):
+        raise ValueError("inconsistent number of input a_lm")
+    res = np.zeros(Alm.getsize(lmax_out, mmax_out), dtype=alm.dtype)
+    lmaxmin = min(lmax, lmax_out)
+    mmaxmin = min(mmax, mmax_out)
+    ofs_i, ofs_o = 0, 0
+    for m in range(0, mmaxmin + 1):
+        nval = lmaxmin - m + 1
+        res[ofs_o : ofs_o + nval] = alm[ofs_i : ofs_i + nval]
+        ofs_i += lmax - m + 1
+        ofs_o += lmax_out - m + 1
+    return res

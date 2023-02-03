@@ -14,6 +14,7 @@ From map to spherical harmonics
    anafast
    map2alm
    map2alm_spin
+   map2alm_lsq
 
 From spherical harmonics to map
 -------------------------------

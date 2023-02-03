@@ -84,7 +84,8 @@ from .sphtfunc import (
     check_max_nside,
     map2alm_spin,
     alm2map_spin,
-    blm_gauss
+    blm_gauss,
+    resize_alm
 )
 
 from ._query_disc import query_disc, query_strip, query_polygon, boundaries
@@ -114,7 +115,7 @@ from ._line_integral_convolution import line_integral_convolution
 from .newvisufunc import projview, newprojplot
 
 
-from astropy.utils.decorators import deprecated
+from .utils.deprecation import deprecated
 
 
 @deprecated("1.15.0")
