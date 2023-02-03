@@ -1373,6 +1373,7 @@ def get_interp_val(m, theta, phi, nest=False, lonlat=False):
     p = np.array(r[0:4])
     w = np.array(r[4:8])
     del r
+    # NOTE: the [()] syntax converts a 0d array from np.squeeze to a Python scalar
     return np.squeeze(np.sum(m[:, p] * w, axis=1))[()]
 
 
