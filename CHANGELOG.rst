@@ -1,5 +1,6 @@
 Unreleased
 
+* Allow pixelfunc.get_interp_val to operate on multiple maps https://github.com/healpy/healpy/pull/816
 * Add `healpy`-specific `HealpyDeprecationWarning` instead of using `astropy`'s https://github.com/healpy/healpy/pull/822
 
 Release 1.16.2 26 October 2022
