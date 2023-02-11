@@ -79,7 +79,7 @@ def read_cl(filename):
         return cl
 
 
-def write_cl(filename, cl, dtype=None, overwrite=False):
+def write_cl(filename, cl, dtype=None, column_units=None, overwrite=False):
     """Writes Cl into a healpix file, as IDL cl2fits.
 
     Parameters
@@ -92,6 +92,8 @@ def write_cl(filename, cl, dtype=None, overwrite=False):
       The datatype in which the columns will be stored. If not supplied,
       the dtype of the input cl will be used. This changed in `healpy` 1.15.0,
       in previous versions, cl by default were saved in `float64`.
+    column_units : str or list
+      Units for each column, or same units for all columns.
     overwrite : bool, optional
       If True, existing file is silently overwritten. Otherwise trying to write
       an existing file raises an OSError.
@@ -103,13 +105,15 @@ def write_cl(filename, cl, dtype=None, overwrite=False):
     fitsformat = getformat(dtype)
     column_names = ["TEMPERATURE", "GRADIENT", "CURL", "G-T", "C-T", "C-G"]
     if len(np.shape(cl)) == 2:
+        if column_units is None or isinstance(column_units, str):
+            column_units = [column_units] * len(cl)
         cols = [
-            pf.Column(name=column_name, format="%s" % fitsformat, array=column_cl)
-            for column_name, column_cl in zip(column_names[: len(cl)], cl)
+            pf.Column(name=column_name, format="%s" % fitsformat, array=column_cl, unit=unit)
+            for column_name, column_cl, unit in zip(column_names[: len(cl)], cl, column_units)
         ]
     elif len(np.shape(cl)) == 1:
         # we write only TT
-        cols = [pf.Column(name="TEMPERATURE", format="%s" % fitsformat, array=cl)]
+        cols = [pf.Column(name="TEMPERATURE", format="%s" % fitsformat, array=cl, unit=column_units)]
     else:
         raise RuntimeError("write_cl: Expected one or more vectors of equal length")
 
