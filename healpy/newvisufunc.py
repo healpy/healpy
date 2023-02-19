@@ -331,7 +331,11 @@ def projview(
     if projection_type in geographic_projections:
         if cb_orientation == "vertical":
             shrink = 0.6
-            pad = 0.01
+            pad = 0.03
+            if cbar_ticks is not None:
+                lpad = 0
+            else:
+                lpad = -8
             width = 10
         if cb_orientation == "horizontal":
             shrink = 0.6
@@ -343,17 +347,23 @@ def projview(
             width = 8.5
     if projection_type == "cart":
         if cb_orientation == "vertical":
-            shrink = 1
-            pad = 0.01
-            width = 9.6
-            ratio = 0.42
+            shrink = 0.6
+            pad = 0.03
+            if cbar_ticks is not None:
+                lpad = 0
+            else:
+                lpad = -8
+            width = 10
         if cb_orientation == "horizontal":
-            shrink = 0.4
-            pad = 0.1
-            lpad = -12
-            width = 8.8
+            shrink = 0.6
+            pad = 0.05
+            if cbar_ticks is not None:
+                lpad = 0
+            else:
+                lpad = -8
+            width = 8.5
             if xlabel == None:
-                pad = 0.01
+                pad = pad + 0.01
                 ratio = 0.63
     if projection_type == "polar":
         if cb_orientation == "vertical":
