@@ -688,8 +688,11 @@ def projview(
             ticks = ticks[ticks <= max]
             labels = [format % tick if tick in cbar_ticks else "" for tick in ticks]
 
-            cb.set_ticks(ticks, labels)
-            cb.set_ticklabels(labels)
+            try:
+                cb.set_ticks(ticks, labels)
+            except TypeError:
+                cb.set_ticks(ticks)
+                cb.set_ticklabels(labels)
         else:
             labels = [format % tick for tick in cbar_ticks]
 
