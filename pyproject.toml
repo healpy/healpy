@@ -17,4 +17,4 @@ before-all = "yum install -y curl-devel openssl-devel"
 
 [tool.cibuildwheel.macos]
 before-all = "brew install automake"
-environment = {"CC" = "gcc-11", "CXX" = "g++-11"}
+environment = {"CC" = "gcc-12", "CXX" = "g++-12"}
