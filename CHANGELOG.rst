@@ -1,7 +1,12 @@
 Unreleased
 
+Release 1.16.3 4 July 2023
+
+* Drop support for Python 3.7 https://github.com/healpy/healpy/pull/821
+* Added wheels for `aarch64` under emulation in Github Actions https://github.com/healpy/healpy/pull/819
 * Allow pixelfunc.get_interp_val to operate on multiple maps https://github.com/healpy/healpy/pull/816
 * Add `healpy`-specific `HealpyDeprecationWarning` instead of using `astropy`'s https://github.com/healpy/healpy/pull/822
+* Bugfix in `Rotator` in `rmul` https://github.com/healpy/healpy/pull/810
 
 Release 1.16.2 26 October 2022
 
