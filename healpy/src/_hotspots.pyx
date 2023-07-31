@@ -3,7 +3,7 @@ cimport numpy as np
 from libcpp.vector cimport vector
 
 import cython
-from healpy.pixelfunc import maptype
+from .pixelfunc import maptype
 
 from _common cimport Healpix_Map, RING, ndarray2map
 

@@ -6,7 +6,7 @@ from libcpp cimport bool
 cimport cython
 from _common cimport int64, Healpix_Ordering_Scheme, RING, NEST, SET_NSIDE, T_Healpix_Base
 
-from pixelfunc import isnsideok
+from .pixelfunc import isnsideok
 
 def ringinfo(nside, np.ndarray[int64, ndim=1] ring not None):
     """Get information for rings
