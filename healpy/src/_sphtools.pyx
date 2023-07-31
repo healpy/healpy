@@ -7,8 +7,8 @@ from libcpp.string cimport string
 from libcpp.vector cimport vector
 from libc.math cimport sqrt, floor, fabs
 cimport libc
-from healpy import npix2nside, nside2npix
-from healpy.pixelfunc import maptype, pix2ang
+from . import npix2nside, nside2npix
+from .pixelfunc import maptype, pix2ang
 import os
 import cython
 from libcpp cimport bool as cbool

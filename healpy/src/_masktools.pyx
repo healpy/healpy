@@ -4,7 +4,7 @@ import numpy as np
 cimport numpy as np
 
 import cython
-from healpy.pixelfunc import maptype
+from .pixelfunc import maptype
 
 from _common cimport Healpix_Map, RING, ndarray2map
 
