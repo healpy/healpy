@@ -1,6 +1,40 @@
+[project]
+name = "healpy"
+description = "Healpix tools package for Python"
+dynamic = ["version"]
+readme = "README.rst"
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Console",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: GNU General Public License v2 or later (GPLv2+)",
+    "Operating System :: POSIX",
+    "Programming Language :: C++",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Scientific/Engineering :: Astronomy",
+    "Topic :: Scientific/Engineering :: Visualization",
+]
+authors = [
+    { name = "C. Rosset", email = "cyrille.rosset@apc.univ-paris-diderot.fr" },
+    { name = "A. Zonca" },
+]
+license = { text = "GPL-2.0-only" }
+requires-python = ">=3.8"
+dependencies = ["matplotlib", "numpy>=1.13", "astropy", "scipy"]
+
+[project.optional-dependencies]
+test = ["pytest", "pytest-cython", "pytest-doctestplus", "requests"]
+
+[project.urls]
+homepage = "http://github.com/healpy"
+
 [build-system]
 
-requires = ["setuptools",
+requires = ["setuptools>=45",
+            "setuptools_scm[toml]>=6.2",
             "cython>=0.16",
             "wheel",
             "oldest-supported-numpy"]
@@ -10,7 +44,7 @@ build-backend = 'setuptools.build_meta'
 [tool.cibuildwheel]
 skip = "*-musllinux_* pp* *_i686"
 test-command = "pytest --doctest-plus --doctest-cython -v --pyargs healpy"
-test-requires = ["pytest", "pytest-cython", "pytest-doctestplus", "requests"]
+test-extras = ["test"]
 
 [tool.cibuildwheel.linux]
 before-all = "yum install -y curl-devel openssl-devel"
@@ -18,3 +52,10 @@ before-all = "yum install -y curl-devel openssl-devel"
 [tool.cibuildwheel.macos]
 before-all = "brew install automake"
 environment = {"CC" = "gcc-12", "CXX" = "g++-12"}
+
+[tool.setuptools_scm]
+write_to = "healpy/version.py"
+
+[tool.pytest.ini_options]
+addopts = "--doctest-plus --doctest-cython -v"
+testpaths = "healpy"
