@@ -1,5 +1,11 @@
 Unreleased
 
+Release 1.16.4 16 August 2023
+
+* Updated HEALPix C++ to fix compilation issue, no actual changes to the library https://github.com/healpy/healpy/pull/875
+* Fix support for latest Cython https://github.com/healpy/healpy/pull/862
+* Minor changes to packaging and actions https://github.com/healpy/healpy/pull/872 https://github.com/healpy/healpy/pull/865 https://github.com/healpy/healpy/pull/864 https://github.com/healpy/healpy/pull/863
+
 Release 1.16.3 4 July 2023
 
 * Drop support for Python 3.7 https://github.com/healpy/healpy/pull/821
