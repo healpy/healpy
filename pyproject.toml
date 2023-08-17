@@ -10,7 +10,6 @@ classifiers = [
     "License :: OSI Approved :: GNU General Public License v2 or later (GPLv2+)",
     "Operating System :: POSIX",
     "Programming Language :: C++",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
@@ -22,7 +21,7 @@ authors = [
     { name = "A. Zonca" },
 ]
 license = { text = "GPL-2.0-only" }
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 dependencies = ["matplotlib", "numpy>=1.13", "astropy", "scipy"]
 
 [project.optional-dependencies]
