@@ -8,5 +8,10 @@ build:
 conda:
   environment: doc/environment.yml
 
+python:
+  install:
+    - method: pip
+      path: .
+
 submodules:
   include: all
