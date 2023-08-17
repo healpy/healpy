@@ -35,7 +35,7 @@ environment installing ``healpy`` alongside said packages. For instance if one
 wishes to install ``healpy`` alongside Spyder and My_Package into newly created
 environment env_healpy, the command will be::
 
-    conda create --name env_healpy python=3.8 healpy spyder my_package
+    conda create --name env_healpy python=3.9 healpy spyder my_package
 
 Binary installation with Pip (recommended for most other Python users)
 ----------------------------------------------------------------------
@@ -89,7 +89,7 @@ interpreter by running::
 MacPorts users on macOS may install Healpy for the MacPorts-supplied Python
 interpreter by running::
 
-    sudo port install py38-healpy
+    sudo port install py39-healpy
 
 Compilation issues with Mac OS
 ------------------------------
@@ -105,7 +105,7 @@ Installation on Mac OS with MacPorts
 If you are using a Mac and have the `MacPorts <https://www.macports.org>`_
 package manager, it's even easer to install Healpy with::
 
-    sudo port install py36-healpy
+    sudo port install py39-healpy
 
 Installation with a package manager on Debian and Ubuntu
 --------------------------------------------------------
