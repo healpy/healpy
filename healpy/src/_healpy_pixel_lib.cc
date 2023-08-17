@@ -458,43 +458,43 @@ static PyUFuncGenericFunction max_pixrad_functions[] = {
 static void * blank_data[] = { (void *)NULL };
 
 static char ang2pix_signatures[] = {
-  PyArray_INT64, PyArray_DOUBLE, PyArray_DOUBLE, PyArray_INT64
+  NPY_INT64, NPY_DOUBLE, NPY_DOUBLE, NPY_INT64
 };
 static char pix2ang_signatures[] = {
-  PyArray_INT64, PyArray_INT64, PyArray_DOUBLE, PyArray_DOUBLE
+  NPY_INT64, NPY_INT64, NPY_DOUBLE, NPY_DOUBLE
 };
 static char xyf2pix_signatures[] = {
-  PyArray_INT64, PyArray_LONG, PyArray_LONG, PyArray_LONG, PyArray_INT64
+  NPY_INT64, NPY_LONG, NPY_LONG, NPY_LONG, NPY_INT64
 };
 static char pix2xyf_signatures[] = {
-  PyArray_INT64, PyArray_INT64, PyArray_LONG, PyArray_LONG, PyArray_LONG
+  NPY_INT64, NPY_INT64, NPY_LONG, NPY_LONG, NPY_LONG
 };
 static char pix2vec_signatures[] = {
-  PyArray_INT64, PyArray_INT64, PyArray_DOUBLE, PyArray_DOUBLE, PyArray_DOUBLE
+  NPY_INT64, NPY_INT64, NPY_DOUBLE, NPY_DOUBLE, NPY_DOUBLE
 };
 static char vec2pix_signatures[] = {
-  PyArray_INT64, PyArray_DOUBLE, PyArray_DOUBLE, PyArray_DOUBLE, PyArray_INT64
+  NPY_INT64, NPY_DOUBLE, NPY_DOUBLE, NPY_DOUBLE, NPY_INT64
 };
 static char ring2nest_signatures[] = {
-  PyArray_INT64, PyArray_INT64, PyArray_INT64
+  NPY_INT64, NPY_INT64, NPY_INT64
 };
 static char get_interpol_signatures[] = {
-  PyArray_INT64, PyArray_DOUBLE, PyArray_DOUBLE,
-  PyArray_INT64, PyArray_INT64, PyArray_INT64, PyArray_INT64,
-  PyArray_DOUBLE, PyArray_DOUBLE, PyArray_DOUBLE, PyArray_DOUBLE
+  NPY_INT64, NPY_DOUBLE, NPY_DOUBLE,
+  NPY_INT64, NPY_INT64, NPY_INT64, NPY_INT64,
+  NPY_DOUBLE, NPY_DOUBLE, NPY_DOUBLE, NPY_DOUBLE
 };
 static char get_neighbors_ring_signatures[] = {
-  PyArray_INT64, PyArray_INT64, // input
-  PyArray_INT64, PyArray_INT64, PyArray_INT64, PyArray_INT64, // output
-  PyArray_INT64, PyArray_INT64, PyArray_INT64, PyArray_INT64 // output
+  NPY_INT64, NPY_INT64, // input
+  NPY_INT64, NPY_INT64, NPY_INT64, NPY_INT64, // output
+  NPY_INT64, NPY_INT64, NPY_INT64, NPY_INT64 // output
 };
 static char get_neighbors_nest_signatures[] = {
-  PyArray_INT64, PyArray_INT64, // input
-  PyArray_INT64, PyArray_INT64, PyArray_INT64, PyArray_INT64, // output
-  PyArray_INT64, PyArray_INT64, PyArray_INT64, PyArray_INT64 // output
+  NPY_INT64, NPY_INT64, // input
+  NPY_INT64, NPY_INT64, NPY_INT64, NPY_INT64, // output
+  NPY_INT64, NPY_INT64, NPY_INT64, NPY_INT64 // output
 };
 static char max_pixrad_signatures[] = {
-  PyArray_INT64, PyArray_DOUBLE
+  NPY_INT64, NPY_DOUBLE
 };
 
 #if PY_MAJOR_VERSION >= 3
