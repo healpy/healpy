@@ -22,7 +22,7 @@ authors = [
 ]
 license = { text = "GPL-2.0-only" }
 requires-python = ">=3.9"
-dependencies = ["matplotlib", "numpy>=1.13", "astropy", "scipy"]
+dependencies = ["matplotlib", "numpy>=1.19", "astropy", "scipy"]
 
 [project.optional-dependencies]
 test = ["pytest", "pytest-cython", "pytest-doctestplus", "requests"]
@@ -36,7 +36,7 @@ requires = ["setuptools>=45",
             "setuptools_scm[toml]>=6.2",
             "cython>=0.16",
             "wheel",
-            "oldest-supported-numpy"]
+            "numpy>=1.25"]
 
 build-backend = 'setuptools.build_meta'
 
