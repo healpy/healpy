@@ -312,6 +312,12 @@ class custom_build_ext(build_ext):
         build_ext.run(self)
 
 
+ext_kwargs = dict(
+    extra_compile_args=["-std=c++11"],
+    define_macros=[('NPY_NO_DEPRECATED_API', 'NPY_1_19_API_VERSION')],
+    language="c++",
+)
+
 setup(
     packages=["healpy", "healpy.test"],
     libraries=[
@@ -354,49 +360,42 @@ setup(
         Extension(
             "healpy._healpy_pixel_lib",
             sources=["healpy/src/_healpy_pixel_lib.cc"],
-            language="c++",
-            extra_compile_args=["-std=c++11"],
+            **ext_kwargs
         ),
         Extension(
             "healpy._healpy_sph_transform_lib",
             sources=["healpy/src/_healpy_sph_transform_lib.cc"],
-            language="c++",
-            extra_compile_args=["-std=c++11"],
+            **ext_kwargs
         ),
         Extension(
             "healpy._query_disc",
             ["healpy/src/_query_disc.pyx"],
-            language="c++",
-            extra_compile_args=["-std=c++11"],
             cython_directives=dict(embedsignature=True),
+            **ext_kwargs
         ),
         Extension(
             "healpy._sphtools",
             ["healpy/src/_sphtools.pyx"],
-            language="c++",
-            extra_compile_args=["-std=c++11"],
             cython_directives=dict(embedsignature=True),
+            **ext_kwargs
         ),
         Extension(
             "healpy._pixelfunc",
             ["healpy/src/_pixelfunc.pyx"],
-            language="c++",
-            extra_compile_args=["-std=c++11"],
             cython_directives=dict(embedsignature=True),
+            **ext_kwargs
         ),
         Extension(
             "healpy._masktools",
             ["healpy/src/_masktools.pyx"],
-            language="c++",
-            extra_compile_args=["-std=c++11"],
             cython_directives=dict(embedsignature=True),
+            **ext_kwargs
         ),
         Extension(
             "healpy._hotspots",
             ["healpy/src/_hotspots.pyx", "healpy/src/_healpy_hotspots_lib.cc"],
-            language="c++",
-            extra_compile_args=["-std=c++11"],
             cython_directives=dict(embedsignature=True),
+            **ext_kwargs
         ),
         Extension(
             "healpy._line_integral_convolution",
@@ -404,13 +403,12 @@ setup(
                 "healpy/src/_line_integral_convolution.pyx",
                 "healpixsubmodule/src/cxx/Healpix_cxx/alice3.cc",
             ],
-            language="c++",
-            extra_compile_args=[
-                "-std=c++11",
-                "-Ihealpixsubmodule/src/cxx/cxxsupport",
-                "-Ihealpixsubmodule/src/cxx/Healpix_cxx",
+            include_dirs=[
+                "healpixsubmodule/src/cxx/cxxsupport",
+                "healpixsubmodule/src/cxx/Healpix_cxx",
             ],
             cython_directives=dict(embedsignature=True),
+            **ext_kwargs
         ),
     ],
     package_data={
