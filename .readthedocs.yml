@@ -1,16 +1,12 @@
 version: 2
 
-conda:
-    environment: doc/environment.yml
-
 build:
-   image: latest
+  os: ubuntu-22.04
+  tools:
+    python: "3.9"
 
-python:
-   version: 3.9
-   install:
-      - method: pip
-        path: .
+conda:
+  environment: doc/environment.yml
 
 submodules:
-    include: all
+  include: all
