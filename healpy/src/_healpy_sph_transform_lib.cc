@@ -196,34 +196,34 @@ static PyObject *healpy_map2alm(PyObject *self, PyObject *args,
     }
 
   /* Check array is contiguous */
-  healpyAssertValue(mapIin->flags&NPY_C_CONTIGUOUS,
+  healpyAssertValue(PyArray_FLAGS(mapIin)&NPY_ARRAY_C_CONTIGUOUS,
     "Array must be C contiguous for this operation.");
 
   if( polarisation )
-    healpyAssertValue(mapQin->flags&mapUin->flags&NPY_C_CONTIGUOUS,
+    healpyAssertValue(PyArray_FLAGS(mapQin)&PyArray_FLAGS(mapUin)&NPY_ARRAY_C_CONTIGUOUS,
                       "Array must be C contiguous for this operation.");
 
   /* Check type of data : must be double ('d') */
-  healpyAssertType(mapIin->descr->type == 'd',
+  healpyAssertType(PyArray_DESCR(mapIin)->type == 'd',
     "Type must be Float64 for this function");
 
   if( polarisation )
     {
-    healpyAssertType(mapQin->descr->type == 'd',
+    healpyAssertType(PyArray_DESCR(mapQin)->type == 'd',
       "Type must be Float64 for this function");
-    healpyAssertType(mapUin->descr->type == 'd',
+    healpyAssertType(PyArray_DESCR(mapUin)->type == 'd',
       "Type must be Float64 for this function");
     }
 
   /* Check number of dimension : must be 1 */
-  healpyAssertType(mapIin->nd==1,"Array must be 1D.");
-  npix = mapIin->dimensions[0];
+  healpyAssertType(PyArray_NDIM(mapIin)==1,"Array must be 1D.");
+  npix = PyArray_DIM(mapIin,0);
 
   if( polarisation )
     {
-    healpyAssertType((mapQin->nd==1)&&(mapUin->nd==1),"Array must be 1D.");
-    healpyAssertType((mapQin->dimensions[0]==npix)&&
-                     (mapQin->dimensions[0]==npix),
+    healpyAssertType((PyArray_NDIM(mapQin)==1)&&(PyArray_NDIM(mapUin)==1),"Array must be 1D.");
+    healpyAssertType((PyArray_DIM(mapQin,0)==npix)&&
+                     (PyArray_DIM(mapQin,0)==npix),
                       "All maps must have same dimension.");
     }
 
@@ -239,39 +239,39 @@ static PyObject *healpy_map2alm(PyObject *self, PyObject *args,
 
   Healpix_Map<double> mapI, mapQ, mapU;
   {
-  arr<double> arr_map((double*)mapIin->data, npix);
+  arr<double> arr_map((double*)PyArray_DATA(mapIin), npix);
   mapI.Set(arr_map, RING);
   }
 
   if(polarisation)
     {
-    arr<double> arr_map((double*)mapQin->data, npix);
+    arr<double> arr_map((double*)PyArray_DATA(mapQin), npix);
     mapQ.Set(arr_map, RING);
     }
 
   if( polarisation )
     {
-    arr<double> arr_map((double*)mapUin->data, npix);
+    arr<double> arr_map((double*)PyArray_DATA(mapUin), npix);
     mapU.Set(arr_map, RING);
     }
 
   npy_intp szalm = Alm<xcomplex<double> >::Num_Alms(lmax,mmax);
 
   PyArrayObject *almIout = (PyArrayObject*)PyArray_SimpleNew
-    (1, (npy_intp*)&szalm, PyArray_CDOUBLE);
+    (1, (npy_intp*)&szalm, NPY_CDOUBLE);
   if( !almIout ) return NULL;
 
   PyArrayObject *almGout=NULL, *almCout=NULL;
   if( polarisation )
     {
       almGout = (PyArrayObject*)PyArray_SimpleNew(1, (npy_intp*)&szalm,
-                                                  PyArray_CDOUBLE);
+                                                  NPY_CDOUBLE);
       if( !almGout ) {
         Py_DECREF(almIout);
         return NULL;
       }
       almCout = (PyArrayObject*)PyArray_SimpleNew(1, (npy_intp*)&szalm,
-                                                  PyArray_CDOUBLE);
+                                                  NPY_CDOUBLE);
       if( !almCout ) {
         Py_DECREF(almIout);
         Py_DECREF(almGout);
@@ -281,21 +281,21 @@ static PyObject *healpy_map2alm(PyObject *self, PyObject *args,
 
   Alm< xcomplex<double> > almIalm;
   {
-    arr< xcomplex<double> > alm_arr((xcomplex<double>*)almIout->data, szalm);
+    arr< xcomplex<double> > alm_arr((xcomplex<double>*)PyArray_DATA(almIout), szalm);
     almIalm.Set(alm_arr, lmax, mmax);
   }
 
   Alm< xcomplex<double> > almGalm;
   if( polarisation )
     {
-      arr< xcomplex<double> > alm_arr((xcomplex<double>*)almGout->data, szalm);
+      arr< xcomplex<double> > alm_arr((xcomplex<double>*)PyArray_DATA(almGout), szalm);
       almGalm.Set(alm_arr, lmax, mmax);
     }
 
   Alm< xcomplex<double> > almCalm;
   if( polarisation )
     {
-      arr< xcomplex<double> > alm_arr((xcomplex<double>*)almCout->data, szalm);
+      arr< xcomplex<double> > alm_arr((xcomplex<double>*)PyArray_DATA(almCout), szalm);
       almCalm.Set(alm_arr, lmax, mmax);
     }
 
@@ -333,7 +333,7 @@ static PyObject *healpy_map2alm(PyObject *self, PyObject *args,
           PyArrayObject *ctt=NULL;
 
           ctt = (PyArrayObject*)PyArray_SimpleNew(1, (npy_intp*)&szcl,
-                                                  PyArray_DOUBLE);
+                                                  NPY_DOUBLE);
           if( !ctt )
             return NULL;
 
@@ -349,16 +349,16 @@ static PyObject *healpy_map2alm(PyObject *self, PyObject *args,
           npy_intp szcl = (npy_intp)(powspec.Lmax()+1);
 
           PyArrayObject *ctt = (PyArrayObject*)PyArray_SimpleNew
-            (1, (npy_intp*)&szcl, PyArray_DOUBLE);
+            (1, (npy_intp*)&szcl, NPY_DOUBLE);
           if( !ctt ) return NULL;
           PyArrayObject *cee = (PyArrayObject*)PyArray_SimpleNew
-            (1, (npy_intp*)&szcl, PyArray_DOUBLE);
+            (1, (npy_intp*)&szcl, NPY_DOUBLE);
           if( !cee ) return NULL;
           PyArrayObject *cbb = (PyArrayObject*)PyArray_SimpleNew
-            (1, (npy_intp*)&szcl, PyArray_DOUBLE);
+            (1, (npy_intp*)&szcl, NPY_DOUBLE);
           if( !cbb ) return NULL;
           PyArrayObject *cte = (PyArrayObject*)PyArray_SimpleNew
-            (1, (npy_intp*)&szcl, PyArray_DOUBLE);
+            (1, (npy_intp*)&szcl, NPY_DOUBLE);
           if( !cte ) return NULL;
 
           for( int l=0; l<szcl; l++ )
@@ -433,36 +433,36 @@ static PyObject *healpy_alm2map(PyObject *self, PyObject *args,
     }
 
   /* Check array is contiguous */
-  healpyAssertValue(almIin->flags&NPY_C_CONTIGUOUS,
+  healpyAssertValue(PyArray_FLAGS(almIin)&NPY_ARRAY_C_CONTIGUOUS,
                       "Array must be C contiguous for this operation.");
   if( polarisation )
-    healpyAssertValue(almGin->flags&almCin->flags&NPY_C_CONTIGUOUS,
+    healpyAssertValue(PyArray_FLAGS(almGin)&PyArray_FLAGS(almCin)&NPY_ARRAY_C_CONTIGUOUS,
                           "Array must be C contiguous for this operation.");
 
   /* Check type of data : must be double, real ('d') or complex ('D') */
-  healpyAssertType(almIin->descr->type == 'D',
+  healpyAssertType(PyArray_DESCR(almIin)->type == 'D',
                       "Type must be Complex for this function");
   if( polarisation )
     {
-      healpyAssertType(almGin->descr->type == 'D',
+      healpyAssertType(PyArray_DESCR(almGin)->type == 'D',
                           "Type must be Complex for this function");
-      healpyAssertType(almCin->descr->type == 'D',
+      healpyAssertType(PyArray_DESCR(almCin)->type == 'D',
                           "Type must be Complex for this function");
     }
 
   /* Check number of dimension : must be 1 */
-  healpyAssertType(almIin->nd==1,"The a_lm must be a 1D array.");
+  healpyAssertType(PyArray_NDIM(almIin)==1,"The a_lm must be a 1D array.");
   if( polarisation )
     {
-    healpyAssertType(almGin->nd==1,"The a_lm must be a 1D array.");
-    healpyAssertType(almCin->nd==1,"The a_lm must be a 1D array.");
+    healpyAssertType(PyArray_NDIM(almGin)==1,"The a_lm must be a 1D array.");
+    healpyAssertType(PyArray_NDIM(almCin)==1,"The a_lm must be a 1D array.");
     }
 
   /* Need to have lmax and mmax defined */
   if( lmax < 0 )
     {
       /* Check that the dimension is compatible with lmax=mmax */
-      long imax = almIin->dimensions[0] - 1;
+      long imax = PyArray_DIM(almIin,0) - 1;
       double ell = (-3.+sqrt(9.+8.*imax))/2.;
       healpyAssertType(ell==floor(ell),
         "Wrong alm size (or give lmax and mmax)");
@@ -474,29 +474,29 @@ static PyObject *healpy_alm2map(PyObject *self, PyObject *args,
 
   /* Check lmax and mmax are ok compared to alm.size */
   int szalm = Alm< xcomplex<double> >::Num_Alms(lmax,mmax);
-  healpyAssertValue(almIin->dimensions[0]==szalm,"Wrong alm size.");
+  healpyAssertValue(PyArray_DIM(almIin,0)==szalm,"Wrong alm size.");
   if( polarisation )
     {
-    healpyAssertValue(almGin->dimensions[0]==szalm,"Wrong alm size.");
-    healpyAssertValue(almCin->dimensions[0]==szalm,"Wrong alm size.");
+    healpyAssertValue(PyArray_DIM(almGin,0)==szalm,"Wrong alm size.");
+    healpyAssertValue(PyArray_DIM(almCin,0)==szalm,"Wrong alm size.");
     }
 
   /* Now we can build an Alm and give it to alm2map_iter */
   Alm< xcomplex<double> > almIalm;
   {
-    arr< xcomplex<double> > alm_arr((xcomplex<double>*)almIin->data, szalm);
+    arr< xcomplex<double> > alm_arr((xcomplex<double>*)PyArray_DATA(almIin), szalm);
     almIalm.Set(alm_arr, lmax, mmax);
   }
   Alm< xcomplex<double> > almGalm;
   if( polarisation )
     {
-      arr< xcomplex<double> > alm_arr((xcomplex<double>*)almGin->data, szalm);
+      arr< xcomplex<double> > alm_arr((xcomplex<double>*)PyArray_DATA(almGin), szalm);
       almGalm.Set(alm_arr, lmax, mmax);
     }
   Alm< xcomplex<double> > almCalm;
   if( polarisation )
     {
-      arr< xcomplex<double> > alm_arr((xcomplex<double>*)almCin->data, szalm);
+      arr< xcomplex<double> > alm_arr((xcomplex<double>*)PyArray_DATA(almCin), szalm);
       almCalm.Set(alm_arr, lmax, mmax);
     }
 
@@ -505,7 +505,7 @@ static PyObject *healpy_alm2map(PyObject *self, PyObject *args,
   npy_intp npix = nside2npix(nside);
   PyArrayObject *mapIout = NULL;
   mapIout = (PyArrayObject*)PyArray_SimpleNew(1, (npy_intp*)&npix,
-                                              PyArray_DOUBLE);
+                                              NPY_DOUBLE);
   if( !mapIout )
     return NULL;
 
@@ -513,7 +513,7 @@ static PyObject *healpy_alm2map(PyObject *self, PyObject *args,
   if( polarisation )
     {
       mapQout = (PyArrayObject*)PyArray_SimpleNew(1, (npy_intp*)&npix,
-                                                  PyArray_DOUBLE);
+                                                  NPY_DOUBLE);
       if( !mapQout )
         return NULL;
     }
@@ -522,27 +522,27 @@ static PyObject *healpy_alm2map(PyObject *self, PyObject *args,
   if( polarisation )
     {
       mapUout = (PyArrayObject*)PyArray_SimpleNew(1, (npy_intp*)&npix,
-                                                  PyArray_DOUBLE);
+                                                  NPY_DOUBLE);
       if( !mapUout )
         return NULL;
     }
 
   Healpix_Map<double> mapI;
   {
-    arr<double> arr_map((double*)mapIout->data, npix);
+    arr<double> arr_map((double*)PyArray_DATA(mapIout), npix);
     mapI.Set(arr_map, RING);
   }
 
   Healpix_Map<double> mapQ;
   if( polarisation )
     {
-      arr<double> arr_map((double*)mapQout->data, npix);
+      arr<double> arr_map((double*)PyArray_DATA(mapQout), npix);
       mapQ.Set(arr_map, RING);
     }
   Healpix_Map<double> mapU;
   if( polarisation )
     {
-      arr<double> arr_map((double*)mapUout->data, npix);
+      arr<double> arr_map((double*)PyArray_DATA(mapUout), npix);
       mapU.Set(arr_map, RING);
     }
 
@@ -599,20 +599,20 @@ static PyObject *healpy_alm2map_der1(PyObject *self, PyObject *args,
   }
 
   /* Check array is contiguous */
-  healpyAssertValue(almIin->flags & NPY_C_CONTIGUOUS,
+  healpyAssertValue(PyArray_FLAGS(almIin) & NPY_ARRAY_C_CONTIGUOUS,
     "Array must be C contiguous for this operation.");
 
   /* Check type of data : must be double, real ('d') or complex ('D') */
-  healpyAssertType(almIin->descr->type == 'D',
+  healpyAssertType(PyArray_DESCR(almIin)->type == 'D',
     "Type must be Complex for this function");
 
   /* Check number of dimension : must be 1 */
-  healpyAssertValue(almIin->nd==1, "The map must be a 1D array");
+  healpyAssertValue(PyArray_NDIM(almIin), "The map must be a 1D array");
 
   /* Need to have lmax and mmax defined */
   if( lmax < 0 ) {
       /* Check that the dimension is compatible with lmax=mmax */
-      long imax = almIin->dimensions[0] - 1;
+      long imax = PyArray_DIM(almIin,0) - 1;
       double ell = (-3.+sqrt(9.+8.*imax))/2.;
       healpyAssertValue(ell == floor(ell),
         "Wrong alm size (or give lmax and mmax).");
@@ -625,12 +625,12 @@ static PyObject *healpy_alm2map_der1(PyObject *self, PyObject *args,
 
   /* Check lmax and mmax are ok compared to alm.size */
   int szalm = Alm< xcomplex<double> >::Num_Alms(lmax,mmax);
-  healpyAssertValue(almIin->dimensions[0] == szalm,"Wrong alm size.");
+  healpyAssertValue(PyArray_DIM(almIin,0) == szalm,"Wrong alm size.");
 
   /* Now we can build an Alm and give it to alm2map_iter */
   Alm< xcomplex<double> > almIalm;
   {
-    arr< xcomplex<double> > alm_arr((xcomplex<double>*)almIin->data, szalm);
+    arr< xcomplex<double> > alm_arr((xcomplex<double>*)PyArray_DATA(almIin), szalm);
     almIalm.Set(alm_arr, lmax, mmax);
   }
 
@@ -640,34 +640,34 @@ static PyObject *healpy_alm2map_der1(PyObject *self, PyObject *args,
 
   PyArrayObject *mapIout = NULL;
   mapIout = (PyArrayObject*)PyArray_SimpleNew(1, (npy_intp*)&npix,
-                PyArray_DOUBLE);
+                NPY_DOUBLE);
   if( !mapIout )
     return NULL;
   Healpix_Map<double> mapI;
   {
-    arr<double> arr_map((double*)mapIout->data, npix);
+    arr<double> arr_map((double*)PyArray_DATA(mapIout), npix);
     mapI.Set(arr_map, RING);
   }
 
   PyArrayObject *mapDtheta = NULL;
   mapDtheta = (PyArrayObject*)PyArray_SimpleNew(1, (npy_intp*)&npix,
-                PyArray_DOUBLE);
+                NPY_DOUBLE);
   if( !mapDtheta )
     return NULL;
   Healpix_Map<double> mapDt;
   {
-    arr<double> arr_map((double*)mapDtheta->data, npix);
+    arr<double> arr_map((double*)PyArray_DATA(mapDtheta), npix);
     mapDt.Set(arr_map, RING);
   }
 
   PyArrayObject *mapDphi = NULL;
   mapDphi = (PyArrayObject*)PyArray_SimpleNew(1, (npy_intp*)&npix,
-                PyArray_DOUBLE);
+                NPY_DOUBLE);
   if( !mapDphi )
     return NULL;
   Healpix_Map<double> mapDp;
   {
-    arr<double> arr_map((double*)mapDphi->data, npix);
+    arr<double> arr_map((double*)PyArray_DATA(mapDphi), npix);
     mapDp.Set(arr_map, RING);
   }
 
@@ -816,9 +816,9 @@ static PyObject *healpy_synalm(PyObject *self, PyObject *args,
     {
       if( cls[i] == NULL )
         continue;
-      if( (cls[i]->nd != 1)
-          //|| ((cls[i]->descr->type != 'd') && (cls[i]->descr->type != 'f')) )
-          || (cls[i]->descr->type != 'd') )
+      if( (PyArray_NDIM(cls[i]) != 1)
+          //|| ((PyArray_DESCR(cls[i])->type != 'd') && (PyArray_DESCR(cls[i])->type != 'f')) )
+          || (PyArray_DESCR(cls[i])->type != 'd') )
         {
           PyErr_SetString(PyExc_TypeError,
                       "Type of cls must be float64 and arrays must be 1D.");
@@ -828,7 +828,7 @@ static PyObject *healpy_synalm(PyObject *self, PyObject *args,
   DBGPRINTF("Check dimension and size of alms\n");
   for( int i=0; i<nalm; i++ )
     {
-      if( (alms[i]->nd != 1) || (alms[i]->descr->type != 'D') )
+      if( (PyArray_NDIM(alms[i]) != 1) || (PyArray_DESCR(alms[i])->type != 'D') )
         {
           PyErr_SetString(PyExc_TypeError,
                       "Type of alms must be complex128 and arrays must be 1D.");
@@ -844,8 +844,8 @@ static PyObject *healpy_synalm(PyObject *self, PyObject *args,
   for( int i=0; i<nalm; i++ )
     {
       if( i==0 )
-        szalm = alms[i]->dimensions[0];
-      else if( alms[i]->dimensions[0] != szalm )
+        szalm = PyArray_DIM(alms[i],0);
+      else if( PyArray_DIM(alms[i],0) != szalm )
         {
           PyErr_SetString(PyExc_ValueError,
                           "All alms arrays must have same size.");
@@ -866,7 +866,7 @@ static PyObject *healpy_synalm(PyObject *self, PyObject *args,
     {
       DBGPRINTF("Setting almalms[%d]\n", i);
       arr< xcomplex<double> > * alm_arr;
-      alm_arr = new arr< xcomplex<double> >((xcomplex<double>*)alms[i]->data, szalm);
+      alm_arr = new arr< xcomplex<double> >((xcomplex<double>*)PyArray_DATA(alms[i]), szalm);
       DBGPRINTF("Set...\n");
       almalms[i].Set(*alm_arr, lmax, mmax);
       delete alm_arr;
@@ -886,11 +886,11 @@ static PyObject *healpy_synalm(PyObject *self, PyObject *args,
         {
           if( cls[i] == NULL )
             mat[i] = 0.0;
-          else if( cls[i]->dimensions[0] < l )
+          else if( PyArray_DIM(cls[i],0) < l )
             mat[i] = 0.0;
           else
             {
-              if( cls[i]->descr->type == 'f' )
+              if( PyArray_DESCR(cls[i])->type == 'f' )
                 mat[i] = (double)(*((float*)PyArray_GETPTR1(cls[i],l)));
               else
                 mat[i] = *((double*)PyArray_GETPTR1(cls[i],l));
