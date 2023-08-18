@@ -5,6 +5,7 @@ import errno
 import fnmatch
 import sys
 import shlex
+import shutil
 from Cython.Distutils import build_ext
 from distutils.sysconfig import get_config_var, get_config_vars
 from subprocess import check_output, CalledProcessError, check_call
@@ -69,9 +70,7 @@ class build_external_clib(build_clib):
                 if e.errno != errno.ENOENT:
                     raise
                 log.warn("pkg-config is not installed, falling back to pykg-config")
-                env["PKG_CONFIG"] = (
-                    sys.executable + " " + os.path.abspath("run_pykg_config.py")
-                )
+                env["PKG_CONFIG"] = shutil.which('pykg-config.py')
             else:
                 env["PKG_CONFIG"] = "pkg-config"
 
