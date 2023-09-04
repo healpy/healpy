@@ -1421,14 +1421,14 @@ def blm_gauss(fwhm, lmax, pol=False):
 
     for l in range(0, lmax + 1):
         blm[0, Alm.getidx(lmax, l, 0)] = np.sqrt((2 * l + 1) / (4.0 * np.pi)) * np.exp(
-            -0.5 * sigmasq * l * l
+            -0.5 * sigmasq * l * (l + 1)
         )
 
     if pol:
         for l in range(2, lmax + 1):
             blm[1, Alm.getidx(lmax, l, 2)] = np.sqrt(
-                (2 * l + 1) / (32 * np.pi)
-            ) * np.exp(-0.5 * sigmasq * l * l)
+                (2 * l + 1) / (4 * np.pi)
+            ) * np.exp(-0.5 * sigmasq * (l * (l + 1) - 4))
         blm[2] = 1j * blm[1]
 
     return blm
