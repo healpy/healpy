@@ -1,6 +1,14 @@
 Unreleased
 
-Release 1.16.4 16 August 2023
+Release 1.16.6 3 October 2023
+
+* Release to generate packages for Python 3.12 https://github.com/healpy/healpy/issues/890
+
+Release 1.16.5 16 August 2023
+
+* Fixed more packaging issues https://github.com/healpy/healpy/issues/870
+
+Release 1.16.4 11 August 2023
 
 * Updated HEALPix C++ to fix compilation issue, no actual changes to the library https://github.com/healpy/healpy/pull/875
 * Fix support for latest Cython https://github.com/healpy/healpy/pull/862
