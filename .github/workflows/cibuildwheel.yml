@@ -22,7 +22,7 @@ jobs:
         with:
           args: 'sh -c "pip install build && python -m build --sdist"'
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           path: dist/*
 
@@ -54,7 +54,7 @@ jobs:
           # Skip MUSL libc builds.
           CIBW_SKIP: 'pp* *_i686 *-musllinux_*'
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           path: wheelhouse/*
 
