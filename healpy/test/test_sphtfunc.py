@@ -343,6 +343,7 @@ class TestSphtFunc(unittest.TestCase):
         psi = np.pi / 3.0
         theta = 0.5
         phi = 0.01
+        orig_alm = alm.copy()
         hp.rotate_alm(alm, psi, theta, phi)
 
         ref_0_0_0 = 0.00000000000 + 0.00000000000j
@@ -392,13 +393,15 @@ class TestSphtFunc(unittest.TestCase):
         )
 
         mine = []
+        orig = []
         for i in [0, 1]:
             for ell in range(0, lmax + 1, 21):
                 for m in range(0, ell + 1, 21):
                     ind = hp.Alm.getidx(lmax, ell, m)
                     mine.append(alm[i, ind])
+                    orig.append(orig_alm[i, ind])
 
-        mine = np.array(ref)
+        mine = np.array(mine)
 
         np.testing.assert_allclose(ref, mine, rtol=1e-10)
 
