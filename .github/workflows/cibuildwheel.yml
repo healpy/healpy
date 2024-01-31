@@ -32,7 +32,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-11]
+        os: [ubuntu-latest, macos-11, macos-14]
 
     steps:
       - uses: actions/checkout@v4
@@ -48,6 +48,8 @@ jobs:
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.16
         env:
+          CIBW_ENVIRONMENT: MPLBACKEND=agg
+          CIBW_BEFORE_ALL_MACOS: brew install autoconf automake libtool
           # Build wheels for aarch64 under emulation.
           CIBW_ARCHS_LINUX: "auto aarch64"
           # Skip PyPy builds; Astropy wheels are not built for PyPy.
