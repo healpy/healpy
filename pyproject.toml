@@ -42,16 +42,20 @@ requires = ["setuptools>=45",
 build-backend = 'setuptools.build_meta'
 
 [tool.cibuildwheel]
-skip = "*-musllinux_* pp* *_i686"
+# Skip PyPy builds; Astropy wheels are not built for PyPy.
+# Skip i686 builds.
+# Skip MUSL libc builds.
+skip = "pp* *_i686 *-musllinux_*"
 test-command = "pytest --doctest-plus --doctest-cython -v --pyargs healpy"
 test-extras = ["test"]
 
 [tool.cibuildwheel.linux]
+# Build wheels for aarch64 under emulation.
+archs = ["auto", "aarch64"]
 before-all = "yum install -y curl-devel openssl-devel"
 
 [tool.cibuildwheel.macos]
-before-all = "brew install automake"
-environment = {"CC" = "gcc-12", "CXX" = "g++-12"}
+before-all = "brew install autoconf automake libtool libomp"
 
 [tool.setuptools_scm]
 write_to = "healpy/version.py"
