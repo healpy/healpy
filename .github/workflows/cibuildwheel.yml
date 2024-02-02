@@ -48,7 +48,6 @@ jobs:
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.16
         env:
-          CIBW_ENVIRONMENT: MPLBACKEND=agg
           CIBW_BEFORE_ALL_MACOS: brew install autoconf automake libtool
           # Build wheels for aarch64 under emulation.
           CIBW_ARCHS_LINUX: "auto aarch64"
