@@ -318,7 +318,6 @@ ext_kwargs = dict(
 )
 
 setup(
-    packages=["healpy", "healpy.test"],
     libraries=[
         (
             "cfitsio",
@@ -342,17 +341,6 @@ setup(
                 "local_source": "healpixsubmodule/src/cxx",
             },
         ),
-    ],
-    py_modules=[
-        "healpy.pixelfunc",
-        "healpy.sphtfunc",
-        "healpy.visufunc",
-        "healpy.fitsfunc",
-        "healpy.projector",
-        "healpy.rotator",
-        "healpy.projaxes",
-        "healpy.utils.deprecation",
-        "healpy.version",
     ],
     cmdclass={"build_ext": custom_build_ext, "build_clib": build_external_clib},
     ext_modules=[
@@ -410,15 +398,4 @@ setup(
             **ext_kwargs
         ),
     ],
-    package_data={
-        "healpy": [
-            "data/*.fits",
-            "data/*_cmap.dat",
-            "data/totcls.dat",
-            "test/data/*.fits",
-            "test/data/*.fits.gz",
-            "test/data/*.sh",
-        ]
-    },
-    scripts=["bin/healpy_get_wmap_maps.sh"],
 )

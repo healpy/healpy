@@ -40,6 +40,20 @@ requires = ["setuptools>=45",
 
 build-backend = 'setuptools.build_meta'
 
+[tool.setuptools]
+script-files = ["bin/healpy_get_wmap_maps.sh"]
+
+[tool.setuptools.packages.find]
+include = ["healpy*"]
+
+[tool.setuptools.package-data]
+healpy = ["data/*.fits",
+          "data/*_cmap.dat",
+          "data/totcls.dat",
+          "test/data/*.fits",
+          "test/data/*.fits.gz",
+          "test/data/*.sh"]
+
 [tool.cibuildwheel]
 # Skip PyPy builds; Astropy wheels are not built for PyPy.
 # Skip i686 builds.
