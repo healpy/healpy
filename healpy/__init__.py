@@ -94,7 +94,12 @@ from ._pixelfunc import ringinfo, pix2ring
 from ._sphtools import rotate_alm
 from .rotator import Rotator, vec2dir, dir2vec
 from ._healpy_pixel_lib import UNSEEN
+
 try:
+    import matplotlib
+except ImportError:
+    pass
+else:
     from .visufunc import (
         mollview,
         graticule,
@@ -109,8 +114,6 @@ try:
     )
     from .zoomtool import mollzoom, set_g_clim
     from .newvisufunc import projview, newprojplot
-except:
-    pass
 
 from .fitsfunc import write_map, read_map, read_alm, write_alm, write_cl, read_cl
 from ._masktools import dist2holes_healpy as dist2holes
