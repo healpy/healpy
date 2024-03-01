@@ -22,9 +22,10 @@ authors = [
 ]
 license = { text = "GPL-2.0-only" }
 requires-python = ">=3.9"
-dependencies = ["matplotlib", "numpy>=1.19", "astropy", "scipy"]
+dependencies = ["numpy>=1.19", "astropy"]
 
 [project.optional-dependencies]
+all = ["matplotlib", "scipy"]
 test = ["pytest", "pytest-cython", "pytest-doctestplus", "requests"]
 
 [project.urls]

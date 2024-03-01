@@ -94,25 +94,25 @@ from ._pixelfunc import ringinfo, pix2ring
 from ._sphtools import rotate_alm
 from .rotator import Rotator, vec2dir, dir2vec
 from ._healpy_pixel_lib import UNSEEN
-from .visufunc import (
-    mollview,
-    graticule,
-    delgraticules,
-    gnomview,
-    projplot,
-    projscatter,
-    projtext,
-    cartview,
-    orthview,
-    azeqview,
-)
-from .zoomtool import mollzoom, set_g_clim
+# from .visufunc import (
+#     mollview,
+#     graticule,
+#     delgraticules,
+#     gnomview,
+#     projplot,
+#     projscatter,
+#     projtext,
+#     cartview,
+#     orthview,
+#     azeqview,
+# )
+# from .zoomtool import mollzoom, set_g_clim
 from .fitsfunc import write_map, read_map, read_alm, write_alm, write_cl, read_cl
 from ._masktools import dist2holes_healpy as dist2holes
 from ._hotspots import hotspots_healpy as hotspots
 from ._line_integral_convolution import line_integral_convolution
 
-from .newvisufunc import projview, newprojplot
+#from .newvisufunc import projview, newprojplot
 
 
 from .utils.deprecation import deprecated
