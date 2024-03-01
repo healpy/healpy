@@ -26,7 +26,7 @@ dependencies = ["numpy>=1.19", "astropy"]
 
 [project.optional-dependencies]
 all = ["matplotlib", "scipy"]
-test = ["pytest", "pytest-cython", "pytest-doctestplus", "requests"]
+test = ["matplotlib", "scipy", "pytest", "pytest-cython", "pytest-doctestplus", "requests"]
 
 [project.urls]
 homepage = "http://github.com/healpy"
