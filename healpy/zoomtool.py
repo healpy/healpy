@@ -23,7 +23,6 @@ log = logging.getLogger("healpy")
 from . import projaxes as PA
 from . import rotator as R
 import numpy as np
-import matplotlib
 from ._healpy_pixel_lib import UNSEEN
 from . import pixelfunc
 
@@ -99,6 +98,7 @@ def mollzoom(
       The format of the scale label. Default: '%g'
     """
     import pylab
+    import matplotlib
 
     # Ensure that the nside is valid
     nside = pixelfunc.get_nside(map)
@@ -517,6 +517,7 @@ class ZoomTool(object):
 
     def draw_gnom(self, lon=None, lat=None):
         import pylab
+        import matplotlib
 
         wasinteractive = pylab.isinteractive()
         pylab.ioff()

@@ -63,8 +63,6 @@ __all__ = [
 
 from . import projaxes as PA
 import numpy as np
-import matplotlib
-import matplotlib.pyplot as plt
 from . import pixelfunc
 
 pi = np.pi
@@ -187,6 +185,8 @@ def mollview(
     """
     # Create the figure
     import pylab
+    import matplotlib
+    import matplotlib.pyplot as plt
 
     if map is None:
         map = np.zeros(12) + np.inf
@@ -455,6 +455,8 @@ def gnomview(
     mollview, cartview, orthview, azeqview
     """
     import pylab
+    import matplotlib
+    import matplotlib.pyplot as plt
 
     if map is None:
         map = np.zeros(12) + np.inf
@@ -751,6 +753,8 @@ def cartview(
     mollview, gnomview, orthview, azeqview
     """
     import pylab
+    import matplotlib
+    import matplotlib.pyplot as plt 
 
     if map is None:
         map = np.zeros(12) + np.inf
@@ -1025,6 +1029,8 @@ def orthview(
     """
     # Create the figure
     import pylab
+    import matplotlib.pyplot as plt
+    import matplotlib
 
     if map is None:
         map = np.zeros(12) + np.inf
@@ -1303,6 +1309,8 @@ def azeqview(
     """
     # Create the figure
     import pylab
+    import matplotlib.pyplot as plt
+    import matplotlib
 
     if map is None:
         map = np.zeros(12) + np.inf
