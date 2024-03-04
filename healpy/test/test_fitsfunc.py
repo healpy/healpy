@@ -270,6 +270,12 @@ class TestReadWriteCl(unittest.TestCase):
         cl_read = read_cl(self.filename)
         np.testing.assert_array_almost_equal(cl, cl_read)
 
+    def test_write_read_cl_II_unit(self):
+        cl = np.arange(1025, dtype=np.double)
+        unit = "uK_RJ"
+        write_cl(self.filename, cl, column_units=unit)
+        assert unit == fits.open(self.filename)[1].header["TUNIT1"]
+
     def test_write_read_cl_4comp(self):
         cl = [np.arange(1025, dtype=np.double) for n in range(4)]
         write_cl(self.filename, cl)
