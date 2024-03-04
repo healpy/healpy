@@ -24,7 +24,6 @@ import numpy as np
 
 import astropy.io.fits as pf
 from .utils.deprecation import deprecated_renamed_argument
-from scipy.integrate import trapz
 from astropy.utils import data
 
 DATAURL = "https://healpy.github.io/healpy-data/"
@@ -1338,6 +1337,7 @@ def beam2bl(beam, theta, lmax):
     bl : array
         Beam window function b(l).
     """
+    from scipy.integrate import trapz
 
     nx = len(theta)
     nb = len(beam)

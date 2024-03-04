@@ -63,9 +63,9 @@ __all__ = [
 
 from . import projaxes as PA
 import numpy as np
+from . import pixelfunc
 import matplotlib
 import matplotlib.pyplot as plt
-from . import pixelfunc
 
 pi = np.pi
 dtor = pi / 180.0
