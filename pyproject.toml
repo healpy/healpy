@@ -26,7 +26,14 @@ dependencies = ["numpy>=1.19", "astropy"]
 
 [project.optional-dependencies]
 all = ["matplotlib", "scipy"]
-test = ["matplotlib", "scipy", "pytest", "pytest-cython", "pytest-doctestplus", "requests"]
+test = [
+    "pytest<8",  # pytest-cython does not work with pytest 8.x. See https://github.com/lgpage/pytest-cython/issues/58
+    "pytest-cython",
+    "pytest-doctestplus",
+    "requests",
+    "matplotlib",
+    "scipy",
+]
 
 [project.urls]
 homepage = "http://github.com/healpy"
