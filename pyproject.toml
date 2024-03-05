@@ -62,6 +62,10 @@ healpy = ["data/*.fits",
           "test/data/*.fits.gz",
           "test/data/*.sh"]
 
+[tool.setuptools.exclude-package-data]
+# Exclude C/C++/Cython source files from wheels.
+"*" = ["*.cc", "*.cpp", "*.h", "*.pxd", "*.pyx"]
+
 [tool.cibuildwheel]
 # Skip PyPy builds; Astropy wheels are not built for PyPy.
 # Skip i686 builds.
