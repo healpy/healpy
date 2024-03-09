@@ -353,7 +353,6 @@ def map2alm_lsq(maps, lmax, mmax, pol=True, tol=1e-10, maxiter=20):
     """
     from scipy.sparse.linalg import LinearOperator, lsqr, lsmr
     from scipy.linalg import norm
-    from .pixelfunc import npix2nside
 
     maps = ma_to_array(maps)
     info = maptype(maps)

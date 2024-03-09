@@ -2,8 +2,6 @@ import numpy as np
 import pytest
 import requests
 
-import unittest
-
 import healpy as hp
 from astropy.utils import data
 

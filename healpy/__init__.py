@@ -21,8 +21,6 @@
 compute spherical harmonics tranforms on them.
 """
 
-import logging
-
 from .version import __version__
 
 from .pixelfunc import (
