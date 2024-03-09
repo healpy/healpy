@@ -21,7 +21,6 @@
 """
 from __future__ import division
 
-import sys
 import logging
 
 log = logging.getLogger("healpy")
