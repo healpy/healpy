@@ -51,7 +51,7 @@ jobs:
           echo "CIBW_ENVIRONMENT=CC=$(brew --prefix llvm@15)/bin/clang CXX=$(brew --prefix llvm@15)/bin/clang++ CPPFLAGS=-I$(brew --prefix libomp)/include LDFLAGS=-L$(brew --prefix libomp)/lib" >> "$GITHUB_ENV"
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v2.16
+        uses: pypa/cibuildwheel@v2.17
 
       - uses: actions/upload-artifact@v4
         with:
