@@ -110,6 +110,8 @@ Reference
    healpy_zoomtool
    healpy_line_integral_convolution
 
+   healpy_otherfunc
+
 Indices and tables
 ==================
 
