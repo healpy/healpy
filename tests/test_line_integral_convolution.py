@@ -2,8 +2,8 @@ import os.path
 import unittest
 import numpy as np
 
-from .. import line_integral_convolution as lic
-from .. import read_map
+from healpy import line_integral_convolution as lic
+from healpy import read_map
 
 
 class TestLIC(unittest.TestCase):
