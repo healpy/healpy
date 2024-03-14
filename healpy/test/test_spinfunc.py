@@ -1088,7 +1088,3 @@ class TestSpinFunc(unittest.TestCase):
             tglm, tclm = hp.map2alm_spin([rmap, imap], spin, self.lmax)
             np.testing.assert_allclose(almg, tglm, rtol=1.0e-2, atol=1.0e-2)
             np.testing.assert_allclose(almc, tclm, rtol=1.0e-2, atol=1.0e-2)
-
-
-if __name__ == "__main__":
-    unittest.main()
