@@ -671,7 +671,3 @@ def test_resize_alm(lmax, mmax, lmax_out, mmax_out):
     alm_out2 = hp.resize_alm([alm, 2 * alm], lmax, mmax, lmax_out, mmax_out)
     np.testing.assert_allclose(alm_out, alm_out2[0])
     np.testing.assert_allclose(2 * alm_out, alm_out2[1])
-
-
-if __name__ == "__main__":
-    unittest.main()

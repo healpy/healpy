@@ -338,7 +338,3 @@ def test_writemap_typestr_endianness(tmp_path):
         with pf.open(filename) as f:
             assert f[1].data.field(0).dtype.name == "float32"
             np.testing.assert_array_almost_equal(f[1].data.field(0), m)
-
-
-if __name__ == "__main__":
-    unittest.main()

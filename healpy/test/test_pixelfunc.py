@@ -189,7 +189,3 @@ class TestPixelFunc(unittest.TestCase):
         self.assertTrue(not isnsideok(nside=-16, nest=True))
         self.assertTrue(not isnsideok(nside=-16, nest=False))
         self.assertTrue(not isnsideok(nside=13, nest=True))
-
-
-if __name__ == "__main__":
-    unittest.main()
