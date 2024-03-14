@@ -323,7 +323,7 @@ setup(
             "cfitsio",
             {
                 "pkg_config_name": "cfitsio",
-                "local_source": "cfitsio",
+                "local_source": "cextern/cfitsio",
                 "supports_non_srcdir_builds": False,
             },
         ),
@@ -331,14 +331,14 @@ setup(
             "sharp",
             {
                 "pkg_config_name": "libsharp",
-                "local_source": "healpixsubmodule/src/common_libraries/libsharp",
+                "local_source": "cextern/healpix/src/common_libraries/libsharp",
             },
         ),
         (
             "healpix_cxx",
             {
                 "pkg_config_name": "healpix_cxx >= 3.80.0",
-                "local_source": "healpixsubmodule/src/cxx",
+                "local_source": "cextern/healpix/src/cxx",
             },
         ),
     ],
@@ -388,11 +388,11 @@ setup(
             "healpy._line_integral_convolution",
             [
                 "healpy/src/_line_integral_convolution.pyx",
-                "healpixsubmodule/src/cxx/Healpix_cxx/alice3.cc",
+                "cextern/healpix/src/cxx/Healpix_cxx/alice3.cc",
             ],
             include_dirs=[
-                "healpixsubmodule/src/cxx/cxxsupport",
-                "healpixsubmodule/src/cxx/Healpix_cxx",
+                "cextern/healpix/src/cxx/cxxsupport",
+                "cextern/healpix/src/cxx/Healpix_cxx",
             ],
             cython_directives=dict(embedsignature=True),
             **ext_kwargs
