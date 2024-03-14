@@ -13,10 +13,10 @@ Once new version of HEALPix C++ has been released, we can update `healpixmirror`
 
 then in `healpy`:
 
-    cd healpixsubmodule
+    cd cextern/healpix
     git pull master
     cd ..
-    git add healpixsubmodule
+    git add cextern/healpix
     git commit -m "Updated HEALPix C++ to 3.5.0"
 
 ## Github

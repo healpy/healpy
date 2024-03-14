@@ -3,13 +3,10 @@
 build
 *so
 *ipynb
-pshyt.c
 ipython_log*
 doc/.build
 doc/generated
 *~
-hpbeta/build.*
-hpbeta/healpy_*
 healpy/src/_ianafast.cpp
 healpy/src/_query_disc.cpp
 healpy/src/_pixelfunc.cpp

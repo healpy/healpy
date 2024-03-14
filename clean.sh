@@ -1,4 +1,4 @@
 #!/bin/env bash
 git clean -dxf
-pushd healpixsubmodule; git clean -dxf; popd
-pushd cfitsio; git clean -dxf; popd
+pushd cextern/healpix; git clean -dxf; popd
+pushd cextern/cfitsio; git clean -dxf; popd
