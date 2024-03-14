@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
 
-from .. import query_disc, boundaries, nside2npix, nside2resol, ang2vec
+from healpy import query_disc, boundaries, nside2npix, nside2resol, ang2vec
 
 try:
     from exceptions import ValueError

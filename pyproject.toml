@@ -57,10 +57,7 @@ include = ["healpy*"]
 [tool.setuptools.package-data]
 healpy = ["data/*.fits",
           "data/*_cmap.dat",
-          "data/totcls.dat",
-          "test/data/*.fits",
-          "test/data/*.fits.gz",
-          "test/data/*.sh"]
+          "data/totcls.dat"]
 
 [tool.setuptools.exclude-package-data]
 # Exclude C/C++/Cython source files from wheels.
@@ -71,7 +68,7 @@ healpy = ["data/*.fits",
 # Skip i686 builds.
 # Skip MUSL libc builds.
 skip = "pp* *_i686 *-musllinux_*"
-test-command = "pytest --doctest-plus --doctest-cython -v --pyargs healpy"
+test-command = "pytest --doctest-plus --doctest-cython -v tests --pyargs healpy"
 test-extras = ["test"]
 
 [tool.cibuildwheel.linux]
@@ -86,4 +83,4 @@ write_to = "healpy/version.py"
 
 [tool.pytest.ini_options]
 addopts = "--doctest-plus --doctest-cython -v"
-testpaths = "healpy"
+testpaths = "tests"
