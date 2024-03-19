@@ -216,19 +216,14 @@ Developers building from a snapshot of the github repository need:
 * ``libssl-dev`` (Debian) or ``openssl-dev`` (CentOS)
   is required to build ``cfitsio`` from source
 
-* `cython` > 0.16
-
 * run ``git submodule init`` and ``git submodule update`` to get the bundled
   HEALPix sources
 
-the best way to install healpy if you plan to develop is to build the C++
-extensions in place with::
+The best way to install healpy if you plan to develop is to do a
+`development mode (a.k.a. "editable" install) <https://setuptools.pypa.io/en/latest/userguide/development_mode.html>`_
+with pip by adding the ``-e`` flag::
 
-    python setup.py build_ext --inplace
-
-then add the ``healpy`` repository folder to your ``PYTHONPATH`` (e.g. if you
-cloned this repository to ``$REPOS`` such that ``$REPOS/healpy/INSTALL.rst``
-exists, then add ``$REPOS/healpy`` to your ``PYTHONPATH``).
+    pip install -e .
 
 In case of compilation errors, see the note above in the ``pip`` section.
 
