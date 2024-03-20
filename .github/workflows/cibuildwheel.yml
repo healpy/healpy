@@ -53,10 +53,18 @@ jobs:
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.17
 
+      - name: Upload coverage data to Codecov.io
+        uses: codecov/codecov-action@v3
+
       - uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.os }}
           path: wheelhouse/*
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.os }}.coverage
+          path: .coverage
 
   publish:
     name: Publish to PyPI

@@ -21,7 +21,7 @@ authors = [
     { name = "A. Zonca" },
 ]
 license = { text = "GPL-2.0-only" }
-requires-python = ">=3.9"
+requires-python = ">=3.9, <3.10"
 dependencies = ["numpy>=1.19", "astropy"]
 
 [project.optional-dependencies]
@@ -71,8 +71,9 @@ healpy = ["data/*.fits",
 # Skip i686 builds.
 # Skip MUSL libc builds.
 skip = "pp* *_i686 *-musllinux_*"
-test-command = "pytest --doctest-plus --doctest-cython -v --pyargs healpy"
+test-command = "COVERAGE_FILE={project}/.coverage pytest --doctest-plus --doctest-cython --pyargs healpy --cov --cov-append"
 test-extras = ["test"]
+test-requires = ["pytest-cov"]
 
 [tool.cibuildwheel.linux]
 # Build wheels for aarch64 under emulation.
@@ -85,5 +86,4 @@ before-all = "brew install autoconf automake libtool libomp"
 write_to = "healpy/version.py"
 
 [tool.pytest.ini_options]
-addopts = "--doctest-plus --doctest-cython -v"
-testpaths = "healpy"
+addopts = "--doctest-plus --doctest-cython --pyargs healpy"
