@@ -71,7 +71,7 @@ healpy = ["data/*.fits",
 # Skip i686 builds.
 # Skip MUSL libc builds.
 skip = "pp* *_i686 *-musllinux_*"
-test-command = "COVERAGE_FILE={project}/.coverage -m pytest --doctest-plus --doctest-cython --pyargs healpy --cov --cov-append"
+test-command = "COVERAGE_FILE={project}/.coverage pytest --doctest-plus --doctest-cython --pyargs healpy --cov --cov-append"
 test-extras = ["test"]
 test-requires = ["pytest-cov"]
 
