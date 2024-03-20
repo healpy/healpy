@@ -21,7 +21,7 @@ authors = [
     { name = "A. Zonca" },
 ]
 license = { text = "GPL-2.0-only" }
-requires-python = ">=3.9"
+requires-python = ">=3.9, <3.10"
 dependencies = ["numpy>=1.19", "astropy"]
 
 [project.optional-dependencies]
