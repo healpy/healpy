@@ -71,9 +71,9 @@ healpy = ["data/*.fits",
 # Skip i686 builds.
 # Skip MUSL libc builds.
 skip = "pp* *_i686 *-musllinux_*"
-test-command = "coverage run --append --data-file {project}/.coverage --rcfile {project}/pyproject.toml -m pytest --doctest-plus --doctest-cython --pyargs healpy"
+test-command = "COVERAGE_FILE={project}/.coverage -m pytest --doctest-plus --doctest-cython --pyargs healpy --cov --cov-append"
 test-extras = ["test"]
-test-requires = ["coverage"]
+test-requires = ["pytest-cov"]
 
 [tool.cibuildwheel.linux]
 # Build wheels for aarch64 under emulation.
@@ -87,7 +87,3 @@ write_to = "healpy/version.py"
 
 [tool.pytest.ini_options]
 addopts = "--doctest-plus --doctest-cython --pyargs healpy"
-
-[tool.coverage.run]
-source_pkgs = ["healpy"]
-relative_files = true
