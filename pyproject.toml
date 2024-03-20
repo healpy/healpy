@@ -90,3 +90,4 @@ addopts = "--doctest-plus --doctest-cython --pyargs healpy"
 
 [tool.coverage.run]
 source_pkgs = ["healpy"]
+relative_files = true
