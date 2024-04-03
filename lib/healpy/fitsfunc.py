@@ -592,7 +592,10 @@ def write_alm(
 def read_alm(filename, hdu=1, return_mmax=False):
     """Read alm from a fits file.
 
-    In the fits file, the alm are written
+    The file format is assumed to be the format created by `write_alm`,
+    with 3 columns (index, real and imaginary) for each HDU.
+
+    In the fits file, the alm are assumed to be written
     with explicit index scheme, index = l**2+l+m+1, while healpix cxx
     uses index = m*(2*lmax+1-m)/2+l. The conversion is done in this
     function.
