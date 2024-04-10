@@ -40,8 +40,8 @@ homepage = "http://github.com/healpy"
 
 [build-system]
 
-requires = ["setuptools>=45",
-            "setuptools_scm[toml]>=6.2",
+requires = ["setuptools>=60",
+            "setuptools-scm>=8.0",
             "cython>=0.16",
             "numpy>=1.25",
             "pykg-config"]
