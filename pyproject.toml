@@ -43,7 +43,7 @@ homepage = "http://github.com/healpy"
 requires = ["setuptools>=45",
             "setuptools_scm[toml]>=6.2",
             "cython>=0.16",
-            "numpy>=1.25",
+            "numpy>=2.0.0rc1",
             "pykg-config"]
 
 build-backend = 'setuptools.build_meta'
