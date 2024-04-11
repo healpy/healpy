@@ -41,8 +41,7 @@ ADD . /home/healpy
 # latest healpy version from github
 # RUN git clone https://github.com/healpy/healpy.git /home/healpy
 
-# Initialize the submodules
-RUN cd /home/healpy && git submodule init && git submodule update
+RUN cd /home/healpy
 
 # Setup the python distribution
 RUN pip install -r /home/healpy/requirements.txt

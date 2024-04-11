@@ -1,7 +1,6 @@
 [project]
 name = "healpy"
 description = "Healpix tools package for Python"
-dynamic = ["version"]
 readme = "README.rst"
 classifiers = [
     "Development Status :: 5 - Production/Stable",
@@ -24,6 +23,7 @@ authors = [
 license = { text = "GPL-2.0-only" }
 requires-python = ">=3.9"
 dependencies = ["numpy>=1.19", "astropy"]
+version = "1.17.0"
 
 [project.optional-dependencies]
 all = ["matplotlib", "scipy"]
@@ -41,14 +41,13 @@ test = [
 homepage = "http://github.com/healpy"
 
 [build-system]
-
-requires = ["setuptools>=60",
-            "setuptools-scm>=8.0",
-            "cython>=0.16",
-            "numpy>=2.0.0rc1",
-            "pykg-config"]
-
-build-backend = 'setuptools.build_meta'
+build-backend = 'mesonpy'
+requires = [
+    "meson>=1.4.0",
+    "meson-python",
+    "cython>=0.16",
+    "numpy>=2.0.0rc1",
+]
 
 [tool.setuptools]
 script-files = ["bin/healpy_get_wmap_maps.sh"]
@@ -86,6 +85,3 @@ archs = ["auto", "aarch64"]
 
 [tool.cibuildwheel.macos]
 before-all = "brew install autoconf automake libtool libomp"
-
-[tool.setuptools_scm]
-write_to = "lib/healpy/version.py"
