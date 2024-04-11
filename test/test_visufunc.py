@@ -7,8 +7,8 @@ import numpy as np
 import copy
 
 import healpy as hp
-from ..visufunc import *
-from ..zoomtool import mollzoom
+from healpy.visufunc import *
+from healpy.zoomtool import mollzoom
 
 
 class TestNoCrash(unittest.TestCase):

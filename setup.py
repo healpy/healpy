@@ -346,48 +346,48 @@ setup(
     ext_modules=[
         Extension(
             "healpy._healpy_pixel_lib",
-            sources=["healpy/src/_healpy_pixel_lib.cc"],
+            sources=["src/_healpy_pixel_lib.cc"],
             **ext_kwargs
         ),
         Extension(
             "healpy._healpy_sph_transform_lib",
-            sources=["healpy/src/_healpy_sph_transform_lib.cc"],
+            sources=["src/_healpy_sph_transform_lib.cc"],
             **ext_kwargs
         ),
         Extension(
             "healpy._query_disc",
-            ["healpy/src/_query_disc.pyx"],
+            ["src/_query_disc.pyx"],
             cython_directives=dict(embedsignature=True),
             **ext_kwargs
         ),
         Extension(
             "healpy._sphtools",
-            ["healpy/src/_sphtools.pyx"],
+            ["src/_sphtools.pyx"],
             cython_directives=dict(embedsignature=True),
             **ext_kwargs
         ),
         Extension(
             "healpy._pixelfunc",
-            ["healpy/src/_pixelfunc.pyx"],
+            ["src/_pixelfunc.pyx"],
             cython_directives=dict(embedsignature=True),
             **ext_kwargs
         ),
         Extension(
             "healpy._masktools",
-            ["healpy/src/_masktools.pyx"],
+            ["src/_masktools.pyx"],
             cython_directives=dict(embedsignature=True),
             **ext_kwargs
         ),
         Extension(
             "healpy._hotspots",
-            ["healpy/src/_hotspots.pyx", "healpy/src/_healpy_hotspots_lib.cc"],
+            ["src/_hotspots.pyx", "src/_healpy_hotspots_lib.cc"],
             cython_directives=dict(embedsignature=True),
             **ext_kwargs
         ),
         Extension(
             "healpy._line_integral_convolution",
             [
-                "healpy/src/_line_integral_convolution.pyx",
+                "src/_line_integral_convolution.pyx",
                 "cextern/healpix/src/cxx/Healpix_cxx/alice3.cc",
             ],
             include_dirs=[

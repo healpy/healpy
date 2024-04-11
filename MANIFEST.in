@@ -1,26 +1,24 @@
-recursive-include healpy/data *.fits
-recursive-include healpy/data *_cmap.dat
-recursive-include healpy/test/data *
-exclude healpy/test/data/ipython*
+recursive-include test *
+exclude test/data/ipython*
 exclude cextern/cfitsio/*pdf cextern/cfitsio/*ps cextern/cfitsio/*doc cextern/cfitsio/*tex
 prune cextern/cfitsio/docs
 exclude *.so
 exclude *.a
 exclude .gitignore .gitmodules clean.sh
 include COPYING CITATION INSTALL.rst README.rst MANIFEST.in CHANGELOG.rst run_pykg_config.py
-include healpy/src/_healpy_utils.h
-include healpy/src/_healpy_hotspots_lib.h
-include healpy/src/_line_integral_convolution_lib.h
-include healpy/src/_query_disc.cpp
-include healpy/src/_sphtools.cpp
-include healpy/src/_pixelfunc.cpp
-include healpy/src/_masktools.cpp
-include healpy/src/_hotspots.cpp
-include healpy/src/_line_integral_convolution.cpp
-include healpy/src/_common.pxd
-include healpy/src/_query_disc.pyx
-include healpy/src/_sphtools.pyx
-include healpy/src/_pixelfunc.pyx
-include healpy/src/_masktools.pyx
-include healpy/src/_hotspots.pyx
-include healpy/src/_line_integral_convolution.pyx
+include src/_healpy_utils.h
+include src/_healpy_hotspots_lib.h
+include src/_line_integral_convolution_lib.h
+include src/_query_disc.cpp
+include src/_sphtools.cpp
+include src/_pixelfunc.cpp
+include src/_masktools.cpp
+include src/_hotspots.cpp
+include src/_line_integral_convolution.cpp
+include src/_common.pxd
+include src/_query_disc.pyx
+include src/_sphtools.pyx
+include src/_pixelfunc.pyx
+include src/_masktools.pyx
+include src/_hotspots.pyx
+include src/_line_integral_convolution.pyx
