@@ -7,8 +7,8 @@ import numpy as np
 import gzip
 
 import healpy
-from ..fitsfunc import *
-from ..sphtfunc import *
+from healpy.fitsfunc import *
+from healpy.sphtfunc import *
 
 
 class TestFitsFunc(unittest.TestCase):

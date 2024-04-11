@@ -29,6 +29,7 @@ dependencies = ["numpy>=1.19", "astropy"]
 all = ["matplotlib", "scipy"]
 test = [
     "pytest",
+    "pytest-astropy-header",
     "pytest-cython",
     "pytest-doctestplus",
     "requests",
@@ -54,6 +55,7 @@ script-files = ["bin/healpy_get_wmap_maps.sh"]
 
 [tool.setuptools.packages.find]
 include = ["healpy*"]
+where = ["lib"]
 
 [tool.setuptools.package-data]
 healpy = ["data/*.fits",
@@ -72,7 +74,10 @@ healpy = ["data/*.fits",
 # Skip i686 builds.
 # Skip MUSL libc builds.
 skip = "pp* *_i686 *-musllinux_*"
-test-command = "pytest --doctest-plus --doctest-cython -v --pyargs healpy"
+test-command = [
+    "pytest --doctest-plus --doctest-cython --pyargs healpy",
+    "pytest {project}/test"
+]
 test-extras = ["test"]
 
 [tool.cibuildwheel.linux]
@@ -83,8 +88,4 @@ archs = ["auto", "aarch64"]
 before-all = "brew install autoconf automake libtool libomp"
 
 [tool.setuptools_scm]
-write_to = "healpy/version.py"
-
-[tool.pytest.ini_options]
-addopts = "--doctest-plus --doctest-cython -v"
-testpaths = "healpy"
+write_to = "lib/healpy/version.py"

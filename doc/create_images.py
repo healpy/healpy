@@ -12,7 +12,7 @@ plt.savefig("static/moll_nside32_nest.png", dpi=DPI)
 hp.mollview(m, nest=False, xsize=SIZE, title="Mollview image RING")
 plt.savefig("static/moll_nside32_ring.png", dpi=DPI)
 
-wmap_map_I = hp.read_map("../healpy/test/data/wmap_band_imap_r9_7yr_W_v4.fits")
+wmap_map_I = hp.read_map("../test/data/wmap_band_imap_r9_7yr_W_v4.fits")
 
 hp.mollview(
     wmap_map_I,
@@ -28,7 +28,7 @@ hp.graticule()
 
 plt.savefig("static/wmap_histeq_ecl.png", dpi=DPI)
 mask = hp.read_map(
-    "../healpy/test/data/wmap_temperature_analysis_mask_r9_7yr_v4.fits"
+    "../test/data/wmap_temperature_analysis_mask_r9_7yr_v4.fits"
 ).astype(np.bool_)
 wmap_map_I_masked = hp.ma(wmap_map_I)
 wmap_map_I_masked.mask = np.logical_not(mask)
