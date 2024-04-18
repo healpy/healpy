@@ -592,7 +592,10 @@ def write_alm(
 def read_alm(filename, hdu=1, return_mmax=False):
     """Read alm from a fits file.
 
-    In the fits file, the alm are written
+    The file format is assumed to be the format created by `write_alm`,
+    with 3 columns (index, real and imaginary) for each HDU.
+
+    In the fits file, the alm are assumed to be written
     with explicit index scheme, index = l**2+l+m+1, while healpix cxx
     uses index = m*(2*lmax+1-m)/2+l. The conversion is done in this
     function.
@@ -602,7 +605,10 @@ def read_alm(filename, hdu=1, return_mmax=False):
     filename : str or HDUList or HDU or pathlib.Path instance
       The name of the fits file to read
     hdu : int, or tuple of int, optional
-      The header to read. Start at 0. Default: hdu=1
+      The HDU to read. Default: hdu=1
+      For example, when reading a FITS file containing polarized alm,
+      hdu=1 (or not specifying hdu) will return the alm_T
+      hdu=(1,2,3) will return alm_T, alm_E, alm_B
     return_mmax : bool, optional
       If true, both the alms and mmax is returned in a tuple. Default: return_mmax=False
 
