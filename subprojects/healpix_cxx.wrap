@@ -1,0 +1,6 @@
+[wrap-file]
+directory = healpix_cxx-3.82.0
+patch_directory = healpix_cxx
+source_url = https://sourceforge.net/projects/healpix/files/Healpix_3.82/healpix_cxx-3.82.0.tar.gz
+source_hash = 9c1b0bbbcf007359d1ef10ae3ae9a2f46c72a4eb0c2fdbb43683289002ba8552
+source_filename = healpix_cxx-3.82.0.tar.gz

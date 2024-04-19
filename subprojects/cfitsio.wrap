@@ -1,0 +1,6 @@
+[wrap-file]
+directory = cfitsio-4.4.0
+patch_directory = cfitsio
+source_url = https://heasarc.gsfc.nasa.gov/FTP/software/fitsio/c/cfitsio-4.4.0.tar.gz
+source_hash = 95900cf95ae760839e7cb9678a7b2fad0858d6ac12234f934bd1cb6bfc246ba9
+source_filename = cfitsio-4.4.0.tar.gz

@@ -24,7 +24,6 @@ then in `healpy`:
 * Review recent pull requests and update `CHANGELOG.rst`
 * Create a git tag
 * Draft a new release on Github using the same version name of the tag, in the description just put `See [CHANGELOG.rst](./CHANGELOG.rst)` so we don't duplicate
-* Once the source `tar.gz` is uploaded to PyPI, download it and attach it to the Github release, this avoids people downloading the automatically created Github release dump which does not include the source of the submodules.
 
 ## PyPI - binary wheels, source
 
