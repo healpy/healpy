@@ -5,7 +5,7 @@ prune cextern/cfitsio/docs
 exclude *.so
 exclude *.a
 exclude .gitignore .gitmodules clean.sh
-include COPYING CITATION INSTALL.rst README.rst MANIFEST.in CHANGELOG.rst run_pykg_config.py
+include COPYING CITATION INSTALL.rst README.rst MANIFEST.in CHANGELOG.rst
 include src/_healpy_utils.h
 include src/_healpy_hotspots_lib.h
 include src/_line_integral_convolution_lib.h
