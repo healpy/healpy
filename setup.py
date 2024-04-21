@@ -337,7 +337,7 @@ setup(
         (
             "healpix_cxx",
             {
-                "pkg_config_name": "healpix_cxx >= 3.80.0",
+                "pkg_config_name": "healpix_cxx >= 3.83.0",
                 "local_source": "cextern/healpix/src/cxx",
             },
         ),
@@ -386,14 +386,7 @@ setup(
         ),
         Extension(
             "healpy._line_integral_convolution",
-            [
-                "src/_line_integral_convolution.pyx",
-                "cextern/healpix/src/cxx/Healpix_cxx/alice3.cc",
-            ],
-            include_dirs=[
-                "cextern/healpix/src/cxx/cxxsupport",
-                "cextern/healpix/src/cxx/Healpix_cxx",
-            ],
+            ["src/_line_integral_convolution.pyx"],
             cython_directives=dict(embedsignature=True),
             **ext_kwargs
         ),
