@@ -1,8 +1,8 @@
 import matplotlib
-import matplotlib.cm
 
 matplotlib.use("agg")
 import unittest
+import matplotlib.pyplot as plt
 import numpy as np
 import copy
 
@@ -93,7 +93,7 @@ class TestNoCrash(unittest.TestCase):
     def test_cmap_colors(self):
         # Get a built-in colormap
         name = 'viridis'
-        cmap = copy.copy(matplotlib.cm.get_cmap(name))
+        cmap = copy.copy(plt.get_cmap(name))
 
         # Set outlier colors
         color = (0.25,0.75,0.95,1.0)

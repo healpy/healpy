@@ -948,14 +948,14 @@ def create_colormap(cmap, badcolor="gray", bgcolor="white"):
             cmap_path = os.path.join(datapath, f"{cmap}_cmap.dat")
             cmap0 = matplotlib.colors.ListedColormap(np.loadtxt(cmap_path) / 255.0, cmap)
         else:
-            cmap0 = matplotlib.cm.get_cmap(cmap)
+            cmap0 = plt.get_cmap(cmap)
     elif type(cmap) in [
         matplotlib.colors.LinearSegmentedColormap,
         matplotlib.colors.ListedColormap,
     ]:
         cmap0 = cmap
     else:
-        cmap0 = matplotlib.cm.get_cmap(matplotlib.rcParams["image.cmap"])
+        cmap0 = plt.get_cmap(matplotlib.rcParams["image.cmap"])
     if hasattr(cmap0, "_segmentdata"):
         newcm = matplotlib.colors.LinearSegmentedColormap(
             "newcm", cmap0._segmentdata, cmap0.N

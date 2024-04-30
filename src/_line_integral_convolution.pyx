@@ -78,12 +78,12 @@ def line_integral_convolution(
     -------
     >>> import healpy as hp
     >>> import numpy as np
-    >>> import matplotlib.cm
     >>> import matplotlib.colors
+    >>> import matplotlib.pyplot as plt
     >>> I, Q, U = hp.read_map('iqu_map.fits', (0, 1, 2))
     >>> lic = hp.line_integral_convolution(Q, U)
     >>> hp.mollview(I)
-    >>> cmap_colors = matplotlib.cm.get_cmap('binary', 256)(np.linspace(0, 1, 256))
+    >>> cmap_colors = plt.get_cmap('binary', 256)(np.linspace(0, 1, 256))
     >>> cmap_colors[..., 3] = 0.5  # Make colormap partially transparent
     >>> cmap = matplotlib.colors.ListedColormap(cmap_colors)
     >>> hp.mollview(lic, cmap=cmap, cbar=False, reuse_axes=True)
