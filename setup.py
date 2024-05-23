@@ -7,7 +7,7 @@ import sys
 import shlex
 import shutil
 from Cython.Distutils import build_ext
-from distutils.sysconfig import get_config_var, get_config_vars
+from distutils.sysconfig import get_config_vars
 from subprocess import check_output, CalledProcessError, check_call
 from setuptools import setup, Extension
 from distutils.command.build_clib import build_clib
@@ -27,22 +27,6 @@ to also run the doctests:
 if "test" in sys.argv:
     print(TEST_HELP)
     sys.exit(1)
-
-# Apple switched default C++ standard libraries (from gcc's libstdc++ to
-# clang's libc++), but some pre-packaged Python environments such as Anaconda
-# are built against the old C++ standard library. Luckily, we don't have to
-# actually detect which C++ standard library was used to build the Python
-# interpreter. We just have to propagate MACOSX_DEPLOYMENT_TARGET from the
-# configuration variables to the environment.
-#
-# This workaround fixes <https://github.com/healpy/healpy/issues/151>.
-if (
-    get_config_var("MACOSX_DEPLOYMENT_TARGET")
-    and not "MACOSX_DEPLOYMENT_TARGET" in os.environ
-):
-    os.environ["MACOSX_DEPLOYMENT_TARGET"] = str(
-        get_config_var("MACOSX_DEPLOYMENT_TARGET")
-    )
 
 
 class build_external_clib(build_clib):
