@@ -1,5 +1,41 @@
 Unreleased
 
+Release 1.17.0 22 May 2024
+
+The most important modification is that now `scipy` and `matplotlib` are optional dependencies,
+install them with `pip install healpy[all]`.
+Also includes a lot of packaging fixes, see below.
+
+* Optional dependencies by @swyatt7 in https://github.com/healpy/healpy/pull/910
+* Fix errors with Matplotlib 3.9 by @QuLogic in https://github.com/healpy/healpy/pull/944
+* [doc] pull docstrings from dist2holes and hotspots cython functions by @zonca in https://github.com/healpy/healpy/pull/920
+* Improve docs of read_alm by @zonca in https://github.com/healpy/healpy/pull/930
+* update C++ sources to SVN commit 1238 by @zonca in https://github.com/healpy/healpy/pull/917
+* update healpix sources to r1239 by @zonca in https://github.com/healpy/healpy/pull/941
+* Use alice3 from libhealpix_cxx by @lpsinger in https://github.com/healpy/healpy/pull/939
+* Fix pytest-cython errors by requiring pytest<8 by @lpsinger in https://github.com/healpy/healpy/pull/913
+
+Packaging fixes:
+
+* Exclude C, C++, and Cython sources from wheels by @lpsinger in https://github.com/healpy/healpy/pull/915
+* Remove deleted file from MANIFEST.in by @lpsinger in https://github.com/healpy/healpy/pull/940
+* Update build-system.requires settings by @lpsinger in https://github.com/healpy/healpy/pull/934
+* Remove unused imports by @lpsinger in https://github.com/healpy/healpy/pull/918
+* Unpin pytest by @lpsinger in https://github.com/healpy/healpy/pull/932
+* Update bundled cfitsio to 4.3.1, use official GH mirror by @lpsinger in https://github.com/healpy/healpy/pull/908
+* Guide devs toward `pip install -e`, not `python setup.py` by @lpsinger in https://github.com/healpy/healpy/pull/926
+* Build wheels for macOS arm64 by @lpsinger in https://github.com/healpy/healpy/pull/896
+* Move cibuildwheel conf to pyproject.toml, fix OpenMP for macOS by @lpsinger in https://github.com/healpy/healpy/pull/898
+* Remove wheel from build-system requires by @lpsinger in https://github.com/healpy/healpy/pull/901
+* Move packages, package data, and scripts to pyproject.toml by @lpsinger in https://github.com/healpy/healpy/pull/902
+* Remove obsolete files from MANIFEST.in by @lpsinger in https://github.com/healpy/healpy/pull/903
+* Shrink wheels by building dependencies as shared libraries by @lpsinger in https://github.com/healpy/healpy/pull/905
+* Shrink wheels by not linking against libcurl by @lpsinger in https://github.com/healpy/healpy/pull/906
+* Move vendored sources to cextern directory by @lpsinger in https://github.com/healpy/healpy/pull/923
+* Declare support for Python 3.12 in classifiers by @lpsinger in https://github.com/healpy/healpy/pull/935
+* Build against Numpy>=2.0.0rc1 by @lpsinger in https://github.com/healpy/healpy/pull/933
+* Exclude tests from installation by @lpsinger in https://github.com/healpy/healpy/pull/921
+
 Release 1.16.6 3 October 2023
 
 * Release to generate packages for Python 3.12 https://github.com/healpy/healpy/issues/890
