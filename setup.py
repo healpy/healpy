@@ -308,7 +308,6 @@ setup(
             {
                 "pkg_config_name": "cfitsio",
                 "local_source": "cextern/cfitsio",
-                "supports_non_srcdir_builds": False,
             },
         ),
         (
