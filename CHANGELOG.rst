@@ -1,5 +1,9 @@
 Unreleased
 
+Release 1.17.1 25 May 2024
+
+Just fixing an issue in the PyPI publish action
+
 Release 1.17.0 22 May 2024
 
 The most important modification is that now `scipy` and `matplotlib` are optional dependencies,
