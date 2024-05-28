@@ -92,18 +92,7 @@ CC = "$(brew --prefix llvm@15)/bin/clang"
 CXX = "$(brew --prefix llvm@15)/bin/clang++"
 CPPFLAGS = "-I$(brew --prefix libomp)/include"
 LDFLAGS = "-L$(brew --prefix libomp)/lib"
-
-[[tool.cibuildwheel.overrides]]
-# macOS arm64 wheels are built on GitHub on macOS 11; set deployment target accordingly
-select = "*macosx_x86_64"
-inherit.environment = "append"
-environment.MACOSX_DEPLOYMENT_TARGET = "11.0"
-
-[[tool.cibuildwheel.overrides]]
-# macOS arm64 wheels are built on GitHub on macOS 14; set deployment target accordingly
-select = "*macosx_arm64"
-inherit.environment = "append"
-environment.MACOSX_DEPLOYMENT_TARGET = "14.0"
+MACOSX_DEPLOYMENT_TARGET = "11.0"
 
 [tool.setuptools_scm]
 write_to = "lib/healpy/version.py"
