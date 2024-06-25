@@ -1336,7 +1336,7 @@ def beam2bl(beam, theta, lmax):
     bl : array
         Beam window function b(l).
     """
-    from scipy.integrate import trapz
+    from scipy.integrate import trapezoid as trapz
 
     nx = len(theta)
     nb = len(beam)
