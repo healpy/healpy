@@ -1,5 +1,9 @@
 Unreleased
 
+Release 1.17.2 15 July 2024
+
+* Rename `trapz` function to support latest `scipy` version https://github.com/healpy/healpy/pull/953
+
 Release 1.17.1 25 May 2024
 
 Just fixing an issue in the PyPI publish action
