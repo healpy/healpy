@@ -7,14 +7,12 @@ import sys
 import shlex
 import shutil
 from Cython.Distutils import build_ext
-from distutils.sysconfig import get_config_vars
+from sysconfig import get_config_vars
 from subprocess import check_output, CalledProcessError, check_call
 from setuptools import setup, Extension
-from distutils.command.build_clib import build_clib
-from distutils.errors import DistutilsExecError
-from distutils.dir_util import mkpath
-from distutils.file_util import copy_file
-from distutils import log
+from setuptools.command.build_clib import build_clib
+from setuptools.errors import ExecError
+from setuptools._distutils.log import log
 
 TEST_HELP = """
 Note: running tests is no longer done using 'python setup.py test'. Instead
@@ -129,7 +127,7 @@ class build_external_clib(build_clib):
 
             # If local_source is not specified, then immediately fail.
             if local_source is None:
-                raise DistutilsExecError("library '%s' is not installed", library)
+                raise ExecError("library '%s' is not installed", library)
 
             log.info("building library '%s' from source", library)
 
@@ -158,8 +156,8 @@ class build_external_clib(build_clib):
             build_clib = os.path.realpath(self.build_clib)
 
             # Create build directories if they do not yet exist.
-            mkpath(build_temp)
-            mkpath(build_clib)
+            self.mkpath(build_temp)
+            self.mkpath(build_clib)
 
             if not supports_non_srcdir_builds:
                 self._stage_files_recursive(local_source, build_temp)
@@ -205,8 +203,7 @@ class build_external_clib(build_clib):
                     if not any(fnmatch.fnmatch(filename, s) for s in skip):
                         yield os.path.join(dirpath, filename)
 
-    @staticmethod
-    def _stage_files_recursive(src, dest, skip=None):
+    def _stage_files_recursive(self, src, dest, skip=None):
         """Hard link or copy all of the files in the path src into the path dest.
         Subdirectories are created as needed, and files in dest are overwritten."""
         # Use hard links if they are supported on this system.
@@ -222,13 +219,13 @@ class build_external_clib(build_clib):
                 dest_dirpath = os.path.join(
                     dest, dirpath.split(src, 1)[1].lstrip(os.sep)
                 )
-                mkpath(dest_dirpath)
+                self.mkpath(dest_dirpath)
                 for filename in filenames:
                     if not filename.startswith("."):
                         src_path = os.path.join(dirpath, filename)
                         dest_path = os.path.join(dest_dirpath, filename)
                         if not os.path.exists(dest_path):
-                            copy_file(
+                            self.copy_file(
                                 os.path.join(dirpath, filename),
                                 os.path.join(dest_dirpath, filename),
                             )
