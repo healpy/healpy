@@ -30,7 +30,6 @@ AzimuthalProj : Azimuthal equidistant or Lambert azimuthal equal-area projection
 
 from . import rotator as R
 import numpy as np
-from . import pixelfunc
 from .pixelfunc import UNSEEN
 
 pi = np.pi

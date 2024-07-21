@@ -2,7 +2,7 @@ __all__ = ["projview", "newprojplot"]
 
 import numpy as np
 from .pixelfunc import ang2pix, npix2nside, remove_dipole, remove_monopole
-from .rotator import Rotator, coordsys2euler_zyz
+from .rotator import Rotator
 from .projaxes import get_color_table
 import matplotlib.pyplot as plt
 from matplotlib.projections.geo import GeoAxes
