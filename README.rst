@@ -184,5 +184,3 @@ Acknowledgements
 3. at the first use of the `HEALPix` acronym, a footnote placed in the main body
    of the paper referring to the `HEALPix` web site, currently
    http://healpix.sf.net
-
-4. You can also directly support the maintenance and development of `healpy` via `Github Sponsors <https://github.com/sponsors/zonca>`_
