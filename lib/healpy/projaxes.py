@@ -625,7 +625,7 @@ class SphericalProjAxes(matplotlib.axes.Axes):
     def delgraticules(self):
         """Delete all graticules previously created on the Axes."""
         if hasattr(self, "_graticules"):
-            for dum1, dum2, g in self._graticules:
+            for _, _, g in self._graticules:
                 for gl in g:
                     for l in gl:
                         if l in self.lines:
@@ -942,7 +942,7 @@ def create_colormap(cmap, badcolor="gray", bgcolor="white"):
     bgcolor : string
         color for background (passed to set_under)
     """
-    if type(cmap) == str:
+    if type(cmap) is str:
         if cmap in ["planck", "planck_log", "wmap"]:
             datapath = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
             cmap_path = os.path.join(datapath, f"{cmap}_cmap.dat")

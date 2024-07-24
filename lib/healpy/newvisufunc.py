@@ -362,7 +362,7 @@ def projview(
             else:
                 lpad = -8
             width = 8.5
-            if xlabel == None:
+            if xlabel is None:
                 pad = pad + 0.01
                 ratio = 0.63
     if projection_type == "polar":
@@ -538,9 +538,9 @@ def projview(
         THETA = THETA.reshape(ysize, xsize)
         PHI = PHI.reshape(ysize, xsize)
     nside = npix2nside(len(m))
-    if not m is None:
+    if m is not None:
         w = ~(np.isnan(m) | np.isinf(m))
-        if not m is None:
+        if m is not None:
             # auto min and max
             if min is None:
                 min = m[w].min()

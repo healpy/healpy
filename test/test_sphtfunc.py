@@ -184,7 +184,7 @@ class TestSphtFunc(unittest.TestCase):
         np.testing.assert_allclose(idl_gauss_beam, gauss_beam)
 
     def test_alm2cl(self):
-        nside = 32
+        # nside = 32
         lmax = 64
         lmax_out = 100
         seed = 12345
@@ -652,8 +652,8 @@ class TestSphtFunc(unittest.TestCase):
 def test_resize_alm(lmax, mmax, lmax_out, mmax_out):
     alm = np.random.uniform(size=hp.Alm.getsize(lmax, mmax)).astype(np.complex128)
     alm_out = hp.resize_alm(alm, lmax, mmax, lmax_out, mmax_out)
-    lmaxmax = max(lmax, lmax_out)
-    lmaxmin = min(lmax, lmax_out)
+    # lmaxmax = max(lmax, lmax_out)
+    # lmaxmin = min(lmax, lmax_out)
     for m in range(0, mmax + 1):
         for l in range(m, lmax + 1):
             idx1 = hp.Alm.getidx(lmax, l, m)
