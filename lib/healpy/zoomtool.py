@@ -442,7 +442,7 @@ class ZoomTool(object):
             self.save_min = self._gnom_ax.images[0].norm.vmin
             self.save_max = self._gnom_ax.images[0].norm.vmax
         elif ev.key == "g":
-            if hasattr(self, "_graton") and self._graton:
+            if getattr(self, "_graton", False):
                 self._gnom_ax.delgraticules()
                 self._moll_ax.delgraticules()
                 self._graton = False
