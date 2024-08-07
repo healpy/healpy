@@ -1898,7 +1898,9 @@ def ud_grade(
     """Upgrade or degrade resolution of a map (or list of maps).
 
     in degrading the resolution, ud_grade sets the value of the superpixel
-    as the mean of the children pixels.
+    as the mean of the children pixels. Note that ud_grade can create artifacts
+    in the power spectra and should be avoided unless the specific application
+    can tolerate that.
 
     Parameters
     ----------
