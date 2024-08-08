@@ -38,6 +38,9 @@ from . import pixelfunc
 
 from .pixelfunc import maptype, UNSEEN, ma_to_array, accept_ma
 
+from ._sphtools import alm2map_spin_healpy as alm2map_spin
+from ._sphtools import map2alm_spin_healpy as map2alm_spin
+
 
 class FutureChangeWarning(UserWarning):
     pass
