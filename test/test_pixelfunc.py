@@ -1,6 +1,6 @@
 from healpy.pixelfunc import *
 from healpy._query_disc import boundaries
-from healpy._pixelfunc import ringinfo, pix2ring, isnsideok
+from healpy._pixelfunc import pix2ring, isnsideok
 import numpy as np
 import unittest
 

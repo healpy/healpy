@@ -1643,7 +1643,6 @@ def remove_dipole(
     --------
     fit_dipole, fit_monopole, remove_monopole
     """
-    input_ma = is_ma(m)
     m = ma_to_array(m)
     m = np.array(m, copy=copy)
     npix = m.size
