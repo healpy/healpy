@@ -46,7 +46,7 @@ class ThetaFormatterTheta(GeoAxes.ThetaFormatter):
         return super(ThetaFormatterTheta, self).__call__(x, pos)
 
 
-def lonlat(theta, phi):
+def thetaphi2lonlat(theta, phi):
     """Converts theta and phi to longitude and latitude"""
 
     longitude = np.asarray(phi)
@@ -821,7 +821,7 @@ def newprojplot(theta, phi, fmt=None, lonlat=False, **kwargs):
     if lonlat:
         longitude, latitude = np.deg2rad(theta), np.deg2rad(phi)
     else:
-        longitude, latitude = lonlat(theta, phi)
+        longitude, latitude = thetaphi2lonlat(theta, phi)
 
     if flip == "astro":
         longitude = longitude * -1
