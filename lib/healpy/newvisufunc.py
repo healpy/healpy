@@ -46,7 +46,7 @@ class ThetaFormatterTheta(GeoAxes.ThetaFormatter):
         return super(ThetaFormatterTheta, self).__call__(x, pos)
 
 
-def lonlat(theta, phi):
+def thetaphi2lonlat(theta, phi):
     """Converts theta and phi to longitude and latitude"""
 
     longitude = np.asarray(phi)
@@ -789,7 +789,7 @@ def projview(
     return ret
 
 
-def newprojplot(theta, phi, fmt=None, **kwargs):
+def newprojplot(theta, phi, fmt=None, lonlat=False, **kwargs):
     """newprojplot is a wrapper around :func:`matplotlib.Axes.plot` to support
     colatitude theta and longitude phi and take into account the longitude convention
     (see the `flip` keyword of :func:`projview`)
@@ -802,9 +802,12 @@ def newprojplot(theta, phi, fmt=None, **kwargs):
     Parameters
     ----------
     theta, phi : float, array-like
-      Coordinates of point to plot in radians.
+       Angular coordinates of a point on the sphere
     fmt : str
       A format string (see :func:`matplotlib.Axes.plot` for details)
+    lonlat : bool, optional
+      If True, input angles are assumed to be longitude and latitude in degree,
+      otherwise, they are co-latitude and longitude in radians.
 
     Notes
     -----
@@ -815,7 +818,11 @@ def newprojplot(theta, phi, fmt=None, **kwargs):
     ax = plt.gca()
     flip = getattr(ax, "healpy_flip", "astro")
 
-    longitude, latitude = lonlat(theta, phi)
+    if lonlat:
+        longitude, latitude = np.deg2rad(theta), np.deg2rad(phi)
+    else:
+        longitude, latitude = thetaphi2lonlat(theta, phi)
+
     if flip == "astro":
         longitude = longitude * -1
     if fmt is None:
