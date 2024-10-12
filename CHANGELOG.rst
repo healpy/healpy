@@ -1,4 +1,5 @@
 Unreleased
+* Warn users about `ud_grade` effect on spectra in docstring https://github.com/healpy/healpy/pull/960
 * Update C++ sources to 3.83 https://github.com/healpy/healpy/pull/973
 * Update CFITSIO to 4.5.0 and ensure we build it as shared lib https://github.com/healpy/healpy/pull/942
 
