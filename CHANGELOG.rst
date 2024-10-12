@@ -1,4 +1,5 @@
 Unreleased
+* Update C++ sources to 3.83 https://github.com/healpy/healpy/pull/973
 * Update CFITSIO to 4.5.0 and ensure we build it as shared lib https://github.com/healpy/healpy/pull/942
 
 Release 1.17.3 15 July 2024
