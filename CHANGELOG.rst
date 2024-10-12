@@ -1,4 +1,8 @@
 Unreleased
+
+* Drop support for Python 3.9 https://github.com/healpy/healpy/pull/967
+* Added `lonlat` parameter to `newprojplot` https://github.com/healpy/healpy/pull/963
+* Fix `query_disc` missing pixels near poles, fixed in C++ https://github.com/healpy/healpy/issues/968
 * Warn users about `ud_grade` effect on spectra in docstring https://github.com/healpy/healpy/pull/960
 * Update C++ sources to 3.83 https://github.com/healpy/healpy/pull/973
 * Update CFITSIO to 4.5.0 and ensure we build it as shared lib https://github.com/healpy/healpy/pull/942
