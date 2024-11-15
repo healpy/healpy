@@ -352,7 +352,7 @@ def map2alm_lsq(maps, lmax, mmax, pol=True, tol=1e-10, maxiter=20):
         the number of iterations required
     """
     from scipy.sparse.linalg import LinearOperator, lsqr, lsmr
-    from scipy.linalg import norm
+    from numpy.linalg import norm
 
     maps = ma_to_array(maps)
     info = maptype(maps)
