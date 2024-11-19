@@ -245,6 +245,11 @@ the installation command will have this basic form::
 
     CC=gcc CXX=g++ CFLAGS="-fPIC -O3 -march=native" CXXFLAGS="-fPIC -O3 -march=native" pip3 install --user --no-binary healpy healpy
 
+If the install process errors mentioning a different version of automake, rerun it with:
+
+    cd cextern/cfitsio
+    autoreconf
+
 Clean
 -----
 
