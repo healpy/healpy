@@ -38,6 +38,7 @@ Spherical harmonic transform tools
    almxfl
    pixwin
    Alm
+   resize_alm
 
 Other tools
 -----------
