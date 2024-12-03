@@ -83,8 +83,9 @@ class Rotator(object):
     rot : None or sequence
       Describe the rotation by its euler angle. See :func:`euler_matrix_new`.
     coord : None or sequence of str
-      Describe the coordinate system transform. If *rot* is also given, the
-      coordinate transform is applied first, and then the rotation.
+      Describe the coordinate system transform, typically 'E' for Ecliptic,
+      'G' for Galactic or 'C' for Celestial (equatorial). If *rot* is also 
+      given, the coordinate transform is applied first, and then the rotation.
     inv : bool
       If True, the inverse rotation is defined. (Default: False)
     deg : bool

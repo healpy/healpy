@@ -248,9 +248,10 @@ class SphericalProjAxes(matplotlib.axes.Axes):
         lonlat : bool, optional
           If True, theta and phi are interpreted as longitude and latitude
           in degree, otherwise, as colatitude and longitude in radian
-        coord : {'E', 'G', 'C', None}
-          The coordinate system of the points, only used if the coordinate
-          coordinate system of the Axes has been defined and in this
+        coord : {'E', 'G', 'C', None}, optional
+          The coordinate system of the points, typically 'E' for Ecliptic,
+          'G' for Galactic or 'C' for Celestial (equatorial). Only used if the
+          coordinate coordinate system of the Axes has been defined and in this
           case, a rotation is performed
         rot : None or sequence
           rotation to be applied =(lon, lat, psi) : lon, lat will be position of the
@@ -338,8 +339,9 @@ class SphericalProjAxes(matplotlib.axes.Axes):
           If True, theta and phi are interpreted as longitude and latitude
           in degree, otherwise, as colatitude and longitude in radian
         coord : {'E', 'G', 'C', None}, optional
-          The coordinate system of the points, only used if the coordinate
-          coordinate system of the axes has been defined and in this
+          The coordinate system of the points, typically 'E' for Ecliptic,
+          'G' for Galactic or 'C' for Celestial (equatorial). Only used if the
+          coordinate coordinate system of the Axes has been defined and in this
           case, a rotation is performed
         rot : None or sequence, optional
           rotation to be applied =(lon, lat, psi) : lon, lat will be position of the
@@ -396,8 +398,9 @@ class SphericalProjAxes(matplotlib.axes.Axes):
           If True, theta and phi are interpreted as longitude and latitude
           in degree, otherwise, as colatitude and longitude in radian
         coord : {'E', 'G', 'C', None}, optional
-          The coordinate system of the points, only used if the coordinate
-          coordinate system of the axes has been defined and in this
+          The coordinate system of the points, typically 'E' for Ecliptic,
+          'G' for Galactic or 'C' for Celestial (equatorial). Only used if the
+          coordinate coordinate system of the Axes has been defined and in this
           case, a rotation is performed
         rot : None or sequence, optional
           rotation to be applied =(lon, lat, psi) : lon, lat will be position of the

@@ -117,9 +117,9 @@ def mollview(
       longitude *lon* and latitude *lat* will be at the center. An additional rotation
       of angle *psi* around this direction is applied.
     coord : sequence of character, optional
-      Either one of 'G', 'E' or 'C' to describe the coordinate
-      system of the map, or a sequence of 2 of these to rotate
-      the map from the first to the second coordinate system.
+      Either one of 'G', 'E' or 'C' (where 'E' stands for the Ecliptic, 'G' for the Galactic,
+      and 'C' for the Celestial or equatorial) to describe the coordinate system of the map,
+      or a sequence of 2 of these to rotate the map from the first to the second coordinate system.
     unit : str, optional
       A text describing the unit of the data. Default: ''
     xsize : int, optional
@@ -385,9 +385,9 @@ def gnomview(
       longitude *lon* and latitude *lat* will be at the center. An additional rotation
       of angle *psi* around this direction is applied.
     coord : sequence of character, optional
-      Either one of 'G', 'E' or 'C' to describe the coordinate
-      system of the map, or a sequence of 2 of these to rotate
-      the map from the first to the second coordinate system.
+      Either one of 'G', 'E' or 'C' (where 'E' stands for the Ecliptic, 'G' for the Galactic,
+      and 'C' for the Celestial or equatorial) to describe the coordinate system of the map,
+      or a sequence of 2 of these to rotate the map from the first to the second coordinate system.
     unit : str, optional
       A text describing the unit of the data. Default: ''
     xsize : int, optional
@@ -680,9 +680,9 @@ def cartview(
       longitude *lon* and latitude *lat* will be at the center. An additional rotation
       of angle *psi* around this direction is applied.
     coord : sequence of character, optional
-      Either one of 'G', 'E' or 'C' to describe the coordinate
-      system of the map, or a sequence of 2 of these to rotate
-      the map from the first to the second coordinate system.
+      Either one of 'G', 'E' or 'C' (where 'E' stands for the Ecliptic, 'G' for the Galactic,
+      and 'C' for the Celestial or equatorial) to describe the coordinate system of the map,
+      or a sequence of 2 of these to rotate the map from the first to the second coordinate system.
     unit : str, optional
       A text describing the unit of the data. Default: ''
     xsize : int, optional
@@ -953,9 +953,9 @@ def orthview(
       longitude *lon* and latitude *lat* will be at the center. An additional rotation
       of angle *psi* around this direction is applied.
     coord : sequence of character, optional
-      Either one of 'G', 'E' or 'C' to describe the coordinate
-      system of the map, or a sequence of 2 of these to rotate
-      the map from the first to the second coordinate system.
+      Either one of 'G', 'E' or 'C' (where 'E' stands for the Ecliptic, 'G' for the Galactic,
+      and 'C' for the Celestial or equatorial) to describe the coordinate system of the map,
+      or a sequence of 2 of these to rotate the map from the first to the second coordinate system.
     half_sky : bool, optional
       Plot only one side of the sphere. Default: False
     unit : str, optional
@@ -1225,9 +1225,9 @@ def azeqview(
       longitude *lon* and latitude *lat* will be at the center. An additional rotation
       of angle *psi* around this direction is applied.
     coord : sequence of character, optional
-      Either one of 'G', 'E' or 'C' to describe the coordinate
-      system of the map, or a sequence of 2 of these to rotate
-      the map from the first to the second coordinate system.
+      Either one of 'G', 'E' or 'C' (where 'E' stands for the Ecliptic, 'G' for the Galactic,
+      and 'C' for the Celestial or equatorial) to describe the coordinate system of the map,
+      or a sequence of 2 of these to rotate the map from the first to the second coordinate system.
     unit : str, optional
       A text describing the unit of the data. Default: ''
     xsize : int, optional
@@ -1466,9 +1466,10 @@ def graticule(dpar=None, dmer=None, coord=None, local=None, **kwds):
     ----------
     dpar, dmer : float, scalars
       Interval in degrees between meridians and between parallels
-    coord : {'E', 'G', 'C'}
+    coord : {'E', 'G', 'C', None}
       The coordinate system of the graticule (make rotation if needed,
-      using coordinate system of the map if it is defined).
+      using coordinate system of the map if it is defined), typically
+      'E' for Ecliptic, 'G' for Galactic or 'C' for Celestial (equatorial).
     local : bool
       If True, draw a local graticule (no rotation is performed, useful for
       a gnomonic view, for example)
