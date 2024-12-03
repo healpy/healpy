@@ -70,9 +70,10 @@ def mollzoom(
       longitude *lon* and latitude *lat* will be at the center. An additional rotation
       of angle *psi* around this direction is applied.
     coord : sequence of character, optional
-      Either one of 'G', 'E' or 'C' to describe the coordinate
-      system of the map, or a sequence of 2 of these to rotate
-      the map from the first to the second coordinate system.
+      Either one of 'G', 'E' or 'C' (where 'E' stands for the Ecliptic, 'G' for
+      the Galactic, and 'C' for the Celestial or equatorial) to describe the coordinate
+      system of the map, or a sequence of 2 of these to rotate the map from the first
+      to the second coordinate system.
     unit : str, optional
       A text describing the unit of the data. Default: ''
     xsize : int, optional
