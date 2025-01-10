@@ -76,8 +76,8 @@ def projview(
     format="%g",
     cbar=True,
     cmap="viridis",
-    badcolor="grey",
-    bgcolor="white",
+    badcol="grey",
+    bgcol="white",
     norm=None,
     norm_dict=None,
     graticule=False,
@@ -556,7 +556,7 @@ def projview(
                 max = m[w].max()
 
         cm, nn = get_color_table(
-            min, max, m[w], cmap=cmap, norm=norm, badcolor, bgcolor, **norm_dict_defaults
+            min, max, m[w], cmap=cmap, norm=norm, badcolor=badcol, bgcolor=bgcol, **norm_dict_defaults
         )
         grid_pix = ang2pix(nside, THETA, PHI, nest=nest)
         grid_map = m[grid_pix]
