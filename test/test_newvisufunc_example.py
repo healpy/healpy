@@ -491,3 +491,36 @@ def test_projview_symlog_normalization(map_data):
         sub=122,
     )
     plt.tight_layout()
+
+    def test_projview_mollweide_badcolor(map_data):
+        projview(
+            map_data,
+            coord=["G"],
+            graticule=True,
+            graticule_labels=True,
+            unit="cbar label",
+            xlabel="longitude",
+            ylabel="latitude",
+            cb_orientation="vertical",
+            min=-0.05,
+            max=0.05,
+            latitude_grid_spacing=45,
+            projection_type="mollweide",
+            title="Mollweide projection with badcolor",
+            badcolor="red",
+        )
+
+    def test_projview_cart_bgcolor(map_data):
+        projview(
+            map_data,
+            coord=["G"],
+            graticule=True,
+            graticule_labels=True,
+            unit="cbar label",
+            xlabel="longitude",
+            ylabel="latitude",
+            cb_orientation="horizontal",
+            projection_type="cart",
+            title="Cart projection with bgcolor",
+            bgcolor="lightblue",
+        )
