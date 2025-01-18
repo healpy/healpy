@@ -3,12 +3,19 @@ from healpy.newvisufunc import projview, newprojplot
 import matplotlib.pyplot as plt
 import numpy as np
 import pytest
+import os.path
+
+path = os.path.dirname(os.path.realpath(__file__))
 
 
 @pytest.fixture
 def map_data():
     return hp.read_map(
-        "test/data/wmap_band_iqumap_r9_7yr_W_v4_udgraded32_masked_smoothed10deg_fortran.fits"
+        os.path.join(
+            path,
+            "data",
+            "wmap_band_iqumap_r9_7yr_W_v4_udgraded32_masked_smoothed10deg_fortran.fits",
+        )
     )
 
 
