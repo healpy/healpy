@@ -76,6 +76,8 @@ def projview(
     format="%g",
     cbar=True,
     cmap="viridis",
+    badcolor="grey",
+    bgcolor="white",
     norm=None,
     norm_dict=None,
     graticule=False,
@@ -168,6 +170,10 @@ def projview(
       Display the colorbar. Default: True
     cmap : str, optional
         Specify the colormap. default: Viridis
+    badcolor: str, optional
+        Specify the color of bad pixels. default: Grey
+    bgcolor: str, optional
+        Specify the color of the background. default: White
     norm : {'hist', 'log', 'symlog', 'symlog2', None}
       Color normalization:
       hist = histogram equalized color mapping.
@@ -550,7 +556,7 @@ def projview(
                 max = m[w].max()
 
         cm, nn = get_color_table(
-            min, max, m[w], cmap=cmap, norm=norm, **norm_dict_defaults
+            min, max, m[w], cmap=cmap, norm=norm, badcolor=badcolor, bgcolor=bgcolor, **norm_dict_defaults
         )
         grid_pix = ang2pix(nside, THETA, PHI, nest=nest)
         grid_map = m[grid_pix]
