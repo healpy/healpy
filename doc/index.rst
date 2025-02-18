@@ -5,6 +5,8 @@ Welcome to the healpy documentation
 `Hierarchical Equal Area isoLatitude Pixelization (HEALPix) <https://healpix.jpl.nasa.gov/>`_
 scheme and bundles the `HEALPix` C++ library.
 
+For an introduction to HEALPix and `healpy`, see `Methods for CMB map analysis <https://arxiv.org/html/2410.12951v2>`_.
+
 `HEALPix` was developed to efficiently process Cosmic Microwave Background data from Cosmology
 experiments like BOOMERANG and WMAP but it is now used in other branches of Astrophysics to
 store data from all-sky surveys. The target audience used to be primarily the Cosmology
