@@ -37,6 +37,8 @@ store data from all-sky surveys. The target audience used to be primarily the Co
 scientific community but currently anyone interested in handling pixelated data on the sphere
 is very welcome to propose new features.
 
+For an introduction to HEALPix and `healpy`, see `Methods for CMB map analysis <https://arxiv.org/html/2410.12951v2>`_.
+
 Capabilities
 ------------
 
