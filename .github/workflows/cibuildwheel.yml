@@ -32,18 +32,12 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-13, macos-14]
+        os: [ubuntu-22.04, ubuntu-22.04-arm, macos-13, macos-14]
 
     steps:
       - uses: actions/checkout@v4
         with:
           submodules: true
-
-      - name: Set up QEMU
-        if: runner.os == 'Linux'
-        uses: docker/setup-qemu-action@v3
-        with:
-          platforms: arm64
 
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.22
