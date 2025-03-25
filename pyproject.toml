@@ -35,6 +35,13 @@ test = [
     "matplotlib",
     "scipy",
 ]
+doc = [
+    "ipykernel",
+    "matplotlib",
+    "nbsphinx",
+    "numpydoc",
+    "scipy",
+]
 
 [project.urls]
 homepage = "http://github.com/healpy"
