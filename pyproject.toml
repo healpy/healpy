@@ -79,10 +79,6 @@ test-command = [
 ]
 test-extras = ["test"]
 
-[tool.cibuildwheel.linux]
-# Build wheels for aarch64 under emulation.
-archs = ["auto", "aarch64"]
-
 [tool.cibuildwheel.macos]
 before-all = "brew install autoconf automake libtool libomp"
 
