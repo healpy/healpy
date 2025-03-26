@@ -1,5 +1,12 @@
 Unreleased
 
+Release 1.18.1 26 Mar 2025
+
+* Updated CFITSIO to 4.6.2 https://github.com/healpy/healpy/pull/1000
+* Fix for `map2alm_lsq` shape error with Scipy 1.15 https://github.com/healpy/healpy/pull/991
+* Fix overflow for `map2alm_lsq` with Nside 8192 https://github.com/healpy/healpy/pull/976
+* Improvements to `projview` https://github.com/healpy/healpy/pull/984
+
 Release 1.18.0 2 Nov 2024
 
 * Update C++ sources to 3.83 https://github.com/healpy/healpy/pull/973
