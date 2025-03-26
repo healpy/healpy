@@ -45,4 +45,4 @@ Release:
 * [ ] conda-forge: https://anaconda.org/conda-forge/healpy
 * [ ] wheels on PyPI for linux and Mac OS 
 
-@zonca @lpsinger @hivon @mreineck @lpsinger 
+@zonca @lpsinger @hivon @mreineck 
