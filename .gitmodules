@@ -3,4 +3,5 @@
 	url = https://github.com/healpy/healpixmirror.git
 [submodule "cfitsio"]
 	path = cextern/cfitsio
-	url = https://github.com/HEASARC/cfitsio.git
+	url = https://github.com/lpsinger/cfitsio.git
+	branch = remove-generated-autotools-files
