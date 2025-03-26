@@ -396,6 +396,10 @@ def map2alm_lsq(maps, lmax, mmax, pol=True, tol=1e-10, maxiter=20):
 
     # initial guess
     alm0 = m2a2(maps) / npix * (4 * np.pi)
+
+    # We are explicitly setting "dtype" for the LinearOperator here because
+    # some (inadvertent?) changes in scipy 1.15 made this necessary
+    # (see, e.g., https://github.com/scipy/scipy/issues/22310).
     op = LinearOperator(
         matvec=a2m2, rmatvec=m2a2, shape=(len(maps) * maps[0].size, alm0.size),
         dtype=alm0.real.dtype
