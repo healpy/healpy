@@ -1,17 +1,24 @@
 version: 2
 
+sphinx:
+  configuration: doc/conf.py
+
 build:
   os: ubuntu-22.04
+  apt_packages:
+    - autoconf
+    - automake
+    - libtool
+    - pkgconf
   tools:
-    python: mambaforge-22.9
-
-conda:
-  environment: doc/environment.yml
+    python: "3.11"
 
 python:
   install:
     - method: pip
       path: .
+      extra_requirements:
+        - doc
 
 submodules:
   include: all

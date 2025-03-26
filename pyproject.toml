@@ -35,6 +35,13 @@ test = [
     "matplotlib",
     "scipy",
 ]
+doc = [
+    "ipykernel",
+    "matplotlib",
+    "nbsphinx",
+    "numpydoc",
+    "scipy",
+]
 
 [project.urls]
 homepage = "http://github.com/healpy"
@@ -78,10 +85,6 @@ test-command = [
     "pytest {project}/test"
 ]
 test-extras = ["test"]
-
-[tool.cibuildwheel.linux]
-# Build wheels for aarch64 under emulation.
-archs = ["auto", "aarch64"]
 
 [tool.cibuildwheel.macos]
 before-all = "brew install autoconf automake libtool libomp"
