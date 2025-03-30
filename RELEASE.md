@@ -43,6 +43,7 @@ Release:
 * [ ] Github: https://github.com/healpy/healpy/releases/
 * [ ] PyPI: https://pypi.org/project/healpy
 * [ ] conda-forge: https://anaconda.org/conda-forge/healpy
-* [ ] wheels on PyPI for linux and Mac OS 
+* [ ] wheels on PyPI for linux and Mac OS https://pypi.org/project/healpy/#files
+* [ ] Debian packages https://packages.debian.org/sid/python3-healpy https://packages.debian.org/sid/healpy-data
 
 @zonca @lpsinger @hivon @mreineck 
