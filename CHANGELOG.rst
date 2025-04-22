@@ -2,6 +2,7 @@ Unreleased
 
 * added support for automatically adjusting latitudes within [-90, 90] range in ang2pix https://github.com/healpy/healpy/pull/1026
 * Implemented NESTED support in query_strip https://github.com/healpy/healpy/pull/1025
+* `pixwin` now loads pixel window functions from a local datapath or downloads and caches them using astropy, similar to pixel weights. Added tests for both local and remote data access. https://github.com/healpy/healpy/pull/1005
 
 Release 1.18.1 26 Mar 2025
 
