@@ -1163,13 +1163,19 @@ def pixwin(nside, pol=False, lmax=None):
     if lmax is None:
         lmax = 3 * nside - 1
 
-    datapath = DATAPATH
     if not pixelfunc.isnsideok(nside):
         raise ValueError("Wrong nside value (must be a power of two).")
-    fname = os.path.join(datapath, "pixel_window_n%04d.fits" % nside)
+
+    filename = f"pixel_window_functions/pixel_window_n{nside:04d}.fits"
+    # Use astropy to download/cache the file
+    with (
+        data.conf.set_temp("dataurl", DATAURL),
+        data.conf.set_temp("remote_timeout", 30),
+    ):
+        fname = data.get_pkg_data_filename(filename, package="healpy")
+
     if not os.path.isfile(fname):
-        raise ValueError("No pixel window for this nside " "or data files missing")
-    # return hfitslib._pixwin(nside,datapath,pol)  ## BROKEN -> seg fault...
+        raise ValueError("No pixel window for this nside or data files missing")
     pw = pf.getdata(fname)
     pw_temp, pw_pol = pw.field(0), pw.field(1)
     if pol:
