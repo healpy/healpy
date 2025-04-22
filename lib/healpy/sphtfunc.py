@@ -1141,7 +1141,7 @@ def smoothing(
     return output_map
 
 
-def pixwin(nside, pol=False, lmax=None):
+def pixwin(nside, pol=False, lmax=None, datapath=None):
     """Return the pixel window function for the given nside.
 
     Parameters
@@ -1152,6 +1152,10 @@ def pixwin(nside, pol=False, lmax=None):
       If True, return also the polar pixel window. Default: False
     lmax : int, optional
         Maximum l of the power spectrum (default: 3*nside-1)
+    datapath : None or str, optional
+        If given, the directory where to find the pixel window function file.
+        If not found locally, will be downloaded and cached using astropy.
+        See the docstring of `map2alm` for details on how to set it up
 
     Returns
     -------
@@ -1167,15 +1171,18 @@ def pixwin(nside, pol=False, lmax=None):
         raise ValueError("Wrong nside value (must be a power of two).")
 
     filename = f"pixel_window_functions/pixel_window_n{nside:04d}.fits"
-    # Use astropy to download/cache the file
-    with (
-        data.conf.set_temp("dataurl", DATAURL),
-        data.conf.set_temp("remote_timeout", 30),
-    ):
-        fname = data.get_pkg_data_filename(filename, package="healpy")
+    if datapath is not None:
+        fname = os.path.join(datapath, filename)
+        if not os.path.isfile(fname):
+            raise ValueError(f"Pixel window file not found at {fname}")
+    else:
+        # Use astropy to download/cache the file
+        with (
+            data.conf.set_temp("dataurl", DATAURL),
+            data.conf.set_temp("remote_timeout", 30),
+        ):
+            fname = data.get_pkg_data_filename(filename, package="healpy")
 
-    if not os.path.isfile(fname):
-        raise ValueError("No pixel window for this nside or data files missing")
     pw = pf.getdata(fname)
     pw_temp, pw_pol = pw.field(0), pw.field(1)
     if pol:
