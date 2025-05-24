@@ -108,5 +108,8 @@ def dist2holes_healpy(m, maxdist=np.pi, hole_min_size=None, hole_min_surf_arcmin
 
     D[0] = dist2holes(M[0], maxdist)
 
+    # Set distances to zero where there are no holes (all valid)
+    distances[(mi > 0) & (distances == maxdist)] = 0.0
+
     del M, D
     return distances
