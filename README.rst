@@ -64,7 +64,7 @@ Requirements
 
 * `Numpy <http://numpy.scipy.org/>`_ (tested with version >=1.19)
 
-* `Matplotlib <http://matplotlib.sourceforge.net/>`_
+* `Matplotlib <https://matplotlib.org/>`_
 
 * Python development package is required for some distribution (e.g.,
   python-dev package for Ubuntu)
