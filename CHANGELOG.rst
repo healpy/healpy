@@ -1,5 +1,7 @@
 Unreleased
 
+* `pixwin` now loads pixel window functions from a local datapath or downloading and caching them using astropy, similar to pixel weights. Added tests for both local and remote data access. https://github.com/healpy/healpy/pull/1005
+
 Release 1.18.1 26 Mar 2025
 
 * Updated CFITSIO to 4.6.2 https://github.com/healpy/healpy/pull/1000
