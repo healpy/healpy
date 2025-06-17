@@ -76,10 +76,8 @@ healpy = ["data/*.fits",
 "*" = ["*.cc", "*.cpp", "*.h", "*.pxd", "*.pyx"]
 
 [tool.cibuildwheel]
-# Skip PyPy builds; Astropy wheels are not built for PyPy.
-# Skip i686 builds.
 # Skip MUSL libc builds.
-skip = "pp* *_i686 *-musllinux_*"
+skip = "*-musllinux_*"
 test-command = [
     "pytest --doctest-plus --doctest-cython --pyargs healpy",
     "pytest {project}/test"
