@@ -76,8 +76,6 @@ healpy = ["data/*.fits",
 "*" = ["*.cc", "*.cpp", "*.h", "*.pxd", "*.pyx"]
 
 [tool.cibuildwheel]
-# Skip MUSL libc builds.
-skip = "*-musllinux_*"
 test-command = [
     "pytest --doctest-plus --doctest-cython --pyargs healpy",
     "pytest {project}/test"
