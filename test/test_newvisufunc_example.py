@@ -179,6 +179,25 @@ def test_projview_cart_graticule_vertical_cbar(map_data):
         projection_type="cart",
     )
 
+def test_projview_cart_lonra_latra(map_data):
+    projview(
+        map_data,
+        coord=["G"],
+        projection_type="cart",
+        lonra=[-30, 30],
+        latra=[-30, 30],
+)
+
+def test_projview_lonra_latra_error(map_data):
+    with pytest.raises(ValueError):
+        projview(
+            map_data,
+            coord=["G"],
+            lonra=[-30, 30],
+            latra=[-30, 30],
+    )
+
+
 
 def test_projview_3d(map_data):
     projview(

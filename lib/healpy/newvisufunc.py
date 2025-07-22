@@ -115,6 +115,8 @@ def projview(
     remove_dip=False,
     remove_mono=False,
     gal_cut=0,
+    latra=None,
+    lonra=None,
     **kwargs,
 ):
     """Plot a healpix map (given as an array) in the chosen projection.
@@ -275,6 +277,10 @@ def projview(
     gal_cut : float, scalar, optional
       Symmetric galactic cut for the dipole/monopole fit. Removes points in
       latitude range [-gal_cut, +gal_cut]
+    lonra : list
+        longitude range for the map, in degrees. Default is -180 to 180.
+    latra : list
+        latitude range for the map, in degrees. Default is -90 to 90.
     kwargs : dict
         any leftover arguments will be passed to pcolormesh
     """
@@ -285,6 +291,31 @@ def projview(
         min = np.min(cbar_ticks)
     if max is None and cbar_ticks is not None:
         max = np.max(cbar_ticks)
+
+    # The longitude and latitude ranges.
+    # For the full-sky projections this must be the full
+    # range -180 to 180 for longitude and -90 to 90 for latitude.
+    # For the cartesian projection, it can be set to a smaller range.
+    if projection_type != "cart" and (lonra is not None or latra is not None):
+        raise ValueError("lonra and latra can only be set for projection_type='cart'")
+    if lonra is None:
+        lon_min = -180.
+        lon_max = 180.
+    else:
+        lon_min = lonra[0]
+        lon_max = lonra[1]
+
+    if latra is None:
+        lat_min = -90.
+        lat_max = 90.
+    else:
+        lat_min = latra[0]
+        lat_max = latra[1]
+
+    phi_min = np.radians(lon_min)
+    phi_max = np.radians(lon_max)
+    theta_min = np.radians(90 - lat_max)
+    theta_max = np.radians(90 - lat_min)
 
     # Update values for symlog normalization if specified
     norm_dict_defaults = {"linthresh": 1, "base": 10, "linscale": 0.1}
@@ -525,10 +556,10 @@ def projview(
         left += 0.02
 
     ysize = xsize // 2
-    theta = np.linspace(np.pi, 0, ysize)
-    phi = np.linspace(-np.pi, np.pi, xsize)
+    theta = np.linspace(theta_max, theta_min, ysize)
+    phi = np.linspace(phi_min, phi_max, xsize)
 
-    longitude = np.radians(np.linspace(-180, 180, xsize))
+    longitude = np.radians(np.linspace(lon_min, lon_max, xsize))
     if flip == "astro":
         longitude = longitude[::-1]
     if not return_only_data:
@@ -536,7 +567,7 @@ def projview(
         # set property on ax so it can be used in newprojplot
         ax.healpy_flip = flip
 
-    latitude = np.radians(np.linspace(-90, 90, ysize))
+    latitude = np.radians(np.linspace(lat_min, lat_max, ysize))
     # project the map to a rectangular matrix xsize x ysize
     PHI, THETA = np.meshgrid(phi, theta)
     # coord or rotation
