@@ -188,6 +188,15 @@ def test_projview_cart_lonra_latra(map_data):
         latra=[-30, 30],
 )
 
+def test_projview_lonra_latra_error(map_data):
+    with pytest.raises(ValueError):
+        projview(
+            map_data,
+            coord=["G"],
+            lonra=[-30, 30],
+            latra=[-30, 30],
+    )
+
 
 
 def test_projview_3d(map_data):
