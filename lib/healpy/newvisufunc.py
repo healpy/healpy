@@ -292,12 +292,19 @@ def projview(
     if max is None and cbar_ticks is not None:
         max = np.max(cbar_ticks)
 
+    # The longitude and latitude ranges.
+    # For the full-sky projections this must be the full
+    # range -180 to 180 for longitude and -90 to 90 for latitude.
+    # For the cartesian projection, it can be set to a smaller range.
+    if projection_type != "cart" and (lonra is not None or latra is not None):
+        raise ValueError("lonra and latra can only be set for projection_type='cart'")
     if lonra is None:
         lon_min = -180.
         lon_max = 180.
     else:
         lon_min = lonra[0]
         lon_max = lonra[1]
+
     if latra is None:
         lat_min = -90.
         lat_max = 90.
