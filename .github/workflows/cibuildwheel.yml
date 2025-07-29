@@ -40,7 +40,7 @@ jobs:
           submodules: true
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v3.0
+        uses: pypa/cibuildwheel@v3.1
 
       - uses: actions/upload-artifact@v4
         with:
