@@ -157,7 +157,7 @@ def check_theta_valid(theta):
         raise ValueError("THETA is out of range [0,pi]")
 
 
-def lonlat2thetaphi(lon, lat, auto=False):
+def lonlat2thetaphi(lon, lat, latauto=False):
     """Transform longitude and latitude (deg) into co-latitude and longitude (rad)
 
     Parameters
@@ -166,7 +166,7 @@ def lonlat2thetaphi(lon, lat, auto=False):
       Longitude in degrees
     lat : int or array-like
       Latitude in degrees
-    auto: bool, optional
+    latauto: bool, optional
       If True, automatically adjust latitudes to be within [-90, 90] range
 
     Returns
@@ -174,7 +174,7 @@ def lonlat2thetaphi(lon, lat, auto=False):
     theta, phi : float, scalar or array-like
       The co-latitude and longitude in radians
     """
-    if auto:
+    if latauto:
       lat[lat > 90] = 180 - lat[lat > 90]
       lat[lat < -90] = -180 - lat[lat < -90]
     return np.pi / 2.0 - np.radians(lat), np.radians(lon)
@@ -426,7 +426,7 @@ def ma(m, badval=UNSEEN, rtol=1e-5, atol=1e-8, copy=True):
     return np.ma.masked_values(np.array(m), badval, rtol=rtol, atol=atol, copy=copy)
 
 
-def ang2pix(nside, theta, phi, nest=False, lonlat=False):
+def ang2pix(nside, theta, phi, nest=False, lonlat=False, latauto=False):
     """ang2pix : nside,theta[rad],phi[rad],nest=False,lonlat=False -> ipix (default:RING)
 
     Parameters
@@ -440,6 +440,8 @@ def ang2pix(nside, theta, phi, nest=False, lonlat=False):
     lonlat : bool
       If True, input angles are assumed to be longitude and latitude in degree,
       otherwise, they are co-latitude and longitude in radians.
+    latauto: bool, optional
+      If True, automatically adjust latitudes to be within [-90, 90] range
 
     Returns
     -------
@@ -478,7 +480,7 @@ def ang2pix(nside, theta, phi, nest=False, lonlat=False):
     check_nside(nside, nest=nest)
 
     if lonlat:
-        theta, phi = lonlat2thetaphi(theta, phi)
+        theta, phi = lonlat2thetaphi(theta, phi, latauto=latauto)
     check_theta_valid(theta)
     check_nside(nside, nest=nest)
     if nest:
