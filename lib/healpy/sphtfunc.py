@@ -262,12 +262,20 @@ def map2alm(
                     "is missing at {}".format(pixel_weights_filename)
                 )
         if pixel_weights_filename is None:
-            with data.conf.set_temp("dataurl", DATAURL), data.conf.set_temp(
-                "dataurl_mirror", DATAURL_MIRROR
-            ), data.conf.set_temp("remote_timeout", 30):
-                pixel_weights_filename = data.get_pkg_data_filename(
-                    filename, package="healpy"
+            try:
+                with data.conf.set_temp("dataurl", DATAURL), data.conf.set_temp(
+                    "dataurl_mirror", DATAURL_MIRROR
+                ), data.conf.set_temp("remote_timeout", 30):
+                    pixel_weights_filename = data.get_pkg_data_filename(
+                        filename, package="healpy"
+                    )
+            except Exception as e:
+                log.warning(
+                    "Could not download pixel weights for nside %d: %s. "
+                    "Proceeding without pixel weights.", nside, e
                 )
+                use_pixel_weights = False
+                pixel_weights_filename = None # Ensure it's None so it doesn't try to use a non-existent file
 
     if pol or info in (0, 1):
         alms = _sphtools.map2alm(
