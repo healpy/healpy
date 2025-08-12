@@ -157,7 +157,7 @@ def check_theta_valid(theta):
         raise ValueError("THETA is out of range [0,pi]")
 
 
-def lonlat2thetaphi(lon, lat):
+def lonlat2thetaphi(lon, lat, auto=False):
     """Transform longitude and latitude (deg) into co-latitude and longitude (rad)
 
     Parameters
@@ -166,12 +166,17 @@ def lonlat2thetaphi(lon, lat):
       Longitude in degrees
     lat : int or array-like
       Latitude in degrees
+    auto: bool, optional
+      If True, automatically adjust latitudes to be within [-90, 90] range
 
     Returns
     -------
     theta, phi : float, scalar or array-like
       The co-latitude and longitude in radians
     """
+    if auto:
+      lat[lat > 90] = 180 - lat[lat > 90]
+      lat[lat < -90] = -180 - lat[lat < -90]
     return np.pi / 2.0 - np.radians(lat), np.radians(lon)
 
 
