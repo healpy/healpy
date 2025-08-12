@@ -26,6 +26,27 @@ def test_astropy_download_file():
     )
 
 
+import unittest.mock
+from urllib.error import URLError
+
+
+def test_map2alm_pixelweights_download_fail(caplog):
+    nside = 16
+    m = np.arange(hp.nside2npix(nside))
+
+    with unittest.mock.patch('astropy.utils.data.get_pkg_data_filename') as mock_get_pkg_data_filename:
+        mock_get_pkg_data_filename.side_effect = URLError('Simulated download error')
+        
+        alm = hp.map2alm(m, use_pixel_weights=True, lmax=3*nside-1)
+
+        mock_get_pkg_data_filename.assert_called_once()
+
+        assert "Could not download pixel weights" in caplog.text
+        assert "Proceeding without pixel weights" in caplog.text
+
+        assert isinstance(alm, np.ndarray)
+
+
 def test_pixelweights_local_datapath_missing():
 
     with pytest.raises(RuntimeError):
