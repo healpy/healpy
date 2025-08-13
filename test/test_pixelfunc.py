@@ -189,3 +189,44 @@ class TestPixelFunc(unittest.TestCase):
         self.assertTrue(not isnsideok(nside=-16, nest=True))
         self.assertTrue(not isnsideok(nside=-16, nest=False))
         self.assertTrue(not isnsideok(nside=13, nest=True))
+
+    def test_latauto_and_latbounce(self):
+        """Test latauto and latbounce features in lonlat2thetaphi."""
+        
+        # Test array input
+        lat = [-100, -90, 0, 90, 100]
+        lon = [0, 60, 90, 0, 180]
+
+        # Test with latauto=False (default)
+        theta, phi = lonlat2thetaphi(lon, lat)
+        self.assertTrue(np.allclose(theta, [np.pi / 2 - np.deg2rad(-100), np.pi, np.pi / 2, 0, np.pi / 2 - np.deg2rad(100)]))
+        self.assertTrue(np.allclose(phi, np.deg2rad([lon[0], lon[1], lon[2], lon[3], lon[4]])))
+
+        # Test with latauto=True and latbounce=True (default)
+        theta, phi = lonlat2thetaphi(lon, lat, latauto=True)
+        self.assertTrue(np.allclose(theta, [np.pi / 2 + np.deg2rad(80), np.pi, np.pi / 2, 0, np.pi / 2 - np.deg2rad(80)]))
+        self.assertTrue(np.allclose(phi, np.deg2rad([lon[0], lon[1], lon[2], lon[3], lon[4]])))
+
+        # Test with latauto=True and latbounce=False
+        theta, phi = lonlat2thetaphi(lon, lat, latauto=True, latbounce=False)
+        self.assertTrue(np.allclose(theta, [np.pi / 2 + np.deg2rad(80), np.pi / 2 + np.pi / 2, np.pi / 2, 0, np.pi / 2 - np.deg2rad(80)]))
+        self.assertTrue(np.allclose(phi, [np.radians(180), np.radians(60), np.radians(90), np.radians(0), np.radians(180 + 180)]))
+
+        # Test scalar input
+        lat_scalar = -100
+        lon_scalar = 10
+
+        # Test with latauto=False (default)
+        theta_scalar, phi_scalar = lonlat2thetaphi(lon_scalar, lat_scalar)
+        self.assertTrue(np.allclose(theta_scalar, np.pi / 2 + np.deg2rad(100)))
+        self.assertTrue(np.allclose(phi_scalar, np.deg2rad(lon_scalar)))
+
+        # Test with latauto=True and latbounce=True (default)
+        theta_scalar, phi_scalar = lonlat2thetaphi(lon_scalar, lat_scalar, latauto=True)
+        self.assertTrue(np.allclose(theta_scalar, np.pi / 2 + np.deg2rad(80)))
+        self.assertTrue(np.allclose(phi_scalar, np.radians(lon_scalar)))
+
+        # Test with latauto=True and latbounce=False
+        theta_scalar, phi_scalar = lonlat2thetaphi(lon_scalar, lat_scalar, latauto=True, latbounce=False)
+        self.assertTrue(np.allclose(theta_scalar, np.pi / 2 + np.deg2rad(80)))
+        self.assertTrue(np.allclose(phi_scalar, np.deg2rad(lon_scalar) + np.pi))
