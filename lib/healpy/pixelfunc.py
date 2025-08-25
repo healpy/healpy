@@ -185,7 +185,7 @@ def lonlat2thetaphi(lon, lat, latauto=False, latbounce=True):
             lon[lat > 90] = lon[lat > 90] + 180
             lon[lat < -90] = lon[lat < -90] + 180
         lat[lat > 90] = 180 - lat[lat > 90]
-        lat[lat < -90] = -180 - lat[lat < -90]
+        lat[lat < -90] = -(180 + lat[lat < -90])
           
     return np.pi / 2.0 - np.radians(lat), np.radians(lon)
 
@@ -437,7 +437,7 @@ def ma(m, badval=UNSEEN, rtol=1e-5, atol=1e-8, copy=True):
 
 
 def ang2pix(nside, theta, phi, nest=False, lonlat=False, latauto=False, latbounce=True):
-    """ang2pix : nside,theta[rad],phi[rad],nest=False,lonlat=False,latauto=False,latbounce=False -> ipix (default:RING)
+    """ang2pix : nside,theta[rad],phi[rad],nest=False,lonlat=False,latauto=False,latbounce=True -> ipix (default:RING)
 
     Parameters
     ----------
