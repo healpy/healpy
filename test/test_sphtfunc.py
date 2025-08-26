@@ -4,6 +4,7 @@ import numpy as np
 from copy import deepcopy
 from itertools import chain
 import pytest
+from urllib.error import URLError
 
 import unittest
 
@@ -455,7 +456,7 @@ class TestSphtFunc(unittest.TestCase):
         [hp.pixwin(nside) for nside in nsides]
 
         # Test invalid nside
-        with self.assertRaises(ValueError):
+        with self.assertRaises(URLError):
             hp.pixwin(15)
 
     def test_pixwin_pol(self):
