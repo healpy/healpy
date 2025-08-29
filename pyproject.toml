@@ -76,6 +76,7 @@ healpy = ["data/*.fits",
 "*" = ["*.cc", "*.cpp", "*.h", "*.pxd", "*.pyx"]
 
 [tool.cibuildwheel]
+build = "cp310-* cp311-* cp312-* cp313-*"
 test-command = [
     "pytest --doctest-plus --doctest-cython --pyargs healpy",
     "pytest {project}/test"
