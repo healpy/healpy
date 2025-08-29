@@ -3,6 +3,8 @@ from healpy._query_disc import boundaries
 from healpy._pixelfunc import pix2ring, isnsideok
 import numpy as np
 import unittest
+from healpy._query_disc import query_strip
+from healpy.pixelfunc import ring2nest
 
 
 class TestPixelFunc(unittest.TestCase):
@@ -189,3 +191,17 @@ class TestPixelFunc(unittest.TestCase):
         self.assertTrue(not isnsideok(nside=-16, nest=True))
         self.assertTrue(not isnsideok(nside=-16, nest=False))
         self.assertTrue(not isnsideok(nside=13, nest=True))
+
+    def test_query_strip_nest(self):
+        # Test query_strip with nest=True, which was previously crashing
+        nside = 2
+        theta1 = 1
+        theta2 = 2
+
+        # Expected result using the workaround from the issue description
+        expected_result = ring2nest(nside, query_strip(nside, theta1, theta2, nest=False))
+
+        # Actual result with nest=True
+        actual_result = query_strip(nside, theta1, theta2, nest=True)
+
+        np.testing.assert_array_equal(actual_result, expected_result)
