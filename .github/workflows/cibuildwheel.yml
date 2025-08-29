@@ -41,6 +41,8 @@ jobs:
 
       - name: Build wheels
         uses: pypa/cibuildwheel@v3.1
+        env:
+          CIBW_MANYLINUX_X86_64_IMAGE: quay.io/pypa/manylinux2014_x86_64
 
       - uses: actions/upload-artifact@v4
         with:
