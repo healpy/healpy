@@ -1,0 +1,44 @@
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, edited]
+
+permissions:
+  pull-requests: write    # needed only if you keep the "optional: comment" step
+  contents: read
+
+jobs:
+  block-default-branch-prs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fail if PR is from a fork's default branch (e.g., main/master)
+        env:
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          HEAD_DEFAULT: ${{ github.event.pull_request.head.repo.default_branch }}
+        run: |
+          echo "Head branch: $HEAD_REF"
+          echo "Head repo default branch: $HEAD_DEFAULT"
+          if [ "$HEAD_REF" = "$HEAD_DEFAULT" ]; then
+            echo "::error::Pull requests must come from a feature branch, not '${HEAD_REF}'. Please create a new branch off the latest 'main'."
+            exit 1
+          fi
+
+      # Optional: leave a helpful comment when blocking
+      - name: Comment with instructions (optional)
+        if: ${{ failure() }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const body = [
+              "🚫 **Blocked:** This PR was opened from your fork's default branch (`" + process.env.HEAD_REF + "`).",
+              "",
+              "**How to fix:**",
+              "1. Update your fork's `main` from upstream if needed.",
+              "2. Create a feature branch: `git checkout -b my-feature`",
+              "3. Push and open a new PR from that feature branch."
+            ].join("\n");
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number,
+              body
+            });
