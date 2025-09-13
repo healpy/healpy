@@ -6,6 +6,10 @@ on:
   release:
     types:
       - published
+  schedule:
+    # Runs at 9 AM California time (16:00 UTC) on the first Tuesday of every month
+    - cron: '0 16 1-7 * 2'
+  workflow_dispatch: # Allows manual triggering from GitHub UI
 
 jobs:
 
@@ -66,3 +70,5 @@ jobs:
         with:
           user: __token__
           password: ${{ secrets.PYPI_API_TOKEN }}
+
+  
