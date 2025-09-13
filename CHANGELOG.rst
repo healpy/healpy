@@ -1,5 +1,7 @@
 Unreleased
 
+* added support for automatically adjusting latitudes within [-90, 90] range in ang2pix https://github.com/healpy/healpy/pull/1026
+
 Release 1.18.1 26 Mar 2025
 
 * Updated CFITSIO to 4.6.2 https://github.com/healpy/healpy/pull/1000
