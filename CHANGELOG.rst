@@ -1,6 +1,7 @@
 Unreleased
 
 * added support for automatically adjusting latitudes within [-90, 90] range in ang2pix https://github.com/healpy/healpy/pull/1026
+* Implemented NESTED support in query_strip https://github.com/healpy/healpy/pull/1025
 
 Release 1.18.1 26 Mar 2025
 
