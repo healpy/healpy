@@ -856,7 +856,7 @@ def reorder(map_in, inp=None, out=None, r2n=None, n2r=None):
     ----------
     map_in : array-like
       the input map to reorder, accepts masked arrays
-    inp, out : ``'RING'`` or ``'NESTED'``
+    inp, out : ``'RING'`` or ``'NEST'``
       define the input and output ordering
     r2n : bool
       if True, reorder from RING to NESTED
@@ -1932,7 +1932,7 @@ def ud_grade(
       if ``True``, in degrading, reject pixels which contains
       a bad sub_pixel. Otherwise, estimate average with good pixels
     order_in, order_out : str
-      pixel ordering of input and output ('RING' or 'NESTED')
+      pixel ordering of input and output ('RING' or 'NEST')
     power : float
       if non-zero, divide the result by (nside_in/nside_out)**power
       Examples:
