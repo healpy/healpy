@@ -6,6 +6,8 @@ Python interfaces live under `lib/healpy`, organized by functionality (`pixelfun
 ## Build, Test, and Development Commands
 Install editable dependencies with `python -m pip install -e .[all,test]` and ensure `cython` is available before building extensions. Produce a distribution bundle via `python -m build`. Run the full suite locally with `pytest --doctest-plus --doctest-cython --pyargs healpy && pytest test/`. To iterate on a single module, target the file: `pytest test/test_pixelfunc.py -k ring2nest`. Regenerate documentation using `make -C doc html`, which writes to `doc/.build/html`.
 
+When working with `uv`, create the project environment with `uv venv && source .venv/bin/activate`. Install the core package via `uv pip install .` (or `uv pip install --no-editable .` if C extensions must be imported during tests). Pull in test extras with `uv pip install '.[test]'`. Run the standard suite using `uv run --no-editable --extra test pytest --doctest-plus --doctest-cython --pyargs healpy` followed by `uv run --no-editable --extra test pytest test/`.
+
 ## Coding Style & Naming Conventions
 Follow PEP 8 with 4-space indentation and descriptive, lower_snake_case function names. Public APIs exported from `lib/healpy/__init__.py` should use concise, astronomy-friendly names; private helpers stay prefixed with `_`. Maintain NumPy-style docstrings, including clear parameter units. Cython modules should mirror existing naming (`_module.cpp`, `_module.pyx`) and keep the Python shim in `lib/healpy/`. When touching compiled code, match the brace and spacing conventions already present in the surrounding file.
 
