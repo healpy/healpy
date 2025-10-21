@@ -14,8 +14,32 @@ cdef extern from "mask_tools.h":
 
 def fill_small_holes(mask, nside, min_size=None, min_area_arcmin2=None):
     """
-    Fill holes (regions of 0s) in a HEALPix mask that are smaller than min_size (pixels)
-    or min_area_arcmin2 (arcmin^2). Returns a new mask with small holes filled.
+    Fill holes (pixels set to 0) in a binary HEALPix mask that are smaller than
+    the requested thresholds.
+
+    Parameters
+    ----------
+    mask : ndarray
+        Binary mask in NEST ordering where 1 marks valid pixels and 0 marks
+        masked pixels.
+    nside : int
+        NSIDE of the mask.
+    min_size : int, optional
+        Minimum number of connected pixels that should be preserved. Holes with
+        fewer pixels are filled.
+    min_area_arcmin2 : float, optional
+        Minimum hole area, expressed in arcmin^2, that should be preserved.
+        Area is computed assuming equal-area HEALPix pixels.
+
+    Returns
+    -------
+    ndarray
+        Copy of ``mask`` with holes below the thresholds filled.
+
+    Notes
+    -----
+    Connectivity uses the HEALPix neighbour graph in the mask's native NEST
+    ordering.
     """
     import numpy as np
     from healpy.pixelfunc import get_all_neighbours
