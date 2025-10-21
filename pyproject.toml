@@ -13,6 +13,7 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Topic :: Scientific/Engineering :: Astronomy",
     "Topic :: Scientific/Engineering :: Visualization",
 ]
@@ -76,7 +77,7 @@ healpy = ["data/*.fits",
 "*" = ["*.cc", "*.cpp", "*.h", "*.pxd", "*.pyx"]
 
 [tool.cibuildwheel]
-build = "cp310-* cp311-* cp312-* cp313-*"
+build = "cp310-* cp311-* cp312-* cp313-* cp314-*"
 test-command = [
     "pytest --doctest-plus --doctest-cython --pyargs healpy",
     "pytest {project}/test"
