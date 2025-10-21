@@ -12,7 +12,7 @@ from subprocess import check_output, CalledProcessError, check_call
 from setuptools import setup, Extension
 from setuptools.command.build_clib import build_clib
 from setuptools.errors import ExecError
-from setuptools._distutils.log import log
+from setuptools._distutils import log
 
 TEST_HELP = """
 Note: running tests is no longer done using 'python setup.py test'. Instead
