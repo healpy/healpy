@@ -4,7 +4,7 @@ import numpy as np
 cimport numpy as np
 
 import cython
-from .pixelfunc import maptype
+from .pixelfunc import maptype, npix2nside
 
 from _common cimport Healpix_Map, RING, ndarray2map
 
@@ -21,9 +21,8 @@ def fill_small_holes(mask, nside, min_size=None, min_area_arcmin2=None):
     from healpy.pixelfunc import get_all_neighbours
     npix = mask.size
     mask_out = mask.copy()
-    tags = np.full(npix, 0, dtype=np.int32)
     visited = np.zeros(npix, dtype=bool)
-    area_per_pix = 4 * np.pi / npix * (180*60/np.pi)**2
+    area_per_pix = 4 * np.pi / npix * (180 * 60 / np.pi) ** 2
     hole_id = 0
     for p in range(npix):
         if mask_out[p] == 0 and not visited[p]:
@@ -35,9 +34,8 @@ def fill_small_holes(mask, nside, min_size=None, min_area_arcmin2=None):
                 q = stack.pop()
                 if not visited[q] and mask_out[q] == 0:
                     visited[q] = True
-                    tags[q] = hole_id
                     hole_pixels.append(q)
-                    n = get_all_neighbours(nside, q, nest=True)
+                    n = get_all_neighbours(nside, q)
                     for nn in n:
                         if nn >= 0 and not visited[nn] and mask_out[nn] == 0:
                             stack.append(nn)
@@ -95,7 +93,7 @@ def dist2holes_healpy(m, maxdist=np.pi, hole_min_size=None, hole_min_surf_arcmin
 
     # Optionally fill small holes before distance calculation
     if hole_min_size is not None or hole_min_surf_arcmin2 is not None:
-        nside = int(np.sqrt(mi.size // 12))
+        nside = npix2nside(mi.size)
         mi = fill_small_holes(mi, nside, hole_min_size, hole_min_surf_arcmin2)
 
     # View the ndarray as a Healpix_Map
@@ -107,9 +105,6 @@ def dist2holes_healpy(m, maxdist=np.pi, hole_min_size=None, hole_min_surf_arcmin
     D = ndarray2map(distances, RING)
 
     D[0] = dist2holes(M[0], maxdist)
-
-    # Set distances to zero where there are no holes (all valid)
-    distances[(mi > 0) & (distances == maxdist)] = 0.0
 
     del M, D
     return distances
