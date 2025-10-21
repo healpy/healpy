@@ -25,6 +25,7 @@ import numpy as np
 import astropy.io.fits as pf
 from .utils.deprecation import deprecated_renamed_argument
 from astropy.utils import data
+from urllib.error import URLError
 
 DATAURL = "https://healpy.github.io/healpy-data/"
 DATAURL_MIRROR = "https://github.com/healpy/healpy-data/releases/download/"
@@ -33,7 +34,7 @@ from . import _healpy_sph_transform_lib as sphtlib
 from . import _sphtools as _sphtools
 from . import cookbook as cb
 
-import os.path
+import os
 from . import pixelfunc
 
 from .pixelfunc import maptype, UNSEEN, ma_to_array, accept_ma
@@ -1152,16 +1153,33 @@ def pixwin(nside, pol=False, lmax=None, datapath=None):
       If True, return also the polar pixel window. Default: False
     lmax : int, optional
         Maximum l of the power spectrum (default: 3*nside-1)
-    datapath : None or str, optional
-        If given, the directory where to find the pixel window function file.
-        If not found locally, will be downloaded and cached using astropy.
-        See the docstring of `map2alm` for details on how to set it up
+    datapath : None or str or path-like, optional
+        Directory (or explicit file path) where to look for pixel window
+        functions before attempting a download.  When pointing to a directory,
+        healpy searches both that directory and the ``pixel_window_functions``
+        sub-directory for files named
+        ``pixel_window_nXXXX.fits``.  If no local file is found the data are
+        downloaded and cached via astropy using the healpy-data repository.
+        See the Notes below for suggestions on preparing an offline cache.
 
     Returns
     -------
     pw or pwT,pwP : array or tuple of 2 arrays
       The temperature pixel window function, or a tuple with both
       temperature and polarisation pixel window functions.
+
+    Notes
+    -----
+    Pixel window functions are stored in the dedicated
+    `healpy-data <https://github.com/healpy/healpy-data>`_ repository.
+    They are downloaded on demand the first time a specific ``nside`` is
+    requested and cached under the Astropy data directory.  For offline
+    environments clone the repository and point ``datapath`` to either the
+    repository root or to the ``pixel_window_functions`` directory, for
+    example::
+
+        git clone --depth 1 https://github.com/healpy/healpy-data
+        hp.pixwin(8192, datapath=\"/path/to/healpy-data\")
     """
 
     if lmax is None:
@@ -1172,16 +1190,40 @@ def pixwin(nside, pol=False, lmax=None, datapath=None):
 
     filename = f"pixel_window_functions/pixel_window_n{nside:04d}.fits"
     if datapath is not None:
-        fname = os.path.join(datapath, filename)
-        if not os.path.isfile(fname):
-            raise ValueError(f"Pixel window file not found at {fname}")
+        datapath = os.fspath(datapath)
+        candidate_files = []
+        if os.path.isfile(datapath):
+            candidate_files.append(datapath)
+        else:
+            candidate_files.append(os.path.join(datapath, filename))
+            candidate_files.append(
+                os.path.join(datapath, os.path.basename(filename))
+            )
+        for candidate in candidate_files:
+            if os.path.isfile(candidate):
+                fname = candidate
+                break
+        else:
+            raise ValueError(
+                "Pixel window file not found at {}. If you maintain a local "
+                "copy of healpy-data, point datapath to the repository root "
+                "or to the pixel_window_functions directory.".format(datapath)
+            )
     else:
-        # Use astropy to download/cache the file
-        with (
-            data.conf.set_temp("dataurl", DATAURL),
-            data.conf.set_temp("remote_timeout", 30),
-        ):
-            fname = data.get_pkg_data_filename(filename, package="healpy")
+        # Use astropy to download/cache the file, mirroring the behaviour for
+        # pixel weights so users benefit from both the primary data source and
+        # its GitHub release mirror.
+        try:
+            with (
+                data.conf.set_temp("dataurl", DATAURL),
+                data.conf.set_temp("dataurl_mirror", DATAURL_MIRROR),
+                data.conf.set_temp("remote_timeout", 30),
+            ):
+                fname = data.get_pkg_data_filename(filename, package="healpy")
+        except (URLError, OSError) as err:
+            raise URLError(
+                f"Could not download pixel window for nside {nside}: {err}"
+            ) from err
 
     pw = pf.getdata(fname)
     pw_temp, pw_pol = pw.field(0), pw.field(1)
