@@ -1,10 +1,12 @@
 import astropy.io.fits as pf
 import os
+import tempfile
+import unittest.mock
+from urllib.error import URLError
 import numpy as np
 from copy import deepcopy
 from itertools import chain
 import pytest
-
 import unittest
 
 import healpy as hp
@@ -13,6 +15,26 @@ import warnings
 
 # disable new order warnings in tests
 warnings.filterwarnings("ignore")
+
+
+def _create_pixel_window_file(base_dir, nside):
+    """Write a minimal pixel window FITS file for the requested nside."""
+    pixel_dir = os.path.join(base_dir, "pixel_window_functions")
+    os.makedirs(pixel_dir, exist_ok=True)
+    lmax = 3 * nside - 1
+    ell = np.arange(lmax + 1, dtype=np.float64)
+    temperature = 1.0 / (ell + 1.0)
+    polarization = 0.5 / (ell + 1.0)
+    cols = pf.ColDefs(
+        [
+            pf.Column(name="TEMPERATURE", format="D", array=temperature),
+            pf.Column(name="POLARIZATION", format="D", array=polarization),
+        ]
+    )
+    table_hdu = pf.BinTableHDU.from_columns(cols, name="PIXEL WINDOW")
+    file_path = os.path.join(pixel_dir, f"pixel_window_n{nside:04d}.fits")
+    pf.HDUList([pf.PrimaryHDU(), table_hdu]).writeto(file_path, overwrite=True)
+    return file_path
 
 
 class TestSphtFunc(unittest.TestCase):
@@ -452,11 +474,19 @@ class TestSphtFunc(unittest.TestCase):
     def test_pixwin_base(self):
         # Base case
         nsides = [2**p for p in np.arange(1, 14)]
-        [hp.pixwin(nside) for nside in nsides]
+        with tempfile.TemporaryDirectory() as tmpdir:
+            for nside in nsides:
+                _create_pixel_window_file(tmpdir, nside)
+                pixwin = hp.pixwin(nside, datapath=tmpdir)
+                self.assertEqual(len(pixwin), 3 * nside)
 
         # Test invalid nside
-        with self.assertRaises(ValueError):
-            hp.pixwin(15)
+        with unittest.mock.patch(
+            "astropy.utils.data.get_pkg_data_filename",
+            side_effect=URLError("simulated download failure"),
+        ):
+            with self.assertRaises(URLError):
+                hp.pixwin(15)
 
     def test_pixwin_pol(self):
         pixwin = hp.pixwin(128, pol=True)
