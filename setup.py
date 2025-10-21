@@ -127,7 +127,7 @@ class build_external_clib(build_clib):
 
             # If local_source is not specified, then immediately fail.
             if local_source is None:
-                raise ExecError("library '%s' is not installed", library)
+                raise ExecError(f"library '{library}' is not installed")
 
             log.info("building library '%s' from source", library)
 
