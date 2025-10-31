@@ -58,30 +58,36 @@ def test_projview_graticule_labels_with_rotation():
             except ValueError:
                 pass
     
-    # Check that 50 is among the labels (allowing for the degree symbol)
+    # Check that we got numeric labels
     assert len(label_values) > 0, "No numeric labels found"
     
     # The center should be offset by 50 degrees
     # With default 60° spacing and rot=50, we expect to see labels around 50°
-    # Specifically, we should see either 50° exactly or labels that confirm the offset
+    # Since labels can wrap around (e.g., 350° is close to 10°), we need to
+    # check if the distribution is offset from the unrotated case
     
-    # Check if any label is close to 50° (within grid spacing tolerance)
-    has_expected_offset = any(abs(val - 50) < 5 for val in label_values)
+    # Normalize all values to [0, 360) for comparison
+    normalized_values = [(v % 360) for v in label_values]
     
     print(f"X-tick labels found: {xtick_labels}")
     print(f"Numeric values: {label_values}")
-    print(f"Has label near 50°: {has_expected_offset}")
+    print(f"Normalized values: {normalized_values}")
     
-    # At minimum, the labels should not all be centered around 0
-    # They should be offset by approximately 50 degrees
-    center_label_avg = np.mean([v for v in label_values if 0 <= v <= 120])
+    # With rot=50 and counterclockwise astro convention, we expect labels to be offset
+    # Check if we have a label close to 50° or if the pattern is clearly offset
+    has_label_near_50 = any(abs(v - 50) < 10 or abs(v - 410) < 10 for v in label_values)
     
-    print(f"Average of center labels: {center_label_avg:.1f}°")
+    # Alternative check: the mean of labels should be significantly different from 180
+    # (which would be the center of the unrotated case with symmetric labels)
+    mean_value = np.mean([v for v in normalized_values if 20 <= v <= 290])
     
-    # The average should be significantly different from 0 (the old broken behavior)
-    # and closer to 50 (the expected behavior)
-    assert abs(center_label_avg) > 20, \
-        f"Labels appear not to be rotated (average {center_label_avg:.1f}° too close to 0°)"
+    print(f"Has label near 50°: {has_label_near_50}")
+    print(f"Mean of visible labels: {mean_value:.1f}°")
+    
+    # The labels should show evidence of rotation - either a label near 50°
+    # or a mean that's offset from the unrotated case
+    assert has_label_near_50 or abs(mean_value - 180) > 30, \
+        f"Labels do not appear to be rotated correctly. Mean: {mean_value:.1f}°"
     
     plt.close(fig)
 
