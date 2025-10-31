@@ -13,21 +13,37 @@ import warnings
 class ThetaFormatterCounterclockwisePhi(GeoAxes.ThetaFormatter):
     """Convert tick labels from rads to degs and shifts labelling from -180|-90|0|90|180 to conterclockwise periodic 180|90|0|270|180"""
 
+    def __init__(self, *args, rot_offset=0.0, **kwargs):
+        super(ThetaFormatterCounterclockwisePhi, self).__init__(*args, **kwargs)
+        self.rot_offset = rot_offset
+
     def __call__(self, x, pos=None):
         if x != 0:
             x *= -1
         if x < 0:
             x += 2 * np.pi
+        # Apply rotation offset
+        x += np.radians(self.rot_offset)
+        # Normalize to [0, 2*pi)
+        x = x % (2 * np.pi)
         return super(ThetaFormatterCounterclockwisePhi, self).__call__(x, pos)
 
 
 class ThetaFormatterClockwisePhi(GeoAxes.ThetaFormatter):
     """Convert tick labels from rads to degs and shifts labelling from -180|-90|0|90|180 to clockwise periodic 180|270|0|90|180"""
 
+    def __init__(self, *args, rot_offset=0.0, **kwargs):
+        super(ThetaFormatterClockwisePhi, self).__init__(*args, **kwargs)
+        self.rot_offset = rot_offset
+
     def __call__(self, x, pos=None):
 
         if x < 0:
             x += 2 * np.pi
+        # Apply rotation offset
+        x += np.radians(self.rot_offset)
+        # Normalize to [0, 2*pi)
+        x = x % (2 * np.pi)
         #   return super(ThetaFormatterShiftPhi, self).__call__(x, pos)
         return super(ThetaFormatterClockwisePhi, self).__call__(x, pos)
 
@@ -35,14 +51,28 @@ class ThetaFormatterClockwisePhi(GeoAxes.ThetaFormatter):
 class ThetaFormatterSymmetricPhi(GeoAxes.ThetaFormatter):
     """Just convert phi ticks from rad to degs and keep the true -180|-90|0|90|180"""
 
+    def __init__(self, *args, rot_offset=0.0, **kwargs):
+        super(ThetaFormatterSymmetricPhi, self).__init__(*args, **kwargs)
+        self.rot_offset = rot_offset
+
     def __call__(self, x, pos=None):
+        # Apply rotation offset
+        x += np.radians(self.rot_offset)
+        # Normalize to [-pi, pi)
+        x = (x + np.pi) % (2 * np.pi) - np.pi
         return super(ThetaFormatterSymmetricPhi, self).__call__(x, pos)
 
 
 class ThetaFormatterTheta(GeoAxes.ThetaFormatter):
     """Convert theta ticks from rads to degs"""
 
+    def __init__(self, *args, rot_offset=0.0, **kwargs):
+        super(ThetaFormatterTheta, self).__init__(*args, **kwargs)
+        self.rot_offset = rot_offset
+
     def __call__(self, x, pos=None):
+        # Apply rotation offset for latitude
+        x += np.radians(self.rot_offset)
         return super(ThetaFormatterTheta, self).__call__(x, pos)
 
 
@@ -645,15 +675,28 @@ def projview(
 
     # labelling
     if graticule_labels & graticule:
+        # Extract rotation offset for graticule labels
+        lon_offset = 0.0
+        lat_offset = 0.0
+        if rot is not None:
+            if not hasattr(rot, '__len__'):
+                # Scalar value (int, float, etc.)
+                lon_offset = rot
+            elif len(rot) > 0:
+                # Sequence with at least one element
+                lon_offset = rot[0]
+                if len(rot) > 1:
+                    lat_offset = rot[1]
+        
         if phi_convention == "counterclockwise":
-            xtick_formatter = ThetaFormatterCounterclockwisePhi(longitude_grid_spacing)
+            xtick_formatter = ThetaFormatterCounterclockwisePhi(longitude_grid_spacing, rot_offset=lon_offset)
         elif phi_convention == "clockwise":
-            xtick_formatter = ThetaFormatterClockwisePhi(longitude_grid_spacing)
+            xtick_formatter = ThetaFormatterClockwisePhi(longitude_grid_spacing, rot_offset=lon_offset)
         elif phi_convention == "symmetrical":
-            xtick_formatter = ThetaFormatterSymmetricPhi(longitude_grid_spacing)
+            xtick_formatter = ThetaFormatterSymmetricPhi(longitude_grid_spacing, rot_offset=lon_offset)
 
         ax.xaxis.set_major_formatter(xtick_formatter)
-        ax.yaxis.set_major_formatter(ThetaFormatterTheta(latitude_grid_spacing))
+        ax.yaxis.set_major_formatter(ThetaFormatterTheta(latitude_grid_spacing, rot_offset=lat_offset))
 
         if custom_xtick_labels is not None:
             try:
