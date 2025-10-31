@@ -104,3 +104,58 @@ def test_dist2holes_all_invalid():
     d = hp.dist2holes(mask)
     # All distances should be zero (all holes)
     assert np.all(d == 0)
+
+
+def test_fill_small_holes_returns_copy_and_dtype():
+    nside = 8
+    mask, _, _ = make_mask_with_small_and_large_holes(nside)
+    filled = hp._masktools.fill_small_holes(mask, nside, min_size=2)
+    assert filled.dtype == mask.dtype
+    assert not np.shares_memory(mask, filled)
+
+
+@pytest.mark.parametrize(
+    "kwargs, exc",
+    [
+        ({"min_size": -1}, ValueError),
+        ({"min_area_arcmin2": -0.5}, ValueError),
+        ({"min_size": 1.5}, TypeError),
+    ],
+)
+def test_fill_small_holes_rejects_invalid_thresholds(kwargs, exc):
+    nside = 8
+    mask, *_ = make_mask_with_small_and_large_holes(nside)
+    with pytest.raises(exc):
+        hp._masktools.fill_small_holes(mask, nside, **kwargs)
+
+
+def test_fill_small_holes_checks_nside():
+    nside = 8
+    mask, *_ = make_mask_with_small_and_large_holes(nside)
+    with pytest.raises(ValueError):
+        hp._masktools.fill_small_holes(mask, nside + 1, min_size=2)
+
+
+def test_dist2holes_rejects_invalid_thresholds():
+    nside = 8
+    mask, *_ = make_mask_with_small_and_large_holes(nside)
+    with pytest.raises(ValueError):
+        hp.dist2holes(mask, hole_min_size=-1)
+    with pytest.raises(TypeError):
+        hp.dist2holes(mask, hole_min_size=1.5)
+    with pytest.raises(ValueError):
+        hp.dist2holes(mask, hole_min_surf_arcmin2=-1.0)
+
+
+def test_dist2holes_combined_filters():
+    nside = 8
+    mask, pix_small, large_pix = make_mask_with_small_and_large_holes(nside)
+    # Thresholds are generous individually but together still fill the small hole
+    area_per_pix = 4 * np.pi / mask.size * (180 * 60 / np.pi) ** 2
+    d = hp.dist2holes(
+        mask,
+        hole_min_size=2,
+        hole_min_surf_arcmin2=area_per_pix * 2.0,
+    )
+    assert d[pix_small] > 0
+    assert np.any(d[large_pix] == 0)
