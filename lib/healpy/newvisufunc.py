@@ -679,15 +679,14 @@ def projview(
         lon_offset = 0.0
         lat_offset = 0.0
         if rot is not None:
-            if np.isscalar(rot):
+            if not hasattr(rot, '__len__'):
+                # Scalar value (int, float, etc.)
                 lon_offset = rot
-            elif hasattr(rot, '__len__'):
+            elif len(rot) > 0:
+                # Sequence with at least one element
                 lon_offset = rot[0]
                 if len(rot) > 1:
                     lat_offset = rot[1]
-            else:
-                # If rot is not scalar and not a sequence, treat as scalar
-                lon_offset = rot
         
         if phi_convention == "counterclockwise":
             xtick_formatter = ThetaFormatterCounterclockwisePhi(longitude_grid_spacing, rot_offset=lon_offset)

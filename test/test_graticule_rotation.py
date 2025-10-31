@@ -16,7 +16,11 @@ def test_projview_graticule_labels_with_rotation():
     Test that graticule labels are correctly offset when rot parameter is used.
     This is a regression test for issue: "new projview, incorrect graticule labels"
     
-    When rot=50 is specified, the center longitude label should show 50°, not 0°.
+    When rot=50 is specified, the longitude labels should be offset by 50°.
+    The test verifies that:
+    1. Numeric labels are present on the plot
+    2. The labels show evidence of the 50° rotation offset
+    3. Either a label appears near 50° or the label distribution is offset from 0°
     """
     import healpy as hp
     from healpy.newvisufunc import projview
@@ -74,11 +78,15 @@ def test_projview_graticule_labels_with_rotation():
     print(f"Normalized values: {normalized_values}")
     
     # With rot=50 and counterclockwise astro convention, we expect labels to be offset
-    # Check if we have a label close to 50° or if the pattern is clearly offset
-    has_label_near_50 = any(abs(v - 50) < 10 or abs(v - 410) < 10 for v in label_values)
+    # Check if we have a label close to 50° (allowing for wraparound near 0°/360°)
+    # A label at 410° in the raw values would be 50° after modulo 360
+    has_label_near_50 = any(
+        abs((v % 360) - 50) < 10 for v in label_values
+    )
     
-    # Alternative check: the mean of labels should be significantly different from 180
-    # (which would be the center of the unrotated case with symmetric labels)
+    # Alternative check: the mean of visible labels should be offset from 180°
+    # Filter to central region [20°, 290°] to avoid wraparound effects at 0°/360°
+    # This range captures labels that would be visible in the central part of the plot
     mean_value = np.mean([v for v in normalized_values if 20 <= v <= 290])
     
     print(f"Has label near 50°: {has_label_near_50}")
