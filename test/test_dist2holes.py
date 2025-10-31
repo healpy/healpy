@@ -23,7 +23,7 @@ def make_mask_with_small_and_large_holes(nside):
 def test_fill_small_holes_pixel_threshold():
     nside = 8
     mask, pix_small, large_pix = make_mask_with_small_and_large_holes(nside)
-    filled = hp._masktools.fill_small_holes(mask, nside, min_size=2)
+    filled = hp._masktools.fill_small_holes(mask, min_size=2)
     # The single-pixel hole should be filled
     assert not filled[pix_small]
     # The large hole should remain
@@ -38,7 +38,7 @@ def test_fill_small_holes_area_threshold():
     npix = mask.size
     area_per_pix = 4 * np.pi / npix * (180 * 60 / np.pi) ** 2
     filled = hp._masktools.fill_small_holes(
-        mask, nside, min_area_arcmin2=area_per_pix * 1.1
+        mask, min_area_arcmin2=area_per_pix * 1.1
     )
     # The hole should be filled
     assert not filled[pix_small]
@@ -48,7 +48,7 @@ def test_fill_small_holes_no_fill():
     nside = 8
     mask, pix_small, large_pix = make_mask_with_small_and_large_holes(nside)
     # Threshold too small, nothing should be filled
-    filled = hp._masktools.fill_small_holes(mask, nside, min_size=1)
+    filled = hp._masktools.fill_small_holes(mask, min_size=1)
     np.testing.assert_array_equal(filled, mask)
 
 
@@ -106,7 +106,7 @@ def test_dist2holes_all_invalid():
 def test_fill_small_holes_returns_copy_and_dtype():
     nside = 8
     mask, _, _ = make_mask_with_small_and_large_holes(nside)
-    filled = hp._masktools.fill_small_holes(mask, nside, min_size=2)
+    filled = hp._masktools.fill_small_holes(mask, min_size=2)
     assert filled.dtype == mask.dtype
     assert not np.shares_memory(mask, filled)
 
@@ -123,14 +123,14 @@ def test_fill_small_holes_rejects_invalid_thresholds(kwargs, exc):
     nside = 8
     mask, *_ = make_mask_with_small_and_large_holes(nside)
     with pytest.raises(exc):
-        hp._masktools.fill_small_holes(mask, nside, **kwargs)
+        hp._masktools.fill_small_holes(mask, **kwargs)
 
 
-def test_fill_small_holes_checks_nside():
+def test_fill_small_holes_requires_healpix_length():
     nside = 8
-    mask, *_ = make_mask_with_small_and_large_holes(nside)
+    mask = np.zeros(hp.nside2npix(nside) + 1, dtype=bool)
     with pytest.raises(ValueError):
-        hp._masktools.fill_small_holes(mask, nside + 1, min_size=2)
+        hp._masktools.fill_small_holes(mask, min_size=2)
 
 
 def test_dist2holes_rejects_invalid_thresholds():

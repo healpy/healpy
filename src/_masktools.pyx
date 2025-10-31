@@ -15,7 +15,7 @@ cdef extern from "mask_tools.h":
     cdef Healpix_Map[double] dist2holes(Healpix_Map[double] &mask,
                                         double max_distance)
 
-def fill_small_holes(mask, nside, min_size=None, min_area_arcmin2=None):
+def fill_small_holes(mask, min_size=None, min_area_arcmin2=None):
     """
     Fill holes (pixels marked as ``True``) in a binary HEALPix mask that are
     smaller than the requested thresholds.
@@ -26,8 +26,6 @@ def fill_small_holes(mask, nside, min_size=None, min_area_arcmin2=None):
         Binary mask in RING ordering where ``True`` (or any non-zero value)
         marks masked pixels and ``False`` marks valid pixels. Masked arrays are
         converted using :func:`numpy.ma.getmaskarray`.
-    nside : int
-        NSIDE of the mask.
     min_size : int, optional
         Minimum number of connected pixels that should be preserved. Holes with
         fewer pixels are filled.
@@ -42,8 +40,10 @@ def fill_small_holes(mask, nside, min_size=None, min_area_arcmin2=None):
 
     Notes
     -----
-    Connectivity uses the HEALPix neighbour graph in RING ordering. Pixels are
-    considered part of a hole when they evaluate to ``True`` in the input mask.
+    NSIDE is inferred from the mask length; a :class:`ValueError` is raised if
+    the length does not match a valid HEALPix resolution. Connectivity uses the
+    HEALPix neighbour graph in RING ordering. Pixels are considered part of a
+    hole when they evaluate to ``True`` in the input mask.
     """
     if min_size is None and min_area_arcmin2 is None:
         if np.ma.isMaskedArray(mask):
@@ -73,11 +73,12 @@ def fill_small_holes(mask, nside, min_size=None, min_area_arcmin2=None):
         raise ValueError("mask must be one-dimensional")
 
     npix = mask_arr.size
-    inferred_nside = npix2nside(npix)
-    if inferred_nside != nside:
+    try:
+        nside = npix2nside(npix)
+    except ValueError as err:
         raise ValueError(
-            f"mask size {npix} is inconsistent with nside={nside}"
-        )
+            "mask length must correspond to a valid HEALPix NSIDE"
+        ) from err
 
     mask_out = mask_arr.copy()
     visited = np.zeros(npix, dtype=np.bool_)
@@ -186,8 +187,7 @@ def dist2holes_healpy(m, maxdist=np.pi, hole_min_size=None, hole_min_surf_arcmin
 
     # Optionally fill small holes before distance calculation
     if hole_min_size is not None or hole_min_surf_arcmin2 is not None:
-        nside = npix2nside(mask_bool.size)
-        mask_bool = fill_small_holes(mask_bool, nside, hole_min_size, hole_min_surf_arcmin2)
+        mask_bool = fill_small_holes(mask_bool, hole_min_size, hole_min_surf_arcmin2)
 
     mi = (~mask_bool).astype(np.float64, order='C', copy=True)
 
