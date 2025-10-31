@@ -301,6 +301,69 @@ class TestReadWriteCl(unittest.TestCase):
             hdu = hdulist[1]
             read_cl(hdu)
 
+    def test_write_read_cl_9comp(self):
+        """Test writing and reading 9 components (more than the default 6)."""
+        cl = [np.arange(1025, dtype=np.double) for n in range(9)]
+        write_cl(self.filename, cl)
+        cl_read = read_cl(self.filename)
+        for cl_column, cl_read_column in zip(cl, cl_read):
+            np.testing.assert_array_almost_equal(cl_column, cl_read_column)
+
+    def test_write_cl_custom_column_names(self):
+        """Test writing with custom column names."""
+        cl = [np.arange(1025, dtype=np.double) for n in range(4)]
+        custom_names = ["TT", "EE", "BB", "TE"]
+        write_cl(self.filename, cl, column_names=custom_names)
+        with pf.open(self.filename) as f:
+            # Check that custom column names are used
+            for i, name in enumerate(custom_names):
+                assert f[1].columns[i].name == name
+        cl_read = read_cl(self.filename)
+        for cl_column, cl_read_column in zip(cl, cl_read):
+            np.testing.assert_array_almost_equal(cl_column, cl_read_column)
+
+    def test_write_cl_extra_header(self):
+        """Test writing with extra header keywords."""
+        cl = np.arange(1025, dtype=np.double)
+        extra_header = [
+            ("ORIGIN", "Test origin", "Source of the data"),
+            ("FREQ1", 100, "Frequency in GHz"),
+            ("FREQ2", 143, "Frequency in GHz"),
+        ]
+        write_cl(self.filename, cl, extra_header=extra_header)
+        with pf.open(self.filename) as f:
+            hdr = f[1].header
+            assert hdr["ORIGIN"] == "Test origin"
+            assert hdr["FREQ1"] == 100
+            assert hdr["FREQ2"] == 143
+        cl_read = read_cl(self.filename)
+        np.testing.assert_array_almost_equal(cl, cl_read)
+
+    def test_write_cl_9comp_with_custom_names_and_header(self):
+        """Test all new features together: 9 components, custom names, and extra header."""
+        cl = [np.arange(1025, dtype=np.double) * (n + 1) for n in range(9)]
+        custom_names = ["II", "IQ", "IU", "QQ", "QU", "UU", "IJ", "QJ", "UJ"]
+        extra_header = [
+            ("ORIGIN", "Co-analysis", "Analysis type"),
+            ("FREQ1", 100, "First frequency in GHz"),
+            ("FREQ2", 143, "Second frequency in GHz"),
+        ]
+        write_cl(self.filename, cl, column_names=custom_names, extra_header=extra_header)
+        
+        # Verify headers and column names
+        with pf.open(self.filename) as f:
+            hdr = f[1].header
+            assert hdr["ORIGIN"] == "Co-analysis"
+            assert hdr["FREQ1"] == 100
+            assert hdr["FREQ2"] == 143
+            for i, name in enumerate(custom_names):
+                assert f[1].columns[i].name == name
+        
+        # Verify data can be read back correctly
+        cl_read = read_cl(self.filename)
+        for cl_column, cl_read_column in zip(cl, cl_read):
+            np.testing.assert_array_almost_equal(cl_column, cl_read_column)
+
 
 def test_getformat():
     assert getformat(False) == "L"
