@@ -17,14 +17,15 @@ cdef extern from "mask_tools.h":
 
 def fill_small_holes(mask, nside, min_size=None, min_area_arcmin2=None):
     """
-    Fill holes (pixels equal to ``0``) in a binary HEALPix mask that are smaller
-    than the requested thresholds.
+    Fill holes (pixels marked as ``True``) in a binary HEALPix mask that are
+    smaller than the requested thresholds.
 
     Parameters
     ----------
     mask : array_like
-        Binary mask in RING ordering where non-zero values mark valid pixels and
-        zeros mark masked pixels.
+        Binary mask in RING ordering where ``True`` (or any non-zero value)
+        marks masked pixels and ``False`` marks valid pixels. Masked arrays are
+        converted using :func:`numpy.ma.getmaskarray`.
     nside : int
         NSIDE of the mask.
     min_size : int, optional
@@ -37,15 +38,17 @@ def fill_small_holes(mask, nside, min_size=None, min_area_arcmin2=None):
     Returns
     -------
     ndarray
-        Copy of ``mask`` with holes below the thresholds filled.
+        Boolean copy of ``mask`` with holes below the thresholds filled.
 
     Notes
     -----
     Connectivity uses the HEALPix neighbour graph in RING ordering. Pixels are
-    considered part of a hole when they are exactly zero in the input mask.
+    considered part of a hole when they evaluate to ``True`` in the input mask.
     """
     if min_size is None and min_area_arcmin2 is None:
-        return np.ascontiguousarray(np.ma.getdata(mask)).copy()
+        if np.ma.isMaskedArray(mask):
+            return np.ascontiguousarray(np.ma.getmaskarray(mask)).copy()
+        return np.ascontiguousarray(np.asarray(mask, dtype=np.bool_)).copy()
 
     if min_size is not None:
         try:
@@ -60,7 +63,12 @@ def fill_small_holes(mask, nside, min_size=None, min_area_arcmin2=None):
         if min_area_arcmin2 < 0:
             raise ValueError("min_area_arcmin2 must be non-negative")
 
-    mask_arr = np.ascontiguousarray(np.ma.getdata(mask))
+    if np.ma.isMaskedArray(mask):
+        mask_arr = np.ma.getmaskarray(mask)
+    else:
+        mask_arr = np.asarray(mask, dtype=np.bool_)
+    mask_arr = np.ascontiguousarray(mask_arr, dtype=np.bool_)
+
     if mask_arr.ndim != 1:
         raise ValueError("mask must be one-dimensional")
 
@@ -73,14 +81,13 @@ def fill_small_holes(mask, nside, min_size=None, min_area_arcmin2=None):
 
     mask_out = mask_arr.copy()
     visited = np.zeros(npix, dtype=np.bool_)
-    fill_value = mask_out.dtype.type(1)
 
     area_per_pix = None
     if min_area_arcmin2 is not None:
         area_per_pix = 4.0 * np.pi / npix * (180.0 * 60.0 / np.pi) ** 2
 
     for p in range(npix):
-        if mask_out[p] == 0 and not visited[p]:
+        if mask_out[p] and not visited[p]:
             stack = deque([p])
             hole_pixels = []
             while stack:
@@ -88,12 +95,12 @@ def fill_small_holes(mask, nside, min_size=None, min_area_arcmin2=None):
                 if visited[q]:
                     continue
                 visited[q] = True
-                if mask_out[q] != 0:
+                if not mask_out[q]:
                     continue
                 hole_pixels.append(q)
                 neighbours = get_all_neighbours(nside, q)
                 for nn in neighbours:
-                    if nn >= 0 and not visited[nn] and mask_out[nn] == 0:
+                    if nn >= 0 and not visited[nn] and mask_out[nn]:
                         stack.append(nn)
 
             hole_size = len(hole_pixels)
@@ -105,7 +112,7 @@ def fill_small_holes(mask, nside, min_size=None, min_area_arcmin2=None):
                 if hole_area < min_area_arcmin2:
                     fill = True
             if fill:
-                mask_out[hole_pixels] = fill_value
+                mask_out[hole_pixels] = False
 
     return mask_out
 
@@ -116,8 +123,8 @@ def dist2holes_healpy(m, maxdist=np.pi, hole_min_size=None, hole_min_surf_arcmin
     Parameters
     ----------
     m : array-like, shape (Npix,)
-      Input mask in RING ordering where zero-valued pixels mark holes. Non-zero
-      entries are treated as valid pixels.
+      Input mask in RING ordering where ``True`` (or non-zero entries) mark
+      masked pixels and ``False`` (or zero) mark valid pixels.
 
     maxdist : float, optional
       The maximal distance in radians. Pixel farther from this distance are not
@@ -163,16 +170,29 @@ def dist2holes_healpy(m, maxdist=np.pi, hole_min_size=None, hole_min_surf_arcmin
 
     info = maptype(m)
     if info == 0:
-        mi = m.astype(np.float64, order='C', copy=True)
+        raw_mask = np.ma.getmaskarray(m) if np.ma.isMaskedArray(m) else np.asarray(m)
     elif info == 1:
-        mi = m[0].astype(np.float64, order='C', copy=True)
+        raw_mask = (
+            np.ma.getmaskarray(m[0])
+            if np.ma.isMaskedArray(m[0])
+            else np.asarray(m[0])
+        )
     else:
         raise ValueError("Wrong input map (must be a valid healpix map)")
 
+    mask_bool = np.ascontiguousarray(np.asarray(raw_mask, dtype=np.bool_))
+    if mask_bool.ndim != 1:
+        raise ValueError("mask must be one-dimensional")
+
     # Optionally fill small holes before distance calculation
     if hole_min_size is not None or hole_min_surf_arcmin2 is not None:
-        nside = npix2nside(mi.size)
-        mi = fill_small_holes(mi, nside, hole_min_size, hole_min_surf_arcmin2)
+        nside = npix2nside(mask_bool.size)
+        mask_bool = fill_small_holes(mask_bool, nside, hole_min_size, hole_min_surf_arcmin2)
+
+    mi = (~mask_bool).astype(np.float64, order='C', copy=True)
+
+    # Optionally fill small holes before distance calculation
+    # (already handled above)
 
     # View the ndarray as a Healpix_Map
     M = ndarray2map(mi, RING)

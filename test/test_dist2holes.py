@@ -5,10 +5,10 @@ import pytest
 
 def make_small_hole_mask(nside):
     npix = hp.nside2npix(nside)
-    mask = np.ones(npix, dtype=np.float64)
+    mask = np.zeros(npix, dtype=bool)
     theta_small, phi_small = np.deg2rad(45.0), 0.0
     pix_small = hp.ang2pix(nside, theta_small, phi_small)
-    mask[pix_small] = 0
+    mask[pix_small] = True
     return mask, pix_small
 
 
@@ -16,7 +16,7 @@ def make_mask_with_small_and_large_holes(nside):
     mask, pix_small = make_small_hole_mask(nside)
     vec_large = hp.ang2vec(np.deg2rad(120.0), np.deg2rad(60.0))
     large_pix = hp.query_disc(nside, vec_large, np.deg2rad(10.0))
-    mask[large_pix] = 0
+    mask[large_pix] = True
     return mask, pix_small, large_pix
 
 
@@ -25,11 +25,11 @@ def test_fill_small_holes_pixel_threshold():
     mask, pix_small, large_pix = make_mask_with_small_and_large_holes(nside)
     filled = hp._masktools.fill_small_holes(mask, nside, min_size=2)
     # The single-pixel hole should be filled
-    assert filled[pix_small] == 1
+    assert not filled[pix_small]
     # The large hole should remain
-    assert np.all(filled[large_pix] == 0)
-    # All other pixels should be unchanged
-    assert np.all(filled[(mask == 1)] == 1)
+    assert np.all(filled[large_pix])
+    # All other pixels should be unchanged (remain False)
+    assert not filled[~mask].any()
 
 
 def test_fill_small_holes_area_threshold():
@@ -41,7 +41,7 @@ def test_fill_small_holes_area_threshold():
         mask, nside, min_area_arcmin2=area_per_pix * 1.1
     )
     # The hole should be filled
-    assert filled[pix_small] == 1
+    assert not filled[pix_small]
 
 
 def test_fill_small_holes_no_fill():
@@ -49,10 +49,7 @@ def test_fill_small_holes_no_fill():
     mask, pix_small, large_pix = make_mask_with_small_and_large_holes(nside)
     # Threshold too small, nothing should be filled
     filled = hp._masktools.fill_small_holes(mask, nside, min_size=1)
-    assert filled[pix_small] == 0
-    assert np.all(filled[large_pix] == 0)
-    # No change elsewhere
-    assert np.all(filled[(mask == 1)] == 1)
+    np.testing.assert_array_equal(filled, mask)
 
 
 def test_dist2holes_hole_min_size():
@@ -81,8 +78,8 @@ def test_dist2holes_hole_min_surf_arcmin2():
 def test_dist2holes_no_hole_filter():
     nside = 8
     npix = hp.nside2npix(nside)
-    mask = np.ones(npix, dtype=np.float64)
-    mask[100] = 0
+    mask = np.zeros(npix, dtype=bool)
+    mask[100] = True
     d = hp.dist2holes(mask)
     assert d[100] == 0
     assert np.all(d >= 0)
@@ -91,7 +88,7 @@ def test_dist2holes_no_hole_filter():
 def test_dist2holes_all_valid():
     nside = 8
     npix = hp.nside2npix(nside)
-    mask = np.ones(npix, dtype=np.float64)
+    mask = np.zeros(npix, dtype=bool)
     d = hp.dist2holes(mask)
     # With no holes the distances saturate at maxdist (default pi)
     assert np.allclose(d, np.pi)
@@ -100,7 +97,7 @@ def test_dist2holes_all_valid():
 def test_dist2holes_all_invalid():
     nside = 8
     npix = hp.nside2npix(nside)
-    mask = np.zeros(npix, dtype=np.float64)
+    mask = np.ones(npix, dtype=bool)
     d = hp.dist2holes(mask)
     # All distances should be zero (all holes)
     assert np.all(d == 0)
