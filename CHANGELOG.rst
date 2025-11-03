@@ -4,6 +4,7 @@ Unreleased
 * Implemented NESTED support in query_strip https://github.com/healpy/healpy/pull/1025
 * Declare support for Python 3.14 in packaging and wheels
 * Add support for arbitrary columns and extra_header to write_cl https://github.com/healpy/healpy/pull/1038
+* Allow ignoring small mask holes in `dist2holes` via pixel- and area-based thresholds https://github.com/healpy/healpy/pull/1008
 
 Release 1.18.1 26 Mar 2025
 
