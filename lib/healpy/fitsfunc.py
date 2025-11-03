@@ -78,7 +78,7 @@ def read_cl(filename):
         return cl
 
 
-def write_cl(filename, cl, dtype=None, overwrite=False):
+def write_cl(filename, cl, dtype=None, overwrite=False, column_names=None, extra_header=()):
     """Writes Cl into a healpix file, as IDL cl2fits.
 
     Parameters
@@ -94,27 +94,55 @@ def write_cl(filename, cl, dtype=None, overwrite=False):
     overwrite : bool, optional
       If True, existing file is silently overwritten. Otherwise trying to write
       an existing file raises an OSError.
+    column_names : str or list, optional
+      Column name or list of column names. If None, uses default names:
+      ["TEMPERATURE", "GRADIENT", "CURL", "G-T", "C-T", "C-G"] for the first 6 columns,
+      and "COLUMN_N" for columns beyond 6.
+    extra_header : list, optional
+      Extra records to add to FITS header.
     """
     if dtype is None:
         dtype = cl.dtype if isinstance(cl, np.ndarray) else cl[0].dtype
 
     # check the dtype and convert it
     fitsformat = getformat(dtype)
-    column_names = ["TEMPERATURE", "GRADIENT", "CURL", "G-T", "C-T", "C-G"]
+    
+    # Determine column names
+    if column_names is None:
+        default_names = ["TEMPERATURE", "GRADIENT", "CURL", "G-T", "C-T", "C-G"]
+        if len(np.shape(cl)) == 2:
+            n_cols = len(cl)
+            if n_cols <= 6:
+                column_names = default_names[:n_cols]
+            else:
+                # For more than 6 columns, use default names for first 6 and COLUMN_N for rest
+                column_names = default_names + ["COLUMN_%d" % n for n in range(7, n_cols + 1)]
+        else:
+            column_names = ["TEMPERATURE"]
+    elif isinstance(column_names, str):
+        column_names = [column_names]
+    
     if len(np.shape(cl)) == 2:
+        if len(column_names) != len(cl):
+            raise ValueError("Number of column names must match number of cl arrays")
         cols = [
             pf.Column(name=column_name, format="%s" % fitsformat, array=column_cl)
-            for column_name, column_cl in zip(column_names[: len(cl)], cl)
+            for column_name, column_cl in zip(column_names, cl)
         ]
     elif len(np.shape(cl)) == 1:
         # we write only TT
-        cols = [pf.Column(name="TEMPERATURE", format="%s" % fitsformat, array=cl)]
+        cols = [pf.Column(name=column_names[0], format="%s" % fitsformat, array=cl)]
     else:
         raise RuntimeError("write_cl: Expected one or more vectors of equal length")
 
     tbhdu = pf.BinTableHDU.from_columns(cols)
     # add needed keywords
     tbhdu.header["CREATOR"] = "healpy"
+    
+    # Add extra header records
+    for args in extra_header:
+        tbhdu.header[args[0]] = args[1:]
+    
     # Add str to convert pathlib.Path into str
     # Due to https://github.com/astropy/astropy/issues/10594
     tbhdu.writeto(str(filename), overwrite=overwrite)
