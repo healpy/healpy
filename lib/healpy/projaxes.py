@@ -896,18 +896,18 @@ def get_color_table(
                     symlog_forward,
                     symlog_backward,
                 ),
+                clip=True,
                 vmin=vmin,
                 vmax=vmax,
-                clip=True,
             )
         elif norm.lower().startswith("symlog"):
             norm = matplotlib.colors.SymLogNorm(
-                vmin=vmin,
-                vmax=vmax,
                 clip=True,
                 linthresh=linthresh,
                 linscale=linscale,
                 base=base,
+                vmin=vmin,
+                vmax=vmax,
             )
         elif norm.lower().startswith("hist"):
             norm = HistEqNorm(vmin=vmin, vmax=vmax, clip=False)
