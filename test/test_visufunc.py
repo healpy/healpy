@@ -27,12 +27,22 @@ class TestNoCrash(unittest.TestCase):
     def test_cartview_nocrash(self):
         cartview(self.m)
 
+    def test_cartview_no_arguments(self):
+        # Test that cartview() can be called with no arguments
+        # This should create a blank map without errors
+        cartview()
+
     def test_cartview_crash(self):
         with self.assertRaises(TypeError):
             cartview(self.m_wrong_npix)
 
     def test_mollview_nocrash(self):
         mollview(self.m)
+
+    def test_mollview_no_arguments(self):
+        # Test that mollview() can be called with no arguments
+        # This should create a blank map without errors
+        mollview()
 
     def test_mollview_crash(self):
         with self.assertRaises(TypeError):
@@ -41,6 +51,11 @@ class TestNoCrash(unittest.TestCase):
     def test_gnomview_nocrash(self):
         gnomview(self.m)
 
+    def test_gnomview_no_arguments(self):
+        # Test that gnomview() can be called with no arguments
+        # This should create a blank map without errors
+        gnomview()
+
     def test_gnomview_crash(self):
         with self.assertRaises(TypeError):
             gnomview(self.m_wrong_npix)
@@ -48,12 +63,22 @@ class TestNoCrash(unittest.TestCase):
     def test_orthview_nocrash(self):
         orthview(self.m)
 
+    def test_orthview_no_arguments(self):
+        # Test that orthview() can be called with no arguments
+        # This should create a blank map without errors
+        orthview()
+
     def test_orthview_crash(self):
         with self.assertRaises(TypeError):
             orthview(self.m_wrong_npix)
 
     def test_azeqview_nocrash(self):
         azeqview(self.m)
+
+    def test_azeqview_no_arguments(self):
+        # Test that azeqview() can be called with no arguments
+        # This should create a blank map without errors
+        azeqview()
 
     def test_azeqview_crash(self):
         with self.assertRaises(TypeError):
