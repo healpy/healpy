@@ -21,7 +21,7 @@ authors = [
     { name = "C. Rosset", email = "cyrille.rosset@apc.univ-paris-diderot.fr" },
     { name = "A. Zonca" },
 ]
-license = "GPL-2.0-only"
+license = {text = "GPL-2.0-only"}
 requires-python = ">=3.10"
 dependencies = ["numpy>=1.19", "astropy"]
 
