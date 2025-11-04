@@ -887,7 +887,7 @@ def get_color_table(
     newcmap = create_colormap(cmap, badcolor=badcolor, bgcolor=bgcolor)
     if type(norm) is str:
         if norm.lower().startswith("log"):
-            norm = LogNorm2(clip=False)
+            norm = LogNorm2(vmin=vmin, vmax=vmax, clip=False)
         elif norm.lower().startswith("symlog2"):
             global linthresh_
             linthresh_ = linthresh
@@ -902,17 +902,20 @@ def get_color_table(
             )
         elif norm.lower().startswith("symlog"):
             norm = matplotlib.colors.SymLogNorm(
-                clip=True, linthresh=linthresh, linscale=linscale, base=base
+                vmin=vmin,
+                vmax=vmax,
+                clip=True,
+                linthresh=linthresh,
+                linscale=linscale,
+                base=base,
             )
         elif norm.lower().startswith("hist"):
-            norm = HistEqNorm(clip=False)
+            norm = HistEqNorm(vmin=vmin, vmax=vmax, clip=False)
         else:
             norm = None
     if norm is None:
-        norm = LinNorm2(clip=False)
+        norm = LinNorm2(vmin=vmin, vmax=vmax, clip=False)
 
-    norm.vmin = vmin
-    norm.vmax = vmax
     norm.autoscale_None(val)
 
     return newcmap, norm
