@@ -955,6 +955,10 @@ def create_colormap(cmap, badcolor="gray", bgcolor="white"):
     preserved to respect any user modifications.
     """
     cmap_is_string = type(cmap) is str
+    cmap_is_colormap_object = type(cmap) in [
+        matplotlib.colors.LinearSegmentedColormap,
+        matplotlib.colors.ListedColormap,
+    ]
     
     if cmap_is_string:
         if cmap in ["planck", "planck_log", "wmap"]:
@@ -963,10 +967,7 @@ def create_colormap(cmap, badcolor="gray", bgcolor="white"):
             cmap0 = matplotlib.colors.ListedColormap(np.loadtxt(cmap_path) / 255.0, cmap)
         else:
             cmap0 = plt.get_cmap(cmap)
-    elif type(cmap) in [
-        matplotlib.colors.LinearSegmentedColormap,
-        matplotlib.colors.ListedColormap,
-    ]:
+    elif cmap_is_colormap_object:
         cmap0 = cmap
     else:
         cmap0 = plt.get_cmap(matplotlib.rcParams["image.cmap"])
@@ -978,9 +979,9 @@ def create_colormap(cmap, badcolor="gray", bgcolor="white"):
         newcm = copy.copy(cmap0)
     newcm.set_over(newcm(1.0))
     
-    # Only apply badcolor/bgcolor if cmap was specified as a string
+    # Only apply badcolor/bgcolor if cmap was specified as a string or None
     # If a Colormap object was passed, preserve its existing settings
-    if cmap_is_string:
+    if not cmap_is_colormap_object:
         newcm.set_under(bgcolor)
         newcm.set_bad(badcolor)
     

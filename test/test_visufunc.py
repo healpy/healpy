@@ -167,6 +167,13 @@ class TestNoCrash(unittest.TestCase):
         under_is_yellow = np.allclose(cm2._rgba_under[:3], [1.0, 1.0, 0.0])
         assert bad_is_white, "Colormap object should preserve bad color"
         assert under_is_yellow, "Colormap object should preserve under color"
+        
+        # Test 3: None should apply badcolor/bgcolor (backward compatibility)
+        cm3 = create_colormap(None, badcolor='red', bgcolor='blue')
+        bad_is_red = np.allclose(cm3._rgba_bad[:3], [1.0, 0.0, 0.0])
+        under_is_blue = np.allclose(cm3._rgba_under[:3], [0.0, 0.0, 1.0])
+        assert bad_is_red, "None colormap should apply badcolor"
+        assert under_is_blue, "None colormap should apply bgcolor"
     
     def test_mollview_with_colormap_object(self):
         """Test that mollview preserves user-modified Colormap object colors"""
