@@ -669,3 +669,50 @@ def test_resize_alm(lmax, mmax, lmax_out, mmax_out):
     alm_out2 = hp.resize_alm([alm, 2 * alm], lmax, mmax, lmax_out, mmax_out)
     np.testing.assert_allclose(alm_out, alm_out2[0])
     np.testing.assert_allclose(2 * alm_out, alm_out2[1])
+
+
+def test_synfast_lmax_with_none():
+    """Test that synfast defaults to correct lmax when one C_ell is None.
+    
+    This is a regression test for the bug where lmax defaulted to 3 
+    (the number of array elements) instead of 3*nside-1 when one of the 
+    power spectra was set to None.
+    """
+    # Create power spectra arrays
+    lmax_cls = 10000
+    c_ee = np.linspace(0, 3e-6, lmax_cls)
+    c_ne = np.linspace(0, 1e-6, lmax_cls)
+    c_nn = np.linspace(0, 3e-5, lmax_cls)
+    
+    # Test with None as last element (original bug report case)
+    c_ell = [c_nn, c_ne, c_ee, None]
+    nside = 256
+    expected_lmax = 3 * nside - 1
+    
+    # Set seed for reproducibility
+    np.random.seed(42)
+    maps1 = hp.sphtfunc.synfast(c_ell, nside, lmax=expected_lmax, verbose=False)
+    
+    # Reset seed to get same random numbers
+    np.random.seed(42)
+    maps2 = hp.sphtfunc.synfast(c_ell, nside, verbose=False)
+    
+    # Both should produce the same maps since lmax should default correctly
+    np.testing.assert_array_equal(maps1, maps2, 
+        err_msg="synfast should default to lmax=3*nside-1 when C_ell contains None")
+    
+    # Also verify that the maps are not degenerate (would happen if lmax=3)
+    # With proper lmax, maps should have meaningful structure
+    assert maps1.shape == (3, 12*nside**2), "Output should have correct shape"
+    
+    # Test with None in different positions
+    c_ell_first_none = [None, c_ne, c_ee, c_nn]
+    np.random.seed(42)
+    maps_first_none = hp.sphtfunc.synfast(c_ell_first_none, nside, verbose=False)
+    assert maps_first_none.shape == (3, 12*nside**2), "Should work with None as first element"
+    
+    # Test with zeros array vs None should give similar structure (not identical due to randomness)
+    c_ell_zeros = [c_nn, c_ne, c_ee, np.zeros(lmax_cls)]
+    np.random.seed(42)
+    maps_zeros = hp.sphtfunc.synfast(c_ell_zeros, nside, verbose=False)
+    assert maps_zeros.shape == (3, 12*nside**2), "Should work with zeros array"

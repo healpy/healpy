@@ -85,8 +85,15 @@ def len_array_or_arrays(o):
     -------
     length : length of array
     """
-    if is_seq_of_seq(o):
-        length = len(o[0])
+    if is_seq_of_seq(o, allow_none=True):
+        # Find first non-None element to get length
+        for elem in o:
+            if elem is not None:
+                length = len(elem)
+                break
+        else:
+            # All elements are None, fall back to len(o)
+            length = len(o)
     else:
         length = len(o)
     return length
