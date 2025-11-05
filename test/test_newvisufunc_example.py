@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pytest
 import os.path
+import copy
 
 path = os.path.dirname(os.path.realpath(__file__))
 
@@ -556,8 +557,6 @@ def test_projview_cart_bgcolor(map_data):
 
 def test_projview_colormap_object_preservation(map_data):
     """Test that projview preserves user-modified Colormap object colors"""
-    import copy
-    
     # Create a colormap with custom bad/under colors
     colormap = copy.copy(plt.get_cmap('viridis'))
     colormap.set_bad(color='white')
