@@ -955,10 +955,7 @@ def create_colormap(cmap, badcolor="gray", bgcolor="white"):
     preserved to respect any user modifications.
     """
     cmap_is_string = isinstance(cmap, str)
-    cmap_is_colormap_object = isinstance(cmap, (
-        matplotlib.colors.LinearSegmentedColormap,
-        matplotlib.colors.ListedColormap,
-    ))
+    cmap_is_colormap_object = isinstance(cmap, matplotlib.colors.Colormap)
     
     if cmap_is_string:
         if cmap in ["planck", "planck_log", "wmap"]:
@@ -986,6 +983,7 @@ def create_colormap(cmap, badcolor="gray", bgcolor="white"):
         newcm.set_bad(badcolor)
     
     return newcm
+
 
 
 

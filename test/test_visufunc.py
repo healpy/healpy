@@ -158,11 +158,11 @@ class TestNoCrash(unittest.TestCase):
         assert under_is_blue, "String colormap should apply bgcolor"
         
         # Test 2: Colormap object with pre-set colors should preserve them
-        cm_obj = plt.get_cmap('viridis').copy()
-        cm_obj.set_bad('white')
-        cm_obj.set_under('yellow')
+        cmap_obj = plt.get_cmap('viridis').copy()
+        cmap_obj.set_bad('white')
+        cmap_obj.set_under('yellow')
         
-        cm2 = create_colormap(cm_obj, badcolor='red', bgcolor='blue')
+        cm2 = create_colormap(cmap_obj, badcolor='red', bgcolor='blue')
         bad_is_white = np.allclose(cm2._rgba_bad[:3], [1.0, 1.0, 1.0])
         under_is_yellow = np.allclose(cm2._rgba_under[:3], [1.0, 1.0, 0.0])
         assert bad_is_white, "Colormap object should preserve bad color"

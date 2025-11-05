@@ -558,8 +558,8 @@ def test_projview_colormap_object_preservation(map_data):
     """Test that projview preserves user-modified Colormap object colors"""
     # Create a colormap with custom bad/under colors
     colormap = plt.get_cmap('viridis').copy()
-    colormap.set_bad(color='white')
-    colormap.set_under(color='yellow')
+    colormap.set_bad('white')
+    colormap.set_under('yellow')
     
     # Call projview with the modified colormap
     projview(
