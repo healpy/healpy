@@ -37,3 +37,31 @@ def test_is_seq_of_seq():
     # allow None
     assert not is_seq_of_seq([[1], [2], None], False)
     assert is_seq_of_seq([[1], [2], None], True)
+
+
+def test_len_array_or_arrays():
+    import numpy as np
+    from healpy.cookbook import len_array_or_arrays
+    
+    # Test with single array
+    assert len_array_or_arrays(np.array([1, 2, 3])) == 3
+    assert len_array_or_arrays([1, 2, 3, 4]) == 4
+    
+    # Test with list of arrays (all non-None)
+    assert len_array_or_arrays([[1, 2, 3], [4, 5, 6]]) == 3
+    assert len_array_or_arrays([np.array([1, 2, 3]), np.array([4, 5, 6])]) == 3
+    
+    # Test with None in list of arrays (regression test for bug)
+    assert len_array_or_arrays([[1, 2, 3], [4, 5, 6], None]) == 3
+    assert len_array_or_arrays([None, [1, 2, 3], [4, 5, 6]]) == 3
+    assert len_array_or_arrays([[1, 2, 3], None, [4, 5, 6]]) == 3
+    
+    # Test with numpy arrays and None
+    c_ee = np.linspace(0, 3e-6, 10000)
+    c_ne = np.linspace(0, 1e-6, 10000)
+    c_nn = np.linspace(0, 3e-5, 10000)
+    c_ell = [c_nn, c_ne, c_ee, None]
+    assert len_array_or_arrays(c_ell) == 10000
+    
+    # Test edge case: all None
+    assert len_array_or_arrays([None, None, None]) == 3
