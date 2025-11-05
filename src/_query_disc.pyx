@@ -46,7 +46,11 @@ def query_disc(nside, vec, radius, inclusive = False, fact = 4, nest = False, np
 
     Note
     ----
-    This method is more efficient in the RING scheme.
+    The performance characteristics of RING vs. NESTED schemes depend on the 
+    query parameters. For simple disks with inclusive=False, RING scheme may 
+    be faster. For inclusive=True, NESTED scheme often performs better due to 
+    more efficient pixel indexing.
+    
     For inclusive=True, the algorithm may return some pixels which don't overlap
     with the disk at all. The higher fact is chosen, the fewer false positives
     are returned, at the cost of increased run time.
@@ -109,9 +113,13 @@ def query_polygon(nside, vertices, inclusive = False, fact = 4, nest = False, np
 
     Note
     ----
-    This method is more efficient in the RING scheme.
+    The performance characteristics of RING vs. NESTED schemes depend on the 
+    query parameters. For simple polygons with inclusive=False, RING scheme may 
+    be faster. For inclusive=True, NESTED scheme often performs better due to 
+    more efficient pixel indexing, especially for complex polygons.
+    
     For inclusive=True, the algorithm may return some pixels which don't overlap
-    with the disk at all. The higher fact is chosen, the fewer false positives
+    with the polygon at all. The higher fact is chosen, the fewer false positives
     are returned, at the cost of increased run time.
     """
     # Check Nside value
