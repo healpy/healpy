@@ -145,3 +145,45 @@ class TestNoCrash(unittest.TestCase):
         orthview(self.m, reuse_axes=True)
         azeqview(self.m)
         azeqview(self.m, reuse_axes=True)
+
+    def test_colormap_object_preservation(self):
+        """Test that user-modified Colormap objects preserve their colors"""
+        from healpy.projaxes import create_colormap
+        
+        # Test 1: String colormap should apply badcolor/bgcolor
+        cm1 = create_colormap('viridis', badcolor='red', bgcolor='blue')
+        bad_is_red = np.allclose(cm1._rgba_bad[:3], [1.0, 0.0, 0.0])
+        under_is_blue = np.allclose(cm1._rgba_under[:3], [0.0, 0.0, 1.0])
+        assert bad_is_red, "String colormap should apply badcolor"
+        assert under_is_blue, "String colormap should apply bgcolor"
+        
+        # Test 2: Colormap object with pre-set colors should preserve them
+        cm_obj = copy.copy(plt.get_cmap('viridis'))
+        cm_obj.set_bad('white')
+        cm_obj.set_under('yellow')
+        
+        cm2 = create_colormap(cm_obj, badcolor='red', bgcolor='blue')
+        bad_is_white = np.allclose(cm2._rgba_bad[:3], [1.0, 1.0, 1.0])
+        under_is_yellow = np.allclose(cm2._rgba_under[:3], [1.0, 1.0, 0.0])
+        assert bad_is_white, "Colormap object should preserve bad color"
+        assert under_is_yellow, "Colormap object should preserve under color"
+    
+    def test_mollview_with_colormap_object(self):
+        """Test that mollview preserves user-modified Colormap object colors"""
+        # Create a colormap with custom bad/under colors
+        cmap = copy.copy(plt.get_cmap('viridis'))
+        cmap.set_bad('white')
+        cmap.set_under('yellow')
+        
+        # Call mollview with the colormap object
+        mollview(self.m, cmap=cmap)
+        
+        # Get the colormap from the plot
+        ax = plt.gca()
+        if hasattr(ax, 'images') and len(ax.images) > 0:
+            plot_cmap = ax.images[0].get_cmap()
+            # Verify colors are preserved
+            bad_is_white = np.allclose(plot_cmap._rgba_bad[:3], [1.0, 1.0, 1.0])
+            under_is_yellow = np.allclose(plot_cmap._rgba_under[:3], [1.0, 1.0, 0.0])
+            assert bad_is_white, "mollview should preserve Colormap bad color"
+            assert under_is_yellow, "mollview should preserve Colormap under color"

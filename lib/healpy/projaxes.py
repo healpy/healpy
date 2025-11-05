@@ -947,8 +947,16 @@ def create_colormap(cmap, badcolor="gray", bgcolor="white"):
         color for bad pixels (passed to set_bad)
     bgcolor : string
         color for background (passed to set_under)
+    
+    Notes
+    -----
+    If cmap is a string, badcolor and bgcolor are applied to the colormap.
+    If cmap is already a Colormap object, its existing bad/under colors are
+    preserved to respect any user modifications.
     """
-    if type(cmap) is str:
+    cmap_is_string = type(cmap) is str
+    
+    if cmap_is_string:
         if cmap in ["planck", "planck_log", "wmap"]:
             datapath = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
             cmap_path = os.path.join(datapath, f"{cmap}_cmap.dat")
@@ -969,8 +977,13 @@ def create_colormap(cmap, badcolor="gray", bgcolor="white"):
     else:
         newcm = copy.copy(cmap0)
     newcm.set_over(newcm(1.0))
-    newcm.set_under(bgcolor)
-    newcm.set_bad(badcolor)
+    
+    # Only apply badcolor/bgcolor if cmap was specified as a string
+    # If a Colormap object was passed, preserve its existing settings
+    if cmap_is_string:
+        newcm.set_under(bgcolor)
+        newcm.set_bad(badcolor)
+    
     return newcm
 
 
