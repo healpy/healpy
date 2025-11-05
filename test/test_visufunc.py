@@ -158,7 +158,7 @@ class TestNoCrash(unittest.TestCase):
         assert under_is_blue, "String colormap should apply bgcolor"
         
         # Test 2: Colormap object with pre-set colors should preserve them
-        cm_obj = copy.copy(plt.get_cmap('viridis'))
+        cm_obj = plt.get_cmap('viridis').copy()
         cm_obj.set_bad('white')
         cm_obj.set_under('yellow')
         
@@ -178,7 +178,7 @@ class TestNoCrash(unittest.TestCase):
     def test_mollview_with_colormap_object(self):
         """Test that mollview preserves user-modified Colormap object colors"""
         # Create a colormap with custom bad/under colors
-        cmap = copy.copy(plt.get_cmap('viridis'))
+        cmap = plt.get_cmap('viridis').copy()
         cmap.set_bad('white')
         cmap.set_under('yellow')
         
