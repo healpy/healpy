@@ -32,8 +32,7 @@ class TestOrthviewHalfSkyGraticule(unittest.TestCase):
         # This should work and serves as a baseline
         hp.orthview(self.test_map, half_sky=False, title="Full Sky Test")
         hp.graticule()
-        # If we get here without exception, test passes
-        self.assertTrue(True)
+        # Test passes if no exception is raised
 
     def test_orthview_halfsky_graticule(self):
         """Test that graticule works with half sky orthview (bug fix)"""
@@ -41,8 +40,7 @@ class TestOrthviewHalfSkyGraticule(unittest.TestCase):
         # ValueError: array of sample points is empty
         hp.orthview(self.test_map, half_sky=True, title="Half Sky Test")
         hp.graticule()
-        # If we get here without exception, test passes
-        self.assertTrue(True)
+        # Test passes if no exception is raised
 
     def test_orthview_halfsky_graticule_with_rotation(self):
         """Test graticule with half sky orthview and rotation"""
@@ -50,13 +48,13 @@ class TestOrthviewHalfSkyGraticule(unittest.TestCase):
             self.test_map, half_sky=True, rot=[90, 0], title="Half Sky Rotated"
         )
         hp.graticule()
-        self.assertTrue(True)
+        # Test passes if no exception is raised
 
     def test_orthview_halfsky_graticule_custom_intervals(self):
         """Test graticule with half sky orthview and custom intervals"""
         hp.orthview(self.test_map, half_sky=True, title="Half Sky Custom Graticule")
         hp.graticule(dpar=30, dmer=45)
-        self.assertTrue(True)
+        # Test passes if no exception is raised
 
     def test_orthview_halfsky_multiple_graticules(self):
         """Test multiple half sky orthviews with graticules in same figure"""
@@ -76,8 +74,7 @@ class TestOrthviewHalfSkyGraticule(unittest.TestCase):
         hp.orthview(self.test_map, half_sky=True, fig=fig, sub=(1, 3, 3),
                    rot=[0, 45], title="Half Sky 3")
         hp.graticule()
-        
-        self.assertTrue(True)
+        # Test passes if no exception is raised
 
 
 if __name__ == "__main__":
