@@ -28,7 +28,9 @@ m = np.random.random(npix)
 projview(m, projection_type='mollweide', title='Correct: Legend with explicit loc')
 
 # Add a circle (from the original issue)
-circle = np.zeros(10000) + np.radians(45), np.arange(-180, 180, 0.036)
+num_points = 10000
+step_size = 360.0 / num_points  # 0.036 degrees per step
+circle = np.zeros(num_points) + np.radians(45), np.arange(-180, 180, step_size)
 rotMat = [[0, 0, 1], [0, 1, 0], [-1, 0, 0]]
 rotCircle = hp.rotator.rotateDirection(rotMat, circle)
 newprojplot(*rotCircle, linewidth=1, linestyle="", marker=".", label="a circle", c="r")

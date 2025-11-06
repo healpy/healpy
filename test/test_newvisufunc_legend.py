@@ -118,8 +118,10 @@ def test_issue_example_with_explicit_loc():
     hp.newvisufunc.projview(np.random.random(12*16**2))
     
     # Make a circle
-    # Step size 0.036 degrees gives us 10000 points covering 360 degrees
-    circle = np.zeros(10000) + np.radians(45), np.arange(-180, 180, 0.036)
+    # Create 10000 points covering 360 degrees
+    num_points = 10000
+    step_size = 360.0 / num_points  # 0.036 degrees per step
+    circle = np.zeros(num_points) + np.radians(45), np.arange(-180, 180, step_size)
     
     # Rotate it
     rotMat = [[0, 0, 1], [0, 1, 0], [-1, 0, 0]]
