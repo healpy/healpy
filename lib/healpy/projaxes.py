@@ -972,9 +972,21 @@ def create_colormap(cmap, badcolor="gray", bgcolor="white"):
         newcm = matplotlib.colors.LinearSegmentedColormap(
             "newcm", cmap0._segmentdata, cmap0.N
         )
+        # Preserve user-set colors when reconstructing from _segmentdata
+        if cmap_is_colormap_object:
+            if hasattr(cmap0, '_rgba_bad') and cmap0._rgba_bad is not None:
+                newcm._rgba_bad = cmap0._rgba_bad
+            if hasattr(cmap0, '_rgba_under') and cmap0._rgba_under is not None:
+                newcm._rgba_under = cmap0._rgba_under
+            if hasattr(cmap0, '_rgba_over') and cmap0._rgba_over is not None:
+                newcm._rgba_over = cmap0._rgba_over
     else:
         newcm = copy.copy(cmap0)
-    newcm.set_over(newcm(1.0))
+    
+    # Set over color (unless already preserved from Colormap object)
+    if not (cmap_is_colormap_object and hasattr(cmap0, "_segmentdata") and 
+            hasattr(cmap0, '_rgba_over') and cmap0._rgba_over is not None):
+        newcm.set_over(newcm(1.0))
     
     # Only apply badcolor/bgcolor if cmap was specified as a string or None
     # If a Colormap object was passed, preserve its existing settings
