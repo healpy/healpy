@@ -3,10 +3,11 @@
 This test verifies that legends work correctly with newprojplot
 when an explicit location is specified.
 """
-import healpy as hp
-import numpy as np
 import matplotlib
 matplotlib.use('Agg')  # Use non-interactive backend for testing
+
+import healpy as hp
+import numpy as np
 import matplotlib.pyplot as plt
 import pytest
 import tempfile
@@ -48,7 +49,7 @@ def test_newprojplot_legend_with_explicit_loc():
     # Clean up
     try:
         os.unlink(temp_file)
-    except:
+    except (OSError, FileNotFoundError):
         pass
 
 
@@ -81,7 +82,7 @@ def test_newprojplot_legend_with_bbox():
     # Clean up
     try:
         os.unlink(temp_file)
-    except:
+    except (OSError, FileNotFoundError):
         pass
 
 
@@ -141,5 +142,5 @@ def test_issue_example_with_explicit_loc():
     # Clean up
     try:
         os.unlink(temp_file)
-    except:
+    except (OSError, FileNotFoundError):
         pass
