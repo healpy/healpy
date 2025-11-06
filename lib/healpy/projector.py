@@ -805,6 +805,21 @@ class OrthographicProj(SphericalProj):
             xsize=xsize, half_sky=half_sky
         )
 
+    def get_fov(self):
+        """Get the field of view in radian of the plane of projection.
+
+        Return:
+          fov: the diameter in radian of the field of view
+        """
+        if self.arrayinfo is None:
+            # Default to full sphere FOV if projection not yet initialized
+            return 2.0 * pi
+        half_sky = self.arrayinfo.get("half_sky", False)
+        if half_sky:
+            return pi  # 180 degrees for half sky
+        else:
+            return 2.0 * pi  # 360 degrees for full sky
+
     def vec2xy(self, vx, vy=None, vz=None, direct=False):
         if not direct:
             theta, phi = R.vec2dir(self.rotator(vx, vy, vz))
