@@ -550,3 +550,42 @@ def test_projview_symlog_normalization(map_data):
             title="Cart projection with bgcolor",
             bgcolor="lightblue",
         )
+
+
+def test_projview_no_colorbar(map_data):
+    """Test that colorbar can be hidden with cbar=False"""
+    projview(
+        map_data,
+        coord=["G"],
+        cbar=False,
+        projection_type="mollweide",
+        title="Map without colorbar",
+    )
+    # Verify no colorbar was created by checking figure
+    fig = plt.gcf()
+    # A figure with colorbar has more than 1 axes
+    # Without colorbar, should have exactly 1 axes
+    assert len(fig.axes) == 1
+
+
+def test_projview_none_map_with_cbar():
+    """Test that m=None works correctly even with cbar=True (default)"""
+    # This should not raise an error even though cbar defaults to True
+    projview(
+        m=None,
+        coord=["G"],
+        projection_type="mollweide",
+        title="Blank map for overplotting",
+    )
+    # Should complete without error
+
+
+def test_projview_none_map_explicit_cbar_false():
+    """Test that m=None with explicit cbar=False works"""
+    projview(
+        m=None,
+        coord=["G"],
+        cbar=False,
+        projection_type="mollweide",
+        title="Blank map with explicit cbar=False",
+    )

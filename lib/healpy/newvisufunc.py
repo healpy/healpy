@@ -736,7 +736,7 @@ def projview(
     if projection_type == "cart":
         ax.set_aspect(1)
 
-    if cbar:
+    if cbar and m is not None:
         if cbar_ticks is None:
             cbar_ticks = [min, max]
 
