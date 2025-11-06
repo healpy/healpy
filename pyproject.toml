@@ -46,6 +46,7 @@ doc = [
 
 [project.urls]
 homepage = "http://github.com/healpy"
+Documentation = "https://healpy.readthedocs.io"
 
 [build-system]
 
