@@ -484,6 +484,17 @@ class TestSphtFunc(unittest.TestCase):
         with pytest.raises(ValueError):
             hp.rotate_alm(alm, 0.1, 0.2, 0.3)
 
+    def test_alm2map_complex64(self):
+        """Test that alm2map works with complex64 input"""
+        alm_dp = np.zeros((10,), dtype=np.complex128)
+        alm_sp = np.zeros((10,), dtype=np.complex64)
+
+        # All of these should work without raising a TypeError
+        hp.alm2map(alm_dp, nside=1, lmax=3)
+        hp.alm2map_spin([alm_dp, alm_dp], nside=1, lmax=3, spin=2)
+        hp.alm2map_spin([alm_sp, alm_sp], nside=1, lmax=3, spin=2)
+        hp.alm2map(alm_sp, nside=1, lmax=3)
+
     def test_blm_gauss(self):
         lmax = 16
         pol = True
