@@ -549,6 +549,7 @@ def test_projview_no_colorbar(map_data):
     # A figure with colorbar has more than 1 axes
     # Without colorbar, should have exactly 1 axes
     assert len(fig.axes) == 1
+    plt.close('all')
 
 
 def test_projview_none_map_with_cbar():
@@ -561,6 +562,7 @@ def test_projview_none_map_with_cbar():
         title="Blank map for overplotting",
     )
     # Should complete without error
+    plt.close('all')
 
 
 def test_projview_none_map_explicit_cbar_false():
@@ -572,6 +574,10 @@ def test_projview_none_map_explicit_cbar_false():
         projection_type="mollweide",
         title="Blank map with explicit cbar=False",
     )
+    plt.close('all')
+
+
+
 def test_projview_mollweide_badcolor(map_data):
     projview(
         map_data,
