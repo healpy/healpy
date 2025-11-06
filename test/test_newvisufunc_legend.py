@@ -9,6 +9,8 @@ import matplotlib
 matplotlib.use('Agg')  # Use non-interactive backend for testing
 import matplotlib.pyplot as plt
 import pytest
+import tempfile
+import os
 
 
 def test_newprojplot_legend_with_explicit_loc():
@@ -37,8 +39,17 @@ def test_newprojplot_legend_with_explicit_loc():
     assert legend is not None
     assert len(legend.get_texts()) == 2
     
-    plt.savefig('/tmp/test_legend_with_loc.png', dpi=50, bbox_inches='tight')
+    # Save to temporary file
+    with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as f:
+        plt.savefig(f.name, dpi=50, bbox_inches='tight')
+        temp_file = f.name
     plt.close()
+    
+    # Clean up
+    try:
+        os.unlink(temp_file)
+    except:
+        pass
 
 
 def test_newprojplot_legend_with_bbox():
@@ -60,8 +71,18 @@ def test_newprojplot_legend_with_bbox():
     legend = plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
     
     assert legend is not None
-    plt.savefig('/tmp/test_legend_with_bbox.png', dpi=50, bbox_inches='tight')
+    
+    # Save to temporary file
+    with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as f:
+        plt.savefig(f.name, dpi=50, bbox_inches='tight')
+        temp_file = f.name
     plt.close()
+    
+    # Clean up
+    try:
+        os.unlink(temp_file)
+    except:
+        pass
 
 
 def test_newprojplot_returns_line_objects():
@@ -96,6 +117,7 @@ def test_issue_example_with_explicit_loc():
     hp.newvisufunc.projview(np.random.random(12*16**2))
     
     # Make a circle
+    # Step size 0.036 degrees gives us 10000 points covering 360 degrees
     circle = np.zeros(10000) + np.radians(45), np.arange(-180, 180, 0.036)
     
     # Rotate it
@@ -109,5 +131,15 @@ def test_issue_example_with_explicit_loc():
     legend = plt.legend(loc='upper right')
     
     assert legend is not None
-    plt.savefig('/tmp/test_issue_example.png', dpi=50, bbox_inches='tight')
+    
+    # Save to temporary file
+    with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as f:
+        plt.savefig(f.name, dpi=50, bbox_inches='tight')
+        temp_file = f.name
     plt.close()
+    
+    # Clean up
+    try:
+        os.unlink(temp_file)
+    except:
+        pass

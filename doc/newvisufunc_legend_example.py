@@ -6,6 +6,8 @@ geographic projections like mollweide, hammer, or aitoff.
 
 ISSUE: Calling plt.legend() without arguments can hang or be very slow
 SOLUTION: Always specify the 'loc' parameter explicitly
+
+Note: This example saves PNG files to the current directory.
 """
 
 import numpy as np
@@ -34,6 +36,7 @@ newprojplot(*rotCircle, linewidth=1, linestyle="", marker=".", label="a circle",
 # ✓ CORRECT: Specify loc explicitly to avoid hang
 plt.legend(loc='upper right')
 plt.savefig('example_legend_correct.png', dpi=100, bbox_inches='tight')
+print("Saved: example_legend_correct.png")
 plt.close()
 
 # ============================================================================
@@ -48,6 +51,7 @@ newprojplot(theta, phi, 'g-', linewidth=2, label='Sine curve')
 # ✓ CORRECT: Use bbox_to_anchor to position legend outside axes
 plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.)
 plt.savefig('example_legend_bbox.png', dpi=100, bbox_inches='tight')
+print("Saved: example_legend_bbox.png")
 plt.close()
 
 # ============================================================================
@@ -69,6 +73,7 @@ newprojplot(theta2, phi2, 'b--', linewidth=2, label='Equator')
 # ✓ CORRECT: Specify loc explicitly
 plt.legend(loc='lower left')
 plt.savefig('example_legend_multiple.png', dpi=100, bbox_inches='tight')
+print("Saved: example_legend_multiple.png")
 plt.close()
 
 print("Examples generated successfully!")
