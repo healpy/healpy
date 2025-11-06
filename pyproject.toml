@@ -45,8 +45,9 @@ doc = [
 ]
 
 [project.urls]
-homepage = "http://github.com/healpy"
-Documentation = "https://healpy.readthedocs.io"
+homepage = "http://github.com/healpy/healpy"
+source = "http://github.com/healpy/healpy"
+documentation = "https://healpy.readthedocs.io"
 
 [build-system]
 
