@@ -494,6 +494,10 @@ class TestSphtFunc(unittest.TestCase):
         hp.alm2map_spin([alm_dp, alm_dp], nside=1, lmax=3, spin=2)
         hp.alm2map_spin([alm_sp, alm_sp], nside=1, lmax=3, spin=2)
         hp.alm2map(alm_sp, nside=1, lmax=3)
+        
+        # Also test alm2map_der1 with complex64
+        hp.alm2map_der1(alm_dp, nside=1, lmax=3)
+        hp.alm2map_der1(alm_sp, nside=1, lmax=3)
 
     def test_blm_gauss(self):
         lmax = 16
