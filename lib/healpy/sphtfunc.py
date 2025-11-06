@@ -506,6 +506,9 @@ def alm2map(
             alms_new.append(almxfl(alm, pixelwindow, inplace=inplace))
     else:
         alms_new = alms
+    
+    # Ensure alms are complex128 for C++ backend
+    alms_new = [np.ascontiguousarray(alm, dtype=np.complex128) for alm in alms_new]
 
     if lmax is None:
         lmax = -1
