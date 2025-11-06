@@ -61,18 +61,23 @@ class TestOrthviewHalfSkyGraticule(unittest.TestCase):
         fig = plt.figure(figsize=(12, 4))
         
         # First subplot - default
-        hp.orthview(self.test_map, half_sky=True, fig=fig, sub=(1, 3, 1), 
-                   title="Half Sky 1")
+        hp.orthview(
+            self.test_map, half_sky=True, fig=fig, sub=(1, 3, 1), title="Half Sky 1"
+        )
         hp.graticule()
         
         # Second subplot - rotated
-        hp.orthview(self.test_map, half_sky=True, fig=fig, sub=(1, 3, 2),
-                   rot=[90, 0], title="Half Sky 2")
+        hp.orthview(
+            self.test_map, half_sky=True, fig=fig, sub=(1, 3, 2), rot=[90, 0],
+            title="Half Sky 2"
+        )
         hp.graticule()
         
         # Third subplot - different latitude
-        hp.orthview(self.test_map, half_sky=True, fig=fig, sub=(1, 3, 3),
-                   rot=[0, 45], title="Half Sky 3")
+        hp.orthview(
+            self.test_map, half_sky=True, fig=fig, sub=(1, 3, 3), rot=[0, 45],
+            title="Half Sky 3"
+        )
         hp.graticule()
         # Test passes if no exception is raised
 

@@ -806,10 +806,10 @@ class OrthographicProj(SphericalProj):
         )
 
     def get_fov(self):
-        """Get the field of view in radians of the plane of projection.
+        """Get the field of view in radian of the plane of projection.
 
         Return:
-          fov: the field of view angle in radians
+          fov: the diameter in radian of the field of view
         """
         if self.arrayinfo is None:
             # Default to full sphere FOV if projection not yet initialized
