@@ -45,9 +45,13 @@ doc = [
 ]
 
 [project.urls]
-homepage = "http://github.com/healpy/healpy"
-source = "http://github.com/healpy/healpy"
+homepage = "https://github.com/healpy/healpy"
+source = "https://github.com/healpy/healpy"
+download = "https://pypi.org/project/healpy/#files"
+changelog = "https://github.com/healpy/healpy/blob/main/CHANGELOG.rst"
+releasenotes = "https://github.com/healpy/healpy/releases"
 documentation = "https://healpy.readthedocs.io"
+issues = "https://github.com/healpy/healpy/issues"
 
 [build-system]
 
