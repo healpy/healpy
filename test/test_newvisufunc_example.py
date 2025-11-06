@@ -189,12 +189,35 @@ def test_projview_cart_lonra_latra(map_data):
 )
 
 def test_projview_lonra_latra_error(map_data):
+    # Test that lonra/latra raises error for mollweide (default projection)
     with pytest.raises(ValueError):
         projview(
             map_data,
             coord=["G"],
             lonra=[-30, 30],
             latra=[-30, 30],
+    )
+
+def test_projview_lambert_lonra_error(map_data):
+    # Test that lonra raises error for lambert projection
+    with pytest.raises(ValueError, match="lonra cannot be set for projection_type='lambert'"):
+        projview(
+            map_data,
+            coord=["G"],
+            projection_type="lambert",
+            lonra=[-30, 30],
+        )
+
+def test_projview_lambert_half_sky(map_data):
+    # Test lambert projection with half sky using latra
+    projview(
+        map_data,
+        coord=["G"],
+        projection_type="lambert",
+        latra=[0, 90],
+        graticule=True,
+        graticule_labels=True,
+        title="Lambert half-sky projection",
     )
 
 
