@@ -606,6 +606,7 @@ def projview(
         THETA, PHI = r(THETA.flatten(), PHI.flatten())
         THETA = THETA.reshape(ysize, xsize)
         PHI = PHI.reshape(ysize, xsize)
+    ret = None
     if m is not None:
         nside = npix2nside(len(m))
         w = ~(np.isnan(m) | np.isinf(m))
