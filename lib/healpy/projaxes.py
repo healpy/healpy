@@ -947,18 +947,24 @@ def create_colormap(cmap, badcolor="gray", bgcolor="white"):
         color for bad pixels (passed to set_bad)
     bgcolor : string
         color for background (passed to set_under)
+    
+    Notes
+    -----
+    If cmap is a string, badcolor and bgcolor are applied to the colormap.
+    If cmap is already a Colormap object, its existing bad/under colors are
+    preserved to respect any user modifications.
     """
-    if type(cmap) is str:
+    cmap_is_string = isinstance(cmap, str)
+    cmap_is_colormap_object = isinstance(cmap, matplotlib.colors.Colormap)
+    
+    if cmap_is_string:
         if cmap in ["planck", "planck_log", "wmap"]:
             datapath = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
             cmap_path = os.path.join(datapath, f"{cmap}_cmap.dat")
             cmap0 = matplotlib.colors.ListedColormap(np.loadtxt(cmap_path) / 255.0, cmap)
         else:
             cmap0 = plt.get_cmap(cmap)
-    elif type(cmap) in [
-        matplotlib.colors.LinearSegmentedColormap,
-        matplotlib.colors.ListedColormap,
-    ]:
+    elif cmap_is_colormap_object:
         cmap0 = cmap
     else:
         cmap0 = plt.get_cmap(matplotlib.rcParams["image.cmap"])
@@ -966,12 +972,31 @@ def create_colormap(cmap, badcolor="gray", bgcolor="white"):
         newcm = matplotlib.colors.LinearSegmentedColormap(
             "newcm", cmap0._segmentdata, cmap0.N
         )
+        # Preserve user-set colors when reconstructing from _segmentdata
+        if cmap_is_colormap_object:
+            if hasattr(cmap0, '_rgba_bad') and cmap0._rgba_bad is not None:
+                newcm._rgba_bad = cmap0._rgba_bad
+            if hasattr(cmap0, '_rgba_under') and cmap0._rgba_under is not None:
+                newcm._rgba_under = cmap0._rgba_under
+            if hasattr(cmap0, '_rgba_over') and cmap0._rgba_over is not None:
+                newcm._rgba_over = cmap0._rgba_over
     else:
         newcm = copy.copy(cmap0)
-    newcm.set_over(newcm(1.0))
-    newcm.set_under(bgcolor)
-    newcm.set_bad(badcolor)
+    
+    # Set over color (unless already preserved from Colormap object)
+    if not (cmap_is_colormap_object and hasattr(cmap0, "_segmentdata") and 
+            hasattr(cmap0, '_rgba_over') and cmap0._rgba_over is not None):
+        newcm.set_over(newcm(1.0))
+    
+    # Only apply badcolor/bgcolor if cmap was specified as a string or None
+    # If a Colormap object was passed, preserve its existing settings
+    if not cmap_is_colormap_object:
+        newcm.set_under(bgcolor)
+        newcm.set_bad(badcolor)
+    
     return newcm
+
+
 
 
 ##################################################################
