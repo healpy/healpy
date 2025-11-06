@@ -42,8 +42,9 @@ def test_newprojplot_legend_with_explicit_loc():
     
     # Save to temporary file
     with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as f:
-        plt.savefig(f.name, dpi=50, bbox_inches='tight')
         temp_file = f.name
+    # File is now closed, safe to write to it
+    plt.savefig(temp_file, dpi=50, bbox_inches='tight')
     plt.close()
     
     # Clean up
@@ -75,8 +76,9 @@ def test_newprojplot_legend_with_bbox():
     
     # Save to temporary file
     with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as f:
-        plt.savefig(f.name, dpi=50, bbox_inches='tight')
         temp_file = f.name
+    # File is now closed, safe to write to it
+    plt.savefig(temp_file, dpi=50, bbox_inches='tight')
     plt.close()
     
     # Clean up
@@ -137,8 +139,9 @@ def test_issue_example_with_explicit_loc():
     
     # Save to temporary file
     with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as f:
-        plt.savefig(f.name, dpi=50, bbox_inches='tight')
         temp_file = f.name
+    # File is now closed, safe to write to it
+    plt.savefig(temp_file, dpi=50, bbox_inches='tight')
     plt.close()
     
     # Clean up
