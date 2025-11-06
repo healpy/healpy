@@ -518,23 +518,6 @@ def test_projview_symlog_normalization(map_data):
     )
     plt.tight_layout()
 
-    def test_projview_mollweide_badcolor(map_data):
-        projview(
-            map_data,
-            coord=["G"],
-            graticule=True,
-            graticule_labels=True,
-            unit="cbar label",
-            xlabel="longitude",
-            ylabel="latitude",
-            cb_orientation="vertical",
-            min=-0.05,
-            max=0.05,
-            latitude_grid_spacing=45,
-            projection_type="mollweide",
-            title="Mollweide projection with badcolor",
-            badcolor="red",
-        )
 
     def test_projview_cart_bgcolor(map_data):
         projview(
@@ -589,3 +572,61 @@ def test_projview_none_map_explicit_cbar_false():
         projection_type="mollweide",
         title="Blank map with explicit cbar=False",
     )
+def test_projview_mollweide_badcolor(map_data):
+    projview(
+        map_data,
+        coord=["G"],
+        graticule=True,
+        graticule_labels=True,
+        unit="cbar label",
+        xlabel="longitude",
+        ylabel="latitude",
+        cb_orientation="vertical",
+        min=-0.05,
+        max=0.05,
+        latitude_grid_spacing=45,
+        projection_type="mollweide",
+        title="Mollweide projection with badcolor",
+        badcolor="red",
+    )
+
+
+def test_projview_cart_bgcolor(map_data):
+    projview(
+        map_data,
+        coord=["G"],
+        graticule=True,
+        graticule_labels=True,
+        unit="cbar label",
+        xlabel="longitude",
+        ylabel="latitude",
+        cb_orientation="horizontal",
+        projection_type="cart",
+        title="Cart projection with bgcolor",
+        bgcolor="lightblue",
+    )
+
+
+def test_projview_colormap_object_preservation(map_data):
+    """Test that projview preserves user-modified Colormap object colors"""
+    # Create a colormap with custom bad/under colors
+    colormap = plt.get_cmap('viridis').copy()
+    colormap.set_bad('white')
+    colormap.set_under('yellow')
+    
+    # Call projview with the modified colormap
+    projview(
+        map_data,
+        cmap=colormap,
+        projection_type='hammer'
+    )
+    
+    # Get the colormap from the plot
+    ax = plt.gca()
+    if hasattr(ax, 'collections') and len(ax.collections) > 0:
+        plot_cmap = ax.collections[0].get_cmap()
+        # Verify colors are preserved
+        bad_is_white = np.allclose(plot_cmap._rgba_bad[:3], [1.0, 1.0, 1.0])
+        under_is_yellow = np.allclose(plot_cmap._rgba_under[:3], [1.0, 1.0, 0.0])
+        assert bad_is_white, f"projview should preserve Colormap bad color, got {plot_cmap._rgba_bad}"
+        assert under_is_yellow, f"projview should preserve Colormap under color, got {plot_cmap._rgba_under}"
