@@ -161,6 +161,12 @@ def projview(
         Please report bugs or submit feature requests via Github.
         The interface will change in future releases.
 
+    .. note::
+        When adding a legend after using :func:`newprojplot` on geographic 
+        projections (mollweide, hammer, aitoff, lambert), you must specify an 
+        explicit location with ``plt.legend(loc='upper right')`` to avoid 
+        performance issues. See :func:`newprojplot` documentation for details.
+
     Parameters
     ----------
     m : float, array-like or None
@@ -894,6 +900,16 @@ def newprojplot(theta, phi, fmt=None, lonlat=False, **kwargs):
     Notes
     -----
     Other keywords are passed to :func:`matplotlib.Axes.plot`.
+    
+    When adding a legend to plots created with geographic projections 
+    (e.g., mollweide, hammer, aitoff), you must specify an explicit location 
+    to avoid performance issues. For example::
+    
+       newprojplot(theta, phi, label='my data')
+       plt.legend(loc='upper right')  # Must specify loc explicitly
+       
+    Do not use ``plt.legend()`` without the ``loc`` parameter, as the automatic 
+    positioning algorithm can be extremely slow or hang with geographic projections.
     """
     import matplotlib.pyplot as plt
 
