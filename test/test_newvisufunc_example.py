@@ -189,7 +189,7 @@ def test_projview_cart_lonra_latra(map_data):
 )
 
 def test_projview_lonra_latra_error(map_data):
-    # Test that lonra/latra raises error for mollweide (default projection)
+    # Test that both lonra and latra raise error for mollweide (default projection)
     with pytest.raises(ValueError):
         projview(
             map_data,
