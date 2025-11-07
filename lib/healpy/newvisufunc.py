@@ -161,6 +161,12 @@ def projview(
         Please report bugs or submit feature requests via Github.
         The interface will change in future releases.
 
+    .. note::
+        When adding a legend after using :func:`newprojplot` on geographic 
+        projections (mollweide, hammer, aitoff, lambert), you must specify an 
+        explicit location with ``plt.legend(loc='upper right')`` to avoid 
+        performance issues. See :func:`newprojplot` documentation for details.
+
     Parameters
     ----------
     m : float, array-like or None
@@ -309,8 +315,11 @@ def projview(
       latitude range [-gal_cut, +gal_cut]
     lonra : list
         longitude range for the map, in degrees. Default is -180 to 180.
+        Only supported for projection_type='cart'.
     latra : list
         latitude range for the map, in degrees. Default is -90 to 90.
+        Supported for projection_type='cart' and projection_type='lambert'.
+        For lambert projection, this enables half-sky plotting (e.g., latra=[0, 90]).
     kwargs : dict
         any leftover arguments will be passed to pcolormesh
     """
@@ -326,8 +335,12 @@ def projview(
     # For the full-sky projections this must be the full
     # range -180 to 180 for longitude and -90 to 90 for latitude.
     # For the cartesian projection, it can be set to a smaller range.
-    if projection_type != "cart" and (lonra is not None or latra is not None):
-        raise ValueError("lonra and latra can only be set for projection_type='cart'")
+    # Lambert projection also supports latra for half-sky plotting.
+    if projection_type not in ["cart", "lambert"]:
+        if lonra is not None or latra is not None:
+            raise ValueError("lonra and latra can only be set for projection_type='cart' or 'lambert'")
+    if projection_type == "lambert" and lonra is not None:
+        raise ValueError("lonra cannot be set for projection_type='lambert', only latra is supported for half-sky plotting")
     if lonra is None:
         lon_min = -180.
         lon_max = 180.
@@ -895,6 +908,16 @@ def newprojplot(theta, phi, fmt=None, lonlat=False, **kwargs):
     Notes
     -----
     Other keywords are passed to :func:`matplotlib.Axes.plot`.
+    
+    When adding a legend to plots created with geographic projections 
+    (e.g., mollweide, hammer, aitoff), you must specify an explicit location 
+    to avoid performance issues. For example::
+    
+       newprojplot(theta, phi, label='my data')
+       plt.legend(loc='upper right')  # Must specify loc explicitly
+       
+    Do not use ``plt.legend()`` without the ``loc`` parameter, as the automatic 
+    positioning algorithm can be extremely slow or hang with geographic projections.
     """
     import matplotlib.pyplot as plt
 
