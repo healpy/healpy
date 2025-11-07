@@ -34,13 +34,16 @@ def test_projscatter_multiple_subplots():
     # Verify we have two SphericalProjAxes
     assert len(spherical_axes) == 2, "Should have two SphericalProjAxes"
 
-    # Check that each axes has only one scatter collection
+    # Check that each axes has exactly one scatter collection
     # (the scatter plot on the current axes only)
+    # Before the fix, both scatter calls would appear on both axes (2 collections each)
+    # After the fix, each axes should have exactly 1 collection
     for ax in spherical_axes:
         collections = ax.collections
-        # Each axes should have scatter points only from its own projscatter call
-        # not from both calls
-        assert len(collections) > 0, "Each axes should have at least one collection"
+        assert len(collections) == 1, (
+            f"Each axes should have exactly 1 collection, got {len(collections)}. "
+            "If this is 2, the bug has regressed - scatter points are appearing on all axes."
+        )
 
     plt.close(fig)
 
@@ -66,11 +69,15 @@ def test_projplot_multiple_subplots():
     # Verify we have two SphericalProjAxes
     assert len(spherical_axes) == 2, "Should have two SphericalProjAxes"
 
-    # Check that each axes has lines only from its own projplot call
+    # Check that each axes has exactly one line from its own projplot call
+    # Before the fix, both projplot calls would appear on both axes (2 lines each)
+    # After the fix, each axes should have exactly 1 line
     for ax in spherical_axes:
         lines = ax.lines
-        # Each axes should have lines only from its own projplot call
-        assert len(lines) > 0, "Each axes should have at least one line"
+        assert len(lines) == 1, (
+            f"Each axes should have exactly 1 line, got {len(lines)}. "
+            "If this is 2, the bug has regressed - lines are appearing on all axes."
+        )
 
     plt.close(fig)
 
@@ -96,10 +103,14 @@ def test_projtext_multiple_subplots():
     # Verify we have two SphericalProjAxes
     assert len(spherical_axes) == 2, "Should have two SphericalProjAxes"
 
-    # Check that each axes has text only from its own projtext call
+    # Check that each axes has exactly one text element from its own projtext call
+    # Before the fix, both projtext calls would appear on both axes (2 texts each)
+    # After the fix, each axes should have exactly 1 text
     for ax in spherical_axes:
         texts = ax.texts
-        # Each axes should have text elements
-        assert len(texts) > 0, "Each axes should have at least one text element"
+        assert len(texts) == 1, (
+            f"Each axes should have exactly 1 text element, got {len(texts)}. "
+            "If this is 2, the bug has regressed - text is appearing on all axes."
+        )
 
     plt.close(fig)
