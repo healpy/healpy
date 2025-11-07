@@ -14,15 +14,14 @@ class TestFontSizeAndDPI(unittest.TestCase):
         with open('lib/healpy/visufunc.py', 'r') as f:
             content = f.read()
         
-        # Check for hard-coded fontsize=14 or fontsize=12 in ax.text() calls
-        # We allow them in the defaults dict but not in text() calls
-        text_calls = re.findall(r'ax\.text\([^)]*fontsize\s*=\s*\d+', content, re.DOTALL)
-        cb_text_calls = re.findall(r'cb\.ax\.text\([^)]*fontsize\s*=\s*\d+', content, re.DOTALL)
+        # Check that text uses fontsize from dictionary, not hard-coded numbers
+        # Pattern looks for fontsize=<number> not fontsize=fontsize[...]
+        text_hardcoded = re.findall(
+            r'\.text\([^)]*fontsize\s*=\s*\d+[^)]*\)', content, re.DOTALL
+        )
         
-        self.assertEqual(len(text_calls), 0,
-                        f"Found {len(text_calls)} instances of hardcoded fontsize in ax.text()")
-        self.assertEqual(len(cb_text_calls), 0,
-                        f"Found {len(cb_text_calls)} instances of hardcoded fontsize in cb.ax.text()")
+        self.assertEqual(len(text_hardcoded), 0,
+                        f"Found {len(text_hardcoded)} instances of hardcoded numeric fontsize in .text() calls")
 
     def test_visufunc_has_fontsize_parameter(self):
         """Test that visufunc functions have fontsize parameter"""
