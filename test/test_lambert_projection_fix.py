@@ -118,13 +118,6 @@ def test_lambert_vs_mollweide_consistency():
     # but we can check that the data is not all NaN or corrupted
     assert not np.all(np.isnan(top_half_lambert)), "Top half of Lambert projection is all NaN"
     assert not np.all(np.isnan(bottom_half_lambert)), "Bottom half of Lambert projection is all NaN"
-    
-    print("Lambert projection data shape:", data_lambert.shape)
-    print("Lambert top half mean:", np.nanmean(top_half_lambert))
-    print("Lambert bottom half mean:", np.nanmean(bottom_half_lambert))
-    print("Mollweide data shape:", data_mollweide.shape)
-    print("Mollweide top half mean:", np.nanmean(data_mollweide[:data_mollweide.shape[0]//2, :]))
-    print("Mollweide bottom half mean:", np.nanmean(data_mollweide[data_mollweide.shape[0]//2:, :]))
 
 
 def test_lambert_with_real_data(map_data):
