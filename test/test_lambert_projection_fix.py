@@ -10,6 +10,20 @@ import healpy as hp
 import matplotlib
 matplotlib.use('Agg')  # Use non-interactive backend
 import matplotlib.pyplot as plt
+import os.path
+
+
+@pytest.fixture
+def map_data():
+    """Fixture providing WMAP test data."""
+    path = os.path.dirname(os.path.realpath(__file__))
+    return hp.read_map(
+        os.path.join(
+            path,
+            "data",
+            "wmap_band_iqumap_r9_7yr_W_v4_udgraded32_masked_smoothed10deg_fortran.fits",
+        )
+    )
 
 
 def test_lambert_projection_basic():
