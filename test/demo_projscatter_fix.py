@@ -18,8 +18,10 @@ After the fix:
 import healpy as hp
 import numpy as np
 import matplotlib.pyplot as plt
+import tempfile
+import os
 
-def demo_projscatter():
+def demo_projscatter(output_dir):
     """Demonstrate projscatter fix with multiple subplots"""
     print("Testing projscatter with multiple subplots...")
     
@@ -41,11 +43,12 @@ def demo_projscatter():
     
     plt.suptitle('projscatter fix demo: Each point appears only in its own subplot')
     plt.tight_layout()
-    plt.savefig('/tmp/projscatter_fix_demo.png', dpi=100, bbox_inches='tight')
-    print("✓ Saved to /tmp/projscatter_fix_demo.png")
+    output_path = os.path.join(output_dir, 'projscatter_fix_demo.png')
+    plt.savefig(output_path, dpi=100, bbox_inches='tight')
+    print(f"✓ Saved to {output_path}")
     plt.close()
 
-def demo_projplot():
+def demo_projplot(output_dir):
     """Demonstrate projplot fix with multiple subplots"""
     print("Testing projplot with multiple subplots...")
     
@@ -67,11 +70,12 @@ def demo_projplot():
     
     plt.suptitle('projplot fix demo: Each line appears only in its own subplot')
     plt.tight_layout()
-    plt.savefig('/tmp/projplot_fix_demo.png', dpi=100, bbox_inches='tight')
-    print("✓ Saved to /tmp/projplot_fix_demo.png")
+    output_path = os.path.join(output_dir, 'projplot_fix_demo.png')
+    plt.savefig(output_path, dpi=100, bbox_inches='tight')
+    print(f"✓ Saved to {output_path}")
     plt.close()
 
-def demo_projtext():
+def demo_projtext(output_dir):
     """Demonstrate projtext fix with multiple subplots"""
     print("Testing projtext with multiple subplots...")
     
@@ -93,11 +97,12 @@ def demo_projtext():
     
     plt.suptitle('projtext fix demo: Each text appears only in its own subplot')
     plt.tight_layout()
-    plt.savefig('/tmp/projtext_fix_demo.png', dpi=100, bbox_inches='tight')
-    print("✓ Saved to /tmp/projtext_fix_demo.png")
+    output_path = os.path.join(output_dir, 'projtext_fix_demo.png')
+    plt.savefig(output_path, dpi=100, bbox_inches='tight')
+    print(f"✓ Saved to {output_path}")
     plt.close()
 
-def demo_original_issue():
+def demo_original_issue(output_dir):
     """Reproduce the exact scenario from the original issue"""
     print("Testing original issue scenario...")
     
@@ -115,8 +120,9 @@ def demo_original_issue():
     
     plt.suptitle('Original issue #637 - Now fixed!')
     plt.tight_layout()
-    plt.savefig('/tmp/original_issue_fixed.png', dpi=100, bbox_inches='tight')
-    print("✓ Saved to /tmp/original_issue_fixed.png")
+    output_path = os.path.join(output_dir, 'original_issue_fixed.png')
+    plt.savefig(output_path, dpi=100, bbox_inches='tight')
+    print(f"✓ Saved to {output_path}")
     plt.close()
 
 if __name__ == '__main__':
@@ -126,11 +132,16 @@ if __name__ == '__main__':
     print("=" * 60)
     print()
     
+    # Use temporary directory for output
+    output_dir = tempfile.gettempdir()
+    print(f"Output directory: {output_dir}")
+    print()
+    
     try:
-        demo_projscatter()
-        demo_projplot()
-        demo_projtext()
-        demo_original_issue()
+        demo_projscatter(output_dir)
+        demo_projplot(output_dir)
+        demo_projtext(output_dir)
+        demo_original_issue(output_dir)
         
         print()
         print("=" * 60)
