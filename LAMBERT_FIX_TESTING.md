@@ -47,13 +47,18 @@ This creates two PNG files:
 
 ### Manual Testing
 
-Test with real WMAP data:
+Test with real WMAP data (run from repository root):
 ```python
 import healpy as hp
 import matplotlib.pyplot as plt
+import os
 
-# Load test data
-map_data = hp.read_map('test/data/wmap_band_iqumap_r9_7yr_W_v4_udgraded32_masked_smoothed10deg_fortran.fits')
+# Load test data (path relative to repository root)
+test_data_path = 'test/data/wmap_band_iqumap_r9_7yr_W_v4_udgraded32_masked_smoothed10deg_fortran.fits'
+if not os.path.exists(test_data_path):
+    # Adjust path if running from a different directory
+    test_data_path = os.path.join(os.path.dirname(__file__), test_data_path)
+map_data = hp.read_map(test_data_path)
 
 # Test full-sky Lambert
 hp.newvisufunc.projview(
