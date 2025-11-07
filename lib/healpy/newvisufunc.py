@@ -643,7 +643,7 @@ def projview(
         grid_map = m[grid_pix]
 
         # Flip the grid_map vertically for Lambert projection
-        # matplotlib's Lambert projection has inverted Y-axis behavior
+        # matplotlib's Lambert projection interprets Y-axis in reverse order
         if projection_type == "lambert":
             grid_map = np.flip(grid_map, axis=0)
 
