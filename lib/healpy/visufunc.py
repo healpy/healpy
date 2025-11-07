@@ -1534,14 +1534,13 @@ def delgraticules():
 def projplot(*args, **kwds):
     import pylab
 
-    f = pylab.gcf()
     wasinteractive = pylab.isinteractive()
     pylab.ioff()
     ret = None
     try:
-        for ax in f.get_axes():
-            if isinstance(ax, PA.SphericalProjAxes):
-                ret = ax.projplot(*args, **kwds)
+        ax = pylab.gca()
+        if isinstance(ax, PA.SphericalProjAxes):
+            ret = ax.projplot(*args, **kwds)
     finally:
         pylab.draw()
         if wasinteractive:
@@ -1556,14 +1555,13 @@ projplot.__doc__ = PA.SphericalProjAxes.projplot.__doc__
 def projscatter(*args, **kwds):
     import pylab
 
-    f = pylab.gcf()
     wasinteractive = pylab.isinteractive()
     pylab.ioff()
     ret = None
     try:
-        for ax in f.get_axes():
-            if isinstance(ax, PA.SphericalProjAxes):
-                ret = ax.projscatter(*args, **kwds)
+        ax = pylab.gca()
+        if isinstance(ax, PA.SphericalProjAxes):
+            ret = ax.projscatter(*args, **kwds)
     finally:
         pylab.draw()
         if wasinteractive:
@@ -1578,14 +1576,13 @@ projscatter.__doc__ = PA.SphericalProjAxes.projscatter.__doc__
 def projtext(*args, **kwds):
     import pylab
 
-    f = pylab.gcf()
     wasinteractive = pylab.isinteractive()
     pylab.ioff()
     ret = None
     try:
-        for ax in f.get_axes():
-            if isinstance(ax, PA.SphericalProjAxes):
-                ret = ax.projtext(*args, **kwds)
+        ax = pylab.gca()
+        if isinstance(ax, PA.SphericalProjAxes):
+            ret = ax.projtext(*args, **kwds)
     finally:
         pylab.draw()
         if wasinteractive:
