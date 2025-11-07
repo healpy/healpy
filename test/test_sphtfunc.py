@@ -668,8 +668,6 @@ class TestSphtFunc(unittest.TestCase):
         formula as gauss_beam, as specified in Challinor et al. 2000 
         (astro-ph/0008228).
         """
-        import healpy as hp
-        
         fwhm = np.radians(10.0 / 60.0)  # 10 arcmin in radians
         lmax = 128
         
@@ -681,7 +679,7 @@ class TestSphtFunc(unittest.TestCase):
         
         # Extract the m=0 coefficients from blm and compute the corresponding
         # beam window function. For m=0, the relationship is:
-        # B_l = sqrt(4*pi / (2*l+1)) * a_{l0}
+        # B_l = sqrt(4π/(2l+1)) * a_{l0}
         # where a_{l0} is the spherical harmonic coefficient
         beam_from_blm = np.zeros(lmax + 1)
         for l in range(lmax + 1):
