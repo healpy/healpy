@@ -1418,6 +1418,10 @@ def blm_gauss(fwhm, lmax, pol=False):
     """Computes spherical harmonic coefficients of a circular Gaussian beam
     pointing towards the North Pole
 
+    The beam window function computed from these coefficients is consistent
+    with the output of :func:`gauss_beam`, following the formalism described
+    in Challinor et al. 2000 (astro-ph/0008228).
+
     See an example of usage
     `in the documentation <https://healpy.readthedocs.io/en/latest/blm_gauss_plot.html>`_
 
