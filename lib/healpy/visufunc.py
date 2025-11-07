@@ -101,6 +101,7 @@ def mollview(
     nlocs=2,
     return_projected_map=False,
     alpha=None,
+    fontsize=None,
 ):
     """Plot a healpix map (given as an array) in Mollweide projection.
 
@@ -180,6 +181,12 @@ def mollview(
     alpha : float, array-like or None
       An array containing the alpha channel, supports masked maps, see the `ma` function.
       If None, no transparency will be applied.
+    fontsize : dict, optional
+      Override font sizes. Allowed keys are 'xlabel', 'ylabel', 'title', 'xtick_label', 
+      'ytick_label', 'cbar_label', 'cbar_tick_label'. Default: None uses relative sizes
+      that scale with DPI ('large' for most text). To exactly reproduce plots from 
+      previous versions, use: ``fontsize={'xlabel': 14, 'ylabel': 14, 'title': 14, 
+      'cbar_label': 14}``
 
     See Also
     --------
@@ -195,6 +202,22 @@ def mollview(
     # Ensure that the nside is valid
     nside = pixelfunc.get_nside(map)
     pixelfunc.check_nside(nside, nest=nest)
+
+    # Set up font sizes - use provided values or defaults
+    if fontsize is None:
+        fontsize = {}
+    fontsize_defaults = {
+        'xlabel': 'large',
+        'ylabel': 'large', 
+        'title': 'large',
+        'xtick_label': 'large',
+        'ytick_label': 'large',
+        'cbar_label': 'large',
+        'cbar_tick_label': 'large',
+    }
+    for key in fontsize_defaults:
+        if key not in fontsize:
+            fontsize[key] = fontsize_defaults[key]
 
     if not (hold or sub or reuse_axes):
         f = pylab.figure(fig, figsize=(8.5, 5.4))
@@ -313,7 +336,7 @@ def mollview(
                 0.86,
                 0.05,
                 ax.proj.coordsysstr,
-                fontsize="large",
+                fontsize=fontsize['cbar_label'],
                 fontweight="bold",
                 transform=ax.transAxes,
             )
@@ -322,7 +345,7 @@ def mollview(
                 0.5,
                 -1.0,
                 unit,
-                fontsize="large",
+                fontsize=fontsize['cbar_label'],
                 transform=cb.ax.transAxes,
                 ha="center",
                 va="center",
@@ -368,6 +391,7 @@ def gnomview(
     return_projected_map=False,
     no_plot=False,
     alpha=None,
+    fontsize=None,
 ):
     """Plot a healpix map (given as an array) in Gnomonic projection.
 
@@ -449,6 +473,12 @@ def gnomview(
       If None, no transparency will be applied.
       See an example usage of the alpha channel transparency in the documentation under
       "Other tutorials"
+    fontsize : dict, optional
+      Override font sizes. Allowed keys are 'xlabel', 'ylabel', 'title', 'xtick_label', 
+      'ytick_label', 'cbar_label', 'cbar_tick_label'. Default: None uses relative sizes
+      that scale with DPI ('large' for most text, 'medium' for resolution info). 
+      To exactly reproduce plots from previous versions, use: 
+      ``fontsize={'cbar_label': 14, 'xtick_label': 12}``
 
     See Also
     --------
@@ -463,6 +493,22 @@ def gnomview(
     # Ensure that the nside is valid
     nside = pixelfunc.get_nside(map)
     pixelfunc.check_nside(nside, nest=nest)
+
+    # Set up font sizes - use provided values or defaults
+    if fontsize is None:
+        fontsize = {}
+    fontsize_defaults = {
+        'xlabel': 'large',
+        'ylabel': 'large', 
+        'title': 'large',
+        'xtick_label': 'medium',  # resolution info text
+        'ytick_label': 'large',
+        'cbar_label': 'large',
+        'cbar_tick_label': 'large',
+    }
+    for key in fontsize_defaults:
+        if key not in fontsize:
+            fontsize[key] = fontsize_defaults[key]
 
     if not (hold or sub or reuse_axes):
         f = pylab.figure(fig, figsize=(5.8, 6.4))
@@ -582,7 +628,7 @@ def gnomview(
                     ax.proj.arrayinfo["xsize"],
                     ax.proj.arrayinfo["ysize"],
                 ),
-                fontsize="medium",
+                fontsize=fontsize['xtick_label'],
                 verticalalignment="bottom",
                 transform=ax.transAxes,
                 rotation=90,
@@ -591,7 +637,7 @@ def gnomview(
                 -0.07,
                 0.6,
                 ax.proj.coordsysstr,
-                fontsize="large",
+                fontsize=fontsize['cbar_label'],
                 fontweight="bold",
                 rotation=90,
                 transform=ax.transAxes,
@@ -610,7 +656,7 @@ def gnomview(
                 1.05,
                 0.30,
                 unit,
-                fontsize="large",
+                fontsize=fontsize['cbar_label'],
                 fontweight="bold",
                 transform=cb.ax.transAxes,
                 ha="left",
@@ -663,6 +709,7 @@ def cartview(
     notext=False,
     return_projected_map=False,
     alpha=None,
+    fontsize=None,
 ):
     """Plot a healpix map (given as an array) in Cartesian projection.
 
@@ -745,6 +792,11 @@ def cartview(
     alpha : float, array-like or None
       An array containing the alpha channel, supports masked maps, see the `ma` function.
       If None, no transparency will be applied.
+    fontsize : dict, optional
+      Override font sizes. Allowed keys are 'xlabel', 'ylabel', 'title', 'xtick_label', 
+      'ytick_label', 'cbar_label', 'cbar_tick_label'. Default: None uses relative sizes
+      that scale with DPI ('large' for most text). To exactly reproduce plots from 
+      previous versions, use: ``fontsize={'cbar_label': 14}``
 
     See Also
     --------
@@ -759,6 +811,22 @@ def cartview(
     # Ensure that the nside is valid
     nside = pixelfunc.get_nside(map)
     pixelfunc.check_nside(nside, nest=nest)
+
+    # Set up font sizes - use provided values or defaults
+    if fontsize is None:
+        fontsize = {}
+    fontsize_defaults = {
+        'xlabel': 'large',
+        'ylabel': 'large', 
+        'title': 'large',
+        'xtick_label': 'large',
+        'ytick_label': 'large',
+        'cbar_label': 'large',
+        'cbar_tick_label': 'large',
+    }
+    for key in fontsize_defaults:
+        if key not in fontsize:
+            fontsize[key] = fontsize_defaults[key]
 
     if not (hold or sub or reuse_axes):
         f = pylab.figure(fig, figsize=(8.5, 5.4))
@@ -881,7 +949,7 @@ def cartview(
                 -0.07,
                 0.6,
                 ax.proj.coordsysstr,
-                fontsize="large",
+                fontsize=fontsize['cbar_label'],
                 fontweight="bold",
                 rotation=90,
                 transform=ax.transAxes,
@@ -891,7 +959,7 @@ def cartview(
                 1.05,
                 0.30,
                 unit,
-                fontsize="large",
+                fontsize=fontsize['cbar_label'],
                 fontweight="bold",
                 transform=cb.ax.transAxes,
                 ha="left",
@@ -937,6 +1005,7 @@ def orthview(
     reuse_axes=False,
     return_projected_map=False,
     alpha=None,
+    fontsize=None,
 ):
     """Plot a healpix map (given as an array) in Orthographic projection.
 
@@ -1018,6 +1087,11 @@ def orthview(
     alpha : float, array-like or None
       An array containing the alpha channel, supports masked maps, see the `ma` function.
       If None, no transparency will be applied.
+    fontsize : dict, optional
+      Override font sizes. Allowed keys are 'xlabel', 'ylabel', 'title', 'xtick_label', 
+      'ytick_label', 'cbar_label', 'cbar_tick_label'. Default: None uses relative sizes
+      that scale with DPI ('large' for most text). To exactly reproduce plots from 
+      previous versions, use: ``fontsize={'cbar_label': 14}``
 
     See Also
     --------
@@ -1033,6 +1107,22 @@ def orthview(
     # Ensure that the nside is valid
     nside = pixelfunc.get_nside(map)
     pixelfunc.check_nside(nside, nest=nest)
+
+    # Set up font sizes - use provided values or defaults
+    if fontsize is None:
+        fontsize = {}
+    fontsize_defaults = {
+        'xlabel': 'large',
+        'ylabel': 'large', 
+        'title': 'large',
+        'xtick_label': 'large',
+        'ytick_label': 'large',
+        'cbar_label': 'large',
+        'cbar_tick_label': 'large',
+    }
+    for key in fontsize_defaults:
+        if key not in fontsize:
+            fontsize[key] = fontsize_defaults[key]
 
     if not (hold or sub or reuse_axes):
         f = pylab.figure(fig, figsize=(8.5, 5.4))
@@ -1149,7 +1239,7 @@ def orthview(
                 0.86,
                 0.05,
                 ax.proj.coordsysstr,
-                fontsize="large",
+                fontsize=fontsize['cbar_label'],
                 fontweight="bold",
                 transform=ax.transAxes,
             )
@@ -1158,7 +1248,7 @@ def orthview(
                 0.5,
                 -1.0,
                 unit,
-                fontsize="large",
+                fontsize=fontsize['cbar_label'],
                 transform=cb.ax.transAxes,
                 ha="center",
                 va="center",
@@ -1207,6 +1297,7 @@ def azeqview(
     notext=False,
     return_projected_map=False,
     alpha=None,
+    fontsize=None,
 ):
     """Plot a healpix map (given as an array) in Azimuthal equidistant projection
     or Lambert azimuthal equal-area projection.
@@ -1296,6 +1387,11 @@ def azeqview(
     alpha : float, array-like or None
       An array containing the alpha channel, supports masked maps, see the `ma` function.
       If None, no transparency will be applied.
+    fontsize : dict, optional
+      Override font sizes. Allowed keys are 'xlabel', 'ylabel', 'title', 'xtick_label', 
+      'ytick_label', 'cbar_label', 'cbar_tick_label'. Default: None uses relative sizes
+      that scale with DPI ('large' for most text). To exactly reproduce plots from 
+      previous versions, use: ``fontsize={'cbar_label': 14}``
 
     See Also
     --------
@@ -1311,6 +1407,22 @@ def azeqview(
     # Ensure that the nside is valid
     nside = pixelfunc.get_nside(map)
     pixelfunc.check_nside(nside, nest=nest)
+
+    # Set up font sizes - use provided values or defaults
+    if fontsize is None:
+        fontsize = {}
+    fontsize_defaults = {
+        'xlabel': 'large',
+        'ylabel': 'large', 
+        'title': 'large',
+        'xtick_label': 'large',
+        'ytick_label': 'large',
+        'cbar_label': 'large',
+        'cbar_tick_label': 'large',
+    }
+    for key in fontsize_defaults:
+        if key not in fontsize:
+            fontsize[key] = fontsize_defaults[key]
 
     if not (hold or sub or reuse_axes):
         f = pylab.figure(fig, figsize=(8.5, 5.4))
@@ -1435,7 +1547,7 @@ def azeqview(
                 0.86,
                 0.05,
                 ax.proj.coordsysstr,
-                fontsize="large",
+                fontsize=fontsize['cbar_label'],
                 fontweight="bold",
                 transform=ax.transAxes,
             )
@@ -1444,7 +1556,7 @@ def azeqview(
                 0.5,
                 -1.0,
                 unit,
-                fontsize="large",
+                fontsize=fontsize['cbar_label'],
                 transform=cb.ax.transAxes,
                 ha="center",
                 va="center",
@@ -1459,7 +1571,7 @@ def azeqview(
         return img
 
 
-def graticule(dpar=None, dmer=None, coord=None, local=None, **kwds):
+def graticule(dpar=None, dmer=None, coord=None, local=None, fontsize=None, **kwds):
     """Draw a graticule on the current Axes.
 
     Parameters
@@ -1473,6 +1585,9 @@ def graticule(dpar=None, dmer=None, coord=None, local=None, **kwds):
     local : bool
       If True, draw a local graticule (no rotation is performed, useful for
       a gnomonic view, for example)
+    fontsize : float or str, optional
+      Font size for coordinate system label. Default: 'large' (scales with DPI).
+      To exactly reproduce plots from previous versions, use: ``fontsize=14``
 
     Notes
     -----
@@ -1483,6 +1598,9 @@ def graticule(dpar=None, dmer=None, coord=None, local=None, **kwds):
     delgraticules
     """
     import pylab
+
+    if fontsize is None:
+        fontsize = 'large'
 
     f = pylab.gcf()
     wasinteractive = pylab.isinteractive()
@@ -1495,7 +1613,7 @@ def graticule(dpar=None, dmer=None, coord=None, local=None, **kwds):
                 0.86,
                 0.05,
                 ax.proj.coordsysstr,
-                fontsize="large",
+                fontsize=fontsize,
                 fontweight="bold",
                 transform=ax.transAxes,
             )

@@ -10,33 +10,40 @@ class TestFontSizeAndDPI(unittest.TestCase):
     """Test that font sizes are relative and DPI is supported"""
 
     def test_visufunc_no_hardcoded_fontsizes(self):
-        """Test that visufunc.py has no hard-coded font sizes"""
+        """Test that visufunc.py has no hard-coded font sizes in text rendering"""
         with open('lib/healpy/visufunc.py', 'r') as f:
             content = f.read()
         
-        # Check for hard-coded fontsize=14 or fontsize=12
-        hardcoded_14 = re.findall(r'fontsize\s*=\s*14\b', content)
-        hardcoded_12 = re.findall(r'fontsize\s*=\s*12\b', content)
+        # Check for hard-coded fontsize=14 or fontsize=12 in ax.text() calls
+        # We allow them in the defaults dict but not in text() calls
+        text_calls = re.findall(r'ax\.text\([^)]*fontsize\s*=\s*\d+', content, re.DOTALL)
+        cb_text_calls = re.findall(r'cb\.ax\.text\([^)]*fontsize\s*=\s*\d+', content, re.DOTALL)
         
-        self.assertEqual(len(hardcoded_14), 0,
-                        f"Found {len(hardcoded_14)} instances of hardcoded fontsize=14")
-        self.assertEqual(len(hardcoded_12), 0,
-                        f"Found {len(hardcoded_12)} instances of hardcoded fontsize=12")
+        self.assertEqual(len(text_calls), 0,
+                        f"Found {len(text_calls)} instances of hardcoded fontsize in ax.text()")
+        self.assertEqual(len(cb_text_calls), 0,
+                        f"Found {len(cb_text_calls)} instances of hardcoded fontsize in cb.ax.text()")
 
-    def test_visufunc_uses_relative_fontsizes(self):
-        """Test that visufunc.py uses relative font sizes"""
+    def test_visufunc_has_fontsize_parameter(self):
+        """Test that visufunc functions have fontsize parameter"""
         with open('lib/healpy/visufunc.py', 'r') as f:
             content = f.read()
         
-        # Check for relative font sizes
-        large_count = len(re.findall(r'fontsize\s*=\s*["\']large["\']', content))
-        medium_count = len(re.findall(r'fontsize\s*=\s*["\']medium["\']', content))
+        # Check that main viewing functions have fontsize parameter
+        functions = ['mollview', 'gnomview', 'cartview', 'orthview', 'azeqview']
+        for func in functions:
+            pattern = rf'def {func}\([^)]*fontsize\s*=\s*None'
+            has_param = bool(re.search(pattern, content, re.DOTALL))
+            self.assertTrue(has_param,
+                           f"{func} function should have fontsize=None parameter")
         
-        # We expect at least 10 'large' and 1 'medium' based on the changes made
-        self.assertGreaterEqual(large_count, 10,
-                               f"Expected at least 10 'large' font sizes, found {large_count}")
-        self.assertGreaterEqual(medium_count, 1,
-                               f"Expected at least 1 'medium' font size, found {medium_count}")
+        # Check that fontsize defaults are set
+        self.assertIn("fontsize_defaults", content,
+                     "Functions should set up fontsize_defaults dictionary")
+        self.assertIn("'large'", content,
+                     "Defaults should include 'large' relative size")
+        self.assertIn("'medium'", content,
+                     "Defaults should include 'medium' relative size")
 
     def test_projview_has_dpi_parameter(self):
         """Test that projview function has dpi parameter"""
