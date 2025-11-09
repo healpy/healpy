@@ -1,5 +1,6 @@
 Unreleased
 
+* Fixed `projscatter`, `projplot`, and `projtext` to only draw on current axes instead of all subplots https://github.com/healpy/healpy/issues/637
 * Added half-sky plotting support for Lambert projection via `latra` parameter in `projview` https://github.com/healpy/healpy/pull/1048
 * added support for automatically adjusting latitudes within [-90, 90] range in ang2pix https://github.com/healpy/healpy/pull/1026
 * Implemented NESTED support in query_strip https://github.com/healpy/healpy/pull/1025
