@@ -3,6 +3,7 @@ Unreleased
 * Fixed Lambert projection displaying lower half of sky incorrectly in `projview` https://github.com/healpy/healpy/issues/869
 * Pin Sphinx < 9 for docs to avoid numpydoc autodoc crashes on Read the Docs https://github.com/healpy/healpy/pull/1067
 * Fixed DPI and font size issues in visufunc and newvisufunc: replaced hard-coded font sizes with relative values ('large', 'medium') that scale with DPI, and added DPI parameter support to projview function https://github.com/healpy/healpy/pull/1058
+* Fixed `projscatter`, `projplot`, and `projtext` to only draw on current axes instead of all subplots https://github.com/healpy/healpy/issues/637
 * Added half-sky plotting support for Lambert projection via `latra` parameter in `projview` https://github.com/healpy/healpy/pull/1048
 * added support for automatically adjusting latitudes within [-90, 90] range in ang2pix https://github.com/healpy/healpy/pull/1026
 * Implemented NESTED support in query_strip https://github.com/healpy/healpy/pull/1025
