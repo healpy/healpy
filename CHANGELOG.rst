@@ -9,6 +9,7 @@ Unreleased
 * Allow ignoring small mask holes in `dist2holes` via pixel- and area-based thresholds https://github.com/healpy/healpy/pull/1008
 * `pixwin` now loads pixel window functions from a local datapath or downloads and caches them using astropy, similar to pixel weights. Added tests for both local and remote data access. https://github.com/healpy/healpy/pull/1005
 * Updated CFITSIO to 4.6.3 https://github.com/healpy/healpy/pull/1042
+* Fix TypeError in `alm2map` and `alm2map_der1` when using complex64 input arrays https://github.com/healpy/healpy/issues/827
 
 Release 1.18.1 26 Mar 2025
 
