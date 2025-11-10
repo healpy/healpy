@@ -1422,6 +1422,12 @@ def blm_gauss(fwhm, lmax, pol=False):
     with the output of :func:`gauss_beam`, following the formalism described
     in Challinor et al. 2000 (astro-ph/0008228).
 
+    .. versionchanged:: 1.19.0
+        The formula was changed from ``exp(-0.5 * l^2 * sigma^2)`` to 
+        ``exp(-0.5 * l*(l+1) * sigma^2)`` to be consistent with :func:`gauss_beam`
+        and the Challinor et al. 2000 paper. This is a **breaking change** that 
+        affects the computed spherical harmonic coefficients.
+
     See an example of usage
     `in the documentation <https://healpy.readthedocs.io/en/latest/blm_gauss_plot.html>`_
 
