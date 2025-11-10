@@ -1,5 +1,7 @@
+import shutil
+from pathlib import Path
+
 import pytest
-import requests
 
 
 def test_pixwin_download(monkeypatch):
@@ -21,16 +23,14 @@ def test_pixwin_local_datapath(tmp_path):
     nside = 32
     datapath = tmp_path / "pixel_window_functions"
     datapath.mkdir(parents=True)
-    # Download the file from healpy-data repo
-    url = (
-        "https://github.com/healpy/healpy-data/"
-        "raw/master/pixel_window_functions/"
-        f"pixel_window_n{nside:04d}.fits"
+    repo_root = Path(__file__).resolve().parents[1]
+    source_file = (
+        repo_root / "cextern" / "healpix" / "data" / f"pixel_window_n{nside:04d}.fits"
     )
-    r = requests.get(url)
-    local_file = datapath / f"pixel_window_n{nside:04d}.fits"
-    with open(local_file, "wb") as f:
-        f.write(r.content)
+    if not source_file.is_file():
+        pytest.skip("Vendored pixel window file is not available in this checkout.")
+    local_file = datapath / source_file.name
+    shutil.copyfile(source_file, local_file)
     pw = hp.pixwin(nside, datapath=tmp_path)
     assert pw is not None
     assert len(pw) == 3 * nside - 1 + 1
