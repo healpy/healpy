@@ -147,6 +147,7 @@ def projview(
     gal_cut=0,
     latra=None,
     lonra=None,
+    dpi=None,
     **kwargs,
 ):
     """Plot a healpix map (given as an array) in the chosen projection.
@@ -320,6 +321,9 @@ def projview(
         latitude range for the map, in degrees. Default is -90 to 90.
         Supported for projection_type='cart' and projection_type='lambert'.
         For lambert projection, this enables half-sky plotting (e.g., latra=[0, 90]).
+    dpi : float, optional
+        Dots per inch for the figure. If specified, this value is used when creating
+        new figures. Default: None (uses matplotlib default)
     kwargs : dict
         any leftover arguments will be passed to pcolormesh
     """
@@ -534,7 +538,8 @@ def projview(
                         plot_properties["figure_width"]
                         * plot_properties["figure_size_ratio"]
                     ),
-                )
+                ),
+                dpi=dpi,
             )
             extent = (0.02, 0.05, 0.96, 0.9)
         elif hold:
@@ -556,7 +561,8 @@ def projview(
                             * plot_properties["figure_size_ratio"]
                         )
                         * (nrows / ncols),
-                    )
+                    ),
+                    dpi=dpi,
                 )
             else:
                 fig = plt.gcf()
