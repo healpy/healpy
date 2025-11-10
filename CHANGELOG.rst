@@ -1,5 +1,6 @@
 Unreleased
 
+* **BREAKING**: Fixed `blm_gauss()` to use `l(l+1)` formula consistent with `gauss_beam()` and Challinor et al. 2000 (astro-ph/0008228). Previously used `l²` formula from LevelS Beam package. This affects the computed spherical harmonic coefficients for Gaussian beams.
 * Added half-sky plotting support for Lambert projection via `latra` parameter in `projview` https://github.com/healpy/healpy/pull/1048
 * added support for automatically adjusting latitudes within [-90, 90] range in ang2pix https://github.com/healpy/healpy/pull/1026
 * Implemented NESTED support in query_strip https://github.com/healpy/healpy/pull/1025
