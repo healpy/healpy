@@ -484,30 +484,21 @@ class TestSphtFunc(unittest.TestCase):
         with pytest.raises(ValueError):
             hp.rotate_alm(alm, 0.1, 0.2, 0.3)
 
-    def test_alm2map_complex64(self):
-        """Test that alm2map works with complex64 input"""
-        alm_dp = np.zeros((10,), dtype=np.complex128)
-        alm_sp = np.zeros((10,), dtype=np.complex64)
+    @pytest.mark.parametrize("dtype", [np.complex64, np.complex128])
+    def test_alm2map_complex_dtypes(self, dtype):
+        """Test that alm2map works with different complex dtypes"""
+        alm = np.zeros((10,), dtype=dtype)
 
         # All of these should work without raising a TypeError
-        map_dp = hp.alm2map(alm_dp, nside=1, lmax=3)
-        self.assertEqual(map_dp.shape, (12,))  # nside=1 has 12 pixels
+        map_result = hp.alm2map(alm, nside=1, lmax=3)
+        self.assertEqual(map_result.shape, (12,))  # nside=1 has 12 pixels
         
-        maps_dp_spin = hp.alm2map_spin([alm_dp, alm_dp], nside=1, lmax=3, spin=2)
-        self.assertEqual(len(maps_dp_spin), 2)
+        maps_spin = hp.alm2map_spin([alm, alm], nside=1, lmax=3, spin=2)
+        self.assertEqual(len(maps_spin), 2)
         
-        maps_sp_spin = hp.alm2map_spin([alm_sp, alm_sp], nside=1, lmax=3, spin=2)
-        self.assertEqual(len(maps_sp_spin), 2)
-        
-        map_sp = hp.alm2map(alm_sp, nside=1, lmax=3)
-        self.assertEqual(map_sp.shape, (12,))  # nside=1 has 12 pixels
-
-        # Also test alm2map_der1 with complex64
-        result_dp = hp.alm2map_der1(alm_dp, nside=1, lmax=3)
-        self.assertEqual(len(result_dp), 3)  # returns (map, dtheta, dphi)
-        
-        result_sp = hp.alm2map_der1(alm_sp, nside=1, lmax=3)
-        self.assertEqual(len(result_sp), 3)  # returns (map, dtheta, dphi)
+        # Also test alm2map_der1
+        result_der1 = hp.alm2map_der1(alm, nside=1, lmax=3)
+        self.assertEqual(len(result_der1), 3)  # returns (map, dtheta, dphi)
 
     def test_blm_gauss(self):
         lmax = 16
