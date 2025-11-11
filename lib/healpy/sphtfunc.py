@@ -507,6 +507,9 @@ def alm2map(
     else:
         alms_new = alms
 
+    # Ensure alms are complex128 for C++ backend
+    alms_new = [np.ascontiguousarray(alm, dtype=np.complex128) for alm in alms_new]
+
     if lmax is None:
         lmax = -1
     if mmax is None:
@@ -1220,6 +1223,8 @@ def alm2map_der1(alm, nside, lmax=None, mmax=None):
         lmax = -1
     if mmax is None:
         mmax = -1
+    # Ensure alm is complex128 for C++ backend
+    alm = np.ascontiguousarray(alm, dtype=np.complex128)
     return np.array(sphtlib._alm2map_der1(alm, nside, lmax=lmax, mmax=mmax))
 
 
