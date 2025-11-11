@@ -1,3 +1,9 @@
+"""Tests for pixel window function loading and caching.
+
+This module tests the pixwin() function's ability to load pixel window
+functions from local files and use astropy's caching mechanism for
+remote downloads.
+"""
 from pathlib import Path
 
 import pytest
@@ -16,8 +22,7 @@ def test_pixwin_download(monkeypatch):
 
     assert PIXWIN_FIXTURE.exists(), "bundled pixel window file missing"
 
-    # Remove any local file by monkeypatching os.path.isfile to always return False
-    monkeypatch.setattr("os.path.isfile", lambda path: False)
+    # Mock astropy's download mechanism to use our bundled fixture
     monkeypatch.setattr(
         astropy_data,
         "get_pkg_data_filename",
@@ -25,7 +30,28 @@ def test_pixwin_download(monkeypatch):
     )
     pw = hp.pixwin(nside)
     assert pw is not None
-    assert len(pw) == 3 * nside - 1 + 1
+    assert len(pw) == 3 * nside
+
+
+def test_pixwin_download_polarization(monkeypatch):
+    """Test that pixwin returns both temperature and polarization windows when pol=True."""
+    import healpy as hp
+
+    nside = PIXWIN_NSIDE
+
+    assert PIXWIN_FIXTURE.exists(), "bundled pixel window file missing"
+
+    # Mock astropy's download mechanism to use our bundled fixture
+    monkeypatch.setattr(
+        astropy_data,
+        "get_pkg_data_filename",
+        lambda *_, **__: str(PIXWIN_FIXTURE),
+    )
+    pw_temp, pw_pol = hp.pixwin(nside, pol=True)
+    assert pw_temp is not None
+    assert pw_pol is not None
+    assert len(pw_temp) == 3 * nside
+    assert len(pw_pol) == 3 * nside
 
 
 def test_pixwin_local_datapath(tmp_path):
@@ -40,4 +66,17 @@ def test_pixwin_local_datapath(tmp_path):
     local_file.write_bytes(PIXWIN_FIXTURE.read_bytes())
     pw = hp.pixwin(nside, datapath=tmp_path)
     assert pw is not None
-    assert len(pw) == 3 * nside - 1 + 1
+    assert len(pw) == 3 * nside
+
+
+def test_pixwin_local_datapath_missing_file(tmp_path):
+    """Test that pixwin raises an error when the file is not found in the specified datapath."""
+    import healpy as hp
+
+    nside = PIXWIN_NSIDE
+    # Create an empty datapath without the required file
+    datapath = tmp_path / "empty_datapath"
+    datapath.mkdir(parents=True)
+    
+    with pytest.raises(ValueError, match="Pixel window file not found"):
+        hp.pixwin(nside, datapath=datapath)
