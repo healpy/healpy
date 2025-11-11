@@ -91,7 +91,7 @@ test-command = [
 test-extras = ["test"]
 
 [tool.cibuildwheel.macos]
-before-all = "brew install autoconf automake libtool libomp"
+before-all = "brew install autoconf automake libtool llvm@15 libomp"
 
 [tool.cibuildwheel.macos.environment]
 CC = "$(brew --prefix llvm@15)/bin/clang"
