@@ -1,16 +1,21 @@
+from pathlib import Path
+
 import numpy as np
 import pytest
-import requests
 
 import healpy as hp
 from astropy.utils import data
 
+TEST_DATA = Path(__file__).resolve().parent / "data"
+PIXEL_WEIGHTS_NSIDE = 32
+PIXEL_WEIGHTS_FILE = TEST_DATA / f"healpix_full_weights_nside_{PIXEL_WEIGHTS_NSIDE:04d}.fits"
+
 
 @pytest.fixture
 def create_reference_alm():
-    nside = 64
-    lmax = 96
-    alm_size = 4753
+    nside = PIXEL_WEIGHTS_NSIDE
+    lmax = 3 * nside - 1
+    alm_size = hp.Alm.getsize(lmax)
     np.random.seed(123)
     input_alm = np.ones(alm_size, dtype=complex)
     m = hp.alm2map(input_alm, nside=nside, lmax=lmax)
@@ -57,13 +62,9 @@ def test_pixelweights_local_datapath(tmp_path, create_reference_alm):
     lmax, input_alm, m = create_reference_alm
     datapath = tmp_path / "datapath" / "full_weights"
     datapath.mkdir(parents=True)
-    pixel_weights_file = requests.get(
-        "https://github.com/healpy/healpy-data/"
-        "blob/master/full_weights/"
-        "healpix_full_weights_nside_0064.fits?raw=true"
-    )
-    with open(datapath / "healpix_full_weights_nside_0064.fits", "wb") as f:
-        f.write(pixel_weights_file.content)
+    assert PIXEL_WEIGHTS_FILE.exists(), "bundled pixel weights file missing"
+    destination = datapath / f"healpix_full_weights_nside_{PIXEL_WEIGHTS_NSIDE:04d}.fits"
+    destination.write_bytes(PIXEL_WEIGHTS_FILE.read_bytes())
 
     alm = hp.map2alm(
         m, use_pixel_weights=True, datapath=tmp_path / "datapath", lmax=lmax
