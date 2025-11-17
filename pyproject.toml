@@ -105,11 +105,5 @@ select = "*macosx_x86_64"
 inherit.environment = "append"
 environment.MACOSX_DEPLOYMENT_TARGET = "13.6"
 
-[[tool.cibuildwheel.overrides]]
-# macOS arm64 wheels are built on GitHub on macOS 14; set deployment target accordingly
-select = "*macosx_arm64"
-inherit.environment = "append"
-environment.MACOSX_DEPLOYMENT_TARGET = "14.0"
-
 [tool.setuptools_scm]
 write_to = "lib/healpy/version.py"
