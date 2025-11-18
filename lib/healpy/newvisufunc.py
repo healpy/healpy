@@ -642,6 +642,11 @@ def projview(
         grid_pix = ang2pix(nside, THETA, PHI, nest=nest)
         grid_map = m[grid_pix]
 
+        # Flip the grid_map vertically for Lambert projection
+        # matplotlib's Lambert projection interprets Y-axis in reverse order
+        if projection_type == "lambert":
+            grid_map = np.flip(grid_map, axis=0)
+
         # plot
         if return_only_data:  # exit here when dumping the data
             return [longitude, latitude, grid_map]
