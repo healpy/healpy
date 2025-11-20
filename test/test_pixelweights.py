@@ -7,15 +7,15 @@ import healpy as hp
 from astropy.utils import data
 
 TEST_DATA = Path(__file__).resolve().parent / "data"
-PIXEL_WEIGHTS_NSIDE = 32
+PIXEL_WEIGHTS_NSIDE = 64
 PIXEL_WEIGHTS_FILE = TEST_DATA / f"healpix_full_weights_nside_{PIXEL_WEIGHTS_NSIDE:04d}.fits"
 
 
 @pytest.fixture
 def create_reference_alm():
     nside = PIXEL_WEIGHTS_NSIDE
-    lmax = 3 * nside - 1
-    alm_size = hp.Alm.getsize(lmax)
+    lmax = 96
+    alm_size = 4753
     np.random.seed(123)
     input_alm = np.ones(alm_size, dtype=complex)
     m = hp.alm2map(input_alm, nside=nside, lmax=lmax)
