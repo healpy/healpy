@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           submodules: true
 
@@ -41,7 +41,7 @@ jobs:
         os: [ubuntu-22.04, ubuntu-22.04-arm, macos-13, macos-14]
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           submodules: true
 
