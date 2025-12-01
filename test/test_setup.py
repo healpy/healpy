@@ -21,7 +21,8 @@ def test_build_external_clib_missing_library(monkeypatch, tmp_path_factory):
     setup_mod = _load_setup_module()
 
     # Instantiate the command with writable build directories.
-    cmd = setup_mod.build_external_clib(mock.Mock())
+    dist = setuptools.dist.Distribution()
+    cmd = setup_mod.build_external_clib(dist)
     cmd.build_temp = str(tmp_path_factory.mktemp("build_temp"))
     cmd.build_clib = str(tmp_path_factory.mktemp("build_clib"))
 
