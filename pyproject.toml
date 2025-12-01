@@ -41,6 +41,7 @@ doc = [
     "matplotlib",
     "nbsphinx",
     "numpydoc",
+    "sphinx>=6,<9",
     "scipy",
 ]
 
