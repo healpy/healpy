@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           submodules: true
 
@@ -38,21 +38,28 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-22.04, ubuntu-22.04-arm, macos-13, macos-14]
+        include:
+          - os: ubuntu-22.04
+          - os: ubuntu-22.04-arm
+          - os: macos-14
+            macos_target: "14.0"
+          - os: macos-15
+            macos_target: "15.0"
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           submodules: true
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v3.3
+        uses: pypa/cibuildwheel@v3.2
         env:
           CIBW_BUILD: "cp310-* cp311-* cp312-* cp313-* cp314-*"
           CIBW_MANYLINUX_X86_64_IMAGE: quay.io/pypa/manylinux2014_x86_64
           CIBW_ENVIRONMENT_LINUX: "MPLLOCALFREETYPE=1 MPLCONFIGDIR=/tmp"
           CIBW_TEST_ENVIRONMENT_LINUX: "MPLLOCALFREETYPE=1 MPLCONFIGDIR=/tmp"
-
+          CIBW_ARCHS_MACOS: "arm64 x86_64"
+          MACOSX_DEPLOYMENT_TARGET: ${{ matrix.macos_target || '' }}
       - uses: actions/upload-artifact@v5
         with:
           name: ${{ matrix.os }}
