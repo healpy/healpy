@@ -1,5 +1,6 @@
 Unreleased
 
+* Pin Sphinx < 9 for docs to avoid numpydoc autodoc crashes on Read the Docs https://github.com/healpy/healpy/pull/1067
 * Fixed DPI and font size issues in visufunc and newvisufunc: replaced hard-coded font sizes with relative values ('large', 'medium') that scale with DPI, and added DPI parameter support to projview function https://github.com/healpy/healpy/pull/1058
 * Added half-sky plotting support for Lambert projection via `latra` parameter in `projview` https://github.com/healpy/healpy/pull/1048
 * added support for automatically adjusting latitudes within [-90, 90] range in ang2pix https://github.com/healpy/healpy/pull/1026
@@ -10,6 +11,7 @@ Unreleased
 * `pixwin` now loads pixel window functions from a local datapath or downloads and caches them using astropy, similar to pixel weights. Added tests for both local and remote data access. https://github.com/healpy/healpy/pull/1005
 * Updated CFITSIO to 4.6.3 https://github.com/healpy/healpy/pull/1042
 * Fix TypeError in `alm2map` and `alm2map_der1` when using complex64 input arrays https://github.com/healpy/healpy/issues/827
+* CI: use Matplotlib's bundled freetype when testing Linux wheels so musllinux Python 3.14 jobs no longer need external downloads https://github.com/healpy/healpy/pull/1061
 
 Release 1.18.1 26 Mar 2025
 
