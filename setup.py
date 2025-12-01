@@ -73,6 +73,15 @@ class build_external_clib(build_clib):
 
     def pkgconfig(self, *packages):
         env = self.env()
+        try:
+            return self._pkgconfig_via_command(env, packages)
+        except CalledProcessError as exc:
+            fallback = self._pkgconfig_via_python(env, packages)
+            if fallback is None:
+                raise exc
+            return fallback
+
+    def _pkgconfig_via_command(self, env, packages):
         PKG_CONFIG = tuple(shlex.split(env["PKG_CONFIG"], posix=(os.sep == "/")))
         kw = {}
         index_key_flag = (
@@ -91,6 +100,81 @@ class build_external_clib(build_clib):
             if args:
                 for key in keys:
                     kw.setdefault(key, []).extend(args)
+        return kw
+
+    def _pkgconfig_via_python(self, env, packages):
+        try:
+            from pykg_config import exceptions as pykg_exceptions
+            from pykg_config.options import Options
+            from pykg_config.result import PkgCfgResult
+        except ImportError:
+            return None
+
+        pkg_spec = " ".join(packages)
+        opts = Options()
+        opts.init_options()
+        opts.set_option("prefer_uninstalled", False)
+
+        original_path = os.environ.get("PKG_CONFIG_PATH")
+        new_path = env.get("PKG_CONFIG_PATH")
+        try:
+            if new_path is None:
+                os.environ.pop("PKG_CONFIG_PATH", None)
+            else:
+                os.environ["PKG_CONFIG_PATH"] = new_path
+            result = PkgCfgResult({})
+            result.find_packages(pkg_spec, recurse=True)
+        except pykg_exceptions.PykgConfigError:
+            return None
+        finally:
+            if original_path is None:
+                os.environ.pop("PKG_CONFIG_PATH", None)
+            else:
+                os.environ["PKG_CONFIG_PATH"] = original_path
+
+        return self._pkgcfg_result_to_kwargs(result)
+
+    @staticmethod
+    def _pkgcfg_tokens(value):
+        return shlex.split(value) if value else []
+
+    @staticmethod
+    def _pkgcfg_strip_prefix(tokens, prefix):
+        if not tokens:
+            return []
+        if not prefix:
+            return tokens
+        return [token[len(prefix) :] for token in tokens if token.startswith(prefix)]
+
+    def _pkgcfg_result_to_kwargs(self, result):
+        kw = {}
+        include_dirs = self._pkgcfg_strip_prefix(
+            self._pkgcfg_tokens(result.get_big_i_flags()), "-I"
+        )
+        if include_dirs:
+            kw["include_dirs"] = include_dirs
+
+        other_cflags = self._pkgcfg_tokens(result.get_other_i_flags())
+        if other_cflags:
+            kw["extra_compile_args"] = other_cflags
+
+        lib_dirs = self._pkgcfg_strip_prefix(
+            self._pkgcfg_tokens(result.get_big_l_flags()), result.lib_path_flag
+        )
+        if lib_dirs:
+            kw["library_dirs"] = lib_dirs
+            kw["runtime_library_dirs"] = list(lib_dirs)
+
+        libs = self._pkgcfg_strip_prefix(
+            self._pkgcfg_tokens(result.get_l_flags()), result.lib_flag
+        )
+        if libs:
+            kw["libraries"] = libs
+
+        other_ldflags = self._pkgcfg_tokens(result.get_other_l_flags())
+        if other_ldflags:
+            kw.setdefault("extra_link_args", []).extend(other_ldflags)
+
         return kw
 
     def finalize_options(self):
