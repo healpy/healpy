@@ -331,11 +331,12 @@ def mollview(
                 )
             cb.solids.set_rasterized(True)
         ax.set_title(title)
-        if not notext:
+        coordsys_label = ax.proj.coordsysstr
+        if not notext and coordsys_label:
             ax.text(
                 0.86,
                 0.05,
-                ax.proj.coordsysstr,
+                coordsys_label,
                 fontsize=fontsize['cbar_label'],
                 fontweight="bold",
                 transform=ax.transAxes,
@@ -633,15 +634,17 @@ def gnomview(
                 transform=ax.transAxes,
                 rotation=90,
             )
-            ax.text(
-                -0.07,
-                0.6,
-                ax.proj.coordsysstr,
-                fontsize=fontsize['cbar_label'],
-                fontweight="bold",
-                rotation=90,
-                transform=ax.transAxes,
-            )
+            coordsys_label = ax.proj.coordsysstr
+            if coordsys_label:
+                ax.text(
+                    -0.07,
+                    0.6,
+                    coordsys_label,
+                    fontsize=fontsize['cbar_label'],
+                    fontweight="bold",
+                    rotation=90,
+                    transform=ax.transAxes,
+                )
             lon, lat = np.around(ax.proj.get_center(lonlat=True), ax._coordprec)
             ax.text(
                 0.5,
@@ -944,11 +947,12 @@ def cartview(
                 )
             cb.solids.set_rasterized(True)
         ax.set_title(title)
-        if not notext:
+        coordsys_label = ax.proj.coordsysstr
+        if not notext and coordsys_label:
             ax.text(
                 -0.07,
                 0.6,
-                ax.proj.coordsysstr,
+                coordsys_label,
                 fontsize=fontsize['cbar_label'],
                 fontweight="bold",
                 rotation=90,
@@ -1234,11 +1238,12 @@ def orthview(
                 )
             cb.solids.set_rasterized(True)
         ax.set_title(title)
-        if not notext:
+        coordsys_label = ax.proj.coordsysstr
+        if not notext and coordsys_label:
             ax.text(
                 0.86,
                 0.05,
-                ax.proj.coordsysstr,
+                coordsys_label,
                 fontsize=fontsize['cbar_label'],
                 fontweight="bold",
                 transform=ax.transAxes,
@@ -1542,11 +1547,12 @@ def azeqview(
             else:
                 title = "Azimuthal equidistant view"
         ax.set_title(title)
-        if not notext:
+        coordsys_label = ax.proj.coordsysstr
+        if not notext and coordsys_label:
             ax.text(
                 0.86,
                 0.05,
-                ax.proj.coordsysstr,
+                coordsys_label,
                 fontsize=fontsize['cbar_label'],
                 fontweight="bold",
                 transform=ax.transAxes,
@@ -1609,14 +1615,16 @@ def graticule(dpar=None, dmer=None, coord=None, local=None, fontsize=None, **kwd
         if len(f.get_axes()) == 0:
             ax = PA.HpxMollweideAxes(f, (0.02, 0.05, 0.96, 0.9), coord=coord)
             f.add_axes(ax)
-            ax.text(
-                0.86,
-                0.05,
-                ax.proj.coordsysstr,
-                fontsize=fontsize,
-                fontweight="bold",
-                transform=ax.transAxes,
-            )
+            coordsys_label = ax.proj.coordsysstr
+            if coordsys_label:
+                ax.text(
+                    0.86,
+                    0.05,
+                    coordsys_label,
+                    fontsize=fontsize,
+                    fontweight="bold",
+                    transform=ax.transAxes,
+                )
         for ax in f.get_axes():
             if isinstance(ax, PA.SphericalProjAxes):
                 ax.graticule(dpar=dpar, dmer=dmer, coord=coord, local=local, **kwds)
