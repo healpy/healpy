@@ -508,22 +508,22 @@ class TestSphtFunc(unittest.TestCase):
             [
                 [
                     0.28209479 + 0.0j,
-                    0.47667223 + 0.0j,
-                    0.57139535 + 0.0j,
-                    0.59747744 + 0.0j,
-                    0.56982677 + 0.0j,
-                    0.50430742 + 0.0j,
-                    0.4177115 + 0.0j,
-                    0.32537519 + 0.0j,
-                    0.23907031 + 0.0j,
-                    0.16602316 + 0.0j,
-                    0.10912406 + 0.0j,
-                    0.06795511 + 0.0j,
-                    0.04012396 + 0.0j,
-                    0.02247603 + 0.0j,
-                    0.01195003 + 0.0j,
-                    0.0060327 + 0.0j,
-                    0.00289252 + 0.0j,
+                    0.46503326 + 0.0j,
+                    0.54383232 + 0.0j,
+                    0.55477130 + 0.0j,
+                    0.51617799 + 0.0j,
+                    0.44567282 + 0.0j,
+                    0.36013172 + 0.0j,
+                    0.27367400 + 0.0j,
+                    0.19617285 + 0.0j,
+                    0.13290646 + 0.0j,
+                    0.08522404 + 0.0j,
+                    0.05177592 + 0.0j,
+                    0.02982454 + 0.0j,
+                    0.01629873 + 0.0j,
+                    0.00845410 + 0.0j,
+                    0.00416365 + 0.0j,
+                    0.00194761 + 0.0j,
                     0.0 + 0.0j,
                     0.0 + 0.0j,
                     0.0 + 0.0j,
@@ -590,21 +590,21 @@ class TestSphtFunc(unittest.TestCase):
                     0.0 + 0.0j,
                     0.0 + 0.0j,
                     0.0 + 0.0j,
-                    0.20201876 + 0.0j,
-                    0.21124017 + 0.0j,
-                    0.20146419 + 0.0j,
-                    0.1782996 + 0.0j,
-                    0.14768332 + 0.0j,
-                    0.1150375 + 0.0j,
-                    0.08452412 + 0.0j,
-                    0.05869805 + 0.0j,
-                    0.03858118 + 0.0j,
-                    0.02402576 + 0.0j,
-                    0.01418596 + 0.0j,
-                    0.00794648 + 0.0j,
-                    0.00422497 + 0.0j,
-                    0.00213288 + 0.0j,
-                    0.00102266 + 0.0j,
+                    0.19227376 + 0.0j,
+                    0.19614127 + 0.0j,
+                    0.18249648 + 0.0j,
+                    0.15756914 + 0.0j,
+                    0.12732579 + 0.0j,
+                    0.09675837 + 0.0j,
+                    0.06935758 + 0.0j,
+                    0.04698953 + 0.0j,
+                    0.03013125 + 0.0j,
+                    0.01830555 + 0.0j,
+                    0.01054457 + 0.0j,
+                    0.00576247 + 0.0j,
+                    0.00298897 + 0.0j,
+                    0.00147207 + 0.0j,
+                    0.00068859 + 0.0j,
                 ],
                 [
                     0.0 + 0.0j,
@@ -640,26 +640,56 @@ class TestSphtFunc(unittest.TestCase):
                     0.0 + 0.0j,
                     0.0 + 0.0j,
                     0.0 + 0.0j,
-                    0.0 + 0.20201876j,
-                    0.0 + 0.21124017j,
-                    0.0 + 0.20146419j,
-                    0.0 + 0.1782996j,
-                    0.0 + 0.14768332j,
-                    0.0 + 0.1150375j,
-                    0.0 + 0.08452412j,
-                    0.0 + 0.05869805j,
-                    0.0 + 0.03858118j,
-                    0.0 + 0.02402576j,
-                    0.0 + 0.01418596j,
-                    0.0 + 0.00794648j,
-                    0.0 + 0.00422497j,
-                    0.0 + 0.00213288j,
-                    0.0 + 0.00102266j,
+                    0.0 + 0.19227376j,
+                    0.0 + 0.19614127j,
+                    0.0 + 0.18249648j,
+                    0.0 + 0.15756914j,
+                    0.0 + 0.12732579j,
+                    0.0 + 0.09675837j,
+                    0.0 + 0.06935758j,
+                    0.0 + 0.04698953j,
+                    0.0 + 0.03013125j,
+                    0.0 + 0.01830555j,
+                    0.0 + 0.01054457j,
+                    0.0 + 0.00576247j,
+                    0.0 + 0.00298897j,
+                    0.0 + 0.00147207j,
+                    0.0 + 0.00068859j,
                 ],
             ]
         )
 
         np.testing.assert_allclose(blm, blm_ref, atol=1e-7)
+
+    def test_blm_gauss_consistency_with_gauss_beam(self):
+        """Test that blm_gauss is consistent with gauss_beam.
+        
+        This test verifies that the blm_gauss function uses the same l(l+1) 
+        formula as gauss_beam, as specified in Challinor et al. 2000 
+        (astro-ph/0008228).
+        """
+        fwhm = np.radians(10.0 / 60.0)  # 10 arcmin in radians
+        lmax = 128
+        
+        # Get the beam window function from gauss_beam
+        beam_window = hp.gauss_beam(fwhm, lmax=lmax, pol=False)
+        
+        # Get the beam a_lm from blm_gauss (temperature only)
+        blm = hp.blm_gauss(fwhm, lmax=lmax, pol=False)
+        
+        # Extract the m=0 coefficients from blm and compute the corresponding
+        # beam window function. For m=0, the relationship is:
+        # B_l = sqrt(4π/(2l+1)) * a_{l0}
+        # where a_{l0} is the spherical harmonic coefficient
+        beam_from_blm = np.zeros(lmax + 1)
+        for l in range(lmax + 1):
+            idx = hp.Alm.getidx(lmax, l, 0)
+            beam_from_blm[l] = np.sqrt(4.0 * np.pi / (2 * l + 1)) * blm[0, idx].real
+        
+        # They should be identical (within numerical precision)
+        np.testing.assert_allclose(beam_window, beam_from_blm, rtol=1e-10, atol=1e-15,
+                                   err_msg="blm_gauss should be consistent with gauss_beam")
+
 
 
 @pytest.mark.parametrize(
