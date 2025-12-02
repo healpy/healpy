@@ -74,12 +74,25 @@ jobs:
     steps:
       - uses: actions/download-artifact@v6
         with:
-          merge-multiple: true
+          merge-multiple: false
           path: dist
+
+      - name: Collect distributions
+        run: |
+          mkdir -p upload
+          while IFS= read -r file; do
+            base="$(basename "$file")"
+            if [ -e "upload/$base" ]; then
+              echo "Skipping duplicate $base from $file"
+              continue
+            fi
+            cp "$file" "upload/$base"
+          done < <(find dist -type f -print | sort)
 
       - uses: pypa/gh-action-pypi-publish@release/v1
         with:
           user: __token__
           password: ${{ secrets.PYPI_API_TOKEN }}
+          packages_dir: upload
 
   
