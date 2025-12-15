@@ -28,7 +28,7 @@ jobs:
         with:
           args: 'sh -c "pip install build && python -m build --sdist"'
 
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v6
         with:
           name: source
           path: dist/*
@@ -60,7 +60,7 @@ jobs:
           CIBW_TEST_ENVIRONMENT_LINUX: "MPLLOCALFREETYPE=1 MPLCONFIGDIR=/tmp"
           CIBW_ARCHS_MACOS: "arm64 x86_64"
           MACOSX_DEPLOYMENT_TARGET: ${{ matrix.macos_target || '' }}
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v6
         with:
           name: ${{ matrix.os }}
           path: wheelhouse/*
