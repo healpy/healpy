@@ -8,6 +8,10 @@ build:
   apt_packages:
     - autoconf
     - automake
+    - gfortran
+    - libcfitsio-dev
+    - libhealpix-cxx-dev
+    - libsharp-dev
     - libtool
     - pkgconf
   tools:
