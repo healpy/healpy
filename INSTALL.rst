@@ -167,6 +167,25 @@ If you are going to install the packages in a nonstandard location (say,
 environment variable settings are necessary, and you do not need to set
 ``PKG_CONFIG_PATH`` to use Healpy after you have built it.
 
+pkg-config visibility in isolated builds
+----------------------------------------
+
+healpy relies on the system ``pkg-config`` results. If ``pkg-config`` cannot
+see build-tree ``.pc`` files (for example, in isolated build environments), the
+fix is to adjust ``PKG_CONFIG_PATH`` so the generated ``.pc`` files are in
+scope. We intentionally avoid adding alternate parsers or fallback logic,
+because they can diverge from ``pkg-config`` semantics.
+
+Failure scenarios this note does not cover include:
+
+* ``pkg-config`` is missing or fails for reasons other than "package not found"
+  (syntax errors, incompatible flags).
+* ``.pc`` files depend on ``pkg-config``-specific behaviors (custom variables,
+  ``Requires.private``, system search paths) that alternate parsers may not
+  match.
+* ``pkg-config`` resolves to an incompatible prefix or ABI; fix the environment
+  rather than relying on automatic fallbacks.
+
 Then, unpack each of the above packages and build them with the usual
 ``configure; make; make install`` recipe.
 
