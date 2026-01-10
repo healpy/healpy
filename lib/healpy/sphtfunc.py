@@ -507,6 +507,9 @@ def alm2map(
     else:
         alms_new = alms
 
+    # Ensure alms are complex128 for C++ backend
+    alms_new = [np.ascontiguousarray(alm, dtype=np.complex128) for alm in alms_new]
+
     if lmax is None:
         lmax = -1
     if mmax is None:
@@ -1220,6 +1223,8 @@ def alm2map_der1(alm, nside, lmax=None, mmax=None):
         lmax = -1
     if mmax is None:
         mmax = -1
+    # Ensure alm is complex128 for C++ backend
+    alm = np.ascontiguousarray(alm, dtype=np.complex128)
     return np.array(sphtlib._alm2map_der1(alm, nside, lmax=lmax, mmax=mmax))
 
 
@@ -1413,6 +1418,16 @@ def blm_gauss(fwhm, lmax, pol=False):
     """Computes spherical harmonic coefficients of a circular Gaussian beam
     pointing towards the North Pole
 
+    The beam window function computed from these coefficients is consistent
+    with the output of :func:`gauss_beam`, following the formalism described
+    in Challinor et al. 2000 (astro-ph/0008228).
+
+    .. versionchanged:: 1.19.0
+        The formula was changed from ``exp(-0.5 * l^2 * sigma^2)`` to 
+        ``exp(-0.5 * l*(l+1) * sigma^2)`` to be consistent with :func:`gauss_beam`
+        and the Challinor et al. 2000 paper. This is a **breaking change** that 
+        affects the computed spherical harmonic coefficients.
+
     See an example of usage
     `in the documentation <https://healpy.readthedocs.io/en/latest/blm_gauss_plot.html>`_
 
@@ -1446,14 +1461,14 @@ def blm_gauss(fwhm, lmax, pol=False):
 
     for l in range(0, lmax + 1):
         blm[0, Alm.getidx(lmax, l, 0)] = np.sqrt((2 * l + 1) / (4.0 * np.pi)) * np.exp(
-            -0.5 * sigmasq * l * l
+            -0.5 * sigmasq * l * (l + 1)
         )
 
     if pol:
         for l in range(2, lmax + 1):
             blm[1, Alm.getidx(lmax, l, 2)] = np.sqrt(
                 (2 * l + 1) / (32 * np.pi)
-            ) * np.exp(-0.5 * sigmasq * l * l)
+            ) * np.exp(-0.5 * sigmasq * l * (l + 1))
         blm[2] = 1j * blm[1]
 
     return blm

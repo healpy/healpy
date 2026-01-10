@@ -41,8 +41,9 @@ doc = [
     "matplotlib",
     "nbsphinx",
     "numpydoc",
+    "numpy<2",
+    "scipy<1.12",
     "sphinx>=6,<9",
-    "scipy",
 ]
 
 [project.urls]

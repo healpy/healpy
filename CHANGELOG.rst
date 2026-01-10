@@ -1,7 +1,12 @@
 Unreleased
 
+Release 1.19.0 1 Dec 2025
+
+* Fixed Lambert projection displaying lower half of sky incorrectly in `projview` https://github.com/healpy/healpy/issues/869
 * Pin Sphinx < 9 for docs to avoid numpydoc autodoc crashes on Read the Docs https://github.com/healpy/healpy/pull/1067
 * Fixed DPI and font size issues in visufunc and newvisufunc: replaced hard-coded font sizes with relative values ('large', 'medium') that scale with DPI, and added DPI parameter support to projview function https://github.com/healpy/healpy/pull/1058
+* **BREAKING**: Fixed `blm_gauss()` to use `l(l+1)` formula consistent with `gauss_beam()` and Challinor et al. 2000 (astro-ph/0008228). Previously used `l²` formula from LevelS Beam package. This affects the computed spherical harmonic coefficients for Gaussian beams.
+* Fixed `projscatter`, `projplot`, and `projtext` to only draw on current axes instead of all subplots https://github.com/healpy/healpy/issues/637
 * Added half-sky plotting support for Lambert projection via `latra` parameter in `projview` https://github.com/healpy/healpy/pull/1048
 * added support for automatically adjusting latitudes within [-90, 90] range in ang2pix https://github.com/healpy/healpy/pull/1026
 * Implemented NESTED support in query_strip https://github.com/healpy/healpy/pull/1025
@@ -10,6 +15,7 @@ Unreleased
 * Allow ignoring small mask holes in `dist2holes` via pixel- and area-based thresholds https://github.com/healpy/healpy/pull/1008
 * `pixwin` now loads pixel window functions from a local datapath or downloads and caches them using astropy, similar to pixel weights. Added tests for both local and remote data access. https://github.com/healpy/healpy/pull/1005
 * Updated CFITSIO to 4.6.3 https://github.com/healpy/healpy/pull/1042
+* Fix TypeError in `alm2map` and `alm2map_der1` when using complex64 input arrays https://github.com/healpy/healpy/issues/827
 * CI: use Matplotlib's bundled freetype when testing Linux wheels so musllinux Python 3.14 jobs no longer need external downloads https://github.com/healpy/healpy/pull/1061
 
 Release 1.18.1 26 Mar 2025
