@@ -167,6 +167,9 @@ If you are going to install the packages in a nonstandard location (say,
 environment variable settings are necessary, and you do not need to set
 ``PKG_CONFIG_PATH`` to use Healpy after you have built it.
 
+Then, unpack each of the above packages and build them with the usual
+``configure; make; make install`` recipe.
+
 pkg-config visibility in isolated builds
 ----------------------------------------
 
@@ -185,9 +188,6 @@ Failure scenarios this note does not cover include:
   match.
 * ``pkg-config`` resolves to an incompatible prefix or ABI; fix the environment
   rather than relying on automatic fallbacks.
-
-Then, unpack each of the above packages and build them with the usual
-``configure; make; make install`` recipe.
 
 Installation on Windows through the "Windows Subsystem for Linux"
 -----------------------------------------------------------------
