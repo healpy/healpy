@@ -11,6 +11,8 @@ jobs:
   build-with-uv:
     name: Build healpy from source using uv
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - uses: actions/checkout@v6
