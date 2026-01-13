@@ -146,9 +146,7 @@ Building against external Healpix and cfitsio
 ---------------------------------------------
 
 Healpy uses pkg-config to detect the presence of the Healpix and cfitsio
-libraries. pkg-config is available on most systems. If you do not have
-pkg-config installed, then Healpy will download and use (but not install) a
-Python clone called pykg-config.
+libraries. pkg-config is available on most systems.
 
 If you want to provide your own external builds of Healpix and cfitsio, then
 download the following packages:
