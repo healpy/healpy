@@ -1,6 +1,7 @@
 Unreleased
 
 * CI: build Linux wheels with manylinux_2_28 for x86_64/aarch64 to avoid SciPy source builds failing on missing OpenBLAS https://github.com/healpy/healpy/pull/1075
+* Docs: clarify pkg-config fallback guidance and remove pykg-config reference https://github.com/healpy/healpy/pull/1074
 
 Release 1.19.0 1 Dec 2025
 

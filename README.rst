@@ -98,7 +98,8 @@ However, if you have them installed already, Healpy should detect and reuse
 them instead of building them from source. To use your own installations of
 `HEALPix` and cfitsio, you will also need:
 
-* `pkg-config <http://pkg-config.freedesktop.org>`_
+* `pkg-config <http://pkg-config.freedesktop.org>`_ (pykg-config fallback if
+  pkg-config is missing)
 
 * `HEALPix
   <http://sourceforge.net/projects/healpix/files/Healpix_3.11/autotools_packages/>`_
@@ -107,7 +108,7 @@ them instead of building them from source. To use your own installations of
 * `cfitsio <http://heasarc.gsfc.nasa.gov/fitsio/>`_
 
 See `INSTALL.rst <https://github.com/healpy/healpy/blob/master/INSTALL.rst>`_
-for further instructions.
+for further instructions, including details on pkg-config visibility.
 
 Known issues
 ------------

@@ -146,9 +146,8 @@ Building against external Healpix and cfitsio
 ---------------------------------------------
 
 Healpy uses pkg-config to detect the presence of the Healpix and cfitsio
-libraries. pkg-config is available on most systems. If you do not have
-pkg-config installed, then Healpy will download and use (but not install) a
-Python clone called pykg-config.
+libraries. pkg-config is available on most systems; if it is missing, the
+build falls back to pykg-config.
 
 If you want to provide your own external builds of Healpix and cfitsio, then
 download the following packages:
@@ -169,6 +168,26 @@ environment variable settings are necessary, and you do not need to set
 
 Then, unpack each of the above packages and build them with the usual
 ``configure; make; make install`` recipe.
+
+pkg-config visibility in isolated builds
+----------------------------------------
+
+healpy relies on the system ``pkg-config`` results. If ``pkg-config`` cannot
+see build-tree ``.pc`` files (for example, in isolated build environments), the
+fix is to adjust ``PKG_CONFIG_PATH`` so the generated ``.pc`` files are in
+scope. If ``pkg-config`` is missing, the build falls back to ``pykg-config``,
+which aims to be compatible but can diverge from ``pkg-config`` semantics.
+
+Failure scenarios this note does not cover include:
+
+* ``pkg-config`` is missing and ``pykg-config`` is unavailable, or either tool
+  fails for reasons other than "package not found" (syntax errors, incompatible
+  flags).
+* ``.pc`` files depend on ``pkg-config``-specific behaviors (custom variables,
+  ``Requires.private``, system search paths) that alternate parsers such as
+  ``pykg-config`` may not match.
+* ``pkg-config`` resolves to an incompatible prefix or ABI; fix the environment
+  rather than relying on automatic fallbacks.
 
 Installation on Windows through the "Windows Subsystem for Linux"
 -----------------------------------------------------------------
