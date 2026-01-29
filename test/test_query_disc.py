@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
 
-from healpy import query_disc, boundaries, nside2npix, nside2resol, ang2vec
+from healpy import query_disc, query_polygon, query_strip, boundaries, nside2npix, nside2resol, ang2vec
 
 try:
     from exceptions import ValueError
@@ -136,3 +136,97 @@ class TestQueryDisc(unittest.TestCase):
         assert result.base is buff
 
         np.testing.assert_array_equal(result, np.array([0, 3, 4, 5, 11, 12, 13, 23]))
+
+    def test_query_disc_return_ranges(self):
+        """Test query_disc with return_ranges=True"""
+        # Get ranges
+        ranges = query_disc(self.NSIDE, self.vec, self.radius, inclusive=True, return_ranges=True)
+        
+        # Verify it returns a 2D array
+        self.assertEqual(ranges.ndim, 2)
+        self.assertEqual(ranges.shape[1], 2)
+        
+        # Convert ranges back to individual pixels to verify correctness
+        pixels_from_ranges = []
+        for start, end in ranges:
+            pixels_from_ranges.extend(range(start, end))
+        pixels_from_ranges = np.array(pixels_from_ranges, dtype=np.int64)
+        
+        # Get pixels the normal way
+        pixels_normal = query_disc(self.NSIDE, self.vec, self.radius, inclusive=True, return_ranges=False)
+        
+        # They should be the same
+        np.testing.assert_array_equal(pixels_from_ranges, pixels_normal)
+
+    def test_query_disc_return_ranges_nested(self):
+        """Test query_disc with return_ranges=True and nested ordering"""
+        # Get ranges for NESTED
+        ranges = query_disc(self.NSIDE, self.vec, self.radius, inclusive=True, nest=True, return_ranges=True)
+        
+        # Verify it returns a 2D array
+        self.assertEqual(ranges.ndim, 2)
+        self.assertEqual(ranges.shape[1], 2)
+        
+        # Convert ranges back to individual pixels
+        pixels_from_ranges = []
+        for start, end in ranges:
+            pixels_from_ranges.extend(range(start, end))
+        pixels_from_ranges = np.array(pixels_from_ranges, dtype=np.int64)
+        
+        # Get pixels the normal way
+        pixels_normal = query_disc(self.NSIDE, self.vec, self.radius, inclusive=True, nest=True, return_ranges=False)
+        
+        # They should be the same
+        np.testing.assert_array_equal(pixels_from_ranges, pixels_normal)
+
+    def test_query_polygon_return_ranges(self):
+        """Test query_polygon with return_ranges=True"""
+        # Define a simple triangle
+        vertices = np.array([
+            [1.0, 0.0, 0.0],
+            [0.0, 1.0, 0.0],
+            [0.0, 0.0, 1.0]
+        ])
+        
+        # Get ranges
+        ranges = query_polygon(self.NSIDE, vertices, return_ranges=True)
+        
+        # Verify it returns a 2D array
+        self.assertEqual(ranges.ndim, 2)
+        self.assertEqual(ranges.shape[1], 2)
+        
+        # Convert ranges back to individual pixels
+        pixels_from_ranges = []
+        for start, end in ranges:
+            pixels_from_ranges.extend(range(start, end))
+        pixels_from_ranges = np.array(pixels_from_ranges, dtype=np.int64)
+        
+        # Get pixels the normal way
+        pixels_normal = query_polygon(self.NSIDE, vertices, return_ranges=False)
+        
+        # They should be the same
+        np.testing.assert_array_equal(pixels_from_ranges, pixels_normal)
+
+    def test_query_strip_return_ranges(self):
+        """Test query_strip with return_ranges=True"""
+        theta1 = np.radians(30)
+        theta2 = np.radians(60)
+        
+        # Get ranges
+        ranges = query_strip(self.NSIDE, theta1, theta2, return_ranges=True)
+        
+        # Verify it returns a 2D array
+        self.assertEqual(ranges.ndim, 2)
+        self.assertEqual(ranges.shape[1], 2)
+        
+        # Convert ranges back to individual pixels
+        pixels_from_ranges = []
+        for start, end in ranges:
+            pixels_from_ranges.extend(range(start, end))
+        pixels_from_ranges = np.array(pixels_from_ranges, dtype=np.int64)
+        
+        # Get pixels the normal way
+        pixels_normal = query_strip(self.NSIDE, theta1, theta2, return_ranges=False)
+        
+        # They should be the same
+        np.testing.assert_array_equal(pixels_from_ranges, pixels_normal)
