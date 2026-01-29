@@ -256,3 +256,41 @@ class TestQueryDisc(unittest.TestCase):
         # This is because query_strip internally uses RING and converts, which may reorder
         self.assertEqual(set(pixels_from_ranges), set(pixels_normal))
         self.assertEqual(len(pixels_from_ranges), len(pixels_normal))
+
+    def test_query_disc_return_ranges_empty(self):
+        """Test query_disc with return_ranges=True when query returns no pixels"""
+        # Query with a very small radius that won't contain any pixels
+        vec = np.array([1.0, 0.0, 0.0])
+        radius = 1e-10  # Very small radius
+        
+        ranges = query_disc(self.NSIDE, vec, radius, return_ranges=True)
+        
+        # Should return an empty array with correct shape
+        self.assertEqual(ranges.shape, (0, 2))
+        self.assertEqual(ranges.dtype, np.int64)
+
+    def test_buff_and_return_ranges_conflict(self):
+        """Test that using both buff and return_ranges raises an error"""
+        buff = np.empty(100, dtype=np.int64)
+        vec = np.array([1.0, 0.0, 0.0])
+        radius = np.radians(10)
+        
+        # Should raise ValueError
+        with self.assertRaises(ValueError) as cm:
+            query_disc(self.NSIDE, vec, radius, buff=buff, return_ranges=True)
+        self.assertIn("Cannot use both", str(cm.exception))
+        
+        # Also test for query_polygon
+        vertices = np.array([
+            [1.0, 0.0, 0.0],
+            [0.0, 1.0, 0.0],
+            [0.0, 0.0, 1.0]
+        ])
+        with self.assertRaises(ValueError) as cm:
+            query_polygon(self.NSIDE, vertices, buff=buff, return_ranges=True)
+        self.assertIn("Cannot use both", str(cm.exception))
+        
+        # Also test for query_strip
+        with self.assertRaises(ValueError) as cm:
+            query_strip(self.NSIDE, np.radians(30), np.radians(60), buff=buff, return_ranges=True)
+        self.assertIn("Cannot use both", str(cm.exception))

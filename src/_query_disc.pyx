@@ -37,7 +37,7 @@ def query_disc(nside, vec, radius, inclusive = False, fact = 4, nest = False, np
       if True, assume NESTED pixel ordering, otherwise, RING pixel ordering
     buff: int array, optional
       if provided, this numpy array is used to contain the return values and must be
-      at least long enough to do so
+      at least long enough to do so. Cannot be used with return_ranges=True.
     return_ranges: bool, optional
       if True, return a 2D array of pixel ranges with shape (num_ranges, 2), 
       where each row contains [start, end) of a range. This is more memory-efficient
@@ -61,6 +61,10 @@ def query_disc(nside, vec, radius, inclusive = False, fact = 4, nest = False, np
     with the disk at all. The higher fact is chosen, the fewer false positives
     are returned, at the cost of increased run time.
     """
+    # Validate parameters
+    if return_ranges and buff is not None:
+        raise ValueError("Cannot use both 'buff' and 'return_ranges' parameters")
+    
     # Check Nside value
     if not isnsideok(nside, nest):
         raise ValueError('Wrong nside value, must be a power of 2, less than 2**30')
@@ -113,7 +117,7 @@ def query_polygon(nside, vertices, inclusive = False, fact = 4, nest = False, np
       if True, assume NESTED pixel ordering, otherwise, RING pixel ordering
     buff: int array, optional
       if provided, this numpy array is used to contain the return values and must be
-      at least long enough to do so
+      at least long enough to do so. Cannot be used with return_ranges=True.
     return_ranges: bool, optional
       if True, return a 2D array of pixel ranges with shape (num_ranges, 2), 
       where each row contains [start, end) of a range. This is more memory-efficient
@@ -137,6 +141,10 @@ def query_polygon(nside, vertices, inclusive = False, fact = 4, nest = False, np
     with the polygon at all. The higher fact is chosen, the fewer false positives
     are returned, at the cost of increased run time.
     """
+    # Validate parameters
+    if return_ranges and buff is not None:
+        raise ValueError("Cannot use both 'buff' and 'return_ranges' parameters")
+    
     # Check Nside value
     if not isnsideok(nside, nest):
         raise ValueError('Wrong nside value, must be a power of 2, less than 2**30')
@@ -186,7 +194,7 @@ def query_strip(nside, theta1, theta2, inclusive = False, nest = False, np.ndarr
       First colatitude (radians)
     theta2 : float
       Second colatitude (radians)
-    inclusive ; bool
+    inclusive : bool
       If False, return the exact set of pixels whose pixels centers lie 
       within the region; if True, return all pixels that overlap with the
       region.
@@ -194,7 +202,7 @@ def query_strip(nside, theta1, theta2, inclusive = False, nest = False, np.ndarr
       if True, assume NESTED pixel ordering, otherwise, RING pixel ordering
     buff: int array, optional
       if provided, this numpy array is used to contain the return values and must be
-      at least long enough to do so
+      at least long enough to do so. Cannot be used with return_ranges=True.
     return_ranges: bool, optional
       if True, return a 2D array of pixel ranges with shape (num_ranges, 2), 
       where each row contains [start, end) of a range. This is more memory-efficient
@@ -206,7 +214,18 @@ def query_strip(nside, theta1, theta2, inclusive = False, nest = False, np.ndarr
       If return_ranges is False: 1D array of pixel indices.
       If return_ranges is True: 2D array of shape (num_ranges, 2) where each row
       is [start, end) representing a range of pixels.
+      
+    Note
+    ----
+    When using nest=True with return_ranges=True, the implementation must materialize
+    all pixels in memory to convert from RING to NESTED ordering before creating ranges.
+    This defeats the memory efficiency purpose of return_ranges. For large queries with
+    NESTED ordering, consider using RING ordering or the standard return format.
     """
+    # Validate parameters
+    if return_ranges and buff is not None:
+        raise ValueError("Cannot use both 'buff' and 'return_ranges' parameters")
+    
     # Check Nside value
     if not isnsideok(nside, nest):
         raise ValueError('Wrong nside value, must be a power of 2, less than 2**30')
