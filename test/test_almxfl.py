@@ -133,11 +133,11 @@ class TestAlmxfl:
 
         alm_out = hp.almxfl(alm, fl, mmax=mmax, inplace=False)
 
-        # Check that only m=0, l=0 is non-zero
+        # Check that l=0 values are preserved (fl[0]=1.0)
         idx0 = hp.Alm.getidx(lmax, 0, 0)
         np.testing.assert_allclose(alm_out[idx0], alm[idx0])
 
-        # Check all others are zero
+        # Check all l>0 values are zero (fl[1:]=0.0)
         for test_l in range(1, lmax + 1):
             for test_m in range(min(test_l, mmax) + 1):
                 idx = hp.Alm.getidx(lmax, test_l, test_m)
