@@ -212,7 +212,7 @@ class TestQueryDisc(unittest.TestCase):
         theta1 = np.radians(30)
         theta2 = np.radians(60)
         
-        # Get ranges
+        # Get ranges for RING ordering
         ranges = query_strip(self.NSIDE, theta1, theta2, return_ranges=True)
         
         # Verify it returns a 2D array
@@ -228,5 +228,31 @@ class TestQueryDisc(unittest.TestCase):
         # Get pixels the normal way
         pixels_normal = query_strip(self.NSIDE, theta1, theta2, return_ranges=False)
         
-        # They should be the same
+        # For RING ordering, they should be in the same order
         np.testing.assert_array_equal(pixels_from_ranges, pixels_normal)
+
+    def test_query_strip_return_ranges_nested(self):
+        """Test query_strip with return_ranges=True and nest=True"""
+        theta1 = np.radians(30)
+        theta2 = np.radians(60)
+        
+        # Get ranges for NESTED ordering
+        ranges = query_strip(self.NSIDE, theta1, theta2, nest=True, return_ranges=True)
+        
+        # Verify it returns a 2D array
+        self.assertEqual(ranges.ndim, 2)
+        self.assertEqual(ranges.shape[1], 2)
+        
+        # Convert ranges back to individual pixels
+        pixels_from_ranges = []
+        for start, end in ranges:
+            pixels_from_ranges.extend(range(start, end))
+        pixels_from_ranges = np.array(pixels_from_ranges, dtype=np.int64)
+        
+        # Get pixels the normal way
+        pixels_normal = query_strip(self.NSIDE, theta1, theta2, nest=True, return_ranges=False)
+        
+        # For NESTED ordering with query_strip, order may differ but sets should be equal
+        # This is because query_strip internally uses RING and converts, which may reorder
+        self.assertEqual(set(pixels_from_ranges), set(pixels_normal))
+        self.assertEqual(len(pixels_from_ranges), len(pixels_normal))
