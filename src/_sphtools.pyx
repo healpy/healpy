@@ -510,15 +510,20 @@ def almxfl(alm, fl, mmax = None, inplace = False):
     cdef int l, m
     lmax_, mmax_ = alm_getlmmax(alm_, None, mmax)
 
-    cdef np.complex128_t f
-    cdef int maxm, i
     cdef int flsize = fl_.size
-    for l in xrange(lmax_ + 1):
-        f = fl_[l] if l < flsize else 0.
-        maxm = l if l <= mmax_ else mmax_
-        for m in xrange(maxm + 1):
-            i = alm_getidx(lmax_, l, m)
-            alm_[i] *= f
+    cdef int ofs, next_ofs
+    
+    # Iterate over m in the outer loop for better cache locality
+    ofs = 0
+    for m in xrange(mmax_ + 1):
+        next_ofs = ofs + lmax_ + 1 - m
+        # For this m, multiply all l values (from m to lmax) by fl
+        for l in xrange(m, lmax_ + 1):
+            if l < flsize:
+                alm_[ofs + l - m] *= fl_[l]
+            else:
+                alm_[ofs + l - m] = 0.
+        ofs = next_ofs
 
     return alm_
 
