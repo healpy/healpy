@@ -5,10 +5,13 @@ cimport numpy as np
 from libcpp cimport bool
 from libcpp.vector cimport vector
 cimport cython
+import logging
 
 from _common cimport int64, pointing, rangeset, vec3, Healpix_Ordering_Scheme, RING, NEST, SET_NSIDE, T_Healpix_Base
 import healpy.pixelfunc
 from ._pixelfunc import isnsideok
+
+log = logging.getLogger("healpy")
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
@@ -249,6 +252,12 @@ def query_strip(nside, theta1, theta2, inclusive = False, nest = False, np.ndarr
             # If there are no ranges, simply return the empty result without conversion
             if result_ranges.shape[0] == 0:
                 return result_ranges
+            # Warn about inefficient conversion
+            log.warning(
+                "query_strip with nest=True and return_ranges=True must materialize "
+                "all pixels for RING to NESTED conversion, negating the memory benefit. "
+                "Consider using nest=False or return_ranges=False for better performance."
+            )
             result_pixels = healpy.pixelfunc.ring2nest(nside, 
                 np.concatenate([np.arange(result_ranges[i, 0], result_ranges[i, 1]) 
                                for i in range(result_ranges.shape[0])]))
