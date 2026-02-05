@@ -246,6 +246,9 @@ def query_strip(nside, theta1, theta2, inclusive = False, nest = False, np.ndarr
         if nest:
             # If original request was for NESTED, convert the ranges
             # Each pixel in the range needs to be converted
+            # If there are no ranges, simply return the empty result without conversion
+            if result_ranges.shape[0] == 0:
+                return result_ranges
             result_pixels = healpy.pixelfunc.ring2nest(nside, 
                 np.concatenate([np.arange(result_ranges[i, 0], result_ranges[i, 1]) 
                                for i in range(result_ranges.shape[0])]))
