@@ -269,6 +269,19 @@ class TestQueryDisc(unittest.TestCase):
         self.assertEqual(ranges.shape, (0, 2))
         self.assertEqual(ranges.dtype, np.int64)
 
+    def test_query_strip_return_ranges_empty_nested(self):
+        """Test query_strip with return_ranges=True and nest=True when query returns no pixels"""
+        # Query with theta values that don't include any pixel centers
+        # This is a very narrow strip that should return no pixels
+        theta1 = np.radians(0.0001)
+        theta2 = np.radians(0.0002)
+        
+        ranges = query_strip(self.NSIDE, theta1, theta2, nest=True, return_ranges=True)
+        
+        # Should return an empty array with correct shape
+        self.assertEqual(ranges.shape, (0, 2))
+        self.assertEqual(ranges.dtype, np.int64)
+
     def test_buff_and_return_ranges_conflict(self):
         """Test that using both buff and return_ranges raises an error"""
         buff = np.empty(100, dtype=np.int64)
