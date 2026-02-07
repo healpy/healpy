@@ -51,8 +51,11 @@ jobs:
         with:
           submodules: true
 
-      - name: Build wheels
-        uses: pypa/cibuildwheel@v3.3
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.x"
+
+      - name: Build wheels (with retries)
         env:
           CIBW_BUILD: "cp310-* cp311-* cp312-* cp313-* cp314-*"
           CIBW_MANYLINUX_X86_64_IMAGE: quay.io/pypa/manylinux_2_28_x86_64
@@ -61,6 +64,31 @@ jobs:
           CIBW_TEST_ENVIRONMENT_LINUX: "MPLLOCALFREETYPE=1 MPLCONFIGDIR=/tmp"
           CIBW_ARCHS_MACOS: "arm64 x86_64"
           MACOSX_DEPLOYMENT_TARGET: ${{ matrix.macos_target || '' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          python -m pip install --upgrade pip
+          python -m pip install "cibuildwheel==3.3.0"
+
+          max_attempts=3
+          attempt=1
+          while [ "$attempt" -le "$max_attempts" ]; do
+            echo "Running cibuildwheel (attempt ${attempt}/${max_attempts})"
+            if python -m cibuildwheel --output-dir wheelhouse; then
+              exit 0
+            fi
+
+            if [ "$attempt" -eq "$max_attempts" ]; then
+              echo "cibuildwheel failed after ${max_attempts} attempts"
+              exit 1
+            fi
+
+            sleep_seconds=$((attempt * 60))
+            echo "Retrying in ${sleep_seconds}s..."
+            sleep "$sleep_seconds"
+            attempt=$((attempt + 1))
+          done
       - uses: actions/upload-artifact@v6
         with:
           name: ${{ matrix.os }}
