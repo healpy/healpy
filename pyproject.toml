@@ -30,7 +30,7 @@ all = ["matplotlib", "scipy"]
 test = [
     "pytest",
     "pytest-astropy-header",
-    "pytest-cython",
+    "pytest-cython==0.4.0rc1",
     "pytest-doctestplus",
     "requests",
     "matplotlib",
