@@ -14,6 +14,14 @@ Follow PEP 8 with 4-space indentation and descriptive, lower_snake_case function
 ## Testing Guidelines
 Extend or create tests alongside code under `test/`, mirroring the module name (`test_pixelfunc.py` exercises `pixelfunc`). Prefer `pytest.mark.parametrize` for coverage over loops. New features should include doctest-ready examples so the `--doctest-plus` stage exercises them. When a change alters numerical tolerance, adjust the relevant assertion message and justify the threshold in a code comment. Keep optional dependencies (matplotlib, scipy) guarded with `pytest.importorskip`.
 
+## Notebook Visualization Guidelines
+When authoring comparison notebooks:
+- Prefer `projview` over `mollview`.
+- For side-by-side map comparisons, use a shared **linear** color scale across panels.
+- Compute common `vmin`/`vmax` from all compared maps and round them to readable values before plotting.
+- Include physical units on all plot axes, colorbars, and titles where applicable.
+- For power-spectrum plots, use LaTeX labels and write multipoles with `\ell` (for example `$C_\\ell$` vs `$\ell$`).
+
 ## Commit & Pull Request Guidelines
 Commits follow a short, imperative summary (`Fix query_disc strip for NEST`). Group related file changes together and update `CHANGELOG.rst` for user-visible behavior. Before opening a pull request, rerun the full pytest matrix and document output or screenshots for visual routines. Create and manage PRs via the GitHub CLI (`gh pr create`, `gh pr status`) so reviewers get a consistent template. Reference related issues with GitHub keywords, describe the scientific motivation, and mention any doc or data updates. Maintain PRs in sync with `main` to avoid stale generated C files.
 
