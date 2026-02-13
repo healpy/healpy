@@ -19,6 +19,8 @@ When authoring comparison notebooks:
 - Prefer `projview` over `mollview`.
 - For side-by-side map comparisons, use a shared **linear** color scale across panels.
 - Compute common `vmin`/`vmax` from all compared maps and round them to readable values before plotting.
+- Include physical units on all plot axes, colorbars, and titles where applicable.
+- For power-spectrum plots, use LaTeX labels and write multipoles with `\ell` (for example `$C_\\ell$` vs `$\ell$`).
 
 ## Commit & Pull Request Guidelines
 Commits follow a short, imperative summary (`Fix query_disc strip for NEST`). Group related file changes together and update `CHANGELOG.rst` for user-visible behavior. Before opening a pull request, rerun the full pytest matrix and document output or screenshots for visual routines. Create and manage PRs via the GitHub CLI (`gh pr create`, `gh pr status`) so reviewers get a consistent template. Reference related issues with GitHub keywords, describe the scientific motivation, and mention any doc or data updates. Maintain PRs in sync with `main` to avoid stale generated C files.
