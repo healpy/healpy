@@ -33,6 +33,7 @@ Spherical harmonic transform tools
    
    smoothing
    smoothalm
+   harmonic_ud_grade
    alm2cl
    synalm
    almxfl

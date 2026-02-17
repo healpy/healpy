@@ -530,6 +530,107 @@ def alm2map(
         return np.array(output)
 
 
+def harmonic_ud_grade(
+    map_in,
+    nside_out,
+    lmax=None,
+    mmax=None,
+    iter=3,
+    pol=True,
+    use_weights=False,
+    datapath=None,
+    use_pixel_weights=False,
+    dtype=None,
+):
+    """Change map NSIDE using spherical-harmonic transforms.
+
+    The input map is transformed to alm coefficients and synthesized at
+    ``nside_out``. For downgrades, this generally suppresses aliasing
+    artifacts compared to :func:`healpy.ud_grade`.
+
+    Parameters
+    ----------
+    map_in : array-like, shape (Npix,) or (n, Npix)
+      Input map(s), in RING ordering.
+    nside_out : int
+      Desired NSIDE of the output map(s).
+    lmax : int, optional
+      Maximum multipole to retain. If None, defaults to
+      ``int(2.5 * min(nside_in, nside_out))``.
+    mmax : int, optional
+      Maximum m of the alm. Default: ``lmax``.
+    iter : int, optional
+      Number of map2alm iterations. Default: 3.
+    pol : bool, optional
+      If True, treat 1- or 3-component input as polarized transforms
+      (TQU/TEB conventions). If False, transform each map independently
+      as spin-0.
+    use_weights : bool, optional
+      If True, use ring weights in map2alm.
+    datapath : str, optional
+      Directory where to find pixel weights, if needed.
+    use_pixel_weights : bool, optional
+      If True, use per-pixel map2alm weights.
+    dtype : dtype, optional
+      If provided, cast output map to this dtype.
+
+    Returns
+    -------
+    map_out : ndarray
+      Output map(s) at ``nside_out``.
+    """
+    maps = ma_to_array(map_in)
+    info = maptype(maps)
+    nside_in = pixelfunc.get_nside(maps)
+
+    pixelfunc.check_nside(nside_out)
+    check_max_nside(nside_in)
+    check_max_nside(nside_out)
+
+    if lmax is None:
+        lmax = int(2.5 * min(nside_in, nside_out))
+    if mmax is None:
+        mmax = lmax
+
+    if pol or info in (0, 1):
+        alm = map2alm(
+            maps,
+            lmax=lmax,
+            mmax=mmax,
+            iter=iter,
+            pol=pol,
+            use_weights=use_weights,
+            datapath=datapath,
+            use_pixel_weights=use_pixel_weights,
+        )
+        output = alm2map(
+            alm, nside=nside_out, lmax=lmax, mmax=mmax, pixwin=False, pol=pol
+        )
+    else:
+        output = []
+        for each_map in maps:
+            alm = map2alm(
+                each_map,
+                lmax=lmax,
+                mmax=mmax,
+                iter=iter,
+                pol=False,
+                use_weights=use_weights,
+                datapath=datapath,
+                use_pixel_weights=use_pixel_weights,
+            )
+            output.append(
+                alm2map(
+                    alm, nside=nside_out, lmax=lmax, mmax=mmax, pixwin=False, pol=False
+                )
+            )
+        output = np.array(output)
+
+    if dtype is not None:
+        output = output.astype(dtype)
+    return output
+
+
 @deprecated_renamed_argument("verbose", None, "1.15.0")
 def synalm(cls, lmax=None, mmax=None, new=False, verbose=True):
     """Generate a set of alm given cl.
