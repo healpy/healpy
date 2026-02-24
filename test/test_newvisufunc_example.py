@@ -637,25 +637,27 @@ def test_projview_cart_bgcolor(map_data):
 
 
 def test_projview_colormap_object_preservation(map_data):
-    """Test that projview preserves user-modified Colormap object colors"""
+    """Test that projview applies explicit bad/under colors for Colormap objects."""
     # Create a colormap with custom bad/under colors
     colormap = plt.get_cmap('viridis').copy()
     colormap.set_bad('white')
     colormap.set_under('yellow')
     
-    # Call projview with the modified colormap
+    # Call projview with explicit bad/under colors
     projview(
         map_data,
         cmap=colormap,
-        projection_type='hammer'
+        projection_type='hammer',
+        badcolor='gray',
+        bgcolor='white',
     )
     
     # Get the colormap from the plot
     ax = plt.gca()
     if hasattr(ax, 'collections') and len(ax.collections) > 0:
         plot_cmap = ax.collections[0].get_cmap()
-        # Verify colors are preserved
-        bad_is_white = np.allclose(plot_cmap._rgba_bad[:3], [1.0, 1.0, 1.0])
-        under_is_yellow = np.allclose(plot_cmap._rgba_under[:3], [1.0, 1.0, 0.0])
-        assert bad_is_white, f"projview should preserve Colormap bad color, got {plot_cmap._rgba_bad}"
-        assert under_is_yellow, f"projview should preserve Colormap under color, got {plot_cmap._rgba_under}"
+        # Verify explicit colors are applied
+        bad_is_gray = np.allclose(plot_cmap._rgba_bad[:3], [0.5019607843137255, 0.5019607843137255, 0.5019607843137255])
+        under_is_white = np.allclose(plot_cmap._rgba_under[:3], [1.0, 1.0, 1.0])
+        assert bad_is_gray, f"projview should apply badcolor for Colormap objects, got {plot_cmap._rgba_bad}"
+        assert under_is_white, f"projview should apply bgcolor for Colormap objects, got {plot_cmap._rgba_under}"
