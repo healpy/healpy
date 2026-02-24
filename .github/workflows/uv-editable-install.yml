@@ -1,0 +1,24 @@
+name: UV Editable Install
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  uv-editable-install:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - uses: astral-sh/setup-uv@v5
+
+      - name: Create virtual environment
+        run: uv venv .venv
+
+      - name: Install healpy in editable mode
+        run: uv pip install --python .venv/bin/python -e .
