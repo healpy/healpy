@@ -950,9 +950,9 @@ def create_colormap(cmap, badcolor="gray", bgcolor="white"):
     
     Notes
     -----
-    If cmap is a string, badcolor and bgcolor are applied to the colormap.
-    If cmap is already a Colormap object, its existing bad/under colors are
-    preserved to respect any user modifications.
+    badcolor and bgcolor are always applied to the colormap used for plotting,
+    regardless of whether cmap is specified as a string or as a Colormap
+    object.
     """
     cmap_is_string = isinstance(cmap, str)
     cmap_is_colormap_object = isinstance(cmap, matplotlib.colors.Colormap)
@@ -988,11 +988,9 @@ def create_colormap(cmap, badcolor="gray", bgcolor="white"):
             hasattr(cmap0, '_rgba_over') and cmap0._rgba_over is not None):
         newcm.set_over(newcm(1.0))
     
-    # Only apply badcolor/bgcolor if cmap was specified as a string or None
-    # If a Colormap object was passed, preserve its existing settings
-    if not cmap_is_colormap_object:
-        newcm.set_under(bgcolor)
-        newcm.set_bad(badcolor)
+    # Apply requested plotting colors consistently for all cmap input types.
+    newcm.set_under(bgcolor)
+    newcm.set_bad(badcolor)
     
     return newcm
 

@@ -4,6 +4,7 @@ Unreleased
 * CI: build Linux wheels with manylinux_2_28 for x86_64/aarch64 to avoid SciPy source builds failing on missing OpenBLAS https://github.com/healpy/healpy/pull/1075
 * Docs: clarify pkg-config fallback guidance and remove pykg-config reference https://github.com/healpy/healpy/pull/1074
 * Fix `uv pip install -e .` editable builds by recomputing pkg-config environment paths in `setup.py`, and add CI coverage for the uv editable install path https://github.com/healpy/healpy/pull/1085
+* Fix `mollview`/`projview` handling of matplotlib colormap objects so `badcolor` and `bgcolor` are applied consistently, and ensure `projview` masks `UNSEEN` pixels correctly https://github.com/healpy/healpy/issues/1084
 
 Release 1.19.0 1 Dec 2025
 

@@ -1,7 +1,7 @@
 __all__ = ["projview", "newprojplot"]
 
 import numpy as np
-from .pixelfunc import ang2pix, npix2nside, remove_dipole, remove_monopole
+from .pixelfunc import ang2pix, mask_bad, npix2nside, remove_dipole, remove_monopole
 from .rotator import Rotator
 from .projaxes import get_color_table
 import matplotlib.pyplot as plt
@@ -628,7 +628,7 @@ def projview(
     ret = None
     if m is not None:
         nside = npix2nside(len(m))
-        w = ~(np.isnan(m) | np.isinf(m))
+        w = ~(np.isnan(m) | np.isinf(m) | mask_bad(m))
         if m is not None:
             # auto min and max
             if min is None:
@@ -641,6 +641,7 @@ def projview(
         )
         grid_pix = ang2pix(nside, THETA, PHI, nest=nest)
         grid_map = m[grid_pix]
+        grid_map = np.ma.masked_where(mask_bad(grid_map), grid_map)
 
         # Flip the grid_map vertically for Lambert projection
         # matplotlib's Lambert projection interprets Y-axis in reverse order
