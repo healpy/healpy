@@ -28,7 +28,7 @@ jobs:
         with:
           args: 'sh -c "pip install build && python -m build --sdist"'
 
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: source
           path: dist/*
@@ -89,7 +89,7 @@ jobs:
             sleep "$sleep_seconds"
             attempt=$((attempt + 1))
           done
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.os }}
           path: wheelhouse/*
