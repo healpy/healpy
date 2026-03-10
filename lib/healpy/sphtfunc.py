@@ -535,11 +535,11 @@ def harmonic_ud_grade(
     nside_out,
     lmax=None,
     mmax=None,
-    iter=3,
+    iter=None,
     pol=True,
     use_weights=False,
     datapath=None,
-    use_pixel_weights=False,
+    use_pixel_weights=True,
     dtype=None,
 ):
     """Change map NSIDE using spherical-harmonic transforms.
@@ -560,7 +560,8 @@ def harmonic_ud_grade(
     mmax : int, optional
       Maximum m of the alm. Default: ``lmax``.
     iter : int, optional
-      Number of map2alm iterations. Default: 3.
+      Number of map2alm iterations. If None, defaults to 0 when using
+      pixel weights and 3 otherwise.
     pol : bool, optional
       If True, treat 1- or 3-component input as polarized transforms
       (TQU/TEB conventions). If False, transform each map independently
@@ -570,7 +571,11 @@ def harmonic_ud_grade(
     datapath : str, optional
       Directory where to find pixel weights, if needed.
     use_pixel_weights : bool, optional
-      If True, use per-pixel map2alm weights.
+      If True, use per-pixel map2alm weights. Default: True.
+      Pixel weights are required by default for ``harmonic_ud_grade``;
+      if they are unavailable, an exception is raised instead of silently
+      falling back to an unweighted transform. Pass
+      ``use_pixel_weights=False`` to disable this behavior explicitly.
     dtype : dtype, optional
       If provided, cast output map to this dtype.
 
@@ -591,6 +596,25 @@ def harmonic_ud_grade(
         lmax = int(2.5 * min(nside_in, nside_out))
     if mmax is None:
         mmax = lmax
+    if iter is None:
+        iter = 0 if use_pixel_weights else 3
+
+    if use_pixel_weights:
+        filename = "full_weights/healpix_full_weights_nside_%04d.fits" % nside_in
+        if datapath is not None:
+            pixel_weights_filename = os.path.join(datapath, filename)
+            if not os.path.exists(pixel_weights_filename):
+                raise RuntimeError(
+                    "Pixel weights are required by default for harmonic_ud_grade, "
+                    f"but the file is missing at {pixel_weights_filename}. "
+                    "Either install/download the weights or pass "
+                    "use_pixel_weights=False."
+                )
+        else:
+            with data.conf.set_temp("dataurl", DATAURL), data.conf.set_temp(
+                "dataurl_mirror", DATAURL_MIRROR
+            ), data.conf.set_temp("remote_timeout", 30):
+                data.get_pkg_data_filename(filename, package="healpy")
 
     if pol or info in (0, 1):
         alm = map2alm(
