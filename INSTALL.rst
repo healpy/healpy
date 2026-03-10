@@ -25,15 +25,16 @@ Anaconda with::
     conda config --add channels conda-forge
     conda install healpy
 
-There have also been reports of specific installation issues under Mac OS
-Catalina 10.15.5 with conda install as the solver appears to run without
-finding the required packages. This is a general issue with a number of
-packages, and not limited to ``healpy``. The most straightforward solution
-(after adding conda-forge to the channel list) is for the user to decide which
-packages they wish to install alongside ``healpy`` and then create a new
-environment installing ``healpy`` alongside said packages. For instance if one
-wishes to install ``healpy`` alongside Spyder and My_Package into newly created
-environment env_healpy, the command will be::
+If one first installs ``healpy`` on macOS with ``conda install`` and later
+tries to install additional packages in the same environment, the solver may
+appear unable to find compatible packages. This is a general dependency
+conflict issue across multiple packages and is not limited to ``healpy``.
+The most straightforward solution (after adding conda-forge to the channel
+list) is to decide in advance which packages are needed and create a new
+environment that installs ``healpy`` together with those packages. For
+instance, if one wishes to install ``healpy`` alongside Spyder and
+``my_package`` into a newly created environment ``env_healpy``, the command
+will be::
 
     conda create --name env_healpy python=3.10 healpy spyder my_package
 
