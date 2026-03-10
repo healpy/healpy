@@ -15,7 +15,9 @@ def test_harmonic_ud_grade_preserves_low_ell_mode():
     input_map = _single_mode_map(nside_in, ell=20)
     expected = _single_mode_map(nside_out, ell=20)
 
-    output = hp.harmonic_ud_grade(input_map, nside_out=nside_out)
+    output = hp.harmonic_ud_grade(
+        input_map, nside_out=nside_out, use_pixel_weights=False
+    )
 
     np.testing.assert_allclose(output, expected, rtol=1e-3, atol=1e-6)
 
@@ -25,7 +27,9 @@ def test_harmonic_ud_grade_suppresses_aliasing_vs_ud_grade():
     nside_out = 32
     input_map = _single_mode_map(nside_in, ell=120)
 
-    output_harmonic = hp.harmonic_ud_grade(input_map, nside_out=nside_out)
+    output_harmonic = hp.harmonic_ud_grade(
+        input_map, nside_out=nside_out, use_pixel_weights=False
+    )
     output_ud_grade = hp.ud_grade(input_map, nside_out=nside_out)
 
     std_harmonic = np.std(output_harmonic)
@@ -45,6 +49,7 @@ def test_harmonic_ud_grade_multimap_pol_false_and_dtype():
         input_maps,
         nside_out=nside_out,
         pol=False,
+        use_pixel_weights=False,
         dtype=np.float32,
     )
 
