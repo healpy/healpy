@@ -1,4 +1,5 @@
 import numpy as np
+import pytest
 
 import healpy as hp
 
@@ -55,3 +56,34 @@ def test_harmonic_ud_grade_multimap_pol_false_and_dtype():
 
     assert output.shape == (2, hp.nside2npix(nside_out))
     assert output.dtype == np.float32
+
+
+def test_harmonic_ud_grade_missing_pixel_weights_file_raises(tmp_path):
+    nside_in = 32
+    nside_out = 16
+    input_map = np.ones(hp.nside2npix(nside_in), dtype=np.float64)
+    expected = tmp_path / "full_weights" / "healpix_full_weights_nside_0032.fits"
+
+    with pytest.raises(RuntimeError, match="Pixel weights are required by default"):
+        hp.harmonic_ud_grade(
+            input_map,
+            nside_out=nside_out,
+            use_pixel_weights=True,
+            datapath=str(tmp_path),
+        )
+
+    with pytest.raises(RuntimeError, match=str(expected)):
+        hp.harmonic_ud_grade(
+            input_map,
+            nside_out=nside_out,
+            use_pixel_weights=True,
+            datapath=str(tmp_path),
+        )
+
+    with pytest.raises(RuntimeError, match="use_pixel_weights=False"):
+        hp.harmonic_ud_grade(
+            input_map,
+            nside_out=nside_out,
+            use_pixel_weights=True,
+            datapath=str(tmp_path),
+        )
