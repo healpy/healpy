@@ -556,12 +556,14 @@ def harmonic_ud_grade(
       Desired NSIDE of the output map(s).
     lmax : int, optional
       Maximum multipole to retain. If None, defaults to
-      ``int(2.5 * min(nside_in, nside_out))``.
+      ``3 * nside_out - 1``.
     mmax : int, optional
       Maximum m of the alm. Default: ``lmax``.
     iter : int, optional
       Number of map2alm iterations. If None, defaults to 0 when using
-      pixel weights and 3 otherwise.
+      pixel weights with ``lmax <= 1.5 * nside_in`` and 3 otherwise.
+      This follows the HEALPix guidance that pixel weights alone are
+      sufficient without iteration only in that lower-bandlimit regime.
     pol : bool, optional
       If True, treat 1- or 3-component input as polarized transforms
       (TQU/TEB conventions). If False, transform each map independently
@@ -576,6 +578,10 @@ def harmonic_ud_grade(
       if they are unavailable, an exception is raised instead of silently
       falling back to an unweighted transform. Pass
       ``use_pixel_weights=False`` to disable this behavior explicitly.
+      Note that pixel weights by themselves are not expected to give
+      near-machine-precision transforms without iteration all the way to
+      ``lmax = 3 * nside_out - 1`` unless the downgrade is strong enough
+      that ``lmax <= 1.5 * nside_in``.
     dtype : dtype, optional
       If provided, cast output map to this dtype.
 
@@ -593,11 +599,11 @@ def harmonic_ud_grade(
     check_max_nside(nside_out)
 
     if lmax is None:
-        lmax = int(2.5 * min(nside_in, nside_out))
+        lmax = 3 * nside_out - 1
     if mmax is None:
         mmax = lmax
     if iter is None:
-        iter = 0 if use_pixel_weights else 3
+        iter = 0 if use_pixel_weights and lmax <= 1.5 * nside_in else 3
 
     if use_pixel_weights:
         filename = "full_weights/healpix_full_weights_nside_%04d.fits" % nside_in

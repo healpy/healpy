@@ -49,3 +49,12 @@ Other tools
    gauss_beam
    beam2bl
    bl2beam
+
+Tutorial notebooks
+------------------
+
+See also:
+
+* :doc:`healpy_harmonic_ud_grade_power_law_demo`
+* :doc:`healpy_harmonic_ud_grade_d10_demo`
+* :doc:`healpy_harmonic_ud_grade_aliasing_demo`
