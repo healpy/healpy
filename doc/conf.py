@@ -37,8 +37,8 @@ source_suffix = ".rst"
 master_doc = "index"
 
 # General substitutions.
-project = u"healpy"
-copyright = u"CC/BY/4.0/International"
+project = "healpy"
+copyright = "CC/BY/4.0/International"
 
 # The default replacements for |version| and |release|, also used in various
 # other places throughout the built documents.
@@ -89,7 +89,7 @@ exclude_patterns = [".build/*", "templates/*", "ext/*.rst"]
 # -----------------------
 
 
-# html_theme = 'default'
+html_theme = "furo"
 
 # The style sheet to use for HTML and HTML Help pages. A file of that name
 # must exist either in Sphinx' static/ path, or in one of the custom paths
@@ -171,7 +171,7 @@ htmlhelp_basename = "healpydoc"
 
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, document class [howto/manual]).
-latex_documents = [("index", "healpy.tex", u"healpy Documentation", u"", "manual")]
+latex_documents = [("index", "healpy.tex", "healpy Documentation", "", "manual")]
 
 # The name of an image file (relative to this directory) to place at the top of
 # the title page.

@@ -44,6 +44,7 @@ doc = [
     "numpy<2",
     "scipy<1.12",
     "sphinx>=6,<9",
+    "furo>=2025,<2026",
 ]
 
 [project.urls]
