@@ -89,7 +89,7 @@ exclude_patterns = [".build/*", "templates/*", "ext/*.rst"]
 # -----------------------
 
 
-# html_theme = 'default'
+html_theme = "sphinx_book_theme"
 
 # The style sheet to use for HTML and HTML Help pages. A file of that name
 # must exist either in Sphinx' static/ path, or in one of the custom paths
