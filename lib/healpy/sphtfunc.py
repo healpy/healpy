@@ -530,6 +530,70 @@ def alm2map(
         return np.array(output)
 
 
+def _build_harmonic_transfer(nside_in, nside_out, lmax, apply_pixwin, fwhm_in, fwhm_out,
+                             polar_component=False):
+    """Build the per-ℓ transfer function for one component.
+
+    Implements the Planck 2015 XVI Eq. 1 ratio:
+    ``fl[ℓ] = (p_out[ℓ] / p_in[ℓ]) * (b_out[ℓ] / b_in[ℓ])``
+
+    Parameters
+    ----------
+    polar_component : bool
+        If True, use polarization pixel windows instead of temperature.
+    """
+    fl = np.ones(lmax + 1)
+
+    if apply_pixwin:
+        if polar_component:
+            pw_in = pixwin(nside_in, pol=True, lmax=lmax)[1]
+            pw_out = pixwin(nside_out, pol=True, lmax=lmax)[1]
+        else:
+            pw_in = pixwin(nside_in, pol=False, lmax=lmax)
+            pw_out = pixwin(nside_out, pol=False, lmax=lmax)
+        safe = pw_in > 0
+        fl[safe] *= pw_out[safe] / pw_in[safe]
+        fl[~safe] = 0.0
+
+    if fwhm_in > 0:
+        bl_in = gauss_beam(fwhm_in, lmax=lmax, pol=False)
+        safe = bl_in > 0
+        new_fl = np.zeros_like(fl)
+        new_fl[safe] = fl[safe] / bl_in[safe]
+        fl = new_fl
+
+    if fwhm_out > 0:
+        fl *= gauss_beam(fwhm_out, lmax=lmax, pol=False)
+
+    return fl
+
+
+def _apply_harmonic_transfer(alm, fl_T, fl_P=None):
+    """Apply per-ℓ transfer function(s) to alm, in place.
+
+    Parameters
+    ----------
+    alm : ndarray or list of ndarray
+        Spherical harmonic coefficients. A list of 3 arrays for TEB.
+    fl_T : ndarray
+        Temperature / scalar transfer function.
+    fl_P : ndarray, optional
+        Polarization transfer function for E and B components.
+    """
+    if fl_P is not None and isinstance(alm, (list, tuple, np.ndarray)) and len(alm) == 3:
+        alm[0] = almxfl(alm[0], fl_T)
+        alm[1] = almxfl(alm[1], fl_P)
+        alm[2] = almxfl(alm[2], fl_P)
+    else:
+        if isinstance(alm, np.ndarray) and alm.ndim == 1:
+            alm = almxfl(alm, fl_T)
+        elif isinstance(alm, (list, tuple)):
+            alm = type(alm)(almxfl(a, fl_T) for a in alm)
+        else:
+            alm = almxfl(alm, fl_T)
+    return alm
+
+
 def harmonic_ud_grade(
     map_in,
     nside_out,
@@ -537,16 +601,29 @@ def harmonic_ud_grade(
     mmax=None,
     iter=None,
     pol=True,
+    pixwin=True,
+    fwhm_in=0,
+    fwhm_out=None,
     use_weights=False,
     datapath=None,
     use_pixel_weights=True,
     dtype=None,
 ):
-    """Change map NSIDE using spherical-harmonic transforms.
+    r"""Change map NSIDE using spherical-harmonic transforms.
 
-    The input map is transformed to alm coefficients and synthesized at
-    ``nside_out``. For downgrades, this generally suppresses aliasing
-    artifacts compared to :func:`healpy.ud_grade`.
+    The input map is analysed into :math:`a_{\ell m}` coefficients, optionally
+    corrected for pixel-window and beam transfer functions following
+    Planck 2015 XVI Eq. 1, and synthesised at ``nside_out``:
+
+    .. math::
+
+        a^{\rm out}_{\ell m}
+        = \frac{p^{\rm out}_\ell}{p^{\rm in}_\ell}
+          \frac{b^{\rm out}_\ell}{b^{\rm in}_\ell}
+          \, a^{\rm in}_{\ell m}
+
+    where :math:`p_\ell` is the HEALPix pixel window function and
+    :math:`b_\ell` is a Gaussian beam transfer function.
 
     Parameters
     ----------
@@ -568,6 +645,18 @@ def harmonic_ud_grade(
       If True, treat 1- or 3-component input as polarized transforms
       (TQU/TEB conventions). If False, transform each map independently
       as spin-0.
+    pixwin : bool, optional
+      If True (default), deconvolve the input pixel window
+      :math:`p^{\rm in}_\ell` and apply the output pixel window
+      :math:`p^{\rm out}_\ell`.  For polarised maps the temperature and
+      polarisation windows are handled separately.
+    fwhm_in : float, optional
+      FWHM in **radians** of a Gaussian beam to deconvolve from the
+      input :math:`a_{\ell m}`.  Default: ``0`` (no input beam).
+    fwhm_out : float or None, optional
+      FWHM in **radians** of a Gaussian beam to apply to the output.
+      Default: ``None``, which auto-computes a beam of 3 pixels per
+      beam: ``3 * nside2resol(nside_out)``.  Pass ``0`` to disable.
     use_weights : bool, optional
       If True, use ring weights in map2alm.
     datapath : str, optional
@@ -589,6 +678,12 @@ def harmonic_ud_grade(
     -------
     map_out : ndarray
       Output map(s) at ``nside_out``.
+
+    Notes
+    -----
+    To reproduce the behaviour prior to the addition of pixel-window and
+    beam support (plain bandlimit truncation), pass
+    ``pixwin=False, fwhm_out=0``.
     """
     maps = ma_to_array(map_in)
     info = maptype(maps)
@@ -604,6 +699,10 @@ def harmonic_ud_grade(
         mmax = lmax
     if iter is None:
         iter = 0 if use_pixel_weights and lmax <= 1.5 * nside_in else 3
+
+    # Resolve fwhm_out default: 3 pixels per beam at output resolution
+    if fwhm_out is None:
+        fwhm_out = 3 * pixelfunc.nside2resol(nside_out)
 
     if use_pixel_weights:
         filename = "full_weights/healpix_full_weights_nside_%04d.fits" % nside_in
@@ -622,6 +721,23 @@ def harmonic_ud_grade(
             ), data.conf.set_temp("remote_timeout", 30):
                 data.get_pkg_data_filename(filename, package="healpy")
 
+    # Build harmonic transfer functions (Eq. 1)
+    need_transfer = pixwin or fwhm_in > 0 or fwhm_out > 0
+    if need_transfer:
+        fl_T = _build_harmonic_transfer(
+            nside_in, nside_out, lmax, pixwin, fwhm_in, fwhm_out,
+            polar_component=False,
+        )
+        is_polarized = pol and info == 1
+        fl_P = (
+            _build_harmonic_transfer(
+                nside_in, nside_out, lmax, pixwin, fwhm_in, fwhm_out,
+                polar_component=True,
+            )
+            if is_polarized
+            else None
+        )
+
     if pol or info in (0, 1):
         alm = map2alm(
             maps,
@@ -633,6 +749,8 @@ def harmonic_ud_grade(
             datapath=datapath,
             use_pixel_weights=use_pixel_weights,
         )
+        if need_transfer:
+            alm = _apply_harmonic_transfer(alm, fl_T, fl_P)
         output = alm2map(
             alm, nside=nside_out, lmax=lmax, mmax=mmax, pixwin=False, pol=pol
         )
@@ -649,6 +767,8 @@ def harmonic_ud_grade(
                 datapath=datapath,
                 use_pixel_weights=use_pixel_weights,
             )
+            if need_transfer:
+                alm = _apply_harmonic_transfer(alm, fl_T)
             output.append(
                 alm2map(
                     alm, nside=nside_out, lmax=lmax, mmax=mmax, pixwin=False, pol=False
