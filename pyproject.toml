@@ -44,6 +44,7 @@ doc = [
     "numpy<2",
     "scipy<1.12",
     "sphinx>=6,<9",
+    "sphinx_rtd_theme>=3.0,<4.0",
 ]
 
 [project.urls]
