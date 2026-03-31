@@ -26,7 +26,7 @@ jobs:
 
       - uses: docker://python
         with:
-          args: 'sh -c "pip install build && python -m build --sdist"'
+          args: 'sh -c "git config --global --add safe.directory /github/workspace && pip install build && python -m build --sdist"'
 
       - uses: actions/upload-artifact@v7
         with:
