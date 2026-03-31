@@ -25,5 +25,7 @@ When authoring comparison notebooks:
 ## Commit & Pull Request Guidelines
 Commits follow a short, imperative summary (`Fix query_disc strip for NEST`). Group related file changes together and update `CHANGELOG.rst` for user-visible behavior. Before opening a pull request, rerun the full pytest matrix and document output or screenshots for visual routines. Create and manage PRs via the GitHub CLI (`gh pr create`, `gh pr status`) so reviewers get a consistent template. Reference related issues with GitHub keywords, describe the scientific motivation, and mention any doc or data updates. Maintain PRs in sync with `main` to avoid stale generated C files.
 
+**Never push directly to `main` without explicit user approval.** Always show the proposed changes and ask for confirmation before pushing to any protected branch.
+
 ## Release Process
 Follow the checklist in `RELEASE.md` for tagging, wheel builds, and PyPI uploads. Confirm CI artifacts match the documented version bump and update communication channels as described there.
