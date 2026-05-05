@@ -1,8 +1,9 @@
 *pyc
 *swp
 build
-*so
-*ipynb
+*.so*
+*.ipynb
+!doc/*.ipynb
 ipython_log*
 doc/.build
 doc/generated
