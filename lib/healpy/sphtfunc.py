@@ -51,6 +51,10 @@ MAX_NSIDE = (
     8192  # The maximum nside up to which most operations (e.g. map2alm) will work
 )
 
+# Planck 2013 XXIII Table 1: exact FWHM-to-pixel ratio (K ≈ 2.91)
+# Used to match the beam scaling across Planck resolutions.
+PLANCK_K = 160.0 / (np.degrees(pixelfunc.nside2resol(64)) * 60)
+
 # Spherical harmonics transformation
 def anafast(
     map1,
@@ -642,7 +646,7 @@ def harmonic_ud_grade(
       Desired NSIDE of the output map(s).
     lmax : int, optional
       Maximum multipole to retain. If None, defaults to
-      ``3 * nside_out - 1``.
+      ``min(3 * nside_out - 1, 3 * nside_in - 1)``.
     mmax : int, optional
       Maximum m of the alm. Default: ``lmax``.
     iter : int, optional
@@ -664,8 +668,14 @@ def harmonic_ud_grade(
       input :math:`a_{\ell m}`.  Default: ``0`` (no input beam).
     fwhm_out : float or None, optional
       FWHM in **radians** of a Gaussian beam to apply to the output.
-      Default: ``None``, which auto-computes a beam of 3 pixels per
-      beam: ``3 * nside2resol(nside_out)``.  Pass ``0`` to disable.
+      Default: ``None``, which auto-computes a beam using the Planck
+      FWHM-to-pixel ratio::
+
+          fwhm_out = PLANCK_K * nside2resol(nside_out)
+
+      where ``PLANCK_K = 160.0 / (degrees(nside2resol(64)) * 60)``
+      (≈ 2.91).  This matches the exact scaling used consistently
+      across all Planck resolutions.  Pass ``0`` to disable.
     use_weights : bool, optional
       If True, use ring weights in map2alm.
     datapath : str, optional
@@ -693,6 +703,9 @@ def harmonic_ud_grade(
     To reproduce the behaviour prior to the addition of pixel-window and
     beam support (plain bandlimit truncation), pass
     ``pixwin=False, fwhm_out=0``.
+
+    *`fwhm_out` default:* computed as ``PLANCK_K * nside2resol(nside_out)``,
+    matching the exact Planck scaling (see parameter description above).
     """
     maps = ma_to_array(map_in)
     info = maptype(maps)
@@ -709,9 +722,9 @@ def harmonic_ud_grade(
     if iter is None:
         iter = 0 if use_pixel_weights and lmax <= 1.5 * nside_in else 3
 
-    # Resolve fwhm_out default: 3 pixels per beam at output resolution
+    # Resolve fwhm_out default: Planck FWHM-to-pixel ratio at output resolution
     if fwhm_out is None:
-        fwhm_out = 3 * pixelfunc.nside2resol(nside_out)
+        fwhm_out = PLANCK_K * pixelfunc.nside2resol(nside_out)
 
     if use_pixel_weights:
         filename = "full_weights/healpix_full_weights_nside_%04d.fits" % nside_in
