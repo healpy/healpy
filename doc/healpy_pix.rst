@@ -62,9 +62,7 @@ target ``nside``.
 See :func:`healpy.sphtfunc.harmonic_ud_grade` for the API and the following
 tutorial notebooks for worked comparisons:
 
-* :doc:`healpy_harmonic_ud_grade_power_law_demo`
-* :doc:`healpy_harmonic_ud_grade_d10_demo`
-* :doc:`healpy_harmonic_ud_grade_aliasing_demo`
+* :doc:`healpy_harmonic_ud_grade_comparison`
 
 Masking pixels
 --------------

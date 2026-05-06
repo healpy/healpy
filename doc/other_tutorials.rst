@@ -24,9 +24,7 @@ Harmonic Downgrade
 .. toctree::
    :maxdepth: 1
 
-   healpy_harmonic_ud_grade_power_law_demo
-   healpy_harmonic_ud_grade_d10_demo
-   healpy_harmonic_ud_grade_aliasing_demo
+   healpy_harmonic_ud_grade_comparison
 
 Power spectra
 -------------
