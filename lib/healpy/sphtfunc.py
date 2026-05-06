@@ -556,14 +556,19 @@ def _build_harmonic_transfer(nside_in, nside_out, lmax, apply_pixwin, fwhm_in, f
         fl[~safe] = 0.0
 
     if fwhm_in > 0:
-        bl_in = gauss_beam(fwhm_in, lmax=lmax, pol=False)
+        bl_in = gauss_beam(fwhm_in, lmax=lmax, pol=polar_component)
+        if polar_component:
+            bl_in = bl_in[:, 1]
         safe = bl_in > 0
         new_fl = np.zeros_like(fl)
         new_fl[safe] = fl[safe] / bl_in[safe]
         fl = new_fl
 
     if fwhm_out > 0:
-        fl *= gauss_beam(fwhm_out, lmax=lmax, pol=False)
+        bl_out = gauss_beam(fwhm_out, lmax=lmax, pol=polar_component)
+        if polar_component:
+            bl_out = bl_out[:, 1]
+        fl *= bl_out
 
     return fl
 
@@ -587,6 +592,10 @@ def _apply_harmonic_transfer(alm, fl_T, fl_P=None):
     else:
         if isinstance(alm, np.ndarray) and alm.ndim == 1:
             alm = almxfl(alm, fl_T)
+        elif isinstance(alm, np.ndarray) and alm.ndim > 1:
+            alm = alm.copy()
+            for i in range(len(alm)):
+                alm[i] = almxfl(alm[i], fl_T)
         elif isinstance(alm, (list, tuple)):
             alm = type(alm)(almxfl(a, fl_T) for a in alm)
         else:
@@ -694,7 +703,7 @@ def harmonic_ud_grade(
     check_max_nside(nside_out)
 
     if lmax is None:
-        lmax = 3 * nside_out - 1
+        lmax = min(3 * nside_out - 1, 3 * nside_in - 1)
     if mmax is None:
         mmax = lmax
     if iter is None:
@@ -728,7 +737,7 @@ def harmonic_ud_grade(
             nside_in, nside_out, lmax, pixwin, fwhm_in, fwhm_out,
             polar_component=False,
         )
-        is_polarized = pol and info == 1
+        is_polarized = pol and info == 3
         fl_P = (
             _build_harmonic_transfer(
                 nside_in, nside_out, lmax, pixwin, fwhm_in, fwhm_out,

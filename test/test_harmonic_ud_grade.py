@@ -203,3 +203,48 @@ def test_fwhm_in_deconvolves_input_beam():
     high_ell = slice(lmax_out // 2, None)
     assert np.mean(cl_deconv[high_ell]) > 1.5 * np.mean(cl_no_deconv[high_ell]), \
         "Deconvolving input beam should restore high-ell power"
+
+def test_harmonic_ud_grade_upgrading_caps_lmax():
+    """When upgrading, lmax should be capped to the input resolution limit."""
+    nside_in = 16
+    nside_out = 32
+    # If lmax is not capped, it will try to extract up to 3*32-1=95
+    # which map2alm will complain about or return noisy modes.
+    # The fix ensures lmax is min(3*32-1, 3*16-1) = 47.
+    input_map = _single_mode_map(nside_in, ell=10)
+    
+    # Should not raise an error or complain about lmax > lmax_in
+    output = hp.harmonic_ud_grade(
+        input_map, nside_out=nside_out, use_pixel_weights=False,
+        pixwin=False, fwhm_out=0,
+    )
+    assert hp.get_nside(output) == nside_out
+
+
+def test_harmonic_ud_grade_pol_beam():
+    """Polarized beam deconvolution should use the polarized beam transfer function."""
+    nside_in = 32
+    nside_out = 32
+    npix = hp.nside2npix(nside_in)
+    rng = np.random.default_rng(123)
+    input_maps = rng.normal(size=(3, npix))
+    
+    # Run with a large beam to exaggerate differences
+    out_pol = hp.harmonic_ud_grade(
+        input_maps, nside_out=nside_out, pol=True,
+        fwhm_in=np.radians(10.0), fwhm_out=np.radians(10.0),
+        use_pixel_weights=False, pixwin=False
+    )
+    out_unpol = hp.harmonic_ud_grade(
+        input_maps, nside_out=nside_out, pol=False,
+        fwhm_in=np.radians(10.0), fwhm_out=np.radians(10.0),
+        use_pixel_weights=False, pixwin=False
+    )
+    
+    # T component should be identical
+    np.testing.assert_allclose(out_pol[0], out_unpol[0], rtol=1e-5)
+    
+    # Q and U components should be slightly different because out_pol used the E/B beam
+    assert not np.allclose(out_pol[1], out_unpol[1], rtol=1e-5)
+    assert not np.allclose(out_pol[2], out_unpol[2], rtol=1e-5)
+
