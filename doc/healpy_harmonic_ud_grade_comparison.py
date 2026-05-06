@@ -65,7 +65,7 @@
 # hp.harmonic_ud_grade(
 #     map_in,                  # Input map(s), RING ordering
 #     nside_out,               # Target Nside
-#     lmax=None,               # Max multipole (default: 3*nside_out - 1)
+#     lmax=None,               # Max multipole (default: min(3*nside_out - 1, 3*nside_in - 1))
 #     mmax=None,               # Max m (default: lmax)
 #     iter=None,               # map2alm iterations (see below)
 #     pol=True,                # Treat 3-component input as TQU/TEB
@@ -83,12 +83,17 @@
 #
 # | Argument | Default | Rationale |
 # |----------|---------|-----------|
-# | `lmax` | `3*nside_out - 1` | The standard HEALPix bandlimit for the output grid. |
+# | `lmax` | `min(...)` | Standard HEALPix bandlimit, capped by the input resolution. See explanation below. |
 # | `iter` | `None` (auto) | Uses 0 iterations when pixel weights are active and `lmax <= 1.5*nside_in` (the regime where pixel weights alone are sufficient); otherwise 3 iterations. |
 # | `pixwin` | `True` | Deconvolves the input pixel window $p^{\rm in}_\ell$ and applies the output pixel window $p^{\rm out}_\ell$, ensuring the output map has the correct effective resolution. |
 # | `fwhm_in` | `0` | No input beam deconvolution. **Must be set** to the actual beam FWHM when working with beam-convolved data. |
 # | `fwhm_out` | `None` (auto) | Auto-computed as `3 * nside2resol(nside_out)` — roughly 3 pixels per beam, matching the Planck convention. Pass `0` to disable output smoothing. |
 # | `use_pixel_weights` | `True` | Uses full per-pixel weights for high-accuracy spherical harmonic transforms. If the weight files are not available, an error is raised (pass `False` to fall back to unweighted transforms). |
+#
+# *`lmax` default:* `3·nside_out – 1` is the standard HEALPix bandlimit, but
+# it is capped to `3·nside_in – 1` when *upgrading* resolution.  This prevents
+# the transform from requesting multipoles the input map cannot meaningfully
+# provide.
 #
 # ## Notebook overview
 #
