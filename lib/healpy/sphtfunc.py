@@ -534,7 +534,43 @@ def alm2map(
         return np.array(output)
 
 
+def _extract_beam_column(beam_window, polar_component):
+    """Extract the appropriate column from a beam_window array.
+
+    Parameters
+    ----------
+    beam_window : ndarray
+        Either 1D shape (lmax+1,) for temperature-only, or 2D shape
+        (lmax+1, N) with N >= 2 following gauss_beam output format
+        (column 0 = T, column 1 = E/B pol).
+    polar_component : bool
+        If True, extract polarization beam (column 1).
+        If False, extract temperature beam (column 0).
+
+    Returns
+    -------
+    beam : ndarray, shape (lmax+1,)
+    """
+    beam_window = np.asarray(beam_window)
+    if beam_window.ndim == 1:
+        if polar_component:
+            raise ValueError(
+                "beam_window is 1D (temperature-only) but polarization "
+                "beam was requested. Provide a 2D beam_window with at "
+                "least 2 columns following gauss_beam(pol=True) format."
+            )
+        return beam_window
+    elif beam_window.ndim == 2:
+        col = 1 if polar_component else 0
+        return beam_window[:, col]
+    else:
+        raise ValueError(
+            f"beam_window must be 1D or 2D, got {beam_window.ndim}D"
+        )
+
+
 def _build_harmonic_transfer(nside_in, nside_out, lmax, apply_pixwin, fwhm_in, fwhm_out,
+                             beam_window_in=None, beam_window_out=None,
                              polar_component=False):
     """Build the per-ℓ transfer function for one component.
 
@@ -559,7 +595,13 @@ def _build_harmonic_transfer(nside_in, nside_out, lmax, apply_pixwin, fwhm_in, f
         fl[safe] *= pw_out[safe] / pw_in[safe]
         fl[~safe] = 0.0
 
-    if fwhm_in > 0:
+    if beam_window_in is not None:
+        bl_in = _extract_beam_column(beam_window_in, polar_component)
+        safe = bl_in > 0
+        new_fl = np.zeros_like(fl)
+        new_fl[safe] = fl[safe] / bl_in[safe]
+        fl = new_fl
+    elif fwhm_in > 0:
         bl_in = gauss_beam(fwhm_in, lmax=lmax, pol=polar_component)
         if polar_component:
             bl_in = bl_in[:, 1]
@@ -568,7 +610,10 @@ def _build_harmonic_transfer(nside_in, nside_out, lmax, apply_pixwin, fwhm_in, f
         new_fl[safe] = fl[safe] / bl_in[safe]
         fl = new_fl
 
-    if fwhm_out > 0:
+    if beam_window_out is not None:
+        bl_out = _extract_beam_column(beam_window_out, polar_component)
+        fl *= bl_out
+    elif fwhm_out > 0:
         bl_out = gauss_beam(fwhm_out, lmax=lmax, pol=polar_component)
         if polar_component:
             bl_out = bl_out[:, 1]
@@ -617,6 +662,8 @@ def harmonic_ud_grade(
     pixwin=True,
     fwhm_in=0,
     fwhm_out=None,
+    beam_window_in=None,
+    beam_window_out=None,
     use_weights=False,
     datapath=None,
     use_pixel_weights=True,
@@ -636,7 +683,7 @@ def harmonic_ud_grade(
           \, a^{\rm in}_{\ell m}
 
     where :math:`p_\ell` is the HEALPix pixel window function and
-    :math:`b_\ell` is a Gaussian beam transfer function.
+    :math:`b_\ell` is a beam transfer function (Gaussian or custom).
 
     Parameters
     ----------
@@ -676,6 +723,20 @@ def harmonic_ud_grade(
       where ``PLANCK_K = 160.0 / (degrees(nside2resol(64)) * 60)``
       (≈ 2.91).  This matches the exact scaling used consistently
       across all Planck resolutions.  Pass ``0`` to disable.
+    beam_window_in : array-like or None, optional
+      Custom input beam transfer function to deconvolve, overriding
+      ``fwhm_in``.  Follows the format returned by ``gauss_beam``:
+
+      - 1D array of shape ``(lmax+1,)`` for temperature-only.
+      - 2D array of shape ``(lmax+1, N)`` with ``N >= 2`` for
+        polarized transforms, where column 0 is the temperature beam
+        and column 1 is the polarization beam (E/B).
+
+      When provided, ``fwhm_in`` is ignored.  Default: ``None``.
+    beam_window_out : array-like or None, optional
+      Custom output beam transfer function to apply, overriding
+      ``fwhm_out``.  Same format as ``beam_window_in``.
+      When provided, ``fwhm_out`` is ignored.  Default: ``None``.
     use_weights : bool, optional
       If True, use ring weights in map2alm.
     datapath : str, optional
@@ -704,6 +765,14 @@ def harmonic_ud_grade(
     beam support (plain bandlimit truncation), pass
     ``pixwin=False, fwhm_out=0``.
 
+    When ``nside_out == nside_in``, the function performs beam
+    reconvolution: it deconvolves the input beam (specified via
+    ``fwhm_in`` or ``beam_window_in``) and applies the output beam
+    (specified via ``fwhm_out`` or ``beam_window_out``).  This is
+    useful for changing the effective resolution of a map while
+    remaining at the same pixelisation, similar to the HEALPix
+    ``process_alm`` facility.
+
     *`fwhm_out` default:* computed as ``PLANCK_K * nside2resol(nside_out)``,
     matching the exact Planck scaling (see parameter description above).
     """
@@ -723,8 +792,40 @@ def harmonic_ud_grade(
         iter = 0 if use_pixel_weights and lmax <= 1.5 * nside_in else 3
 
     # Resolve fwhm_out default: Planck FWHM-to-pixel ratio at output resolution
-    if fwhm_out is None:
+    # Skip when beam_window_out is provided (it will override anyway)
+    if fwhm_out is None and beam_window_out is None:
         fwhm_out = PLANCK_K * pixelfunc.nside2resol(nside_out)
+    elif fwhm_out is None and beam_window_out is not None:
+        fwhm_out = 0  # beam_window_out takes precedence
+
+    # Validate and normalise beam_window arguments
+    if beam_window_in is not None:
+        beam_window_in = np.asarray(beam_window_in)
+        if beam_window_in.ndim not in (1, 2):
+            raise ValueError("beam_window_in must be 1D or 2D array")
+        if beam_window_in.shape[0] < lmax + 1:
+            raise ValueError(
+                f"beam_window_in has length {beam_window_in.shape[0]} but "
+                f"lmax={lmax} requires at least {lmax + 1} elements"
+            )
+        if beam_window_in.ndim == 1:
+            beam_window_in = beam_window_in[: lmax + 1]
+        else:
+            beam_window_in = beam_window_in[: lmax + 1, :]
+
+    if beam_window_out is not None:
+        beam_window_out = np.asarray(beam_window_out)
+        if beam_window_out.ndim not in (1, 2):
+            raise ValueError("beam_window_out must be 1D or 2D array")
+        if beam_window_out.shape[0] < lmax + 1:
+            raise ValueError(
+                f"beam_window_out has length {beam_window_out.shape[0]} but "
+                f"lmax={lmax} requires at least {lmax + 1} elements"
+            )
+        if beam_window_out.ndim == 1:
+            beam_window_out = beam_window_out[: lmax + 1]
+        else:
+            beam_window_out = beam_window_out[: lmax + 1, :]
 
     if use_pixel_weights:
         filename = "full_weights/healpix_full_weights_nside_%04d.fits" % nside_in
@@ -744,16 +845,19 @@ def harmonic_ud_grade(
                 data.get_pkg_data_filename(filename, package="healpy")
 
     # Build harmonic transfer functions (Eq. 1)
-    need_transfer = pixwin or fwhm_in > 0 or fwhm_out > 0
+    need_transfer = (pixwin or fwhm_in > 0 or fwhm_out > 0
+                     or beam_window_in is not None or beam_window_out is not None)
     if need_transfer:
         fl_T = _build_harmonic_transfer(
             nside_in, nside_out, lmax, pixwin, fwhm_in, fwhm_out,
+            beam_window_in=beam_window_in, beam_window_out=beam_window_out,
             polar_component=False,
         )
         is_polarized = pol and info == 3
         fl_P = (
             _build_harmonic_transfer(
                 nside_in, nside_out, lmax, pixwin, fwhm_in, fwhm_out,
+                beam_window_in=beam_window_in, beam_window_out=beam_window_out,
                 polar_component=True,
             )
             if is_polarized

@@ -373,7 +373,10 @@ map_signal = hp.synfast(cl_signal, nside_in, lmax=3 * nside_in, new=True, pixwin
 ell_knee = 50
 cl_noise = np.zeros(3 * nside_in + 1)
 cl_noise[2:] = cl_signal[ell_knee] * (ell_in[2:] / ell_knee) ** 2
-map_noise = hp.synfast(cl_noise, nside_in, lmax=3 * nside_in, new=True, pixwin=True)
+# pixwin=False: noise is a pixel-level quantity, not a smooth sky signal.
+# Applying the pixel window to noise would incorrectly suppress its
+# high-ell power, understating the aliasing problem.
+map_noise = hp.synfast(cl_noise, nside_in, lmax=3 * nside_in, new=True, pixwin=False)
 map_noisy = map_signal + map_noise
 
 # Reference: downgrade signal-only with harmonic
@@ -442,6 +445,24 @@ plt.show()
 #   being folded into the signal band.  The effect grows with the
 #   resolution ratio: a larger step (here 8×) means more high-$\ell$
 #   modes available to alias, producing a larger noise floor uplift.
+#
+# **Notes on the noise model:**
+#
+# - Noise is generated with `pixwin=False` because instrumental noise
+#   is a pixel-level quantity — it does not have a smooth pixel window
+#   like sky emission.  Using `pixwin=True` for noise would incorrectly
+#   suppress its high-$\ell$ power and understate the aliasing problem.
+# - The $C_\ell \propto \ell^{2}$ spectrum is a proxy for beam-deconvolved
+#   noise, but is not exactly equivalent: a truly deconvolved noise map
+#   would have its power amplified by $1/b_\ell^{2}$, which diverges
+#   at high $\ell$.  For a precise simulation, generate white noise and
+#   then explicitly deconvolve the beam.  The $\ell^{2}$ proxy is
+#   sufficient here to demonstrate the aliasing effect.
+# - For white noise ($C_\ell = \mathrm{const}$), `ud_grade` works well
+#   because the pixel-averaging naturally reduces the noise variance by
+#   the ratio of pixel areas.  The aliasing advantage of
+#   `harmonic_ud_grade` is specific to noise with rising high-$\ell$
+#   power spectra.
 #
 # **Why this matters in practice:** When analysing real CMB or
 # astrophysical data, any aliased noise that leaks into the low-$\ell$
@@ -589,6 +610,87 @@ plt.show()
 # hit-count maps).
 
 # %% [markdown]
+# ### 4.1 Polarization (Q/U) with Point Sources
+#
+# The Gibbs-ringing problem is not limited to temperature maps.  For
+# polarisation maps (TQU) containing compact features, the same
+# band-limiting that harms point sources in $T$ also produces ringing
+# in $Q$ and $U$.  This is particularly relevant for maps that
+# contain both diffuse polarised emission (where `harmonic_ud_grade`
+# excels) and localised polarised sources (where `ud_grade` is better).
+#
+# Below we create a TQU map with point sources in all three components
+# and compare the two methods.
+
+# %%
+nside_in = 128
+nside_out = 32
+
+fwhm_in_pts = PLANCK_K * hp.nside2resol(nside_in)
+sigma_in = fwhm_in_pts / (2 * np.sqrt(2 * np.log(2)))
+
+# Create TQU maps with point sources
+np.random.seed(456)
+m_pts_tqu = np.zeros((3, hp.nside2npix(nside_in)))
+src_pixels = np.random.choice(hp.nside2npix(nside_in), size=3, replace=False)
+src_vecs = np.array(hp.pix2vec(nside_in, src_pixels)).T
+all_vecs = np.array(hp.pix2vec(nside_in, np.arange(hp.nside2npix(nside_in)))).T
+
+for src_vec in src_vecs:
+    cos_dist = np.dot(all_vecs, src_vec)
+    cos_dist = np.clip(cos_dist, -1, 1)
+    ang_dist = np.arccos(cos_dist)
+    gaussian = 100.0 * np.exp(-0.5 * (ang_dist / sigma_in) ** 2)
+    m_pts_tqu[0] += gaussian       # T
+    m_pts_tqu[1] += 0.5 * gaussian  # Q
+    m_pts_tqu[2] += 0.3 * gaussian  # U
+
+m_tqu_ud = hp.ud_grade(m_pts_tqu, nside_out=nside_out)
+m_tqu_harm = hp.harmonic_ud_grade(
+    m_pts_tqu, nside_out=nside_out, pol=True,
+    fwhm_in=fwhm_in_pts, use_pixel_weights=False,
+    pixwin=True, fwhm_out=0,
+)
+
+print("Point sources in TQU:")
+print(f"  ud_grade Q  — negative pixels: {(m_tqu_ud[1] < 0).sum()}")
+print(f"  harmonic Q  — negative pixels: {(m_tqu_harm[1] < 0).sum()}")
+print(f"  ud_grade U  — negative pixels: {(m_tqu_ud[2] < 0).sum()}")
+print(f"  harmonic U  — negative pixels: {(m_tqu_harm[2] < 0).sum()}")
+
+# %% [markdown]
+# ### 4.2 Choosing the Right Method for Mixed-Signal Maps
+#
+# Real maps often contain **both** diffuse emission (which benefits
+# from `harmonic_ud_grade`) and compact features (which benefit from
+# `ud_grade`).  Neither method is perfect in this regime:
+#
+# - `ud_grade` handles point sources well but **aliases** the diffuse
+#   signal, corrupting the power spectrum and introducing artefacts
+#   in the low-$\ell$ modes.
+# - `harmonic_ud_grade` preserves the diffuse signal but produces
+#   **Gibbs ringing** around compact sources.  For polarisation maps,
+#   this ringing appears in all three (T, Q, U) components.
+#
+# **Possible mitigations for mixed-signal maps:**
+#
+# 1. **Separate and recombine:** Detect and subtract point sources
+#    from the map, downgrade the diffuse component with
+#    `harmonic_ud_grade` and the point-source component with
+#    `ud_grade`, then add them back together.
+# 2. **Use `harmonic_ud_grade` with smoothing:** The default
+#    `fwhm_out` applies a Planck-scaled beam that suppresses Gibbs
+#    ringing, at the cost of slightly broadening compact sources.
+# 3. **For masks and hit-count maps:** always use `ud_grade`, since
+#    these are pixel-localised by nature and harmonic methods would
+#    produce unphysical ringing.
+#
+# The choice ultimately depends on the scientific application: if
+# power-spectrum fidelity matters more than point-source compactness,
+# use `harmonic_ud_grade`; if point-source photometry or masking is
+# the priority, use `ud_grade`.
+
+# %% [markdown]
 # ## 5. Required `fwhm_in`
 #
 # `harmonic_ud_grade` requires `fwhm_in` so the resolution scaling
@@ -677,14 +779,22 @@ print(f"slowdown:           {t_harm/t_ud:.1f}x")
 # | **Spectrum fidelity** | Corrupted — aliased power adds positive bias | Correct within the output band |
 # | **Pixel-window handling** | Ignored | Deconvolved/re-applied (Planck 2015 XVI Eq. 1) |
 # | **Beam scaling** | Not handled | Auto-scales FWHM to preserve the beam/pixel ratio |
+# | **Custom beam** | Not supported | `beam_window_in` / `beam_window_out` arrays |
+# | **Reconvolution** | Not applicable | `nside_out == nside_in` changes beam at same pixelisation |
 # | **Gibbs ringing** | None — preserves positivity | Ringing around compact sources |
+# | **Polarisation (diffuse)** | Aliased Q/U | Correct Q/U (separate T/E transfer) |
+# | **Polarisation (point sources)** | Preserves compact Q/U | Gibbs ringing in Q/U |
 # | **Typical speed** | Fast (≈ ms) | ~5–15× slower (dominated by SHT) |
 #
 # **Recommendation:**
 # - Use **`harmonic_ud_grade`** whenever scientific accuracy matters:
 #   power-spectrum estimation, component separation, map-level
 #   comparisons, or any analysis involving noisy or beam-deconvolved
-#   data.
+#   data.  For non-Gaussian beams, provide `beam_window_in` /
+#   `beam_window_out` arrays.
 # - Use **`ud_grade`** when working with point-source maps, binary
 #   masks, hit-count maps, or when speed is critical and aliasing
 #   artefacts are acceptable.
+# - For **mixed-signal maps** (diffuse + point sources), consider
+#   separating the components and downgrading each with the
+#   appropriate method.

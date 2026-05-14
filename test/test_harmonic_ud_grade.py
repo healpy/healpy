@@ -248,3 +248,218 @@ def test_harmonic_ud_grade_pol_beam():
     assert not np.allclose(out_pol[1], out_unpol[1], rtol=1e-5)
     assert not np.allclose(out_pol[2], out_unpol[2], rtol=1e-5)
 
+
+# ------------------------------------------------------------------
+# Tests for beam_window_in / beam_window_out parameters
+# ------------------------------------------------------------------
+
+
+def test_beam_window_in_overrides_fwhm_in():
+    """beam_window_in should produce the same result as fwhm_in with matching Gaussian."""
+    nside_in = 64
+    nside_out = 16
+    fwhm = 0.05  # radians
+    lmax = 3 * nside_out - 1
+
+    rng = np.random.default_rng(42)
+    input_map = hp.synfast(np.ones(3 * nside_in), nside_in, new=True)
+
+    beam_in = hp.gauss_beam(fwhm, lmax=lmax)
+
+    out_fwhm = hp.harmonic_ud_grade(
+        input_map, nside_out=nside_out, use_pixel_weights=False,
+        pixwin=False, fwhm_in=fwhm, fwhm_out=0,
+    )
+    out_beam = hp.harmonic_ud_grade(
+        input_map, nside_out=nside_out, use_pixel_weights=False,
+        pixwin=False, fwhm_in=0, fwhm_out=0, beam_window_in=beam_in,
+    )
+
+    np.testing.assert_allclose(out_fwhm, out_beam, rtol=1e-10)
+
+
+def test_beam_window_out_overrides_fwhm_out():
+    """beam_window_out should produce the same result as fwhm_out with matching Gaussian."""
+    nside_in = 64
+    nside_out = 16
+    fwhm = 0.05  # radians
+    lmax = 3 * nside_out - 1
+
+    rng = np.random.default_rng(42)
+    input_map = hp.synfast(np.ones(3 * nside_in), nside_in, new=True)
+
+    beam_out = hp.gauss_beam(fwhm, lmax=lmax)
+
+    out_fwhm = hp.harmonic_ud_grade(
+        input_map, nside_out=nside_out, use_pixel_weights=False,
+        pixwin=False, fwhm_out=fwhm,
+    )
+    out_beam = hp.harmonic_ud_grade(
+        input_map, nside_out=nside_out, use_pixel_weights=False,
+        pixwin=False, beam_window_out=beam_out,
+    )
+
+    np.testing.assert_allclose(out_fwhm, out_beam, rtol=1e-10)
+
+
+def test_beam_window_custom_shape():
+    """A non-Gaussian beam_window should produce different results from any Gaussian."""
+    nside_in = 64
+    nside_out = 16
+    lmax = 3 * nside_out - 1
+
+    rng = np.random.default_rng(99)
+    input_map = hp.synfast(np.ones(3 * nside_in), nside_in, new=True)
+
+    # Top-hat beam: 1 up to lmax/2, then 0
+    custom_beam = np.ones(lmax + 1)
+    custom_beam[lmax // 2:] = 0.0
+
+    out_custom = hp.harmonic_ud_grade(
+        input_map, nside_out=nside_out, use_pixel_weights=False,
+        pixwin=False, fwhm_out=0, beam_window_out=custom_beam,
+    )
+    # Gaussian beam with similar width
+    out_gauss = hp.harmonic_ud_grade(
+        input_map, nside_out=nside_out, use_pixel_weights=False,
+        pixwin=False, fwhm_out=hp.nside2resol(nside_out),
+    )
+
+    assert not np.allclose(out_custom, out_gauss, rtol=1e-2), \
+        "Custom beam should differ from Gaussian"
+
+
+def test_beam_window_polarized_2d():
+    """2D beam_window with gauss_beam(pol=True) format should work for TQU maps."""
+    nside_in = 32
+    nside_out = 32
+    fwhm = np.radians(10.0)
+    lmax = 3 * nside_out - 1
+
+    rng = np.random.default_rng(77)
+    input_maps = rng.normal(size=(3, hp.nside2npix(nside_in)))
+
+    beam = hp.gauss_beam(fwhm, lmax=lmax, pol=True)
+
+    out_fwhm = hp.harmonic_ud_grade(
+        input_maps, nside_out=nside_out, pol=True,
+        fwhm_in=fwhm, fwhm_out=fwhm,
+        use_pixel_weights=False, pixwin=False,
+    )
+    out_beam = hp.harmonic_ud_grade(
+        input_maps, nside_out=nside_out, pol=True,
+        beam_window_in=beam, beam_window_out=beam,
+        use_pixel_weights=False, pixwin=False,
+    )
+
+    np.testing.assert_allclose(out_fwhm, out_beam, rtol=1e-10)
+
+
+def test_beam_window_1d_raises_for_polarized():
+    """1D beam_window for a 3-component polarized map should raise ValueError."""
+    nside_in = 32
+    nside_out = 32
+    lmax = 3 * nside_out - 1
+
+    rng = np.random.default_rng(55)
+    input_maps = rng.normal(size=(3, hp.nside2npix(nside_in)))
+
+    beam_1d = hp.gauss_beam(np.radians(10.0), lmax=lmax, pol=False)
+
+    with pytest.raises(ValueError, match="1D.*polarization"):
+        hp.harmonic_ud_grade(
+            input_maps, nside_out=nside_out, pol=True,
+            beam_window_in=beam_1d,
+            use_pixel_weights=False, pixwin=False,
+        )
+
+
+def test_beam_window_too_short_raises():
+    """beam_window shorter than lmax+1 should raise ValueError."""
+    nside_in = 32
+    nside_out = 16
+
+    input_map = np.ones(hp.nside2npix(nside_in))
+
+    with pytest.raises(ValueError, match="beam_window_in.*length"):
+        hp.harmonic_ud_grade(
+            input_map, nside_out=nside_out,
+            beam_window_in=np.ones(5),
+            use_pixel_weights=False, pixwin=False,
+        )
+
+    with pytest.raises(ValueError, match="beam_window_out.*length"):
+        hp.harmonic_ud_grade(
+            input_map, nside_out=nside_out,
+            beam_window_out=np.ones(5),
+            use_pixel_weights=False, pixwin=False,
+        )
+
+
+# ------------------------------------------------------------------
+# Tests for reconvolution (nside_out == nside_in)
+# ------------------------------------------------------------------
+
+
+def test_reconvolution_same_nside():
+    """harmonic_ud_grade with nside_out==nside_in should reconvolve to a new beam."""
+    nside = 32
+    fwhm_in = np.radians(5.0)
+    fwhm_out = np.radians(15.0)
+
+    rng = np.random.default_rng(42)
+    cl = np.zeros(3 * nside)
+    cl[2:] = 1.0
+    input_map = hp.synfast(cl, nside, new=True)
+
+    # Smooth with input beam
+    beamed_map = hp.smoothing(input_map, fwhm=fwhm_in)
+
+    # Reconvolve: deconvolve input beam, apply wider output beam
+    output = hp.harmonic_ud_grade(
+        beamed_map, nside_out=nside,
+        fwhm_in=fwhm_in, fwhm_out=fwhm_out,
+        use_pixel_weights=False, pixwin=False,
+    )
+
+    # Output should be smoother (wider beam) than the input beamed map
+    lmax = 3 * nside - 1
+    cl_input = hp.anafast(beamed_map, lmax=lmax)
+    cl_output = hp.anafast(output, lmax=lmax)
+
+    # High-ell power should be suppressed by the wider output beam
+    high_ell = slice(lmax // 2, None)
+    assert np.mean(cl_output[high_ell]) < 0.5 * np.mean(cl_input[high_ell]), \
+        "Reconvolution with wider beam should suppress high-ell power"
+
+
+def test_reconvolution_with_beam_window():
+    """Reconvolution with beam_window arrays should match FWHM-based result."""
+    nside = 32
+    fwhm_in = np.radians(5.0)
+    fwhm_out = np.radians(15.0)
+    lmax = 3 * nside - 1
+
+    rng = np.random.default_rng(42)
+    cl = np.zeros(3 * nside)
+    cl[2:] = 1.0
+    input_map = hp.synfast(cl, nside, new=True)
+
+    beamed_map = hp.smoothing(input_map, fwhm=fwhm_in)
+
+    beam_in = hp.gauss_beam(fwhm_in, lmax=lmax)
+    beam_out = hp.gauss_beam(fwhm_out, lmax=lmax)
+
+    out_fwhm = hp.harmonic_ud_grade(
+        beamed_map, nside_out=nside,
+        fwhm_in=fwhm_in, fwhm_out=fwhm_out,
+        use_pixel_weights=False, pixwin=False,
+    )
+    out_beam = hp.harmonic_ud_grade(
+        beamed_map, nside_out=nside,
+        beam_window_in=beam_in, beam_window_out=beam_out,
+        use_pixel_weights=False, pixwin=False,
+    )
+
+    np.testing.assert_allclose(out_fwhm, out_beam, rtol=1e-10)
+
