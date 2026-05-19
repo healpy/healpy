@@ -827,6 +827,18 @@ def harmonic_ud_grade(
         else:
             beam_window_out = beam_window_out[: lmax + 1, :]
 
+    # Validate FWHM values
+    if fwhm_in < 0:
+        raise ValueError(
+            f"fwhm_in must be >= 0 (got {fwhm_in}). "
+            "Pass 0 to indicate no input beam."
+        )
+    if fwhm_out is not None and fwhm_out < 0:
+        raise ValueError(
+            f"fwhm_out must be >= 0 or None (got {fwhm_out}). "
+            "Pass 0 to disable output beam, or None for the default Planck scaling."
+        )
+
     if use_pixel_weights:
         filename = "full_weights/healpix_full_weights_nside_%04d.fits" % nside_in
         if datapath is not None:
