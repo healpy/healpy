@@ -1,7 +1,8 @@
 *pyc
 *swp
 build
-*.so*
+*.so
+*.so.*
 *.ipynb
 !doc/*.ipynb
 ipython_log*
