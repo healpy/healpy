@@ -595,31 +595,38 @@ def _build_harmonic_transfer(nside_in, nside_out, lmax, apply_pixwin, fwhm_in, f
         fl[safe] *= pw_out[safe] / pw_in[safe]
         fl[~safe] = 0.0
 
-    if beam_window_in is not None:
-        bl_in = _extract_beam_column(beam_window_in, polar_component)
-        safe = bl_in > 0
-        new_fl = np.zeros_like(fl)
-        new_fl[safe] = fl[safe] / bl_in[safe]
-        fl = new_fl
-    elif fwhm_in > 0:
-        bl_in = gauss_beam(fwhm_in, lmax=lmax, pol=polar_component)
-        if polar_component:
-            bl_in = bl_in[:, 1]
+    bl_in = _resolve_beam_in(beam_window_in, fwhm_in, lmax, polar_component)
+    if bl_in is not None:
         safe = bl_in > 0
         new_fl = np.zeros_like(fl)
         new_fl[safe] = fl[safe] / bl_in[safe]
         fl = new_fl
 
-    if beam_window_out is not None:
-        bl_out = _extract_beam_column(beam_window_out, polar_component)
-        fl *= bl_out
-    elif fwhm_out > 0:
-        bl_out = gauss_beam(fwhm_out, lmax=lmax, pol=polar_component)
-        if polar_component:
-            bl_out = bl_out[:, 1]
+    bl_out = _resolve_beam_out(beam_window_out, fwhm_out, lmax, polar_component)
+    if bl_out is not None:
         fl *= bl_out
 
     return fl
+
+
+def _resolve_beam_in(beam_window, fwhm, lmax, polar_component):
+    """Return the input beam array (to be divided out) or None."""
+    if beam_window is not None:
+        return _extract_beam_column(beam_window, polar_component)
+    if fwhm > 0:
+        bl = gauss_beam(fwhm, lmax=lmax, pol=polar_component)
+        return bl[:, 1] if polar_component else bl
+    return None
+
+
+def _resolve_beam_out(beam_window, fwhm, lmax, polar_component):
+    """Return the output beam array (to be multiplied in) or None."""
+    if beam_window is not None:
+        return _extract_beam_column(beam_window, polar_component)
+    if fwhm > 0:
+        bl = gauss_beam(fwhm, lmax=lmax, pol=polar_component)
+        return bl[:, 1] if polar_component else bl
+    return None
 
 
 def _apply_harmonic_transfer(alm, fl_T, fl_P=None):
