@@ -51,8 +51,9 @@ MAX_NSIDE = (
     8192  # The maximum nside up to which most operations (e.g. map2alm) will work
 )
 
-# Planck 2013 XXIII Table 1: exact FWHM-to-pixel ratio (K ≈ 2.91)
-# Used to match the beam scaling across Planck resolutions.
+# Planck 2013 XXIII Table 1: the 100 GHz channel at Nside=64 has FWHM = 160 arcmin.
+# The FWHM-to-pixel-size ratio K = 160 arcmin / nside2resol(64) ≈ 2.91
+# is used consistently across all Planck resolution levels.
 PLANCK_K = 160.0 / (np.degrees(pixelfunc.nside2resol(64)) * 60)
 
 # Spherical harmonics transformation
