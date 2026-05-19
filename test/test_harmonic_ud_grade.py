@@ -454,3 +454,180 @@ def test_reconvolution_with_beam_window():
 
     np.testing.assert_allclose(out_fwhm, out_beam, rtol=1e-10)
 
+
+# ------------------------------------------------------------------
+# input_type='alm' tests
+# ------------------------------------------------------------------
+
+
+def test_input_type_alm_requires_nside_in():
+    """input_type='alm' without nside_in should raise ValueError."""
+    rng = np.random.default_rng(42)
+    alm = hp.synalm(np.ones(100), lmax=99)
+    with pytest.raises(ValueError, match="nside_in must be provided"):
+        hp.harmonic_ud_grade(alm, nside_out=16, input_type="alm")
+
+
+def test_input_type_invalid():
+    """Invalid input_type should raise ValueError."""
+    m = np.zeros(hp.nside2npix(32))
+    with pytest.raises(ValueError, match="input_type must be 'map' or 'alm'"):
+        hp.harmonic_ud_grade(m, nside_out=16, input_type="bad")
+
+
+def test_negative_fwhm_raises():
+    """Negative fwhm_in and fwhm_out should raise ValueError."""
+    m = np.zeros(hp.nside2npix(32))
+    with pytest.raises(ValueError, match="fwhm_in must be >= 0"):
+        hp.harmonic_ud_grade(m, nside_out=16, fwhm_in=-1.0,
+                             use_pixel_weights=False)
+    with pytest.raises(ValueError, match="fwhm_out must be >= 0 or None"):
+        hp.harmonic_ud_grade(m, nside_out=16, fwhm_out=-1.0,
+                             use_pixel_weights=False)
+
+
+def test_input_type_alm_matches_map_input():
+    """input_type='alm' should produce the same output as map input
+    when the map2alm step is exact (single-mode, no iteration)."""
+    nside_in = 64
+    nside_out = 16
+    ell = 10
+    lmax = 3 * nside_out - 1
+
+    # Single-mode alm is exact — no iterative SHT errors
+    alm = np.zeros(hp.Alm.getsize(lmax), dtype=np.complex128)
+    alm[hp.Alm.getidx(lmax, ell, 0)] = 1.0
+    m_in = hp.alm2map(alm, nside=nside_in, lmax=lmax, pixwin=False)
+
+    # Map input path (plain truncation, no pixwin, no beam)
+    m_out_map = hp.harmonic_ud_grade(
+        m_in, nside_out=nside_out, lmax=lmax,
+        pixwin=False, fwhm_out=0, use_pixel_weights=False,
+    )
+
+    # Alm input path (skips map2alm)
+    m_out_alm = hp.harmonic_ud_grade(
+        alm, nside_out=nside_out, nside_in=nside_in, lmax=lmax,
+        input_type="alm",
+        pixwin=False, fwhm_out=0,
+    )
+
+    np.testing.assert_allclose(m_out_map, m_out_alm, atol=1e-12)
+
+
+def test_input_type_alm_with_pixwin():
+    """input_type='alm' with pixwin should apply pixel window transfer."""
+    nside_in = 64
+    nside_out = 16
+    lmax = 3 * nside_out - 1
+
+    rng = np.random.default_rng(42)
+    cl = np.zeros(lmax + 1)
+    cl[2:] = 1.0 / np.arange(2, lmax + 1) ** 2
+    alm = hp.synalm(cl, lmax=lmax)
+
+    # With pixwin
+    m_out_pw = hp.harmonic_ud_grade(
+        alm, nside_out=nside_out, nside_in=nside_in,
+        input_type="alm",
+        pixwin=True, fwhm_out=0,
+    )
+
+    # Without pixwin
+    m_out_no_pw = hp.harmonic_ud_grade(
+        alm, nside_out=nside_out, nside_in=nside_in,
+        input_type="alm",
+        pixwin=False, fwhm_out=0,
+    )
+
+    # Pixel window correction should change the result
+    assert not np.allclose(m_out_pw, m_out_no_pw, atol=1e-10)
+
+
+def test_input_type_alm_polarized():
+    """input_type='alm' with polarized 3-component input."""
+    nside_in = 32
+    nside_out = 16
+    lmax = 3 * nside_out - 1
+
+    alm = np.zeros(hp.Alm.getsize(lmax), dtype=np.complex128)
+    alm[hp.Alm.getidx(lmax, 5, 0)] = 1.0
+    alm_teb = [alm, alm * 0.5, alm * 0.3]
+
+    output = hp.harmonic_ud_grade(
+        alm_teb, nside_out=nside_out, nside_in=nside_in,
+        input_type="alm", pol=True,
+        pixwin=True, fwhm_out=0,
+    )
+
+    assert output.shape == (3, hp.nside2npix(nside_out))
+    # T, E, B should differ because polarization pixel window differs from T
+    assert not np.allclose(output[0], output[1])
+
+
+def test_input_type_alm_with_beam():
+    """input_type='alm' should correctly apply beam transfer functions."""
+    nside_in = 64
+    nside_out = 32
+    lmax = 3 * nside_out - 1
+
+    rng = np.random.default_rng(42)
+    cl = np.zeros(lmax + 1)
+    cl[2:] = 1.0 / np.arange(2, lmax + 1) ** 2
+    alm = hp.synalm(cl, lmax=lmax)
+
+    fwhm_in = np.radians(30.0)
+    fwhm_out = np.radians(60.0)
+
+    # Map path: map -> map2alm -> transfer -> alm2map
+    m_in = hp.alm2map(alm, nside=nside_in, lmax=lmax, pixwin=False)
+    m_out_map = hp.harmonic_ud_grade(
+        m_in, nside_out=nside_out,
+        fwhm_in=fwhm_in, fwhm_out=fwhm_out,
+        pixwin=False, use_pixel_weights=False,
+    )
+
+    # Alm path: alm -> transfer -> alm2map (no map2alm rounding)
+    m_out_alm = hp.harmonic_ud_grade(
+        alm, nside_out=nside_out, nside_in=nside_in,
+        input_type="alm",
+        fwhm_in=fwhm_in, fwhm_out=fwhm_out,
+        pixwin=False,
+    )
+
+    # Should be close; difference only from map2alm round-trip in map path
+    np.testing.assert_allclose(m_out_map, m_out_alm, atol=1e-4)
+
+
+def test_input_type_alm_same_nside_reconvolution():
+    """input_type='alm' with same nside should do beam reconvolution."""
+    nside = 32
+    lmax = 3 * nside - 1
+
+    rng = np.random.default_rng(42)
+    cl = np.zeros(lmax + 1)
+    cl[2:] = 1.0 / np.arange(2, lmax + 1) ** 2
+    alm = hp.synalm(cl, lmax=lmax)
+
+    # Use small beams so the division doesn't overflow at high ℓ
+    fwhm_in = np.radians(10.0)
+    fwhm_out = np.radians(30.0)
+
+    m_out = hp.harmonic_ud_grade(
+        alm, nside_out=nside, nside_in=nside,
+        input_type="alm",
+        fwhm_in=fwhm_in, fwhm_out=fwhm_out,
+        pixwin=False,
+    )
+
+    # Output should be at the same nside
+    assert m_out.shape == (hp.nside2npix(nside),)
+
+    # The output beam should be broader than the input
+    # Compare power: smoothing with a wider beam reduces high-ell power
+    m_original = hp.alm2map(alm, nside=nside, lmax=lmax, pixwin=False)
+    cl_original = hp.anafast(m_original, lmax=lmax)
+    cl_out = hp.anafast(m_out, lmax=lmax)
+    # At high ell, reconvolved power should be suppressed
+    assert cl_out[lmax] < cl_original[lmax]
+

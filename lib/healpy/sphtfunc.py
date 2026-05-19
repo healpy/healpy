@@ -663,6 +663,7 @@ def _apply_harmonic_transfer(alm, fl_T, fl_P=None):
 def harmonic_ud_grade(
     map_in,
     nside_out,
+    nside_in=None,
     lmax=None,
     mmax=None,
     iter=None,
@@ -676,6 +677,7 @@ def harmonic_ud_grade(
     datapath=None,
     use_pixel_weights=True,
     dtype=None,
+    input_type="map",
 ):
     r"""Change map NSIDE using spherical-harmonic transforms.
 
@@ -696,9 +698,15 @@ def harmonic_ud_grade(
     Parameters
     ----------
     map_in : array-like, shape (Npix,) or (n, Npix)
-      Input map(s), in RING ordering.
+      Input map(s), in RING ordering.  When ``input_type='alm'``,
+      this is interpreted as :math:`a_{\\ell m}` coefficients instead
+      (see ``input_type`` below).
     nside_out : int
       Desired NSIDE of the output map(s).
+    nside_in : int, optional
+      NSIDE of the input.  Required when ``input_type='alm'`` (cannot
+      be inferred from :math:`a_{\\ell m}`).  Ignored when
+      ``input_type='map'`` (inferred from the input map).
     lmax : int, optional
       Maximum multipole to retain. If None, defaults to
       ``min(3 * nside_out - 1, 3 * nside_in - 1)``.
@@ -763,6 +771,17 @@ def harmonic_ud_grade(
       that ``lmax <= 1.5 * nside_in``.
     dtype : dtype, optional
       If provided, cast output map to this dtype.
+    input_type : {'map', 'alm'}, optional
+      Whether ``map_in`` is a pixel-space map (``'map'``, default) or
+      :math:`a_{\\ell m}` coefficients (``'alm'``).  When ``'alm'``,
+      the ``map2alm`` step is skipped: the transfer function is applied
+      directly to the input :math:`a_{\\ell m}` and synthesised at
+      ``nside_out``.  This is useful when you already have
+      :math:`a_{\\ell m}` from a previous SHT and want to avoid a
+      redundant forward transform.  When ``input_type='alm'``,
+      ``nside_in`` must be provided explicitly, and the ``iter``,
+      ``use_weights``, ``use_pixel_weights``, and ``datapath``
+      parameters are ignored.
 
     Returns
     -------
@@ -786,9 +805,29 @@ def harmonic_ud_grade(
     *`fwhm_out` default:* computed as ``PLANCK_K * nside2resol(nside_out)``,
     matching the exact Planck scaling (see parameter description above).
     """
-    maps = ma_to_array(map_in)
-    info = maptype(maps)
-    nside_in = pixelfunc.get_nside(maps)
+    if input_type not in ("map", "alm"):
+        raise ValueError(f"input_type must be 'map' or 'alm', got {input_type!r}")
+
+    if input_type == "alm":
+        if nside_in is None:
+            raise ValueError(
+                "nside_in must be provided when input_type='alm' "
+                "(cannot be inferred from a_lm coefficients)"
+            )
+        pixelfunc.check_nside(nside_in)
+        alm = map_in  # input is already a_lm
+        info = None  # not applicable; determine pol from alm shape
+        # Detect polarized input: list/tuple of 3 arrays, or 2D with 3 rows
+        if isinstance(alm, (list, tuple)) and len(alm) == 3:
+            is_polarized = pol
+        elif isinstance(alm, np.ndarray) and alm.ndim == 2 and alm.shape[0] == 3:
+            is_polarized = pol
+        else:
+            is_polarized = False
+    else:
+        maps = ma_to_array(map_in)
+        info = maptype(maps)
+        nside_in = pixelfunc.get_nside(maps)
 
     pixelfunc.check_nside(nside_out)
     check_max_nside(nside_in)
@@ -849,7 +888,7 @@ def harmonic_ud_grade(
             "Pass 0 to disable output beam, or None for the default Planck scaling."
         )
 
-    if use_pixel_weights:
+    if use_pixel_weights and input_type == "map":
         filename = "full_weights/healpix_full_weights_nside_%04d.fits" % nside_in
         if datapath is not None:
             pixel_weights_filename = os.path.join(datapath, filename)
@@ -866,6 +905,13 @@ def harmonic_ud_grade(
             ), data.conf.set_temp("remote_timeout", 30):
                 data.get_pkg_data_filename(filename, package="healpy")
 
+    # Determine polarization state for output alm2map
+    if input_type == "alm":
+        # Already set above during input_type='alm' validation
+        pass
+    else:
+        is_polarized = pol and info == 3
+
     # Build harmonic transfer functions (Eq. 1)
     need_transfer = (pixwin or fwhm_in > 0 or fwhm_out > 0
                      or beam_window_in is not None or beam_window_out is not None)
@@ -875,7 +921,6 @@ def harmonic_ud_grade(
             beam_window_in=beam_window_in, beam_window_out=beam_window_out,
             polar_component=False,
         )
-        is_polarized = pol and info == 3
         fl_P = (
             _build_harmonic_transfer(
                 nside_in, nside_out, lmax, pixwin, fwhm_in, fwhm_out,
@@ -886,7 +931,14 @@ def harmonic_ud_grade(
             else None
         )
 
-    if pol or info in (0, 1):
+    if input_type == "alm":
+        # Skip map2alm — input is already a_lm
+        if need_transfer:
+            alm = _apply_harmonic_transfer(alm, fl_T, fl_P)
+        output = alm2map(
+            alm, nside=nside_out, lmax=lmax, mmax=mmax, pixwin=False, pol=is_polarized
+        )
+    elif pol or info in (0, 1):
         alm = map2alm(
             maps,
             lmax=lmax,
