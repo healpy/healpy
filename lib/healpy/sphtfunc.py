@@ -838,6 +838,10 @@ def harmonic_ud_grade(
     if mmax is None:
         mmax = lmax
     if iter is None:
+        # HEALPix guidance: per-pixel weights achieve near-machine-precision
+        # SHT accuracy without iteration when lmax <= 1.5 * nside_in.
+        # Beyond that regime, iterative map2alm (typically 3 iterations)
+        # is needed to suppress pixelisation artefacts.
         iter = 0 if use_pixel_weights and lmax <= 1.5 * nside_in else 3
 
     # Resolve fwhm_out default: Planck FWHM-to-pixel ratio at output resolution
