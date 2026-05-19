@@ -715,14 +715,16 @@ def harmonic_ud_grade(
       input :math:`a_{\ell m}`.  Default: ``0`` (no input beam).
     fwhm_out : float or None, optional
       FWHM in **radians** of a Gaussian beam to apply to the output.
-      Default: ``None``, which auto-computes a beam using the Planck
-      FWHM-to-pixel ratio::
+      The recommended default is ``None``, which auto-computes a beam
+      using the Planck FWHM-to-pixel ratio::
 
           fwhm_out = PLANCK_K * nside2resol(nside_out)
 
       where ``PLANCK_K = 160.0 / (degrees(nside2resol(64)) * 60)``
       (≈ 2.91).  This matches the exact scaling used consistently
-      across all Planck resolutions.  Pass ``0`` to disable.
+      across all Planck resolutions and provides a safe smoothing
+      that suppresses ringing at the new pixel scale.  Pass ``0`` to
+      disable output smoothing (plain bandlimit truncation).
     beam_window_in : array-like or None, optional
       Custom input beam transfer function to deconvolve, overriding
       ``fwhm_in``.  Follows the format returned by ``gauss_beam``:
