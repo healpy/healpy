@@ -695,17 +695,20 @@ def harmonic_ud_grade(
     where :math:`p_\ell` is the HEALPix pixel window function and
     :math:`b_\ell` is a beam transfer function (Gaussian or custom).
 
+    The transfer is applied as a **single-step ratio**, so there is no
+    intermediate deconvolution that would amplify high-:math:`\ell` noise.
+
     Parameters
     ----------
     map_in : array-like, shape (Npix,) or (n, Npix)
       Input map(s), in RING ordering.  When ``input_type='alm'``,
-      this is interpreted as :math:`a_{\\ell m}` coefficients instead
+      this is interpreted as :math:`a_{\ell m}` coefficients instead
       (see ``input_type`` below).
     nside_out : int
       Desired NSIDE of the output map(s).
     nside_in : int, optional
       NSIDE of the input.  Required when ``input_type='alm'`` (cannot
-      be inferred from :math:`a_{\\ell m}`).  Ignored when
+      be inferred from :math:`a_{\ell m}`).  Ignored when
       ``input_type='map'`` (inferred from the input map).
     lmax : int, optional
       Maximum multipole to retain. If None, defaults to
@@ -765,19 +768,15 @@ def harmonic_ud_grade(
       if they are unavailable, an exception is raised instead of silently
       falling back to an unweighted transform. Pass
       ``use_pixel_weights=False`` to disable this behavior explicitly.
-      Note that pixel weights by themselves are not expected to give
-      near-machine-precision transforms without iteration all the way to
-      ``lmax = 3 * nside_out - 1`` unless the downgrade is strong enough
-      that ``lmax <= 1.5 * nside_in``.
     dtype : dtype, optional
       If provided, cast output map to this dtype.
     input_type : {'map', 'alm'}, optional
       Whether ``map_in`` is a pixel-space map (``'map'``, default) or
-      :math:`a_{\\ell m}` coefficients (``'alm'``).  When ``'alm'``,
+      :math:`a_{\ell m}` coefficients (``'alm'``).  When ``'alm'``,
       the ``map2alm`` step is skipped: the transfer function is applied
-      directly to the input :math:`a_{\\ell m}` and synthesised at
+      directly to the input :math:`a_{\ell m}` and synthesised at
       ``nside_out``.  This is useful when you already have
-      :math:`a_{\\ell m}` from a previous SHT and want to avoid a
+      :math:`a_{\ell m}` from a previous SHT and want to avoid a
       redundant forward transform.  When ``input_type='alm'``,
       ``nside_in`` must be provided explicitly, and the ``iter``,
       ``use_weights``, ``use_pixel_weights``, and ``datapath``
@@ -790,20 +789,104 @@ def harmonic_ud_grade(
 
     Notes
     -----
-    To reproduce the behaviour prior to the addition of pixel-window and
-    beam support (plain bandlimit truncation), pass
-    ``pixwin=False, fwhm_out=0``.
 
-    When ``nside_out == nside_in``, the function performs beam
-    reconvolution: it deconvolves the input beam (specified via
-    ``fwhm_in`` or ``beam_window_in``) and applies the output beam
-    (specified via ``fwhm_out`` or ``beam_window_out``).  This is
-    useful for changing the effective resolution of a map while
-    remaining at the same pixelisation, similar to the HEALPix
-    ``process_alm`` facility.
+    **When to use this function:** ``harmonic_ud_grade`` is the
+    recommended way to change a HEALPix map's resolution when the
+    signal is **diffuse** and well-described by a power spectrum
+    (e.g. CMB, Galactic foregrounds).  It avoids the aliasing and
+    ringing artefacts that ``ud_grade`` (pixel averaging) can
+    introduce for band-limited signals.  For maps dominated by
+    **point sources** or sharp features (e.g. source catalogs,
+    masks), ``ud_grade`` may be more appropriate — see the
+    comparison tutorial linked below.
 
-    *`fwhm_out` default:* computed as ``PLANCK_K * nside2resol(nside_out)``,
-    matching the exact Planck scaling (see parameter description above).
+    **Quick-start examples:**
+
+    Downgrade a CMB temperature map from NSIDE 256 to 64 with the
+    default Planck-scaled output smoothing::
+
+        m_out = hp.harmonic_ud_grade(m_in, nside_out=64)
+
+    Downgrade with explicit input beam and a custom output beam::
+
+        m_out = hp.harmonic_ud_grade(
+            m_in, nside_out=64,
+            fwhm_in=np.radians(30), fwhm_out=np.radians(60),
+        )
+
+    Reconvolve a map from a 10-arcmin beam to a 30-arcmin beam
+    at the same NSIDE (no resolution change)::
+
+        m_out = hp.harmonic_ud_grade(
+            m_in, nside_out=nside,
+            fwhm_in=np.radians(10/60), fwhm_out=np.radians(30/60),
+        )
+
+    Pass pre-computed :math:`a_{\ell m}` to skip the forward SHT::
+
+        m_out = hp.harmonic_ud_grade(
+            alm, nside_out=64, nside_in=256, input_type='alm',
+        )
+
+    **Best practices:**
+
+    - **Always specify ``fwhm_in``** when your input map has been
+      smoothed with a known beam.  If you don't, the output will
+      carry the input beam's attenuation into the new resolution
+      without correction, which can bias power-spectrum estimates.
+
+    - **Leave ``fwhm_out`` at its default (``None``)** unless you
+      need a specific output beam.  The default applies a mild
+      Planck-scaled smoothing that suppresses ringing at the new
+      pixel scale, which is almost always what you want for science.
+
+    - **Set ``pixwin=False, fwhm_out=0``** only if you want plain
+      bandlimit truncation with no pixel-window correction and no
+      output smoothing.  This reproduces the behaviour of the
+      function before pixel-window and beam support were added.
+
+    - **Use ``input_type='alm'``** when you already have
+      :math:`a_{\ell m}` from a previous analysis step (e.g.
+      component separation, map-making).  This avoids a redundant
+      ``map2alm`` round-trip and is both faster and more accurate.
+
+    - **Pixel weights and iteration:** The default
+      ``use_pixel_weights=True`` with automatic iteration provides
+      the most accurate :math:`a_{\ell m}` for band-limited signals.
+      For reconvolution at the same NSIDE, the small difference
+      between pixel-weighted and ring-weighted SHT may produce
+      a structured residual; use ``use_pixel_weights=False`` if you
+      need exact agreement with a ring-weighted implementation.
+
+    - **Noise maps:** If the input is a noise realisation (white or
+      coloured), pass ``pixwin=False`` because noise is a pixel-level
+      quantity — deconvolving the pixel window would incorrectly
+      amplify the noise at high :math:`\ell`.
+
+    **Reconvolution at the same NSIDE:** When ``nside_out == nside_in``,
+    the function performs beam reconvolution — deconvolving the input
+    beam and applying the output beam while keeping the same pixelisation.
+    This is similar to the HEALPix ``process_alm`` facility.
+
+    **Tutorials:**
+
+    - `harmonic_ud_grade vs ud_grade comparison
+      <https://zonca.dev/posts/2026-05-05-healpy-harmonic-ud-grade/>`_:
+      demonstrates aliasing suppression, noise handling, and
+      Gibbs-ringing tradeoffs with visual examples.
+
+    - `harmonic_ud_grade vs skytools comparison
+      <https://zonca.dev/posts/2026-05-05-healpy-skytools-change-resolution/>`_:
+      side-by-side API comparison with ``skytools.change_resolution``,
+      including custom beam transfer functions, pixel-window handling,
+      and ``input_type='alm'``.
+
+    See Also
+    --------
+    ud_grade : Change resolution by pixel averaging (faster, but
+        can introduce aliasing for band-limited signals).
+    gauss_beam : Compute Gaussian beam transfer functions for use
+        with ``beam_window_in`` / ``beam_window_out``.
     """
     if input_type not in ("map", "alm"):
         raise ValueError(f"input_type must be 'map' or 'alm', got {input_type!r}")
