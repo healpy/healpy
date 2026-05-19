@@ -623,7 +623,7 @@ def _build_harmonic_transfer(nside_in, nside_out, lmax, apply_pixwin, fwhm_in, f
 
 
 def _apply_harmonic_transfer(alm, fl_T, fl_P=None):
-    """Apply per-ℓ transfer function(s) to alm, in place.
+    """Apply per-ℓ transfer function(s) to alm and return the result.
 
     Parameters
     ----------
