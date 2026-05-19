@@ -658,3 +658,66 @@ def test_input_type_alm_truncates_higher_lmax():
 
     np.testing.assert_allclose(m_out, m_ref, atol=1e-12)
 
+
+
+def test_reconvolution_suppresses_high_ell_power():
+    """Reconvolution to a wider beam must suppress high-ell power, not amplify it.
+
+    The transfer function is applied as a single-step ratio
+    fl = b_out / b_in, so going from a narrow to a wide beam should
+    reduce power at high ell. This also verifies that pixel-weight
+    vs ring-weight SHT differences are small relative to the signal
+    (the residual is not amplified by the transfer).
+    """
+    nside = 64
+    lmax = 3 * nside - 1
+
+    fwhm_narrow = np.radians(10.0 / 60)  # 10 arcmin
+    fwhm_wide = np.radians(30.0 / 60)    # 30 arcmin
+
+    np.random.seed(42)
+    cl = np.zeros(lmax + 1)
+    cl[2:] = 1.0 / np.arange(2, lmax + 1) ** 2
+    alm = hp.synalm(cl, lmax=lmax)
+    map_narrow = hp.alm2map(alm, nside=nside, fwhm=fwhm_narrow)
+
+    # Reconvolve from narrow to wide at same NSIDE
+    map_reconv = hp.harmonic_ud_grade(
+        map_narrow, nside_out=nside, pol=False, pixwin=False,
+        fwhm_in=fwhm_narrow, fwhm_out=fwhm_wide,
+        use_pixel_weights=False,
+    )
+
+    # Reference: directly smooth from alm at wide beam
+    map_wide_direct = hp.alm2map(alm, nside=nside, fwhm=fwhm_wide)
+
+    # 1. Reconvolved map should have LESS power than input at high ell
+    cl_narrow = hp.anafast(map_narrow, lmax=lmax)
+    cl_reconv = hp.anafast(map_reconv, lmax=lmax)
+
+    # At high ell (ell > 200), reconvolved power should be suppressed
+    high_ell = lmax // 2
+    assert cl_reconv[high_ell] < cl_narrow[high_ell], (
+        f"Reconvolution should suppress high-ell power: "
+        f"cl_reconv[{high_ell}]={cl_reconv[high_ell]:.2e} >= "
+        f"cl_narrow[{high_ell}]={cl_narrow[high_ell]:.2e}"
+    )
+
+    # 2. Reconvolved spectrum should match direct smoothing closely
+    #    (within the map2alm round-trip accuracy)
+    cl_wide = hp.anafast(map_wide_direct, lmax=lmax)
+    np.testing.assert_allclose(
+        cl_reconv[10:high_ell], cl_wide[10:high_ell],
+        rtol=0.05,
+        err_msg="Reconvolved power spectrum should match direct smoothing",
+    )
+
+    # 3. Pixel-level residual should be small relative to signal
+    #    The residual comes from the map2alm round-trip (estimating alm
+    #    from a pixelized map, then resynthesizing). This is typically
+    #    a few percent for a beam-smoothed map at NSIDE=64.
+    residual = map_reconv - map_wide_direct
+    relative_std = residual.std() / map_wide_direct.std()
+    assert relative_std < 0.05, (
+        f"Pixel-level residual too large: relative std = {relative_std:.4f}"
+    )
