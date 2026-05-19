@@ -631,3 +631,30 @@ def test_input_type_alm_same_nside_reconvolution():
     # At high ell, reconvolved power should be suppressed
     assert cl_out[lmax] < cl_original[lmax]
 
+
+def test_input_type_alm_truncates_higher_lmax():
+    """input_type='alm' with alm lmax > output lmax should truncate via resize_alm."""
+    nside_in = 256
+    nside_out = 64
+    lmax_out = 3 * nside_out - 1
+
+    np.random.seed(42)
+    cl = np.zeros(3 * nside_in)
+    cl[2:] = 1.0 / np.arange(2, 3 * nside_in) ** 2
+    # Create alm at lmax_in = 3*nside_in - 1, much higher than lmax_out
+    alm = hp.synalm(cl, lmax=3 * nside_in - 1)
+
+    assert hp.Alm.getlmax(len(alm)) > lmax_out  # alm has higher lmax
+
+    # Should work: truncates alm from high lmax to lmax_out
+    m_out = hp.harmonic_ud_grade(
+        alm, nside_out=nside_out, nside_in=nside_in,
+        input_type="alm", pol=False, pixwin=False, fwhm_out=0,
+    )
+
+    # Verify by manually truncating and calling alm2map
+    alm_truncated = hp.resize_alm(alm, 3 * nside_in - 1, 3 * nside_in - 1, lmax_out, lmax_out)
+    m_ref = hp.alm2map(alm_truncated, nside=nside_out, lmax=lmax_out, pixwin=False)
+
+    np.testing.assert_allclose(m_out, m_ref, atol=1e-12)
+

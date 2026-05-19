@@ -937,6 +937,15 @@ def harmonic_ud_grade(
 
     if input_type == "alm":
         # Skip map2alm — input is already a_lm
+        # Truncate alm to output lmax if needed (bandlimit)
+        alm_lmax = Alm.getlmax(
+            len(alm) if not isinstance(alm, (list, tuple)) else len(alm[0])
+        )
+        if alm_lmax is None:
+            raise ValueError("input alm array size is not a valid a_lm size")
+        if alm_lmax > lmax:
+            # Assume mmax_in = alm_lmax (standard convention)
+            alm = resize_alm(alm, alm_lmax, alm_lmax, lmax, mmax)
         if need_transfer:
             alm = _apply_harmonic_transfer(alm, fl_T, fl_P)
         output = alm2map(
