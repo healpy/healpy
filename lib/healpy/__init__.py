@@ -69,6 +69,7 @@ from .sphtfunc import (
     alm2map,
     harmonic_ud_grade,
     effective_resolution_fwhm,
+    PLANCK_K,
     Alm,
     synalm,
     synfast,

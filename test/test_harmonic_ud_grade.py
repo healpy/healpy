@@ -256,18 +256,24 @@ def test_harmonic_ud_grade_upgrading_caps_lmax():
     Upgrading from NSIDE 16 to 32 should not try to extract modes above
     3*16-1=47.  Without capping, map2alm would attempt to recover
     modes up to 3*32-1=95 which do not exist in the input, causing
-    errors or noisy results.
+    errors or noisy results. The output must also preserve a low-ell
+    mode rather than just having the correct nside.
     """
     nside_in = 16
     nside_out = 32
-    input_map = _single_mode_map(nside_in, ell=10)
-    
-    # Should not raise an error or complain about lmax > lmax_in
+    ell = 10
+    input_map = _single_mode_map(nside_in, ell=ell)
+    expected = _single_mode_map(nside_out, ell=ell)
+
     output = hp.harmonic_ud_grade(
         input_map, nside_out=nside_out, use_pixel_weights=False,
         pixwin=False, fwhm_out=0,
     )
     assert hp.get_nside(output) == nside_out
+    # The low-ell mode is below the input bandlimit and must survive
+    # upgrading. The map2alm round-trip at coarse nside without pixel
+    # weights leaves a ~1% pixelization residual, so use a 2% tolerance.
+    np.testing.assert_allclose(output, expected, rtol=2e-2, atol=2e-2)
 
 
 def test_harmonic_ud_grade_pol_beam():
@@ -699,6 +705,70 @@ def test_input_type_alm_polarized():
     assert not np.allclose(output[0], output[1])
 
 
+def test_input_type_alm_does_not_mutate_input():
+    """input_type='alm' must not modify the caller's input arrays.
+
+    Regression test: an earlier version of _apply_harmonic_transfer
+    assigned to alm[0], alm[1], alm[2] in place, mutating the user's
+    TEB list through aliasing. Now the function must return a new list
+    and leave the inputs untouched.
+    """
+    nside_in = 32
+    nside_out = 16
+    lmax = 3 * nside_out - 1
+
+    base = np.zeros(hp.Alm.getsize(lmax), dtype=np.complex128)
+    base[hp.Alm.getidx(lmax, 5, 0)] = 1.0
+    alm_teb = [base.copy(), (base * 0.5).copy(), (base * 0.3).copy()]
+    expected = [a.copy() for a in alm_teb]
+
+    hp.harmonic_ud_grade(
+        alm_teb, nside_out=nside_out, nside_in=nside_in,
+        input_type="alm", pol=True,
+        fwhm_in=np.radians(5.0), fwhm_out=np.radians(10.0),
+        pixwin=True,
+    )
+
+    for got, want in zip(alm_teb, expected):
+        np.testing.assert_array_equal(got, want)
+
+    # Same check for the 1D / spin-0 path
+    alm_1d = base.copy()
+    snapshot = alm_1d.copy()
+    hp.harmonic_ud_grade(
+        alm_1d, nside_out=nside_out, nside_in=nside_in,
+        input_type="alm", pol=False,
+        fwhm_in=np.radians(5.0), fwhm_out=np.radians(10.0),
+        pixwin=True,
+    )
+    np.testing.assert_array_equal(alm_1d, snapshot)
+
+
+def test_input_type_alm_rejects_unsupported_multi_alm():
+    """input_type='alm' rejects 2 or 4+ alm arrays with a clear ValueError.
+
+    A list of 2 (T+E) or 4+ alm arrays has no map-path analogue (the map
+    path supports either 1 spin-0 map or a TQU triplet), so the function
+    must reject it explicitly rather than silently demoting to spin-0.
+    """
+    nside_in = 32
+    nside_out = 16
+    lmax = 3 * nside_out - 1
+    base = np.zeros(hp.Alm.getsize(lmax), dtype=np.complex128)
+
+    with pytest.raises(ValueError, match="supports a single 1D alm array or a TEB triplet"):
+        hp.harmonic_ud_grade(
+            [base, base], nside_out=nside_out, nside_in=nside_in,
+            input_type="alm",
+        )
+
+    with pytest.raises(ValueError, match="supports a single 1D alm array or a TEB triplet"):
+        hp.harmonic_ud_grade(
+            [base, base, base, base], nside_out=nside_out, nside_in=nside_in,
+            input_type="alm",
+        )
+
+
 def test_input_type_alm_with_beam():
     """input_type='alm' correctly applies beam transfer functions.
 
@@ -791,11 +861,17 @@ def test_input_type_alm_truncates_higher_lmax():
     nside_out = 64
     lmax_out = 3 * nside_out - 1
 
-    np.random.seed(42)
     cl = np.zeros(3 * nside_in)
     cl[2:] = 1.0 / np.arange(2, 3 * nside_in) ** 2
-    # Create alm at lmax_in = 3*nside_in - 1, much higher than lmax_out
-    alm = hp.synalm(cl, lmax=3 * nside_in - 1)
+    # synalm uses the global numpy RNG; save and restore around the call
+    # so this test doesn't perturb state seen by other tests.
+    saved_state = np.random.get_state()
+    try:
+        np.random.seed(42)
+        # Create alm at lmax_in = 3*nside_in - 1, much higher than lmax_out
+        alm = hp.synalm(cl, lmax=3 * nside_in - 1)
+    finally:
+        np.random.set_state(saved_state)
 
     assert hp.Alm.getlmax(len(alm)) > lmax_out  # alm has higher lmax
 
@@ -827,10 +903,14 @@ def test_reconvolution_suppresses_high_ell_power():
     fwhm_narrow = np.radians(10.0 / 60)  # 10 arcmin
     fwhm_wide = np.radians(30.0 / 60)    # 30 arcmin
 
-    np.random.seed(42)
     cl = np.zeros(lmax + 1)
     cl[2:] = 1.0 / np.arange(2, lmax + 1) ** 2
-    alm = hp.synalm(cl, lmax=lmax)
+    saved_state = np.random.get_state()
+    try:
+        np.random.seed(42)
+        alm = hp.synalm(cl, lmax=lmax)
+    finally:
+        np.random.set_state(saved_state)
     map_narrow = hp.alm2map(alm, nside=nside, fwhm=fwhm_narrow)
 
     # Reconvolve from narrow to wide at same NSIDE
