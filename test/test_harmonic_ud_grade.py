@@ -143,22 +143,22 @@ def test_fwhm_out_smooths_output():
 
 
 def test_fwhm_out_default_applies_beam():
-    """Default fwhm_out=None auto-computes 3*nside2resol and differs from 0."""
+    """Passing fwhm_out=None auto-computes Planck-scaled beam and differs from 0."""
     nside_in = 128
     nside_out = 32
     input_map = _single_mode_map(nside_in, ell=20)
 
-    out_default = hp.harmonic_ud_grade(
+    out_auto = hp.harmonic_ud_grade(
         input_map, nside_out=nside_out, use_pixel_weights=False,
-        pixwin=False,  # fwhm_out defaults to None = auto
+        pixwin=False, fwhm_out=None,  # auto Planck-scaled beam
     )
     out_no_beam = hp.harmonic_ud_grade(
         input_map, nside_out=nside_out, use_pixel_weights=False,
-        pixwin=False, fwhm_out=0,
+        pixwin=False, fwhm_out=0,  # no output beam (default)
     )
 
-    assert not np.allclose(out_default, out_no_beam, rtol=1e-4), \
-        "Default fwhm_out should apply a beam"
+    assert not np.allclose(out_auto, out_no_beam, rtol=1e-4), \
+        "fwhm_out=None should apply a Planck-scaled beam"
 
 
 def test_fwhm_in_deconvolves_input_beam():

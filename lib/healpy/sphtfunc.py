@@ -670,7 +670,7 @@ def harmonic_ud_grade(
     pol=True,
     pixwin=True,
     fwhm_in=0,
-    fwhm_out=None,
+    fwhm_out=0,
     beam_window_in=None,
     beam_window_out=None,
     use_weights=False,
@@ -734,16 +734,15 @@ def harmonic_ud_grade(
       input :math:`a_{\ell m}`.  Default: ``0`` (no input beam).
     fwhm_out : float or None, optional
       FWHM in **radians** of a Gaussian beam to apply to the output.
-      The recommended default is ``None``, which auto-computes a beam
-      using the Planck FWHM-to-pixel ratio::
+      Default: ``0`` (no output beam — plain bandlimit truncation).
+      Pass ``None`` to auto-compute a Planck-scaled output beam::
 
           fwhm_out = PLANCK_K * nside2resol(nside_out)
 
       where ``PLANCK_K = 160.0 / (degrees(nside2resol(64)) * 60)``
       (≈ 2.91).  This matches the exact scaling used consistently
       across all Planck resolutions and provides a safe smoothing
-      that suppresses ringing at the new pixel scale.  Pass ``0`` to
-      disable output smoothing (plain bandlimit truncation).
+      that suppresses ringing at the new pixel scale.
     beam_window_in : array-like or None, optional
       Custom input beam transfer function to deconvolve, overriding
       ``fwhm_in``.  Follows the format returned by ``gauss_beam``:
@@ -835,15 +834,13 @@ def harmonic_ud_grade(
       carry the input beam's attenuation into the new resolution
       without correction, which can bias power-spectrum estimates.
 
-    - **Leave ``fwhm_out`` at its default (``None``)** unless you
-      need a specific output beam.  The default applies a mild
-      Planck-scaled smoothing that suppresses ringing at the new
-      pixel scale, which is almost always what you want for science.
+    - **Leave ``fwhm_out`` at its default (``0``)** for plain bandlimit
+      truncation.  Pass ``fwhm_out=None`` if you want the Planck-scaled
+      auto-smoothing that suppresses ringing at the new pixel scale.
 
-    - **Set ``pixwin=False, fwhm_out=0``** only if you want plain
-      bandlimit truncation with no pixel-window correction and no
-      output smoothing.  This reproduces the behaviour of the
-      function before pixel-window and beam support were added.
+    - **Use ``pixwin=False``** if you want no pixel-window correction
+      at all (equivalent to the function's behaviour before pixel-window
+      and beam support were added).
 
     - **Use ``input_type='alm'``** when you already have
       :math:`a_{\ell m}` from a previous analysis step (e.g.
