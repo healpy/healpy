@@ -7,6 +7,12 @@ import healpy as hp
 
 
 def _single_mode_map(nside, ell, emm=0):
+    """Create a map containing a single spherical-harmonic mode.
+
+    Generates a HEALPix map at *nside* with a single (ell, emm) mode
+    set to unit amplitude.  Useful for controlled tests where the
+    expected output can be computed analytically.
+    """
     alm = np.zeros(hp.Alm.getsize(ell), dtype=np.complex128)
     alm[hp.Alm.getidx(ell, ell, emm)] = 1.0
     return hp.alm2map(alm, nside=nside, pixwin=False)
@@ -18,7 +24,12 @@ def _single_mode_map(nside, ell, emm=0):
 
 
 def test_harmonic_ud_grade_preserves_low_ell_mode():
-    """Plain clipping preserves a low-ell mode below the output bandlimit."""
+    """Plain bandlimit truncation preserves a low-ell mode below the output Nyquist.
+
+    A single mode at ell=20 (well below the output lmax of 3*32-1=95)
+    should survive the downgrade from NSIDE 128 to 32 with sub-percent
+    relative error, since no aliasing or beam correction is involved.
+    """
     nside_in = 128
     nside_out = 32
     input_map = _single_mode_map(nside_in, ell=20)
@@ -33,6 +44,13 @@ def test_harmonic_ud_grade_preserves_low_ell_mode():
 
 
 def test_harmonic_ud_grade_suppresses_aliasing_vs_ud_grade():
+    """harmonic_ud_grade suppresses aliasing that ud_grade introduces for high-ell modes.
+
+    A single mode at ell=120 (above the output NSIDE 32 bandlimit of
+    ~95) will alias strongly under pixel averaging (ud_grade) but should
+    be suppressed to <20% of the ud_grade amplitude by harmonic
+    bandlimit truncation.
+    """
     nside_in = 128
     nside_out = 32
     input_map = _single_mode_map(nside_in, ell=120)
@@ -50,6 +68,13 @@ def test_harmonic_ud_grade_suppresses_aliasing_vs_ud_grade():
 
 
 def test_harmonic_ud_grade_multimap_pol_false_and_dtype():
+    """Multi-map input with pol=False processes each map independently and respects dtype.
+
+    Two random maps downgraded from NSIDE 64 to 16 should produce a
+    (2, Npix_out) output in float32 when dtype=np.float32 is specified.
+    With pol=False, each map is treated as spin-0 independently (not
+    as TQU components).
+    """
     nside_in = 64
     nside_out = 16
     npix = hp.nside2npix(nside_in)
@@ -71,6 +96,13 @@ def test_harmonic_ud_grade_multimap_pol_false_and_dtype():
 
 
 def test_harmonic_ud_grade_missing_pixel_weights_file_raises(tmp_path):
+    """Missing pixel-weights file with use_pixel_weights=True raises RuntimeError.
+
+    When pixel weights are required but the weight file does not exist
+    in the specified datapath, the function must raise RuntimeError with
+    a helpful message that mentions the expected file path and suggests
+    passing use_pixel_weights=False.
+    """
     nside_in = 32
     nside_out = 16
     input_map = np.ones(hp.nside2npix(nside_in), dtype=np.float64)
@@ -96,7 +128,13 @@ def test_harmonic_ud_grade_missing_pixel_weights_file_raises(tmp_path):
 
 
 def test_pixwin_changes_result():
-    """pixwin=True produces a different result from pixwin=False."""
+    """pixwin=True produces a different result from pixwin=False.
+
+    The pixel-window correction deconvolves the input pixel window and
+    applies the output pixel window.  For a single-mode map, this
+    correction should visibly change the output because the pixel
+    windows at different NSIDEs have different shapes.
+    """
     nside_in = 128
     nside_out = 32
     input_map = _single_mode_map(nside_in, ell=20)
@@ -115,7 +153,13 @@ def test_pixwin_changes_result():
 
 
 def test_fwhm_out_smooths_output():
-    """fwhm_out > 0 should suppress high-ell power compared to fwhm_out=0."""
+    """fwhm_out > 0 should suppress high-ell power compared to fwhm_out=0.
+
+    Applying a Gaussian output beam (fwhm_out = 3 * nside2resol) should
+    reduce power at high multipoles relative to plain bandlimit
+    truncation (fwhm_out=0).  This verifies that the output beam is
+    actually being applied to the harmonic coefficients.
+    """
     nside_in = 128
     nside_out = 32
     lmax_out = 3 * nside_out - 1
@@ -143,14 +187,19 @@ def test_fwhm_out_smooths_output():
 
 
 def test_fwhm_out_default_applies_beam():
-    """Passing fwhm_out=None auto-computes Planck-scaled beam and differs from 0."""
+    """Passing fwhm_out=None auto-computes the effective resolution beam and differs from 0.
+
+    The effective resolution beam (fwhm_out=None) computes
+    PLANCK_K * nside2resol(nside_out), which should produce a visibly
+    different (smoother) result than fwhm_out=0 (plain truncation).
+    """
     nside_in = 128
     nside_out = 32
     input_map = _single_mode_map(nside_in, ell=20)
 
     out_auto = hp.harmonic_ud_grade(
         input_map, nside_out=nside_out, use_pixel_weights=False,
-        pixwin=False, fwhm_out=None,  # auto Planck-scaled beam
+        pixwin=False, fwhm_out=None,  # effective resolution beam
     )
     out_no_beam = hp.harmonic_ud_grade(
         input_map, nside_out=nside_out, use_pixel_weights=False,
@@ -162,7 +211,13 @@ def test_fwhm_out_default_applies_beam():
 
 
 def test_fwhm_in_deconvolves_input_beam():
-    """fwhm_in should deconvolve, partially undoing prior smoothing."""
+    """fwhm_in should deconvolve the input beam, partially restoring high-ell power.
+
+    A map that has been smoothed with a Gaussian beam will have
+    suppressed high-ell power.  Downgrading with fwhm_in set to that
+    beam's FWHM should partially undo the smoothing, restoring more
+    high-ell power than downgrading without deconvolution.
+    """
     nside_in = 128
     nside_out = 32
     fwhm = 0.05  # radians
@@ -196,12 +251,15 @@ def test_fwhm_in_deconvolves_input_beam():
         "Deconvolving input beam should restore high-ell power"
 
 def test_harmonic_ud_grade_upgrading_caps_lmax():
-    """When upgrading, lmax should be capped to the input resolution limit."""
+    """When upgrading NSIDE, lmax is capped to the input resolution limit.
+
+    Upgrading from NSIDE 16 to 32 should not try to extract modes above
+    3*16-1=47.  Without capping, map2alm would attempt to recover
+    modes up to 3*32-1=95 which do not exist in the input, causing
+    errors or noisy results.
+    """
     nside_in = 16
     nside_out = 32
-    # If lmax is not capped, it will try to extract up to 3*32-1=95
-    # which map2alm will complain about or return noisy modes.
-    # The fix ensures lmax is min(3*32-1, 3*16-1) = 47.
     input_map = _single_mode_map(nside_in, ell=10)
     
     # Should not raise an error or complain about lmax > lmax_in
@@ -213,7 +271,14 @@ def test_harmonic_ud_grade_upgrading_caps_lmax():
 
 
 def test_harmonic_ud_grade_pol_beam():
-    """Polarized beam deconvolution should use the polarized beam transfer function."""
+    """Polarized beam deconvolution uses the E/B beam column for Q and U.
+
+    For a 3-component (TQU) input with pol=True, the temperature
+    component uses the T beam column while Q and U use the E/B column
+    (which differs for large beams).  With pol=False, all three maps
+    use the same T beam.  The T outputs should match; Q and U should
+    differ between the two calls.
+    """
     nside_in = 32
     nside_out = 32
     npix = hp.nside2npix(nside_in)
@@ -235,7 +300,7 @@ def test_harmonic_ud_grade_pol_beam():
     # T component should be identical
     np.testing.assert_allclose(out_pol[0], out_unpol[0], rtol=1e-5)
     
-    # Q and U components should be slightly different because out_pol used the E/B beam
+    # Q and U components should differ because out_pol used the E/B beam
     assert not np.allclose(out_pol[1], out_unpol[1], rtol=1e-5)
     assert not np.allclose(out_pol[2], out_unpol[2], rtol=1e-5)
 
@@ -246,7 +311,12 @@ def test_harmonic_ud_grade_pol_beam():
 
 
 def test_beam_window_in_overrides_fwhm_in():
-    """beam_window_in should produce the same result as fwhm_in with matching Gaussian."""
+    """beam_window_in with a Gaussian array produces the same result as the matching fwhm_in.
+
+    Passing beam_window_in=gauss_beam(fwhm, lmax) should be equivalent
+    to passing fwhm_in=fwhm, verifying that the custom beam array path
+    correctly overrides the FWHM path.
+    """
     nside_in = 64
     nside_out = 16
     fwhm = 0.05  # radians
@@ -270,7 +340,12 @@ def test_beam_window_in_overrides_fwhm_in():
 
 
 def test_beam_window_out_overrides_fwhm_out():
-    """beam_window_out should produce the same result as fwhm_out with matching Gaussian."""
+    """beam_window_out with a Gaussian array produces the same result as the matching fwhm_out.
+
+    Passing beam_window_out=gauss_beam(fwhm, lmax) should be equivalent
+    to passing fwhm_out=fwhm, verifying that the custom output beam
+    array correctly overrides the FWHM parameter.
+    """
     nside_in = 64
     nside_out = 16
     fwhm = 0.05  # radians
@@ -294,7 +369,12 @@ def test_beam_window_out_overrides_fwhm_out():
 
 
 def test_beam_window_custom_shape():
-    """A non-Gaussian beam_window should produce different results from any Gaussian."""
+    """A non-Gaussian beam_window produces different results from any Gaussian.
+
+    A top-hat beam (1 up to lmax/2, then 0) should differ from a
+    Gaussian beam with similar width, verifying that arbitrary beam
+    shapes are actually being applied rather than ignored.
+    """
     nside_in = 64
     nside_out = 16
     lmax = 3 * nside_out - 1
@@ -321,7 +401,13 @@ def test_beam_window_custom_shape():
 
 
 def test_beam_window_polarized_2d():
-    """2D beam_window with gauss_beam(pol=True) format should work for TQU maps."""
+    """2D beam_window with gauss_beam(pol=True) format works for TQU maps.
+
+    A 2D beam array from gauss_beam(fwhm, pol=True) — shape
+    (lmax+1, 4) with [T, E/B, T→E, T→B] columns — should produce the
+    same result as passing fwhm_in/fwhm_out for a polarized 3-component
+    input with pol=True.
+    """
     nside_in = 32
     nside_out = 32
     fwhm = np.radians(10.0)
@@ -347,7 +433,12 @@ def test_beam_window_polarized_2d():
 
 
 def test_beam_window_1d_raises_for_polarized():
-    """1D beam_window for a 3-component polarized map should raise ValueError."""
+    """1D beam_window for a 3-component polarized map raises ValueError.
+
+    A 1D beam array does not have separate T and E/B columns, so it
+    cannot be used for polarized transforms.  The function must reject
+    this with a clear error message.
+    """
     nside_in = 32
     nside_out = 32
     lmax = 3 * nside_out - 1
@@ -366,7 +457,12 @@ def test_beam_window_1d_raises_for_polarized():
 
 
 def test_beam_window_too_short_raises():
-    """beam_window shorter than lmax+1 should raise ValueError."""
+    """beam_window shorter than lmax+1 raises ValueError.
+
+    The beam transfer function must cover all multipoles up to lmax.
+    Passing an array that is too short should raise immediately rather
+    than producing silently wrong results from out-of-bounds access.
+    """
     nside_in = 32
     nside_out = 16
 
@@ -393,7 +489,13 @@ def test_beam_window_too_short_raises():
 
 
 def test_reconvolution_same_nside():
-    """harmonic_ud_grade with nside_out==nside_in should reconvolve to a new beam."""
+    """harmonic_ud_grade with nside_out==nside_in reconvolves to a new beam.
+
+    A map smoothed with a 5-arcmin beam, when reconvolved to a
+    15-arcmin beam at the same NSIDE, should have suppressed high-ell
+    power.  This tests the single-step transfer ratio b_out/b_in at
+    fixed pixelisation.
+    """
     nside = 32
     fwhm_in = np.radians(5.0)
     fwhm_out = np.radians(15.0)
@@ -425,7 +527,13 @@ def test_reconvolution_same_nside():
 
 
 def test_reconvolution_with_beam_window():
-    """Reconvolution with beam_window arrays should match FWHM-based result."""
+    """Reconvolution with beam_window arrays matches FWHM-based result.
+
+    Passing beam_window_in and beam_window_out arrays (from gauss_beam)
+    should produce the same result as passing the equivalent fwhm_in and
+    fwhm_out, verifying consistency between the two beam-specification
+    APIs for same-NSIDE reconvolution.
+    """
     nside = 32
     fwhm_in = np.radians(5.0)
     fwhm_out = np.radians(15.0)
@@ -461,7 +569,12 @@ def test_reconvolution_with_beam_window():
 
 
 def test_input_type_alm_requires_nside_in():
-    """input_type='alm' without nside_in should raise ValueError."""
+    """input_type='alm' without nside_in raises ValueError.
+
+    When passing a_lm coefficients directly, nside_in cannot be inferred
+    from the input (unlike maps where it comes from Npix), so it must
+    be provided explicitly for the pixel-window correction to work.
+    """
     rng = np.random.default_rng(42)
     alm = hp.synalm(np.ones(100), lmax=99)
     with pytest.raises(ValueError, match="nside_in must be provided"):
@@ -469,14 +582,19 @@ def test_input_type_alm_requires_nside_in():
 
 
 def test_input_type_invalid():
-    """Invalid input_type should raise ValueError."""
+    """Invalid input_type raises ValueError with a clear message."""
     m = np.zeros(hp.nside2npix(32))
     with pytest.raises(ValueError, match="input_type must be 'map' or 'alm'"):
         hp.harmonic_ud_grade(m, nside_out=16, input_type="bad")
 
 
 def test_negative_fwhm_raises():
-    """Negative fwhm_in and fwhm_out should raise ValueError."""
+    """Negative fwhm_in and fwhm_out raise ValueError.
+
+    Beam FWHM must be non-negative (0 means no beam).  Negative values
+    are not physically meaningful and must be caught early with a clear
+    error message.
+    """
     m = np.zeros(hp.nside2npix(32))
     with pytest.raises(ValueError, match="fwhm_in must be >= 0"):
         hp.harmonic_ud_grade(m, nside_out=16, fwhm_in=-1.0,
@@ -487,8 +605,13 @@ def test_negative_fwhm_raises():
 
 
 def test_input_type_alm_matches_map_input():
-    """input_type='alm' should produce the same output as map input
-    when the map2alm step is exact (single-mode, no iteration)."""
+    """input_type='alm' produces the same output as map input for a single-mode signal.
+
+    For a single-mode a_lm at ell=10 (no iterative SHT errors), the
+    two code paths should give identical results: the map path does
+    map→map2alm→transfer→alm2map, while the alm path skips map2alm and
+    applies the transfer directly.
+    """
     nside_in = 64
     nside_out = 16
     ell = 10
@@ -516,7 +639,12 @@ def test_input_type_alm_matches_map_input():
 
 
 def test_input_type_alm_with_pixwin():
-    """input_type='alm' with pixwin should apply pixel window transfer."""
+    """input_type='alm' with pixwin=True applies pixel-window transfer.
+
+    The pixel-window correction should change the output compared to
+    pixwin=False even when the input is a_lm (not a map), because
+    the transfer function includes the p_out/p_in ratio.
+    """
     nside_in = 64
     nside_out = 16
     lmax = 3 * nside_out - 1
@@ -545,7 +673,13 @@ def test_input_type_alm_with_pixwin():
 
 
 def test_input_type_alm_polarized():
-    """input_type='alm' with polarized 3-component input."""
+    """input_type='alm' with polarized 3-component TEB input produces TQU output.
+
+    A 3-component a_lm list [alm_T, alm_E, alm_B] with pol=True and
+    pixwin=True should produce a (3, Npix) TQU output where the T and
+    E/B components differ because the polarization pixel window differs
+    from the temperature one.
+    """
     nside_in = 32
     nside_out = 16
     lmax = 3 * nside_out - 1
@@ -566,7 +700,13 @@ def test_input_type_alm_polarized():
 
 
 def test_input_type_alm_with_beam():
-    """input_type='alm' should correctly apply beam transfer functions."""
+    """input_type='alm' correctly applies beam transfer functions.
+
+    The a_lm path (no map2alm) and the map path (with map2alm) should
+    agree to within the map2alm round-trip tolerance when both are given
+    the same fwhm_in and fwhm_out.  This verifies that beam deconvolution
+    and reconvolution work correctly when the forward SHT is skipped.
+    """
     nside_in = 64
     nside_out = 32
     lmax = 3 * nside_out - 1
@@ -600,7 +740,13 @@ def test_input_type_alm_with_beam():
 
 
 def test_input_type_alm_same_nside_reconvolution():
-    """input_type='alm' with same nside should do beam reconvolution."""
+    """input_type='alm' with same NSIDE performs beam reconvolution.
+
+    Reconvolving from a 10-arcmin to 30-arcmin beam via a_lm input
+    should suppress high-ell power relative to the original unsmoothed
+    signal, confirming that the transfer ratio b_out/b_in is applied
+    correctly even when the map2alm step is skipped.
+    """
     nside = 32
     lmax = 3 * nside - 1
 
@@ -633,7 +779,14 @@ def test_input_type_alm_same_nside_reconvolution():
 
 
 def test_input_type_alm_truncates_higher_lmax():
-    """input_type='alm' with alm lmax > output lmax should truncate via resize_alm."""
+    """input_type='alm' with alm lmax > output lmax truncates via resize_alm.
+
+    When the input a_lm have lmax higher than the output bandlimit
+    (3*nside_out-1), the function must truncate the a_lm using
+    resize_alm before calling alm2map.  This test verifies the
+    truncation by comparing against a manual resize_alm + alm2map
+    reference.
+    """
     nside_in = 256
     nside_out = 64
     lmax_out = 3 * nside_out - 1
@@ -659,13 +812,12 @@ def test_input_type_alm_truncates_higher_lmax():
     np.testing.assert_allclose(m_out, m_ref, atol=1e-12)
 
 
-
 def test_reconvolution_suppresses_high_ell_power():
-    """Reconvolution to a wider beam must suppress high-ell power, not amplify it.
+    """Reconvolution to a wider beam suppresses high-ell power, not amplifies it.
 
     The transfer function is applied as a single-step ratio
     fl = b_out / b_in, so going from a narrow to a wide beam should
-    reduce power at high ell. This also verifies that pixel-weight
+    reduce power at high ell.  This also verifies that pixel-weight
     vs ring-weight SHT differences are small relative to the signal
     (the residual is not amplified by the transfer).
     """
