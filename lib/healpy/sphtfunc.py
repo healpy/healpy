@@ -670,8 +670,9 @@ def _build_harmonic_transfer(lmax, pw_in, pw_out, bl_in, bl_out):
     ``fl[ℓ] = (p_out[ℓ] / p_in[ℓ]) * (b_out[ℓ] / b_in[ℓ])``
 
     Each of pw_in/pw_out/bl_in/bl_out may be None, in which case the
-    corresponding factor is treated as 1. Modes where the input pixel
-    window or input beam vanish are set to 0 (no inverse possible).
+    corresponding factor is treated as 1.  Modes where the input pixel
+    window or input beam underflow to zero are set to ``fl[ℓ] = 0``
+    (no inverse possible), and a warning is logged.
     """
     fl = np.ones(lmax + 1)
 
@@ -736,7 +737,7 @@ def _apply_harmonic_transfer(alm, fl_T, fl_P=None):
             ]
         # TEB triplet but no separate polarization transfer: apply fl_T
         # to all three components (e.g. pixel-window-only case where
-        # T and P transfers differ but only one was requested).
+        # T and P windows are identical).
         return [
             almxfl(alm[0], fl_T),
             almxfl(alm[1], fl_T),
@@ -770,10 +771,10 @@ def harmonic_ud_grade(
 ):
     r"""Change map NSIDE using spherical-harmonic transforms.
 
-    The input map is analysed into :math:`a_{\ell m}` coefficients, optionally
+    The input map is analyzed into :math:`a_{\ell m}` coefficients, optionally
     corrected for pixel-window and beam transfer functions following
     the effective beam transfer ratio
-    (Planck Collaboration 2015 X, `arXiv:1502.01588`), and synthesised at ``nside_out``:
+    (Planck Collaboration 2015 X, `arXiv:1502.01588`), and synthesized at ``nside_out``:
 
     .. math::
 
@@ -817,29 +818,28 @@ def harmonic_ud_grade(
     pixwin : bool, optional
       If True (default), deconvolve the input pixel window
       :math:`p^{\rm in}_\ell` and apply the output pixel window
-      :math:`p^{\rm out}_\ell`.  For polarised maps the temperature and
-      polarisation windows are handled separately.
+      :math:`p^{\rm out}_\ell`.  For polarized maps the temperature and
+      polarization windows are handled separately.
     fwhm_in : float, optional
       FWHM in **radians** of a Gaussian beam to deconvolve from the
       input :math:`a_{\ell m}`.  Default: ``0`` (no input beam).
     fwhm_out : float or None, optional
       FWHM in **radians** of a Gaussian beam to apply to the output.
-      Default: ``0`` (no output beam — plain bandlimit truncation).
-      Pass ``None`` to use the **effective resolution beam** — a
-      Gaussian whose FWHM is proportional to the output pixel size::
+      Default: ``0`` (no output beam — the :math:`a_{\ell m}` are simply
+      truncated at ``lmax`` and synthesized).  Pass ``None`` to use the
+      **effective resolution beam** — a Gaussian whose FWHM is
+      proportional to the output pixel size::
 
           fwhm_out = PLANCK_K * nside2resol(nside_out)
 
-      where ``PLANCK_K = 160.0 / (degrees(nside2resol(64)) * 60)``
-      (≈ 2.91).  This scaling was used by the Planck Collaboration
-      to define the effective beam FWHM at each HEALPix resolution
+      where ``PLANCK_K ≈ 2.91`` reproduces the 160-arcmin beam at
+      NSIDE 64 used across all Planck resolution levels
       (Planck Collaboration 2015 X, `arXiv:1502.01588
       <https://arxiv.org/abs/1502.01588>`_).  Applying the
       effective resolution beam suppresses Gibbs ringing at the new
-      pixel scale and is the recommended default for science-grade
-      CMB and diffuse foreground maps.  Use
-      :func:`effective_resolution_fwhm` to look up the beam width
-      for any NSIDE before calling this function.
+      pixel scale and is recommended for science-grade CMB and diffuse
+      foreground maps.  Use :func:`effective_resolution_fwhm` to look
+      up the beam width for any NSIDE before calling this function.
     beam_window_in : array-like or None, optional
       Custom input beam transfer function to deconvolve, overriding
       ``fwhm_in``.  Follows the format returned by ``gauss_beam``:
@@ -870,7 +870,7 @@ def harmonic_ud_grade(
       Whether ``map_in`` is a pixel-space map (``'map'``, default) or
       :math:`a_{\ell m}` coefficients (``'alm'``).  When ``'alm'``,
       the ``map2alm`` step is skipped: the transfer function is applied
-      directly to the input :math:`a_{\ell m}` and synthesised at
+      directly to the input :math:`a_{\ell m}` and synthesized at
       ``nside_out``.  This is useful when you already have
       :math:`a_{\ell m}` from a previous SHT and want to avoid a
       redundant forward transform.  When ``input_type='alm'``,
@@ -973,7 +973,7 @@ def harmonic_ud_grade(
 
     **Reconvolution at the same NSIDE:** When ``nside_out == nside_in``,
     the function performs beam reconvolution — deconvolving the input
-    beam and applying the output beam while keeping the same pixelisation.
+    beam and applying the output beam while keeping the same pixelization.
     This is similar to the HEALPix `process_alm
     <https://healpix.sourceforge.io/html/fac_alteralm.htm>`_ /
     ``alteralm`` facility.
@@ -1074,7 +1074,7 @@ def harmonic_ud_grade(
         # HEALPix guidance: per-pixel weights achieve near-machine-precision
         # SHT accuracy without iteration when lmax <= 1.5 * nside_in.
         # Beyond that regime, iterative map2alm (typically 3 iterations)
-        # is needed to suppress pixelisation artefacts.
+        # is needed to suppress pixelization artifacts.
         iter = 0 if use_pixel_weights and lmax <= 1.5 * nside_in else 3
 
     # Resolve fwhm_out=None. If beam_window_out is provided it takes
@@ -1870,7 +1870,7 @@ def pixwin(nside, pol=False, lmax=None, datapath=None):
     -------
     pw or pwT,pwP : array or tuple of 2 arrays
       The temperature pixel window function, or a tuple with both
-      temperature and polarisation pixel window functions.
+      temperature and polarization pixel window functions.
     """
 
     if lmax is None:
