@@ -953,3 +953,261 @@ def test_reconvolution_suppresses_high_ell_power():
     assert relative_std < 0.05, (
         f"Pixel-level residual too large: relative std = {relative_std:.4f}"
     )
+
+
+# ── Corner-case tests for internal helpers ──────────────────────────
+
+
+class TestResolveBeam:
+    """Tests for the _resolve_beam helper."""
+
+    def test_beam_window_takes_precedence(self):
+        """beam_window overrides gauss_bl even when both are provided."""
+        from healpy.sphtfunc import _resolve_beam
+
+        lmax = 10
+        bw = np.ones((lmax + 1, 1)) * 0.5  # custom beam window
+        gb = np.ones(lmax + 1)  # gauss beam (would return 1.0)
+        result = _resolve_beam(bw, gb, polar_component=False)
+        np.testing.assert_array_equal(result, np.full(lmax + 1, 0.5))
+
+    def test_none_both_returns_none(self):
+        """None beam_window and None gauss_bl → None."""
+        from healpy.sphtfunc import _resolve_beam
+
+        assert _resolve_beam(None, None, polar_component=False) is None
+
+    def test_1d_gauss_bl_temperature(self):
+        """1D gauss_bl with polar_component=False returns the array as-is."""
+        from healpy.sphtfunc import _resolve_beam
+
+        gb = np.array([1.0, 0.9, 0.8])
+        result = _resolve_beam(None, gb, polar_component=False)
+        np.testing.assert_array_equal(result, gb)
+
+    def test_1d_gauss_bl_polarization_raises(self):
+        """1D gauss_bl with polar_component=True raises ValueError.
+
+        The polarization column does not exist when gauss_beam was called
+        with pol=False, so attempting to extract it is an error.
+        """
+        from healpy.sphtfunc import _resolve_beam
+
+        gb = np.array([1.0, 0.9, 0.8])
+        with pytest.raises(ValueError, match="polar_component=True but gauss_bl is 1D"):
+            _resolve_beam(None, gb, polar_component=True)
+
+    def test_2d_gauss_bl_temperature_column(self):
+        """2D gauss_bl with polar_component=False returns column 0."""
+        from healpy.sphtfunc import _resolve_beam
+
+        gb = np.array([[1.0, 0.5], [0.9, 0.4], [0.8, 0.3]])
+        result = _resolve_beam(None, gb, polar_component=False)
+        np.testing.assert_array_equal(result, np.array([1.0, 0.9, 0.8]))
+
+    def test_2d_gauss_bl_polarization_column(self):
+        """2D gauss_bl with polar_component=True returns column 1."""
+        from healpy.sphtfunc import _resolve_beam
+
+        gb = np.array([[1.0, 0.5], [0.9, 0.4], [0.8, 0.3]])
+        result = _resolve_beam(None, gb, polar_component=True)
+        np.testing.assert_array_equal(result, np.array([0.5, 0.4, 0.3]))
+
+
+class TestApplyHarmonicTransfer:
+    """Tests for the _apply_harmonic_transfer helper."""
+
+    @pytest.fixture
+    def lmax(self):
+        return 10
+
+    @pytest.fixture
+    def fl_T(self, lmax):
+        return np.ones(lmax + 1)
+
+    @pytest.fixture
+    def fl_P(self, lmax):
+        return np.ones(lmax + 1) * 0.5
+
+    @pytest.fixture
+    def alm_1d(self, lmax):
+        """A single 1D alm array."""
+        return np.ones(hp.Alm.getsize(lmax), dtype=np.complex128)
+
+    @pytest.fixture
+    def alm_teb_list(self, lmax):
+        """A TEB triplet as a list of 3 arrays."""
+        base = np.ones(hp.Alm.getsize(lmax), dtype=np.complex128)
+        return [base.copy(), base.copy() * 0.5, base.copy() * 0.3]
+
+    @pytest.fixture
+    def alm_teb_2d(self, lmax):
+        """A TEB triplet as a 2D ndarray with 3 rows."""
+        base = np.ones(hp.Alm.getsize(lmax), dtype=np.complex128)
+        return np.array([base, base * 0.5, base * 0.3])
+
+    def test_1d_alm_returns_1d(self, alm_1d, fl_T):
+        """1D alm input returns a 1D array."""
+        from healpy.sphtfunc import _apply_harmonic_transfer
+
+        result = _apply_harmonic_transfer(alm_1d, fl_T)
+        assert isinstance(result, np.ndarray)
+        assert result.ndim == 1
+
+    def test_1d_alm_does_not_mutate(self, alm_1d, fl_T):
+        """1D alm input is not modified in place."""
+        from healpy.sphtfunc import _apply_harmonic_transfer
+
+        snapshot = alm_1d.copy()
+        fl_T_scaled = np.ones_like(fl_T) * 0.8
+        _apply_harmonic_transfer(alm_1d, fl_T_scaled)
+        np.testing.assert_array_equal(alm_1d, snapshot)
+
+    def test_teb_list_with_fl_P(self, alm_teb_list, fl_T, fl_P):
+        """TEB list with fl_P: T gets fl_T, E/B get fl_P."""
+        from healpy.sphtfunc import _apply_harmonic_transfer
+
+        result = _apply_harmonic_transfer(alm_teb_list, fl_T, fl_P)
+        assert isinstance(result, list)
+        assert len(result) == 3
+        # T component: fl_T (all ones) * original
+        np.testing.assert_allclose(result[0], alm_teb_list[0])
+        # E component: fl_P (0.5) * original
+        np.testing.assert_allclose(result[1], alm_teb_list[1] * 0.5)
+        # B component: fl_P (0.5) * original
+        np.testing.assert_allclose(result[2], alm_teb_list[2] * 0.5)
+
+    def test_teb_list_without_fl_P(self, alm_teb_list, fl_T):
+        """TEB list without fl_P: all components get fl_T."""
+        from healpy.sphtfunc import _apply_harmonic_transfer
+
+        fl_T_scaled = np.ones_like(fl_T) * 0.7
+        result = _apply_harmonic_transfer(alm_teb_list, fl_T_scaled, fl_P=None)
+        assert isinstance(result, list)
+        assert len(result) == 3
+        # All three get the same fl_T
+        np.testing.assert_allclose(result[0], alm_teb_list[0] * 0.7)
+        np.testing.assert_allclose(result[1], alm_teb_list[1] * 0.7)
+        np.testing.assert_allclose(result[2], alm_teb_list[2] * 0.7)
+
+    def test_teb_2d_with_fl_P(self, alm_teb_2d, fl_T, fl_P):
+        """2D ndarray TEB with fl_P: T gets fl_T, E/B get fl_P."""
+        from healpy.sphtfunc import _apply_harmonic_transfer
+
+        result = _apply_harmonic_transfer(alm_teb_2d, fl_T, fl_P)
+        assert isinstance(result, list)
+        assert len(result) == 3
+
+    def test_teb_list_does_not_mutate(self, alm_teb_list, fl_T, fl_P):
+        """TEB list input arrays are not modified in place."""
+        from healpy.sphtfunc import _apply_harmonic_transfer
+
+        snapshots = [a.copy() for a in alm_teb_list]
+        _apply_harmonic_transfer(alm_teb_list, fl_T, fl_P)
+        for got, want in zip(alm_teb_list, snapshots):
+            np.testing.assert_array_equal(got, want)
+
+    def test_teb_2d_does_not_mutate(self, alm_teb_2d, fl_T, fl_P):
+        """2D ndarray TEB input is not modified in place."""
+        from healpy.sphtfunc import _apply_harmonic_transfer
+
+        snapshot = alm_teb_2d.copy()
+        _apply_harmonic_transfer(alm_teb_2d, fl_T, fl_P)
+        np.testing.assert_array_equal(alm_teb_2d, snapshot)
+
+    def test_single_element_list_unwraps(self, lmax, fl_T):
+        """List of 1 alm array is treated as spin-0 (not TEB)."""
+        from healpy.sphtfunc import _apply_harmonic_transfer
+
+        alm = [np.ones(hp.Alm.getsize(lmax), dtype=np.complex128)]
+        result = _apply_harmonic_transfer(alm, fl_T)
+        # Should return a list with 1 element (spin-0 fallback)
+        assert isinstance(result, list)
+        assert len(result) == 1
+
+
+class TestHarmonicUdGradeAlmInputShapes:
+    """Tests for harmonic_ud_grade input_type='alm' shape validation."""
+
+    @pytest.fixture
+    def nside_in(self):
+        return 32
+
+    @pytest.fixture
+    def nside_out(self):
+        return 16
+
+    @pytest.fixture
+    def lmax(self, nside_out):
+        return 3 * nside_out - 1
+
+    @pytest.fixture
+    def base_alm(self, lmax):
+        """A base alm array with a single mode at ell=5."""
+        alm = np.zeros(hp.Alm.getsize(lmax), dtype=np.complex128)
+        alm[hp.Alm.getidx(lmax, 5, 0)] = 1.0
+        return alm
+
+    def test_2d_three_rows_polarized(self, base_alm, nside_in, nside_out, lmax):
+        """2D ndarray with 3 rows: polarized input_type='alm' works."""
+        alm_2d = np.array([base_alm, base_alm * 0.5, base_alm * 0.3])
+        output = hp.harmonic_ud_grade(
+            alm_2d, nside_out=nside_out, nside_in=nside_in,
+            input_type="alm", pol=True, pixwin=False, fwhm_out=0,
+        )
+        assert len(output) == 3
+
+    def test_2d_three_rows_unpolarized(self, base_alm, nside_in, nside_out, lmax):
+        """2D ndarray with 3 rows, pol=False: treated as unpolarized TEB."""
+        alm_2d = np.array([base_alm, base_alm * 0.5, base_alm * 0.3])
+        output = hp.harmonic_ud_grade(
+            alm_2d, nside_out=nside_out, nside_in=nside_in,
+            input_type="alm", pol=False, pixwin=False, fwhm_out=0,
+        )
+        # pol=False with 3 alm arrays: is_polarized=False, so
+        # all three get fl_T (same transfer). Output is still 3 maps.
+        assert len(output) == 3
+
+    def test_2d_one_row_spin0(self, base_alm, nside_in, nside_out, lmax):
+        """2D ndarray with 1 row: unwrapped to spin-0."""
+        alm_2d = base_alm.reshape(1, -1)
+        output = hp.harmonic_ud_grade(
+            alm_2d, nside_out=nside_out, nside_in=nside_in,
+            input_type="alm", pol=False, pixwin=False, fwhm_out=0,
+        )
+        assert hp.get_nside(output) == nside_out
+
+    def test_2d_two_rows_raises(self, base_alm, nside_in, nside_out, lmax):
+        """2D ndarray with 2 rows: rejected (no map-path analogue)."""
+        alm_2d = np.array([base_alm, base_alm])
+        with pytest.raises(ValueError, match="2D ndarray with 1 or 3 rows"):
+            hp.harmonic_ud_grade(
+                alm_2d, nside_out=nside_out, nside_in=nside_in,
+                input_type="alm",
+            )
+
+    def test_2d_four_rows_raises(self, base_alm, nside_in, nside_out, lmax):
+        """2D ndarray with 4 rows: rejected."""
+        alm_2d = np.array([base_alm, base_alm, base_alm, base_alm])
+        with pytest.raises(ValueError, match="2D ndarray with 1 or 3 rows"):
+            hp.harmonic_ud_grade(
+                alm_2d, nside_out=nside_out, nside_in=nside_in,
+                input_type="alm",
+            )
+
+    def test_list_one_element_spin0(self, base_alm, nside_in, nside_out, lmax):
+        """List of 1 alm array: unwrapped to spin-0."""
+        output = hp.harmonic_ud_grade(
+            [base_alm], nside_out=nside_out, nside_in=nside_in,
+            input_type="alm", pixwin=False, fwhm_out=0,
+        )
+        assert hp.get_nside(output) == nside_out
+
+    def test_list_three_elements_polarized(self, base_alm, nside_in, nside_out, lmax):
+        """List of 3 alm arrays with pol=True: polarized path."""
+        output = hp.harmonic_ud_grade(
+            [base_alm, base_alm * 0.5, base_alm * 0.3],
+            nside_out=nside_out, nside_in=nside_in,
+            input_type="alm", pol=True, pixwin=False, fwhm_out=0,
+        )
+        assert len(output) == 3

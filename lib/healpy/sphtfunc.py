@@ -616,8 +616,15 @@ def _extract_beam_column(beam_window, polar_component):
         )
 
 
+
 def _pixwin_TP(nside, lmax):
-    """Return (pw_T, pw_P) at this nside up to lmax, with a single I/O call."""
+    """Return (pw_T, pw_P) at this nside up to lmax, with a single I/O call.
+
+    This wrapper exists because ``harmonic_ud_grade`` has a parameter named
+    ``pixwin`` (bool) that shadows the module-level ``pixwin`` function.
+    Calling the function directly inside ``harmonic_ud_grade`` would raise
+    ``TypeError: 'bool' object is not callable``.
+    """
     pw_T, pw_P = pixwin(nside, pol=True, lmax=lmax)
     return pw_T, pw_P
 
@@ -627,12 +634,16 @@ def _resolve_beam(beam_window, gauss_bl, polar_component):
 
     ``beam_window`` takes precedence (user-supplied custom beam). Otherwise
     falls back to ``gauss_bl`` — the precomputed gauss_beam output for the
-    requested FWHM (1D when polar_component is False, 2D when True). Returns
-    None when neither source provides a beam.
+    requested FWHM. Returns None when neither source provides a beam.
 
     Note on shapes: ``gauss_beam(fwhm, lmax, pol=False)`` returns a 1D array,
     while ``pol=True`` returns 2D with column 0 = T and column 1 = E/B. We
     rely on that contract to select the right column here.
+
+    When ``polar_component=True`` but ``gauss_bl`` is 1D (i.e. the caller
+    computed the beam with ``pol=False``), the polarization column does not
+    exist. A ``ValueError`` is raised because silently returning the
+    temperature beam for polarization would produce incorrect results.
     """
     if beam_window is not None:
         return _extract_beam_column(beam_window, polar_component)
@@ -642,6 +653,12 @@ def _resolve_beam(beam_window, gauss_bl, polar_component):
     # right component when the array is 2D.
     if gauss_bl.ndim == 2:
         return gauss_bl[:, 1 if polar_component else 0]
+    # 1D array: only valid for temperature (column 0).
+    if polar_component:
+        raise ValueError(
+            "polar_component=True but gauss_bl is 1D (computed with pol=False). "
+            "Call gauss_beam with pol=True to get polarization beam columns."
+        )
     return gauss_bl
 
 
@@ -692,23 +709,43 @@ def _apply_harmonic_transfer(alm, fl_T, fl_P=None):
     Parameters
     ----------
     alm : ndarray or list/tuple of ndarray
-        Spherical harmonic coefficients. A list/tuple of 3 arrays for TEB,
-        a 2D ndarray with 3 rows for TEB, or a single 1D array.
+        Spherical harmonic coefficients. Accepted shapes:
+
+        - 1D ndarray: single spin-0 field (apply ``fl_T``).
+        - list/tuple of 3 arrays or 2D ndarray with 3 rows: TEB triplet.
+          ``fl_T`` is applied to T; ``fl_P`` (if provided) to E and B.
+          When ``fl_P`` is None, ``fl_T`` is applied to all three.
+        - list/tuple of 1 array: unwrapped to a single spin-0 field.
+
+        Other shapes (e.g. 2-element lists, 2D with 2 rows) are not
+        rejected here but should be caught by the caller's validation
+        upstream (``harmonic_ud_grade`` rejects them for ``input_type='alm'``).
+
     fl_T : ndarray
         Temperature / scalar transfer function.
     fl_P : ndarray, optional
         Polarization transfer function for E and B components. Used only
-        for the TEB case.
+        for the TEB case (``len(alm) == 3``).
     """
-    if fl_P is not None and len(alm) == 3 and isinstance(alm, (list, tuple, np.ndarray)):
+    if len(alm) == 3 and isinstance(alm, (list, tuple, np.ndarray)):
+        if fl_P is not None:
+            return [
+                almxfl(alm[0], fl_T),
+                almxfl(alm[1], fl_P),
+                almxfl(alm[2], fl_P),
+            ]
+        # TEB triplet but no separate polarization transfer: apply fl_T
+        # to all three components (e.g. pixel-window-only case where
+        # T and P transfers differ but only one was requested).
         return [
             almxfl(alm[0], fl_T),
-            almxfl(alm[1], fl_P),
-            almxfl(alm[2], fl_P),
+            almxfl(alm[1], fl_T),
+            almxfl(alm[2], fl_T),
         ]
     if isinstance(alm, np.ndarray) and alm.ndim == 1:
         return almxfl(alm, fl_T)
-    # 2D ndarray or list/tuple of multiple alm arrays
+    # list/tuple with len != 3, or 2D ndarray with != 3 rows.
+    # Apply fl_T to each element (spin-0 fallback).
     return [almxfl(a, fl_T) for a in alm]
 
 
