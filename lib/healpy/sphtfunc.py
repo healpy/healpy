@@ -57,8 +57,8 @@ MAX_NSIDE = (
 PLANCK_K = 160.0 / (np.degrees(pixelfunc.nside2resol(64)) * 60)
 
 
-def effective_resolution_fwhm(nside):
-    """Return the effective resolution beam FWHM in radians for a HEALPix NSIDE.
+def effective_resolution_fwhm(nside, arcmin=False):
+    """Return the effective resolution beam FWHM for a HEALPix NSIDE.
 
     The effective resolution beam is the Gaussian FWHM corresponding to the
     Planck standard resolution at a given NSIDE, computed as::
@@ -78,24 +78,29 @@ def effective_resolution_fwhm(nside):
     ----------
     nside : int
       HEALPix NSIDE parameter.
+    arcmin : bool, optional
+      If True, return FWHM in arcmin instead of radians.
 
     Returns
     -------
     fwhm : float
-      FWHM in **radians** of the effective resolution beam.
+      FWHM of the effective resolution beam, in radians (default) or
+      arcmin if ``arcmin=True``.
 
     Examples
     --------
     >>> import healpy as hp
-    >>> fwhm = hp.effective_resolution_fwhm(64)
-    >>> print(f"NSIDE 64 effective beam: {np.degrees(fwhm)*60:.1f} arcmin")
-    NSIDE 64 effective beam: 160.0 arcmin
-
-    >>> fwhm = hp.effective_resolution_fwhm(256)
-    >>> print(f"NSIDE 256 effective beam: {np.degrees(fwhm)*60:.1f} arcmin")
-    NSIDE 256 effective beam: 40.0 arcmin
+    >>> hp.effective_resolution_fwhm(64)
+    0.0465...
+    >>> hp.effective_resolution_fwhm(64, arcmin=True)
+    160.0
+    >>> hp.effective_resolution_fwhm(256, arcmin=True)
+    40.0
     """
-    return PLANCK_K * pixelfunc.nside2resol(nside)
+    fwhm = PLANCK_K * pixelfunc.nside2resol(nside)
+    if arcmin:
+        fwhm = np.degrees(fwhm) * 60
+    return fwhm
 
 # Spherical harmonics transformation
 def anafast(
@@ -860,7 +865,7 @@ def harmonic_ud_grade(
 
     Check the beam width before calling::
 
-        fwhm = hp.effective_resolution_fwhm(64)  # ≈ 160 arcmin
+        fwhm = hp.effective_resolution_fwhm(64, arcmin=True)  # 160.0 arcmin
 
     Downgrade with plain bandlimit truncation (no output smoothing)::
 
