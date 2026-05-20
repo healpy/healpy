@@ -575,7 +575,8 @@ def _build_harmonic_transfer(nside_in, nside_out, lmax, apply_pixwin, fwhm_in, f
                              polar_component=False):
     """Build the per-ℓ transfer function for one component.
 
-    Implements the Planck 2015 XVI Eq. 1 ratio:
+    Implements the effective beam transfer ratio
+    (Planck Collaboration 2015 X, `arXiv:1502.01588`):
     ``fl[ℓ] = (p_out[ℓ] / p_in[ℓ]) * (b_out[ℓ] / b_in[ℓ])``
 
     Parameters
@@ -683,7 +684,8 @@ def harmonic_ud_grade(
 
     The input map is analysed into :math:`a_{\ell m}` coefficients, optionally
     corrected for pixel-window and beam transfer functions following
-    Planck 2015 XVI Eq. 1, and synthesised at ``nside_out``:
+    the effective beam transfer ratio
+    (Planck Collaboration 2015 X, `arXiv:1502.01588`), and synthesised at ``nside_out``:
 
     .. math::
 
@@ -735,14 +737,19 @@ def harmonic_ud_grade(
     fwhm_out : float or None, optional
       FWHM in **radians** of a Gaussian beam to apply to the output.
       Default: ``0`` (no output beam — plain bandlimit truncation).
-      Pass ``None`` to auto-compute a Planck-scaled output beam::
+      Pass ``None`` to use the **effective resolution beam** — a
+      Gaussian whose FWHM is proportional to the output pixel size::
 
           fwhm_out = PLANCK_K * nside2resol(nside_out)
 
       where ``PLANCK_K = 160.0 / (degrees(nside2resol(64)) * 60)``
-      (≈ 2.91).  This matches the exact scaling used consistently
-      across all Planck resolutions and provides a safe smoothing
-      that suppresses ringing at the new pixel scale.
+      (≈ 2.91).  This scaling was used by the Planck Collaboration
+      to define the effective beam FWHM at each HEALPix resolution
+      (Planck Collaboration 2015 X, `arXiv:1502.01588
+      <https://arxiv.org/abs/1502.01588>`_).  Applying the
+      effective resolution beam suppresses Gibbs ringing at the new
+      pixel scale and is the recommended default for science-grade
+      CMB and diffuse foreground maps.
     beam_window_in : array-like or None, optional
       Custom input beam transfer function to deconvolve, overriding
       ``fwhm_in``.  Follows the format returned by ``gauss_beam``:
@@ -802,7 +809,11 @@ def harmonic_ud_grade(
     **Quick-start examples:**
 
     Downgrade a CMB temperature map from NSIDE 256 to 64 with the
-    default Planck-scaled output smoothing::
+    effective resolution beam (recommended for diffuse signals)::
+
+        m_out = hp.harmonic_ud_grade(m_in, nside_out=64, fwhm_out=None)
+
+    Downgrade with plain bandlimit truncation (no output smoothing)::
 
         m_out = hp.harmonic_ud_grade(m_in, nside_out=64)
 
@@ -834,9 +845,14 @@ def harmonic_ud_grade(
       carry the input beam's attenuation into the new resolution
       without correction, which can bias power-spectrum estimates.
 
-    - **Leave ``fwhm_out`` at its default (``0``)** for plain bandlimit
-      truncation.  Pass ``fwhm_out=None`` if you want the Planck-scaled
-      auto-smoothing that suppresses ringing at the new pixel scale.
+    - **Use the effective resolution beam** (``fwhm_out=None``) for
+      science-grade maps of diffuse signals (CMB, Galactic
+      foregrounds).  This applies the Planck-scaled beam that
+      suppresses Gibbs ringing at the new pixel scale (Planck
+      Collaboration 2015 X).  Plain bandlimit truncation
+      (``fwhm_out=0``, the default) is appropriate when you need the
+      sharpest possible output or when the downstream analysis
+      handles ringing separately.
 
     - **Use ``pixwin=False``** if you want no pixel-window correction
       at all (equivalent to the function's behaviour before pixel-window
@@ -996,7 +1012,7 @@ def harmonic_ud_grade(
     else:
         is_polarized = pol and info == 3
 
-    # Build harmonic transfer functions (Eq. 1)
+    # Build harmonic transfer functions (effective beam transfer ratio)
     need_transfer = (pixwin or fwhm_in > 0 or fwhm_out > 0
                      or beam_window_in is not None or beam_window_out is not None)
     if need_transfer:
