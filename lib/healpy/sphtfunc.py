@@ -56,6 +56,47 @@ MAX_NSIDE = (
 # is used consistently across all Planck resolution levels.
 PLANCK_K = 160.0 / (np.degrees(pixelfunc.nside2resol(64)) * 60)
 
+
+def effective_resolution_fwhm(nside):
+    """Return the effective resolution beam FWHM in radians for a HEALPix NSIDE.
+
+    The effective resolution beam is the Gaussian FWHM corresponding to the
+    Planck standard resolution at a given NSIDE, computed as::
+
+        fwhm = PLANCK_K * nside2resol(nside)
+
+    where ``PLANCK_K ≈ 2.91`` reproduces the 160-arcmin beam at NSIDE 64
+    used across all Planck resolution levels
+    (Planck Collaboration 2015 X, `arXiv:1502.01588`).
+
+    This is the same value that ``harmonic_ud_grade`` applies when
+    ``fwhm_out=None``.  Use this function to look up the beam width
+    before calling ``harmonic_ud_grade`` so you know what smoothing
+    will be applied.
+
+    Parameters
+    ----------
+    nside : int
+      HEALPix NSIDE parameter.
+
+    Returns
+    -------
+    fwhm : float
+      FWHM in **radians** of the effective resolution beam.
+
+    Examples
+    --------
+    >>> import healpy as hp
+    >>> fwhm = hp.effective_resolution_fwhm(64)
+    >>> print(f"NSIDE 64 effective beam: {np.degrees(fwhm)*60:.1f} arcmin")
+    NSIDE 64 effective beam: 160.0 arcmin
+
+    >>> fwhm = hp.effective_resolution_fwhm(256)
+    >>> print(f"NSIDE 256 effective beam: {np.degrees(fwhm)*60:.1f} arcmin")
+    NSIDE 256 effective beam: 40.0 arcmin
+    """
+    return PLANCK_K * pixelfunc.nside2resol(nside)
+
 # Spherical harmonics transformation
 def anafast(
     map1,
@@ -749,7 +790,9 @@ def harmonic_ud_grade(
       <https://arxiv.org/abs/1502.01588>`_).  Applying the
       effective resolution beam suppresses Gibbs ringing at the new
       pixel scale and is the recommended default for science-grade
-      CMB and diffuse foreground maps.
+      CMB and diffuse foreground maps.  Use
+      :func:`effective_resolution_fwhm` to look up the beam width
+      for any NSIDE before calling this function.
     beam_window_in : array-like or None, optional
       Custom input beam transfer function to deconvolve, overriding
       ``fwhm_in``.  Follows the format returned by ``gauss_beam``:
@@ -809,9 +852,15 @@ def harmonic_ud_grade(
     **Quick-start examples:**
 
     Downgrade a CMB temperature map from NSIDE 256 to 64 with the
-    effective resolution beam (recommended for diffuse signals)::
+    effective resolution beam (recommended for diffuse signals).
+    The output map will be smoothed to 160.0 arcmin
+    (``PLANCK_K × nside2resol(64)``)::
 
         m_out = hp.harmonic_ud_grade(m_in, nside_out=64, fwhm_out=None)
+
+    Check the beam width before calling::
+
+        fwhm = hp.effective_resolution_fwhm(64)  # ≈ 160 arcmin
 
     Downgrade with plain bandlimit truncation (no output smoothing)::
 
@@ -943,6 +992,11 @@ def harmonic_ud_grade(
     # Skip when beam_window_out is provided (it will override anyway)
     if fwhm_out is None and beam_window_out is None:
         fwhm_out = PLANCK_K * pixelfunc.nside2resol(nside_out)
+        log.info(
+            "harmonic_ud_grade: fwhm_out=None → effective resolution beam "
+            "= %.2f arcmin (PLANCK_K * nside2resol(%d))",
+            np.degrees(fwhm_out) * 60, nside_out,
+        )
     elif fwhm_out is None and beam_window_out is not None:
         fwhm_out = 0  # beam_window_out takes precedence
 
