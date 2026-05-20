@@ -1953,6 +1953,12 @@ def ud_grade(
     >>> hp.ud_grade(np.arange(48.), 1)
     array([  5.5 ,   7.25,   9.  ,  10.75,  21.75,  21.75,  23.75,  25.75,
             36.5 ,  38.25,  40.  ,  41.75])
+
+    See Also
+    --------
+    harmonic_ud_grade : Change resolution via spherical-harmonic transforms,
+        with pixel-window and beam correction.  Recommended for diffuse
+        signals (CMB, foregrounds) to avoid aliasing and ringing artefacts.
     """
     check_nside(nside_out, nest=order_in != "RING")
     typ = maptype(map_in)

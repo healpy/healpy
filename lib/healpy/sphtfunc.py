@@ -836,6 +836,7 @@ def harmonic_ud_grade(
 
         m_out = hp.harmonic_ud_grade(
             alm, nside_out=64, nside_in=256, input_type='alm',
+            fwhm_out=None,
         )
 
     **Best practices:**
@@ -854,14 +855,17 @@ def harmonic_ud_grade(
       sharpest possible output or when the downstream analysis
       handles ringing separately.
 
-    - **Use ``pixwin=False``** if you want no pixel-window correction
-      at all (equivalent to the function's behaviour before pixel-window
-      and beam support were added).
+    - **Use ``pixwin=False``** to skip pixel-window correction entirely.
+      This is appropriate for noise maps (where deconvolving the pixel
+      window would incorrectly amplify high-:math:`\ell` noise) or when
+      you want only beam corrections without pixel-window effects.
 
     - **Use ``input_type='alm'``** when you already have
       :math:`a_{\ell m}` from a previous analysis step (e.g.
       component separation, map-making).  This avoids a redundant
       ``map2alm`` round-trip and is both faster and more accurate.
+      When ``input_type='alm'``, ``nside_in`` must also be provided
+      so that the correct input pixel window can be applied.
 
     - **Pixel weights and iteration:** The default
       ``use_pixel_weights=True`` with automatic iteration provides
@@ -870,11 +874,6 @@ def harmonic_ud_grade(
       between pixel-weighted and ring-weighted SHT may produce
       a structured residual; use ``use_pixel_weights=False`` if you
       need exact agreement with a ring-weighted implementation.
-
-    - **Noise maps:** If the input is a noise realisation (white or
-      coloured), pass ``pixwin=False`` because noise is a pixel-level
-      quantity — deconvolving the pixel window would incorrectly
-      amplify the noise at high :math:`\ell`.
 
     **Reconvolution at the same NSIDE:** When ``nside_out == nside_in``,
     the function performs beam reconvolution — deconvolving the input
