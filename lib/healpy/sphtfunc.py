@@ -932,11 +932,11 @@ def harmonic_ud_grade(
     **Tutorials:**
 
     - `harmonic_ud_grade vs ud_grade comparison
-      <https://zonca.dev/posts/2026-05-05-healpy-harmonic-ud-grade/>`_:
+      <https://healpy.readthedocs.io/en/latest/healpy_harmonic_ud_grade_comparison.html>`_:
       demonstrates aliasing suppression, noise handling, and
       Gibbs-ringing tradeoffs with visual examples.
 
-    - `harmonic_ud_grade vs skytools comparison
+    - `harmonic_ud_grade vs skytools change_resolution
       <https://zonca.dev/posts/2026-05-05-healpy-skytools-change-resolution/>`_:
       side-by-side API comparison with ``skytools.change_resolution``,
       including custom beam transfer functions, pixel-window handling,
