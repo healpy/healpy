@@ -19,7 +19,7 @@ def _single_mode_map(nside, ell, emm=0):
 
 
 # ------------------------------------------------------------------
-# Backward-compatible tests (plain bandlimit clipping, no correction)
+# Basic functionality tests
 # ------------------------------------------------------------------
 
 
