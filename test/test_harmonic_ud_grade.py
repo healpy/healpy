@@ -163,7 +163,6 @@ def test_fwhm_out_smooths_output():
     nside_in = 128
     nside_out = 32
     lmax_out = 3 * nside_out - 1
-    rng = np.random.default_rng(42)
     cl = np.zeros(3 * nside_in)
     cl[2:] = np.arange(2, 3 * nside_in)[..., ::-1].astype(float)
     input_map = hp.synfast(cl, nside_in, new=True)
@@ -190,7 +189,7 @@ def test_fwhm_out_default_applies_beam():
     """Passing fwhm_out=None auto-computes the effective resolution beam and differs from 0.
 
     The effective resolution beam (fwhm_out=None) computes
-    PLANCK_K * nside2resol(nside_out), which should produce a visibly
+    effective_resolution_fwhm(nside_out), which should produce a visibly
     different (smoother) result than fwhm_out=0 (plain truncation).
     """
     nside_in = 128
@@ -222,7 +221,6 @@ def test_fwhm_in_deconvolves_input_beam():
     nside_out = 32
     fwhm = 0.05  # radians
 
-    rng = np.random.default_rng(7)
     cl = np.zeros(3 * nside_in)
     cl[2:] = 1.0
     input_map = hp.synfast(cl, nside_in, new=True)
@@ -328,7 +326,6 @@ def test_beam_window_in_overrides_fwhm_in():
     fwhm = 0.05  # radians
     lmax = 3 * nside_out - 1
 
-    rng = np.random.default_rng(42)
     input_map = hp.synfast(np.ones(3 * nside_in), nside_in, new=True)
 
     beam_in = hp.gauss_beam(fwhm, lmax=lmax)
@@ -357,7 +354,6 @@ def test_beam_window_out_overrides_fwhm_out():
     fwhm = 0.05  # radians
     lmax = 3 * nside_out - 1
 
-    rng = np.random.default_rng(42)
     input_map = hp.synfast(np.ones(3 * nside_in), nside_in, new=True)
 
     beam_out = hp.gauss_beam(fwhm, lmax=lmax)
@@ -385,7 +381,6 @@ def test_beam_window_custom_shape():
     nside_out = 16
     lmax = 3 * nside_out - 1
 
-    rng = np.random.default_rng(99)
     input_map = hp.synfast(np.ones(3 * nside_in), nside_in, new=True)
 
     # Top-hat beam: 1 up to lmax/2, then 0
@@ -506,7 +501,6 @@ def test_reconvolution_same_nside():
     fwhm_in = np.radians(5.0)
     fwhm_out = np.radians(15.0)
 
-    rng = np.random.default_rng(42)
     cl = np.zeros(3 * nside)
     cl[2:] = 1.0
     input_map = hp.synfast(cl, nside, new=True)
@@ -545,7 +539,6 @@ def test_reconvolution_with_beam_window():
     fwhm_out = np.radians(15.0)
     lmax = 3 * nside - 1
 
-    rng = np.random.default_rng(42)
     cl = np.zeros(3 * nside)
     cl[2:] = 1.0
     input_map = hp.synfast(cl, nside, new=True)
@@ -581,7 +574,6 @@ def test_input_type_alm_requires_nside_in():
     from the input (unlike maps where it comes from Npix), so it must
     be provided explicitly for the pixel-window correction to work.
     """
-    rng = np.random.default_rng(42)
     alm = hp.synalm(np.ones(100), lmax=99)
     with pytest.raises(ValueError, match="nside_in must be provided"):
         hp.harmonic_ud_grade(alm, nside_out=16, input_type="alm")
@@ -655,7 +647,6 @@ def test_input_type_alm_with_pixwin():
     nside_out = 16
     lmax = 3 * nside_out - 1
 
-    rng = np.random.default_rng(42)
     cl = np.zeros(lmax + 1)
     cl[2:] = 1.0 / np.arange(2, lmax + 1) ** 2
     alm = hp.synalm(cl, lmax=lmax)
@@ -769,6 +760,87 @@ def test_input_type_alm_rejects_unsupported_multi_alm():
         )
 
 
+def test_input_type_alm_teb_mismatched_sizes_raises():
+    """input_type='alm' rejects a TEB triplet whose components have different sizes.
+
+    The function assumes all three TEB alms share the same lmax (true for
+    everything healpy itself produces). A hostile caller could pass
+    mismatched sizes; the function must catch this early with a clear
+    ValueError rather than crashing later with a confusing shape error.
+    """
+    nside_in = 32
+    nside_out = 16
+    lmax_a = 3 * nside_out - 1
+    lmax_b = 3 * nside_out  # different lmax
+    alm_a = np.zeros(hp.Alm.getsize(lmax_a), dtype=np.complex128)
+    alm_b = np.zeros(hp.Alm.getsize(lmax_b), dtype=np.complex128)
+
+    with pytest.raises(ValueError, match="TEB.*same size|same.*size"):
+        hp.harmonic_ud_grade(
+            [alm_a, alm_b, alm_a], nside_out=nside_out, nside_in=nside_in,
+            input_type="alm",
+        )
+
+
+def test_input_type_alm_warns_on_ignored_args():
+    """input_type='alm' warns when args that only apply to the map path are set.
+
+    The ``iter``, ``use_weights``, ``use_pixel_weights``, and ``datapath``
+    arguments are only used by the map2alm step. When ``input_type='alm'``
+    skips that step, setting any of these to a non-default value is a
+    debugging pitfall and must emit a UserWarning.
+    """
+    nside_in = 32
+    nside_out = 16
+    lmax = 3 * nside_out - 1
+    alm = np.zeros(hp.Alm.getsize(lmax), dtype=np.complex128)
+    alm[hp.Alm.getidx(lmax, 5, 0)] = 1.0
+
+    common = dict(
+        nside_out=nside_out, nside_in=nside_in, input_type="alm",
+        pixwin=False, fwhm_out=0,
+    )
+
+    # iter (default is None for harmonic_ud_grade)
+    with pytest.warns(UserWarning, match="iter.*ignored.*input_type='alm'"):
+        hp.harmonic_ud_grade(alm, iter=3, **common)
+
+    # use_weights (default False)
+    with pytest.warns(UserWarning, match="use_weights.*ignored.*input_type='alm'"):
+        hp.harmonic_ud_grade(alm, use_weights=True, **common)
+
+    # use_pixel_weights (default True) — explicit True is fine (matches default)
+    # but explicit False should warn since the user is asking for non-default behavior
+    with pytest.warns(UserWarning, match="use_pixel_weights.*ignored.*input_type='alm'"):
+        hp.harmonic_ud_grade(alm, use_pixel_weights=False, **common)
+
+    # datapath (default None)
+    with pytest.warns(UserWarning, match="datapath.*ignored.*input_type='alm'"):
+        hp.harmonic_ud_grade(alm, datapath="/tmp", **common)
+
+
+def test_input_type_alm_no_warning_when_defaults():
+    """input_type='alm' is silent when only default values are passed for ignored args.
+
+    Default values for ``iter``, ``use_weights``, ``use_pixel_weights``,
+    and ``datapath`` must not trigger the ignored-args warning — otherwise
+    every alm-path call would be noisy.
+    """
+    nside_in = 32
+    nside_out = 16
+    lmax = 3 * nside_out - 1
+    alm = np.zeros(hp.Alm.getsize(lmax), dtype=np.complex128)
+    alm[hp.Alm.getidx(lmax, 5, 0)] = 1.0
+
+    import warnings
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")  # any warning becomes an error
+        hp.harmonic_ud_grade(
+            alm, nside_out=nside_out, nside_in=nside_in,
+            input_type="alm", pixwin=False, fwhm_out=0,
+        )
+
+
 def test_input_type_alm_with_beam():
     """input_type='alm' correctly applies beam transfer functions.
 
@@ -781,7 +853,6 @@ def test_input_type_alm_with_beam():
     nside_out = 32
     lmax = 3 * nside_out - 1
 
-    rng = np.random.default_rng(42)
     cl = np.zeros(lmax + 1)
     cl[2:] = 1.0 / np.arange(2, lmax + 1) ** 2
     alm = hp.synalm(cl, lmax=lmax)
@@ -820,7 +891,6 @@ def test_input_type_alm_same_nside_reconvolution():
     nside = 32
     lmax = 3 * nside - 1
 
-    rng = np.random.default_rng(42)
     cl = np.zeros(lmax + 1)
     cl[2:] = 1.0 / np.arange(2, lmax + 1) ** 2
     alm = hp.synalm(cl, lmax=lmax)

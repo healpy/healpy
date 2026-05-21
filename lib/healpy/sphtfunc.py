@@ -18,6 +18,7 @@
 #  For more information about Healpy, see http://code.google.com/p/healpy
 #
 import logging
+import warnings
 
 log = logging.getLogger("healpy")
 import numpy as np
@@ -53,8 +54,9 @@ MAX_NSIDE = (
 
 # Planck 2013 XXIII Table 1: the 100 GHz channel at Nside=64 has FWHM = 160 arcmin.
 # The FWHM-to-pixel-size ratio K = 160 arcmin / nside2resol(64) ≈ 2.91
-# is used consistently across all Planck resolution levels.
-PLANCK_K = 160.0 / (np.degrees(pixelfunc.nside2resol(64)) * 60)
+# is used consistently across all Planck resolution levels. Private constant
+# (implementation detail of harmonic_ud_grade / effective_resolution_fwhm).
+_PLANCK_K = 160.0 / (np.degrees(pixelfunc.nside2resol(64)) * 60)
 
 
 def effective_resolution_fwhm(nside, arcmin=False):
@@ -63,9 +65,9 @@ def effective_resolution_fwhm(nside, arcmin=False):
     The effective resolution beam is the Gaussian FWHM corresponding to the
     Planck standard resolution at a given NSIDE, computed as::
 
-        fwhm = PLANCK_K * nside2resol(nside)
+        fwhm = _PLANCK_K * nside2resol(nside)
 
-    where ``PLANCK_K ≈ 2.91`` reproduces the 160-arcmin beam at NSIDE 64
+    where ``_PLANCK_K ≈ 2.91`` reproduces the 160-arcmin beam at NSIDE 64
     used across all Planck resolution levels
     (Planck Collaboration 2015 X, `arXiv:1502.01588`).
 
@@ -97,7 +99,7 @@ def effective_resolution_fwhm(nside, arcmin=False):
     >>> hp.effective_resolution_fwhm(256, arcmin=True)
     40.0
     """
-    fwhm = PLANCK_K * pixelfunc.nside2resol(nside)
+    fwhm = _PLANCK_K * pixelfunc.nside2resol(nside)
     if arcmin:
         fwhm = np.degrees(fwhm) * 60
     return fwhm
@@ -806,6 +808,10 @@ def harmonic_ud_grade(
       ``min(3 * nside_out - 1, 3 * nside_in - 1)``.
     mmax : int, optional
       Maximum m of the alm. Default: ``lmax``.
+      When ``input_type='alm'``, the input :math:`a_{\ell m}` are
+      assumed to follow the standard healpy convention
+      ``mmax_in == lmax_in`` (as produced by ``synalm``, ``map2alm``,
+      and friends).
     iter : int, optional
       Number of map2alm iterations. If None, defaults to 0 when using
       pixel weights with ``lmax <= 1.5 * nside_in`` and 3 otherwise.
@@ -830,10 +836,12 @@ def harmonic_ud_grade(
       **effective resolution beam** — a Gaussian whose FWHM is
       proportional to the output pixel size::
 
-          fwhm_out = PLANCK_K * nside2resol(nside_out)
+          fwhm_out = effective_resolution_fwhm(nside_out)
 
-      where ``PLANCK_K ≈ 2.91`` reproduces the 160-arcmin beam at
-      NSIDE 64 used across all Planck resolution levels
+      i.e. ``_PLANCK_K * nside2resol(nside_out)``, with
+      ``_PLANCK_K = 160.0 / (degrees(nside2resol(64)) * 60)``
+      (≈ 2.91).  This scaling was used by the Planck Collaboration
+      to define the effective beam FWHM at each HEALPix resolution
       (Planck Collaboration 2015 X, `arXiv:1502.01588
       <https://arxiv.org/abs/1502.01588>`_).  Applying the
       effective resolution beam suppresses Gibbs ringing at the new
@@ -855,7 +863,12 @@ def harmonic_ud_grade(
       ``fwhm_out``.  Same format as ``beam_window_in``.
       When provided, ``fwhm_out`` is ignored.  Default: ``None``.
     use_weights : bool, optional
-      If True, use ring weights in map2alm.
+      If True, use HEALPix ring weights in ``map2alm`` instead of the
+      default unweighted quadrature. Ring weights improve SHT accuracy
+      at modest cost but are coarser than per-pixel weights — prefer
+      ``use_pixel_weights=True`` (the default) unless you specifically
+      need ring-weighted behavior for compatibility with another tool.
+      Default: ``False``.
     datapath : str, optional
       Directory where to find pixel weights, if needed.
     use_pixel_weights : bool, optional
@@ -901,7 +914,7 @@ def harmonic_ud_grade(
     Downgrade a CMB temperature map from NSIDE 256 to 64 with the
     effective resolution beam (recommended for diffuse signals).
     The output map will be smoothed to 160.0 arcmin
-    (``PLANCK_K × nside2resol(64)``)::
+    (``effective_resolution_fwhm(64)``)::
 
         m_out = hp.harmonic_ud_grade(m_in, nside_out=64, fwhm_out=None)
 
@@ -1019,6 +1032,22 @@ def harmonic_ud_grade(
                 "nside_in must be provided when input_type='alm' "
                 "(cannot be inferred from a_lm coefficients)"
             )
+        # Warn about args that only apply to the map2alm step we are skipping.
+        # Compare against the documented defaults so silent (default) calls
+        # stay quiet but explicit non-default settings flag a likely mistake.
+        for name, value, default in (
+            ("iter", iter, None),
+            ("use_weights", use_weights, False),
+            ("use_pixel_weights", use_pixel_weights, True),
+            ("datapath", datapath, None),
+        ):
+            if value != default:
+                warnings.warn(
+                    f"{name}={value!r} is ignored when input_type='alm' "
+                    "(it only applies to the map2alm step, which is skipped).",
+                    UserWarning,
+                    stacklevel=2,
+                )
         pixelfunc.check_nside(nside_in)
         alm = map_in  # input is already a_lm
         info = None  # not applicable; determine pol from alm shape
@@ -1033,6 +1062,16 @@ def harmonic_ud_grade(
                 is_polarized = False
                 alm = alm[0]
             elif len(alm) == 3:
+                # All three TEB components must share the same lmax. healpy's
+                # own producers (synalm, map2alm) guarantee this; reject
+                # mismatched sizes here rather than failing later inside
+                # alm2map with an opaque "Wrong alm size" message.
+                sizes = {len(a) for a in alm}
+                if len(sizes) != 1:
+                    raise ValueError(
+                        f"input_type='alm' TEB triplet components must have "
+                        f"the same size; got sizes {sorted(sizes)}."
+                    )
                 is_polarized = bool(pol)
             else:
                 raise ValueError(
@@ -1083,10 +1122,10 @@ def harmonic_ud_grade(
     # also passed).
     if fwhm_out is None:
         if beam_window_out is None:
-            fwhm_out = PLANCK_K * pixelfunc.nside2resol(nside_out)
+            fwhm_out = _PLANCK_K * pixelfunc.nside2resol(nside_out)
             log.info(
                 "harmonic_ud_grade: fwhm_out=None → effective resolution beam "
-                "= %.2f arcmin (PLANCK_K * nside2resol(%d))",
+                "= %.2f arcmin (effective_resolution_fwhm(%d))",
                 np.degrees(fwhm_out) * 60, nside_out,
             )
         else:
@@ -1187,12 +1226,18 @@ def harmonic_ud_grade(
         if alm_lmax is None:
             raise ValueError("input alm array size is not a valid a_lm size")
         if alm_lmax > lmax:
+            # resize_alm coerces a TEB list/tuple to a 2D ndarray internally and
+            # returns a Python list of 1D arrays; that's fine downstream because
+            # _apply_harmonic_transfer and alm2map both accept either shape, and
+            # is_polarized was already determined before this point.
             alm = resize_alm(alm, alm_lmax, alm_lmax, lmax, mmax)
         if need_transfer:
             alm = _apply_harmonic_transfer(alm, fl_T, fl_P)
         output = alm2map(
             alm, nside=nside_out, lmax=lmax, mmax=mmax, pixwin=False, pol=is_polarized
         )
+    # Single polarized triplet (map2alm handles TQU→TEB internally) or a
+    # single spin-0 map (info 0 = 1D ndarray, 1 = (1, Npix) ndarray).
     elif pol or info in (0, 1):
         alm = map2alm(
             maps,
