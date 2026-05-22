@@ -45,10 +45,11 @@ Other tools
 -----------
 .. autosummary::
    :toctree: generated/
-   
+
    gauss_beam
    beam2bl
    bl2beam
+   effective_resolution_fwhm
 
 Tutorial notebooks
 ------------------

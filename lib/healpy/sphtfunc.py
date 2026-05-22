@@ -873,20 +873,26 @@ def harmonic_ud_grade(
       ``fwhm_out``.  Same format as ``beam_window_in``.
       When provided, ``fwhm_out`` is ignored.  Default: ``None``.
     use_weights : bool, optional
-      If True, use HEALPix ring weights in ``map2alm`` instead of the
-      default unweighted quadrature. Ring weights improve SHT accuracy
-      at modest cost but are coarser than per-pixel weights — prefer
-      ``use_pixel_weights=True`` (the default) unless you specifically
-      need ring-weighted behavior for compatibility with another tool.
-      Default: ``False``.
+      If True, use HEALPix ring weights in ``map2alm``. Ring weights
+      improve SHT accuracy at modest cost but are coarser than per-pixel
+      weights.  To enable ring weights you must also pass
+      ``use_pixel_weights=False`` (the two weight schemes are mutually
+      exclusive).  Default: ``False`` — prefer the default
+      ``use_pixel_weights=True`` unless you specifically need
+      ring-weighted behavior for compatibility with another tool.
     datapath : str, optional
-      Directory where to find pixel weights, if needed.
+      Directory where to find the HEALPix pixel-weight FITS files
+      (``full_weights/healpix_full_weights_nside_NNNN.fits``).  If
+      ``None`` (default), the files are downloaded automatically and
+      cached via astropy.
     use_pixel_weights : bool, optional
-      If True, use per-pixel map2alm weights. Default: True.
-      Pixel weights are required by default for ``harmonic_ud_grade``;
-      if they are unavailable, an exception is raised instead of silently
-      falling back to an unweighted transform. Pass
-      ``use_pixel_weights=False`` to disable this behavior explicitly.
+      If True (default), use per-pixel ``map2alm`` weights for the
+      most accurate SHT.  Unlike plain ``map2alm`` (which silently
+      falls back if the weights file is missing), ``harmonic_ud_grade``
+      raises an exception when pixel weights are unavailable.  Pass
+      ``use_pixel_weights=False`` to disable this behavior explicitly
+      and fall back to unweighted quadrature (or ring weights, if
+      ``use_weights=True``).
     dtype : dtype, optional
       If provided, cast output map to this dtype.
     input_type : {'map', 'alm'}, optional
@@ -989,10 +995,8 @@ def harmonic_ud_grade(
     - **Pixel weights and iteration:** The default
       ``use_pixel_weights=True`` with automatic iteration provides
       the most accurate :math:`a_{\ell m}` for band-limited signals.
-      For reconvolution at the same NSIDE, the small difference
-      between pixel-weighted and ring-weighted SHT may produce
-      a structured residual; use ``use_pixel_weights=False`` if you
-      need exact agreement with a ring-weighted implementation.
+      To match a ring-weighted reference implementation instead,
+      pass ``use_pixel_weights=False, use_weights=True``.
 
     **Reconvolution at the same NSIDE:** When ``nside_out == nside_in``,
     the function performs beam reconvolution — deconvolving the input
