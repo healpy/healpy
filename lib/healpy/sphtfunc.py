@@ -60,28 +60,34 @@ _PLANCK_K = 160.0 / (np.degrees(pixelfunc.nside2resol(64)) * 60)
 
 
 def effective_resolution_fwhm(nside, arcmin=False):
-    """Return the effective resolution beam FWHM for a HEALPix NSIDE.
+    """Return the Planck effective-resolution beam FWHM for a HEALPix NSIDE.
 
-    The effective resolution beam is the Gaussian FWHM corresponding to the
-    Planck standard resolution at a given NSIDE, computed as::
+    The "effective resolution beam" is a Gaussian whose full-width
+    half-maximum (FWHM) scales with the HEALPix pixel size by a
+    constant ratio, calibrated so that NSIDE 64 yields the
+    160-arcmin beam adopted by Planck for its low-resolution products
+    (Planck Collaboration 2015 X, `arXiv:1502.01588
+    <https://arxiv.org/abs/1502.01588>`_).  Concretely, the FWHM
+    returned is::
 
-        fwhm = _PLANCK_K * nside2resol(nside)
+        fwhm = K * nside2resol(nside)
 
-    where ``_PLANCK_K ≈ 2.91`` reproduces the 160-arcmin beam at NSIDE 64
-    used across all Planck resolution levels
-    (Planck Collaboration 2015 X, `arXiv:1502.01588`).
+    where ``K = 160 arcmin / nside2resol(64) ≈ 2.91`` is a fixed
+    constant.  Doubling NSIDE therefore halves the FWHM (e.g. NSIDE
+    128 → 80 arcmin, NSIDE 256 → 40 arcmin).
 
-    This is the same value that ``harmonic_ud_grade`` applies when
-    ``fwhm_out=None``.  Use this function to look up the beam width
-    before calling ``harmonic_ud_grade`` so you know what smoothing
-    will be applied.
+    This is the same beam width that :func:`harmonic_ud_grade`
+    applies when called with ``fwhm_out=None``.  Use this function to
+    look up the beam width before downgrading so you know how much
+    smoothing will be applied to your map.
 
     Parameters
     ----------
     nside : int
       HEALPix NSIDE parameter.
     arcmin : bool, optional
-      If True, return FWHM in arcmin instead of radians.
+      If True, return the FWHM in arcmin.  Default: False, i.e.
+      return radians.
 
     Returns
     -------
@@ -92,12 +98,17 @@ def effective_resolution_fwhm(nside, arcmin=False):
     Examples
     --------
     >>> import healpy as hp
-    >>> hp.effective_resolution_fwhm(64)
-    0.0465...
     >>> hp.effective_resolution_fwhm(64, arcmin=True)
     160.0
+    >>> hp.effective_resolution_fwhm(128, arcmin=True)
+    80.0
     >>> hp.effective_resolution_fwhm(256, arcmin=True)
     40.0
+
+    See Also
+    --------
+    harmonic_ud_grade : Uses this FWHM by default when ``fwhm_out=None``.
+    nside2resol : Pixel angular size (radians) for a given NSIDE.
     """
     fwhm = _PLANCK_K * pixelfunc.nside2resol(nside)
     if arcmin:
@@ -831,23 +842,22 @@ def harmonic_ud_grade(
       input :math:`a_{\ell m}`.  Default: ``0`` (no input beam).
     fwhm_out : float or None, optional
       FWHM in **radians** of a Gaussian beam to apply to the output.
-      Default: ``0`` (no output beam — the :math:`a_{\ell m}` are simply
-      truncated at ``lmax`` and synthesized).  Pass ``None`` to use the
-      **effective resolution beam** — a Gaussian whose FWHM is
-      proportional to the output pixel size::
+      Default: ``0`` (no output beam — the :math:`a_{\ell m}` are
+      simply truncated at ``lmax`` and synthesized).  Pass ``None``
+      to use the **effective resolution beam**: a Gaussian whose
+      FWHM is proportional to the output pixel size, equivalent to::
 
-          fwhm_out = effective_resolution_fwhm(nside_out)
+          fwhm_out = hp.effective_resolution_fwhm(nside_out)
 
-      i.e. ``_PLANCK_K * nside2resol(nside_out)``, with
-      ``_PLANCK_K = 160.0 / (degrees(nside2resol(64)) * 60)``
-      (≈ 2.91).  This scaling was used by the Planck Collaboration
-      to define the effective beam FWHM at each HEALPix resolution
-      (Planck Collaboration 2015 X, `arXiv:1502.01588
-      <https://arxiv.org/abs/1502.01588>`_).  Applying the
-      effective resolution beam suppresses Gibbs ringing at the new
-      pixel scale and is recommended for science-grade CMB and diffuse
-      foreground maps.  Use :func:`effective_resolution_fwhm` to look
-      up the beam width for any NSIDE before calling this function.
+      This is the scaling adopted by the Planck Collaboration to
+      define the effective beam at each HEALPix resolution
+      (160 arcmin at NSIDE 64, halving with each NSIDE doubling;
+      see `arXiv:1502.01588 <https://arxiv.org/abs/1502.01588>`_).
+      Applying this beam suppresses Gibbs ringing around sharp
+      features at the new pixel scale and is the recommended choice
+      for science-grade maps of diffuse signals (CMB, Galactic
+      foregrounds).  Call :func:`effective_resolution_fwhm` to look
+      up the exact FWHM before downgrading.
     beam_window_in : array-like or None, optional
       Custom input beam transfer function to deconvolve, overriding
       ``fwhm_in``.  Follows the format returned by ``gauss_beam``:
@@ -903,7 +913,7 @@ def harmonic_ud_grade(
     recommended way to change a HEALPix map's resolution when the
     signal is **diffuse** and well-described by a power spectrum
     (e.g. CMB, Galactic foregrounds).  It avoids the aliasing and
-    ringing artefacts that ``ud_grade`` (pixel averaging) can
+    ringing artifacts that ``ud_grade`` (pixel averaging) can
     introduce for band-limited signals.  For maps dominated by
     **point sources** or sharp features (e.g. source catalogs,
     masks), ``ud_grade`` may be more appropriate — see the
@@ -1131,7 +1141,7 @@ def harmonic_ud_grade(
         else:
             fwhm_out = 0
 
-    # Validate and normalise beam_window arguments
+    # Validate and normalize beam_window arguments
     if beam_window_in is not None:
         beam_window_in = np.asarray(beam_window_in)
         if beam_window_in.ndim not in (1, 2):

@@ -1958,7 +1958,7 @@ def ud_grade(
     --------
     harmonic_ud_grade : Change resolution via spherical-harmonic transforms,
         with pixel-window and beam correction.  Recommended for diffuse
-        signals (CMB, foregrounds) to avoid aliasing and ringing artefacts.
+        signals (CMB, foregrounds) to avoid aliasing and ringing artifacts.
     """
     check_nside(nside_out, nest=order_in != "RING")
     typ = maptype(map_in)
