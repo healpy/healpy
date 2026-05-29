@@ -958,6 +958,24 @@ def test_input_type_alm_truncates_higher_lmax():
     np.testing.assert_allclose(m_out, m_ref, atol=1e-12)
 
 
+def test_input_type_alm_uses_lower_input_lmax_by_default():
+    """input_type='alm' accepts alm arrays below the default output bandlimit."""
+    nside_in = 64
+    nside_out = 32
+    lmax = 8
+
+    alm = np.zeros(hp.Alm.getsize(lmax), dtype=np.complex128)
+    alm[hp.Alm.getidx(lmax, 4, 0)] = 1.0
+
+    m_out = hp.harmonic_ud_grade(
+        alm, nside_out=nside_out, nside_in=nside_in,
+        input_type="alm", pol=False, pixwin=False, fwhm_out=0,
+    )
+    m_ref = hp.alm2map(alm, nside=nside_out, lmax=lmax, pixwin=False)
+
+    np.testing.assert_allclose(m_out, m_ref, atol=1e-12)
+
+
 def test_reconvolution_suppresses_high_ell_power():
     """Reconvolution to a wider beam suppresses high-ell power, not amplifies it.
 

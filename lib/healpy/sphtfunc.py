@@ -1123,6 +1123,22 @@ def harmonic_ud_grade(
         lmax = min(3 * nside_out - 1, 3 * nside_in - 1)
     if mmax is None:
         mmax = lmax
+    if input_type == "alm":
+        # Skip map2alm — input is already a_lm. We assume the standard
+        # healpy convention mmax_in == lmax_in for the size→lmax lookup.
+        if isinstance(alm, np.ndarray) and alm.ndim == 2:
+            alm_size = alm.shape[1]
+        elif isinstance(alm, (list, tuple)):
+            alm_size = len(alm[0])
+        else:
+            alm_size = len(alm)
+        alm_lmax = Alm.getlmax(alm_size)
+        if alm_lmax is None:
+            raise ValueError("input alm array size is not a valid a_lm size")
+        if alm_lmax < lmax:
+            lmax = alm_lmax
+            if mmax > lmax:
+                mmax = lmax
     if iter is None:
         # HEALPix guidance: per-pixel weights achieve near-machine-precision
         # SHT accuracy without iteration when lmax <= 1.5 * nside_in.
@@ -1232,13 +1248,6 @@ def harmonic_ud_grade(
             fl_P = None
 
     if input_type == "alm":
-        # Skip map2alm — input is already a_lm. We assume the standard
-        # healpy convention mmax_in == lmax_in for the size→lmax lookup.
-        alm_lmax = Alm.getlmax(
-            len(alm) if not isinstance(alm, (list, tuple)) else len(alm[0])
-        )
-        if alm_lmax is None:
-            raise ValueError("input alm array size is not a valid a_lm size")
         if alm_lmax > lmax:
             # resize_alm coerces a TEB list/tuple to a 2D ndarray internally and
             # returns a Python list of 1D arrays; that's fine downstream because
