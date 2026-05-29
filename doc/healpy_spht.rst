@@ -33,6 +33,7 @@ Spherical harmonic transform tools
    
    smoothing
    smoothalm
+   harmonic_ud_grade
    alm2cl
    synalm
    almxfl
@@ -44,7 +45,8 @@ Other tools
 -----------
 .. autosummary::
    :toctree: generated/
-   
+
    gauss_beam
    beam2bl
    bl2beam
+   effective_resolution_fwhm

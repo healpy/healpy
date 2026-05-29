@@ -1,5 +1,6 @@
 Unreleased
 
+* Added ``harmonic_ud_grade`` to change map NSIDE via spherical-harmonic transforms, providing an artifact-resistant alternative to pixel-space ``ud_grade`` for diffuse signals. The new API supports pixel-window and beam transfer corrections, direct :math:`a_{\ell m}` input, API cross-links from ``ud_grade``, and a tutorial notebook comparing downgrade workflows https://github.com/healpy/healpy/pull/1081
 * Added `return_ranges` parameter to `query_disc`, `query_polygon`, and `query_strip` functions to return pixel ranges instead of individual pixel indices, reducing memory usage from O(N) to O(√N) for large queries https://github.com/healpy/healpy/pull/1077
 * CI: build Linux wheels with manylinux_2_28 for x86_64/aarch64 to avoid SciPy source builds failing on missing OpenBLAS https://github.com/healpy/healpy/pull/1075
 * Docs: clarify pkg-config fallback guidance and remove pykg-config reference https://github.com/healpy/healpy/pull/1074

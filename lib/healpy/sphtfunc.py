@@ -18,6 +18,7 @@
 #  For more information about Healpy, see http://code.google.com/p/healpy
 #
 import logging
+import warnings
 
 log = logging.getLogger("healpy")
 import numpy as np
@@ -50,6 +51,69 @@ DATAPATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
 MAX_NSIDE = (
     8192  # The maximum nside up to which most operations (e.g. map2alm) will work
 )
+
+# Planck 2013 XXIII Table 1: the 100 GHz channel at Nside=64 has FWHM = 160 arcmin.
+# The FWHM-to-pixel-size ratio K = 160 arcmin / nside2resol(64) ≈ 2.91
+# is used consistently across all Planck resolution levels. Private constant
+# (implementation detail of harmonic_ud_grade / effective_resolution_fwhm).
+_PLANCK_K = 160.0 / (np.degrees(pixelfunc.nside2resol(64)) * 60)
+
+
+def effective_resolution_fwhm(nside, arcmin=False):
+    """Return the Planck effective-resolution beam FWHM for a HEALPix NSIDE.
+
+    The "effective resolution beam" is a Gaussian whose full-width
+    half-maximum (FWHM) scales with the HEALPix pixel size by a
+    constant ratio, calibrated so that NSIDE 64 yields the
+    160-arcmin beam adopted by Planck for its low-resolution products
+    (Planck Collaboration 2015 X, `arXiv:1502.01588
+    <https://arxiv.org/abs/1502.01588>`_).  Concretely, the FWHM
+    returned is::
+
+        fwhm = K * nside2resol(nside)
+
+    where ``K = 160 arcmin / nside2resol(64) ≈ 2.91`` is a fixed
+    constant.  Doubling NSIDE therefore halves the FWHM (e.g. NSIDE
+    128 → 80 arcmin, NSIDE 256 → 40 arcmin).
+
+    This is the same beam width that :func:`harmonic_ud_grade`
+    applies when called with ``fwhm_out=None``.  Use this function to
+    look up the beam width before downgrading so you know how much
+    smoothing will be applied to your map.
+
+    Parameters
+    ----------
+    nside : int
+      HEALPix NSIDE parameter.
+    arcmin : bool, optional
+      If True, return the FWHM in arcmin.  Default: False, i.e.
+      return radians.
+
+    Returns
+    -------
+    fwhm : float
+      FWHM of the effective resolution beam, in radians (default) or
+      arcmin if ``arcmin=True``.
+
+    Examples
+    --------
+    >>> import healpy as hp
+    >>> hp.effective_resolution_fwhm(64, arcmin=True)
+    160.0
+    >>> hp.effective_resolution_fwhm(128, arcmin=True)
+    80.0
+    >>> hp.effective_resolution_fwhm(256, arcmin=True)
+    40.0
+
+    See Also
+    --------
+    harmonic_ud_grade : Uses this FWHM by default when ``fwhm_out=None``.
+    nside2resol : Pixel angular size (radians) for a given NSIDE.
+    """
+    fwhm = _PLANCK_K * pixelfunc.nside2resol(nside)
+    if arcmin:
+        fwhm = np.degrees(fwhm) * 60
+    return fwhm
 
 # Spherical harmonics transformation
 def anafast(
@@ -528,6 +592,716 @@ def alm2map(
         return output[0]
     else:
         return np.array(output)
+
+
+def _extract_beam_column(beam_window, polar_component):
+    """Extract the appropriate column from a beam_window array.
+
+    Parameters
+    ----------
+    beam_window : ndarray
+        Either 1D shape (lmax+1,) for temperature-only, or 2D shape
+        (lmax+1, N) with N >= 2 following gauss_beam output format
+        (column 0 = T, column 1 = E/B pol).
+    polar_component : bool
+        If True, extract polarization beam (column 1).
+        If False, extract temperature beam (column 0).
+
+    Returns
+    -------
+    beam : ndarray, shape (lmax+1,)
+    """
+    beam_window = np.asarray(beam_window)
+    if beam_window.ndim == 1:
+        if polar_component:
+            raise ValueError(
+                "beam_window is 1D (temperature-only) but polarization "
+                "beam was requested. Provide a 2D beam_window with at "
+                "least 2 columns following gauss_beam(pol=True) format."
+            )
+        return beam_window
+    elif beam_window.ndim == 2:
+        col = 1 if polar_component else 0
+        return beam_window[:, col]
+    else:
+        raise ValueError(
+            f"beam_window must be 1D or 2D, got {beam_window.ndim}D"
+        )
+
+
+
+def _pixwin_TP(nside, lmax):
+    """Return (pw_T, pw_P) at this nside up to lmax, with a single I/O call.
+
+    This wrapper exists because ``harmonic_ud_grade`` has a parameter named
+    ``pixwin`` (bool) that shadows the module-level ``pixwin`` function.
+    Calling the function directly inside ``harmonic_ud_grade`` would raise
+    ``TypeError: 'bool' object is not callable``.
+    """
+    pw_T, pw_P = pixwin(nside, pol=True, lmax=lmax)
+    return pw_T, pw_P
+
+
+def _resolve_beam(beam_window, gauss_bl, polar_component):
+    """Return a 1D beam array for the requested component, or None.
+
+    ``beam_window`` takes precedence (user-supplied custom beam). Otherwise
+    falls back to ``gauss_bl`` — the precomputed gauss_beam output for the
+    requested FWHM. Returns None when neither source provides a beam.
+
+    Note on shapes: ``gauss_beam(fwhm, lmax, pol=False)`` returns a 1D array,
+    while ``pol=True`` returns 2D with column 0 = T and column 1 = E/B. We
+    rely on that contract to select the right column here.
+
+    When ``polar_component=True`` but ``gauss_bl`` is 1D (i.e. the caller
+    computed the beam with ``pol=False``), the polarization column does not
+    exist. A ``ValueError`` is raised because silently returning the
+    temperature beam for polarization would produce incorrect results.
+    """
+    if beam_window is not None:
+        return _extract_beam_column(beam_window, polar_component)
+    if gauss_bl is None:
+        return None
+    # gauss_beam returns 1D for pol=False, 2D for pol=True. Pick the
+    # right component when the array is 2D.
+    if gauss_bl.ndim == 2:
+        return gauss_bl[:, 1 if polar_component else 0]
+    # 1D array: only valid for temperature (column 0).
+    if polar_component:
+        raise ValueError(
+            "polar_component=True but gauss_bl is 1D (computed with pol=False). "
+            "Call gauss_beam with pol=True to get polarization beam columns."
+        )
+    return gauss_bl
+
+
+def _build_harmonic_transfer(lmax, pw_in, pw_out, bl_in, bl_out):
+    """Build the per-ℓ transfer function from pre-resolved arrays.
+
+    Implements the effective beam transfer ratio
+    (Planck Collaboration 2015 X, `arXiv:1502.01588`):
+    ``fl[ℓ] = (p_out[ℓ] / p_in[ℓ]) * (b_out[ℓ] / b_in[ℓ])``
+
+    Each of pw_in/pw_out/bl_in/bl_out may be None, in which case the
+    corresponding factor is treated as 1.  Modes where the input pixel
+    window or input beam underflow to zero are set to ``fl[ℓ] = 0``
+    (no inverse possible), and a warning is logged.
+    """
+    fl = np.ones(lmax + 1)
+
+    if pw_in is not None and pw_out is not None:
+        safe = pw_in > 0
+        fl[safe] *= pw_out[safe] / pw_in[safe]
+        fl[~safe] = 0.0
+
+    if bl_in is not None:
+        safe = bl_in > 0
+        new_fl = np.zeros_like(fl)
+        new_fl[safe] = fl[safe] / bl_in[safe]
+        fl = new_fl
+        n_truncated = int(np.sum(~safe))
+        if n_truncated > 0:
+            log.warning(
+                "harmonic_ud_grade: input beam underflows at %d of %d "
+                "multipoles (l <= %d); transfer truncated to zero there. "
+                "Consider a smaller fwhm_in or a higher-resolution beam_window_in.",
+                n_truncated, lmax + 1, lmax,
+            )
+
+    if bl_out is not None:
+        fl *= bl_out
+
+    return fl
+
+
+def _apply_harmonic_transfer(alm, fl_T, fl_P=None):
+    """Return a new alm with per-ℓ transfer function(s) applied.
+
+    The caller's ``alm`` is never modified — a fresh array (or list of
+    arrays) is returned.
+
+    Parameters
+    ----------
+    alm : ndarray or list/tuple of ndarray
+        Spherical harmonic coefficients. Accepted shapes:
+
+        - 1D ndarray: single spin-0 field (apply ``fl_T``).
+        - list/tuple of 3 arrays or 2D ndarray with 3 rows: TEB triplet.
+          ``fl_T`` is applied to T; ``fl_P`` (if provided) to E and B.
+          When ``fl_P`` is None, ``fl_T`` is applied to all three.
+        - list/tuple of 1 array: unwrapped to a single spin-0 field.
+
+        Other shapes (e.g. 2-element lists, 2D with 2 rows) are not
+        rejected here but should be caught by the caller's validation
+        upstream (``harmonic_ud_grade`` rejects them for ``input_type='alm'``).
+
+    fl_T : ndarray
+        Temperature / scalar transfer function.
+    fl_P : ndarray, optional
+        Polarization transfer function for E and B components. Used only
+        for the TEB case (``len(alm) == 3``).
+    """
+    if len(alm) == 3 and isinstance(alm, (list, tuple, np.ndarray)):
+        if fl_P is not None:
+            return [
+                almxfl(alm[0], fl_T),
+                almxfl(alm[1], fl_P),
+                almxfl(alm[2], fl_P),
+            ]
+        # TEB triplet but no separate polarization transfer: apply fl_T
+        # to all three components (e.g. pixel-window-only case where
+        # T and P windows are identical).
+        return [
+            almxfl(alm[0], fl_T),
+            almxfl(alm[1], fl_T),
+            almxfl(alm[2], fl_T),
+        ]
+    if isinstance(alm, np.ndarray) and alm.ndim == 1:
+        return almxfl(alm, fl_T)
+    # list/tuple with len != 3, or 2D ndarray with != 3 rows.
+    # Apply fl_T to each element (spin-0 fallback).
+    return [almxfl(a, fl_T) for a in alm]
+
+
+def harmonic_ud_grade(
+    map_in,
+    nside_out,
+    nside_in=None,
+    lmax=None,
+    mmax=None,
+    iter=None,
+    pol=True,
+    pixwin=True,
+    fwhm_in=0,
+    fwhm_out=0,
+    beam_window_in=None,
+    beam_window_out=None,
+    use_weights=False,
+    datapath=None,
+    use_pixel_weights=True,
+    dtype=None,
+    input_type="map",
+):
+    r"""Change map NSIDE using spherical-harmonic transforms.
+
+    The input map is analyzed into :math:`a_{\ell m}` coefficients, optionally
+    corrected for pixel-window and beam transfer functions following
+    the effective beam transfer ratio
+    (Planck Collaboration 2015 X, `arXiv:1502.01588`), and synthesized at ``nside_out``:
+
+    .. math::
+
+        a^{\rm out}_{\ell m}
+        = \frac{p^{\rm out}_\ell}{p^{\rm in}_\ell}
+          \frac{b^{\rm out}_\ell}{b^{\rm in}_\ell}
+          \, a^{\rm in}_{\ell m}
+
+    where :math:`p_\ell` is the HEALPix pixel window function and
+    :math:`b_\ell` is a beam transfer function (Gaussian or custom).
+
+    The transfer is applied as a **single-step ratio**, so there is no
+    intermediate deconvolution that would amplify high-:math:`\ell` noise.
+
+    Parameters
+    ----------
+    map_in : array-like, shape (Npix,) or (n, Npix)
+      Input map(s), in RING ordering.  When ``input_type='alm'``,
+      this is interpreted as :math:`a_{\ell m}` coefficients instead
+      (see ``input_type`` below).
+    nside_out : int
+      Desired NSIDE of the output map(s).
+    nside_in : int, optional
+      NSIDE of the input.  Required when ``input_type='alm'`` (cannot
+      be inferred from :math:`a_{\ell m}`).  Ignored when
+      ``input_type='map'`` (inferred from the input map).
+    lmax : int, optional
+      Maximum multipole to retain. If None, defaults to
+      ``min(3 * nside_out - 1, 3 * nside_in - 1)``.
+    mmax : int, optional
+      Maximum m of the alm. Default: ``lmax``.
+      When ``input_type='alm'``, the input :math:`a_{\ell m}` are
+      assumed to follow the standard healpy convention
+      ``mmax_in == lmax_in`` (as produced by ``synalm``, ``map2alm``,
+      and friends).
+    iter : int, optional
+      Number of map2alm iterations. If None, defaults to 0 when using
+      pixel weights with ``lmax <= 1.5 * nside_in`` and 3 otherwise.
+      This follows the HEALPix guidance that pixel weights alone are
+      sufficient without iteration only in that lower-bandlimit regime.
+    pol : bool, optional
+      If True, treat 1- or 3-component input as polarized transforms
+      (TQU/TEB conventions). If False, transform each map independently
+      as spin-0.
+    pixwin : bool, optional
+      If True (default), deconvolve the input pixel window
+      :math:`p^{\rm in}_\ell` and apply the output pixel window
+      :math:`p^{\rm out}_\ell`.  For polarized maps the temperature and
+      polarization windows are handled separately.
+    fwhm_in : float, optional
+      FWHM in **radians** of a Gaussian beam to deconvolve from the
+      input :math:`a_{\ell m}`.  Default: ``0`` (no input beam).
+    fwhm_out : float or None, optional
+      FWHM in **radians** of a Gaussian beam to apply to the output.
+      Default: ``0`` (no output beam — the :math:`a_{\ell m}` are
+      simply truncated at ``lmax`` and synthesized).  Pass ``None``
+      to use the **effective resolution beam**: a Gaussian whose
+      FWHM is proportional to the output pixel size, equivalent to::
+
+          fwhm_out = hp.effective_resolution_fwhm(nside_out)
+
+      This is the scaling adopted by the Planck Collaboration to
+      define the effective beam at each HEALPix resolution
+      (160 arcmin at NSIDE 64, halving with each NSIDE doubling;
+      see `arXiv:1502.01588 <https://arxiv.org/abs/1502.01588>`_).
+      Applying this beam suppresses Gibbs ringing around sharp
+      features at the new pixel scale and is the recommended choice
+      for science-grade maps of diffuse signals (CMB, Galactic
+      foregrounds).  Call :func:`effective_resolution_fwhm` to look
+      up the exact FWHM before downgrading.
+    beam_window_in : array-like or None, optional
+      Custom input beam transfer function to deconvolve, overriding
+      ``fwhm_in``.  Follows the format returned by ``gauss_beam``:
+
+      - 1D array of shape ``(lmax+1,)`` for temperature-only.
+      - 2D array of shape ``(lmax+1, N)`` with ``N >= 2`` for
+        polarized transforms, where column 0 is the temperature beam
+        and column 1 is the polarization beam (E/B).
+
+      When provided, ``fwhm_in`` is ignored.  Default: ``None``.
+    beam_window_out : array-like or None, optional
+      Custom output beam transfer function to apply, overriding
+      ``fwhm_out``.  Same format as ``beam_window_in``.
+      When provided, ``fwhm_out`` is ignored.  Default: ``None``.
+    use_weights : bool, optional
+      If True, use HEALPix ring weights in ``map2alm``. Ring weights
+      improve SHT accuracy at modest cost but are coarser than per-pixel
+      weights.  To enable ring weights you must also pass
+      ``use_pixel_weights=False`` (the two weight schemes are mutually
+      exclusive).  Default: ``False`` — prefer the default
+      ``use_pixel_weights=True`` unless you specifically need
+      ring-weighted behavior for compatibility with another tool.
+    datapath : str, optional
+      Directory where to find the HEALPix pixel-weight FITS files
+      (``full_weights/healpix_full_weights_nside_NNNN.fits``).  If
+      ``None`` (default), the files are downloaded automatically and
+      cached via astropy.
+    use_pixel_weights : bool, optional
+      If True (default), use per-pixel ``map2alm`` weights for the
+      most accurate SHT.  Unlike plain ``map2alm`` (which silently
+      falls back if the weights file is missing), ``harmonic_ud_grade``
+      raises an exception when pixel weights are unavailable.  Pass
+      ``use_pixel_weights=False`` to disable this behavior explicitly
+      and fall back to unweighted quadrature (or ring weights, if
+      ``use_weights=True``).
+    dtype : dtype, optional
+      If provided, cast output map to this dtype.
+    input_type : {'map', 'alm'}, optional
+      Whether ``map_in`` is a pixel-space map (``'map'``, default) or
+      :math:`a_{\ell m}` coefficients (``'alm'``).  When ``'alm'``,
+      the ``map2alm`` step is skipped: the transfer function is applied
+      directly to the input :math:`a_{\ell m}` and synthesized at
+      ``nside_out``.  This is useful when you already have
+      :math:`a_{\ell m}` from a previous SHT and want to avoid a
+      redundant forward transform.  When ``input_type='alm'``,
+      ``nside_in`` must be provided explicitly, and the ``iter``,
+      ``use_weights``, ``use_pixel_weights``, and ``datapath``
+      parameters are ignored.
+
+    Returns
+    -------
+    map_out : ndarray
+      Output map(s) at ``nside_out``.
+
+    Notes
+    -----
+
+    **When to use this function:** ``harmonic_ud_grade`` is the
+    recommended way to change a HEALPix map's resolution when the
+    signal is **diffuse** and well-described by a power spectrum
+    (e.g. CMB, Galactic foregrounds).  It avoids the aliasing and
+    ringing artifacts that ``ud_grade`` (pixel averaging) can
+    introduce for band-limited signals.  For maps dominated by
+    **point sources** or sharp features (e.g. source catalogs,
+    masks), ``ud_grade`` may be more appropriate — see the
+    comparison tutorial linked below.
+
+    **Quick-start examples:**
+
+    Downgrade a CMB temperature map from NSIDE 256 to 64 with the
+    effective resolution beam (recommended for diffuse signals).
+    The output map will be smoothed to 160.0 arcmin
+    (``effective_resolution_fwhm(64)``)::
+
+        m_out = hp.harmonic_ud_grade(m_in, nside_out=64, fwhm_out=None)
+
+    Check the beam width before calling::
+
+        fwhm = hp.effective_resolution_fwhm(64, arcmin=True)  # 160.0 arcmin
+
+    Downgrade with plain bandlimit truncation (no output smoothing)::
+
+        m_out = hp.harmonic_ud_grade(m_in, nside_out=64)
+
+    Downgrade with explicit input beam and a custom output beam::
+
+        m_out = hp.harmonic_ud_grade(
+            m_in, nside_out=64,
+            fwhm_in=np.radians(30), fwhm_out=np.radians(60),
+        )
+
+    Reconvolve a map from a 10-arcmin beam to a 30-arcmin beam
+    at the same NSIDE (no resolution change)::
+
+        m_out = hp.harmonic_ud_grade(
+            m_in, nside_out=nside,
+            fwhm_in=np.radians(10/60), fwhm_out=np.radians(30/60),
+        )
+
+    Pass pre-computed :math:`a_{\ell m}` to skip the forward SHT::
+
+        m_out = hp.harmonic_ud_grade(
+            alm, nside_out=64, nside_in=256, input_type='alm',
+            fwhm_out=None,
+        )
+
+    **Best practices:**
+
+    - **Always specify ``fwhm_in``** when your input map has been
+      smoothed with a known beam.  If you don't, the output will
+      carry the input beam's attenuation into the new resolution
+      without correction, which can bias power-spectrum estimates.
+
+    - **Use the effective resolution beam** (``fwhm_out=None``) for
+      science-grade maps of diffuse signals (CMB, Galactic
+      foregrounds).  This applies the Planck-scaled beam that
+      suppresses Gibbs ringing at the new pixel scale (Planck
+      Collaboration 2015 X).  Plain bandlimit truncation
+      (``fwhm_out=0``, the default) is appropriate when you need the
+      sharpest possible output or when the downstream analysis
+      handles ringing separately.
+
+    - **Use ``pixwin=False``** to skip pixel-window correction entirely.
+      This is appropriate for noise maps (where deconvolving the pixel
+      window would incorrectly amplify high-:math:`\ell` noise) or when
+      you want only beam corrections without pixel-window effects.
+
+    - **Use ``input_type='alm'``** when you already have
+      :math:`a_{\ell m}` from a previous analysis step (e.g.
+      component separation, map-making).  This avoids a redundant
+      ``map2alm`` round-trip and is both faster and more accurate.
+      When ``input_type='alm'``, ``nside_in`` must also be provided
+      so that the correct input pixel window can be applied.
+
+    - **Pixel weights and iteration:** The default
+      ``use_pixel_weights=True`` with automatic iteration provides
+      the most accurate :math:`a_{\ell m}` for band-limited signals.
+      To match a ring-weighted reference implementation instead,
+      pass ``use_pixel_weights=False, use_weights=True``.
+
+    **Reconvolution at the same NSIDE:** When ``nside_out == nside_in``,
+    the function performs beam reconvolution — deconvolving the input
+    beam and applying the output beam while keeping the same pixelization.
+    This is similar to the HEALPix `process_alm
+    <https://healpix.sourceforge.io/html/fac_alteralm.htm>`_ /
+    ``alteralm`` facility.
+
+    **Tutorials:**
+
+    - `harmonic_ud_grade vs ud_grade comparison
+      <https://healpy.readthedocs.io/en/latest/healpy_harmonic_ud_grade_comparison.html>`_:
+      demonstrates aliasing suppression, noise handling, and
+      Gibbs-ringing tradeoffs with visual examples.
+
+    - `harmonic_ud_grade vs skytools change_resolution
+      <https://zonca.dev/posts/2026-05-05-healpy-skytools-change-resolution/>`_:
+      side-by-side API comparison with ``skytools.change_resolution``,
+      including custom beam transfer functions, pixel-window handling,
+      and ``input_type='alm'``.
+
+    See Also
+    --------
+    ud_grade : Change resolution by pixel averaging (faster, but
+        can introduce aliasing for band-limited signals).
+    gauss_beam : Compute Gaussian beam transfer functions for use
+        with ``beam_window_in`` / ``beam_window_out``.
+    """
+    if input_type not in ("map", "alm"):
+        raise ValueError(f"input_type must be 'map' or 'alm', got {input_type!r}")
+
+    # Validate FWHM values up front (cheap; fail fast before any I/O).
+    if fwhm_in < 0:
+        raise ValueError(
+            f"fwhm_in must be >= 0 (got {fwhm_in}). "
+            "Pass 0 to indicate no input beam."
+        )
+    if fwhm_out is not None and fwhm_out < 0:
+        raise ValueError(
+            f"fwhm_out must be >= 0 or None (got {fwhm_out}). "
+            "Pass 0 to disable output beam, or None for the default Planck scaling."
+        )
+
+    if input_type == "alm":
+        if nside_in is None:
+            raise ValueError(
+                "nside_in must be provided when input_type='alm' "
+                "(cannot be inferred from a_lm coefficients)"
+            )
+        # Warn about args that only apply to the map2alm step we are skipping.
+        # Compare against the documented defaults so silent (default) calls
+        # stay quiet but explicit non-default settings flag a likely mistake.
+        for name, value, default in (
+            ("iter", iter, None),
+            ("use_weights", use_weights, False),
+            ("use_pixel_weights", use_pixel_weights, True),
+            ("datapath", datapath, None),
+        ):
+            if value != default:
+                warnings.warn(
+                    f"{name}={value!r} is ignored when input_type='alm' "
+                    "(it only applies to the map2alm step, which is skipped).",
+                    UserWarning,
+                    stacklevel=2,
+                )
+        pixelfunc.check_nside(nside_in)
+        alm = map_in  # input is already a_lm
+        info = None  # not applicable; determine pol from alm shape
+        # Detect polarized input: list/tuple of 3 arrays, or 2D with 3 rows.
+        # For alm input we explicitly reject "multi-spin-0" shapes (2, 4+
+        # alm arrays) because we have no map-path analogue: the user must
+        # pass either a single 1D alm or a TEB triplet.
+        if isinstance(alm, np.ndarray) and alm.ndim == 1:
+            is_polarized = False
+        elif isinstance(alm, (list, tuple)):
+            if len(alm) == 1:
+                is_polarized = False
+                alm = alm[0]
+            elif len(alm) == 3:
+                # All three TEB components must share the same lmax. healpy's
+                # own producers (synalm, map2alm) guarantee this; reject
+                # mismatched sizes here rather than failing later inside
+                # alm2map with an opaque "Wrong alm size" message.
+                sizes = {len(a) for a in alm}
+                if len(sizes) != 1:
+                    raise ValueError(
+                        f"input_type='alm' TEB triplet components must have "
+                        f"the same size; got sizes {sorted(sizes)}."
+                    )
+                is_polarized = bool(pol)
+            else:
+                raise ValueError(
+                    f"input_type='alm' supports a single 1D alm array or a "
+                    f"TEB triplet (list/tuple of 3 alm arrays); got {len(alm)} "
+                    "arrays. Call once per component for other shapes."
+                )
+        elif isinstance(alm, np.ndarray) and alm.ndim == 2:
+            if alm.shape[0] == 1:
+                is_polarized = False
+                alm = alm[0]
+            elif alm.shape[0] == 3:
+                is_polarized = bool(pol)
+            else:
+                raise ValueError(
+                    f"input_type='alm' supports a 2D ndarray with 1 or 3 rows; "
+                    f"got shape {alm.shape}. Call once per component for "
+                    "other shapes."
+                )
+        else:
+            raise ValueError(
+                "input_type='alm' requires a 1D/2D ndarray or a list/tuple "
+                "of alm arrays."
+            )
+    else:
+        maps = ma_to_array(map_in)
+        info = maptype(maps)
+        nside_in = pixelfunc.get_nside(maps)
+
+    pixelfunc.check_nside(nside_out)
+    check_max_nside(nside_in)
+    check_max_nside(nside_out)
+
+    if lmax is None:
+        lmax = min(3 * nside_out - 1, 3 * nside_in - 1)
+    if mmax is None:
+        mmax = lmax
+    if input_type == "alm":
+        # Skip map2alm — input is already a_lm. We assume the standard
+        # healpy convention mmax_in == lmax_in for the size→lmax lookup.
+        if isinstance(alm, np.ndarray) and alm.ndim == 2:
+            alm_size = alm.shape[1]
+        elif isinstance(alm, (list, tuple)):
+            alm_size = len(alm[0])
+        else:
+            alm_size = len(alm)
+        alm_lmax = Alm.getlmax(alm_size)
+        if alm_lmax is None:
+            raise ValueError("input alm array size is not a valid a_lm size")
+        if alm_lmax < lmax:
+            lmax = alm_lmax
+            if mmax > lmax:
+                mmax = lmax
+    if iter is None:
+        # HEALPix guidance: per-pixel weights achieve near-machine-precision
+        # SHT accuracy without iteration when lmax <= 1.5 * nside_in.
+        # Beyond that regime, iterative map2alm (typically 3 iterations)
+        # is needed to suppress pixelization artifacts.
+        iter = 0 if use_pixel_weights and lmax <= 1.5 * nside_in else 3
+
+    # Resolve fwhm_out=None. If beam_window_out is provided it takes
+    # precedence in the beam-resolution helper below, so we leave fwhm_out
+    # at 0 in that case (the helper ignores fwhm when a window array is
+    # also passed).
+    if fwhm_out is None:
+        if beam_window_out is None:
+            fwhm_out = _PLANCK_K * pixelfunc.nside2resol(nside_out)
+            log.info(
+                "harmonic_ud_grade: fwhm_out=None → effective resolution beam "
+                "= %.2f arcmin (effective_resolution_fwhm(%d))",
+                np.degrees(fwhm_out) * 60, nside_out,
+            )
+        else:
+            fwhm_out = 0
+
+    # Validate and normalize beam_window arguments
+    if beam_window_in is not None:
+        beam_window_in = np.asarray(beam_window_in)
+        if beam_window_in.ndim not in (1, 2):
+            raise ValueError("beam_window_in must be 1D or 2D array")
+        if beam_window_in.shape[0] < lmax + 1:
+            raise ValueError(
+                f"beam_window_in has length {beam_window_in.shape[0]} but "
+                f"lmax={lmax} requires at least {lmax + 1} elements"
+            )
+        if beam_window_in.ndim == 1:
+            beam_window_in = beam_window_in[: lmax + 1]
+        else:
+            beam_window_in = beam_window_in[: lmax + 1, :]
+
+    if beam_window_out is not None:
+        beam_window_out = np.asarray(beam_window_out)
+        if beam_window_out.ndim not in (1, 2):
+            raise ValueError("beam_window_out must be 1D or 2D array")
+        if beam_window_out.shape[0] < lmax + 1:
+            raise ValueError(
+                f"beam_window_out has length {beam_window_out.shape[0]} but "
+                f"lmax={lmax} requires at least {lmax + 1} elements"
+            )
+        if beam_window_out.ndim == 1:
+            beam_window_out = beam_window_out[: lmax + 1]
+        else:
+            beam_window_out = beam_window_out[: lmax + 1, :]
+
+    if use_pixel_weights and input_type == "map":
+        filename = "full_weights/healpix_full_weights_nside_%04d.fits" % nside_in
+        if datapath is not None:
+            pixel_weights_filename = os.path.join(datapath, filename)
+            if not os.path.exists(pixel_weights_filename):
+                raise RuntimeError(
+                    "Pixel weights are required by default for harmonic_ud_grade, "
+                    f"but the file is missing at {pixel_weights_filename}. "
+                    "Either install/download the weights or pass "
+                    "use_pixel_weights=False."
+                )
+        else:
+            with data.conf.set_temp("dataurl", DATAURL), data.conf.set_temp(
+                "dataurl_mirror", DATAURL_MIRROR
+            ), data.conf.set_temp("remote_timeout", 30):
+                data.get_pkg_data_filename(filename, package="healpy")
+
+    # Determine polarization state for output alm2map
+    if input_type == "alm":
+        # Already set above during input_type='alm' validation
+        pass
+    else:
+        is_polarized = pol and info == 3
+
+    # Build harmonic transfer functions (effective beam transfer ratio).
+    # Cache pixwin and gauss_beam outputs so we don't recompute them when
+    # building both the temperature and polarization transfers.
+    need_transfer = (pixwin or fwhm_in > 0 or fwhm_out > 0
+                     or beam_window_in is not None or beam_window_out is not None)
+    if need_transfer:
+        if pixwin:
+            pw_in_T, pw_in_P = _pixwin_TP(nside_in, lmax)
+            pw_out_T, pw_out_P = _pixwin_TP(nside_out, lmax)
+        else:
+            pw_in_T = pw_out_T = pw_in_P = pw_out_P = None
+
+        # gauss_beam(pol=True) returns a 2D array with both T and P columns,
+        # so one call covers both components when we need polarization.
+        gauss_in = (
+            gauss_beam(fwhm_in, lmax=lmax, pol=is_polarized)
+            if fwhm_in > 0 else None
+        )
+        gauss_out = (
+            gauss_beam(fwhm_out, lmax=lmax, pol=is_polarized)
+            if fwhm_out > 0 else None
+        )
+
+        bl_in_T = _resolve_beam(beam_window_in, gauss_in, polar_component=False)
+        bl_out_T = _resolve_beam(beam_window_out, gauss_out, polar_component=False)
+        fl_T = _build_harmonic_transfer(lmax, pw_in_T, pw_out_T, bl_in_T, bl_out_T)
+        if is_polarized:
+            bl_in_P = _resolve_beam(beam_window_in, gauss_in, polar_component=True)
+            bl_out_P = _resolve_beam(beam_window_out, gauss_out, polar_component=True)
+            fl_P = _build_harmonic_transfer(lmax, pw_in_P, pw_out_P, bl_in_P, bl_out_P)
+        else:
+            fl_P = None
+
+    if input_type == "alm":
+        if alm_lmax > lmax:
+            # resize_alm coerces a TEB list/tuple to a 2D ndarray internally and
+            # returns a Python list of 1D arrays; that's fine downstream because
+            # _apply_harmonic_transfer and alm2map both accept either shape, and
+            # is_polarized was already determined before this point.
+            alm = resize_alm(alm, alm_lmax, alm_lmax, lmax, mmax)
+        if need_transfer:
+            alm = _apply_harmonic_transfer(alm, fl_T, fl_P)
+        output = alm2map(
+            alm, nside=nside_out, lmax=lmax, mmax=mmax, pixwin=False, pol=is_polarized
+        )
+    # Single polarized triplet (map2alm handles TQU→TEB internally) or a
+    # single spin-0 map (info 0 = 1D ndarray, 1 = (1, Npix) ndarray).
+    elif pol or info in (0, 1):
+        alm = map2alm(
+            maps,
+            lmax=lmax,
+            mmax=mmax,
+            iter=iter,
+            pol=pol,
+            use_weights=use_weights,
+            datapath=datapath,
+            use_pixel_weights=use_pixel_weights,
+        )
+        if need_transfer:
+            alm = _apply_harmonic_transfer(alm, fl_T, fl_P)
+        output = alm2map(
+            alm, nside=nside_out, lmax=lmax, mmax=mmax, pixwin=False, pol=pol
+        )
+    else:
+        output = []
+        for each_map in maps:
+            alm = map2alm(
+                each_map,
+                lmax=lmax,
+                mmax=mmax,
+                iter=iter,
+                pol=False,
+                use_weights=use_weights,
+                datapath=datapath,
+                use_pixel_weights=use_pixel_weights,
+            )
+            if need_transfer:
+                alm = _apply_harmonic_transfer(alm, fl_T)
+            output.append(
+                alm2map(
+                    alm, nside=nside_out, lmax=lmax, mmax=mmax, pixwin=False, pol=False
+                )
+            )
+        output = np.array(output)
+
+    if dtype is not None:
+        output = output.astype(dtype)
+    return output
 
 
 @deprecated_renamed_argument("verbose", None, "1.15.0")
@@ -1164,7 +1938,7 @@ def pixwin(nside, pol=False, lmax=None, datapath=None):
     -------
     pw or pwT,pwP : array or tuple of 2 arrays
       The temperature pixel window function, or a tuple with both
-      temperature and polarisation pixel window functions.
+      temperature and polarization pixel window functions.
     """
 
     if lmax is None:

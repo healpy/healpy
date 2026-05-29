@@ -50,6 +50,21 @@ nside/npix/resolution
    maptype
    ud_grade
 
+Notes on downgrade quality
+--------------------------
+
+For simple resolution changes, :func:`ud_grade` remains available and fast. It
+is usually the right choice for masks, hit-count maps, and compact
+pixel-localized features. For diffuse or band-limited downgrade workflows,
+:func:`healpy.sphtfunc.harmonic_ud_grade` can preserve the map more faithfully
+because it first band-limits the map in spherical-harmonic space before
+synthesizing it at the target ``nside``.
+
+See :func:`healpy.sphtfunc.harmonic_ud_grade` for the API and the following
+tutorial notebooks for worked comparisons:
+
+* :doc:`healpy_harmonic_ud_grade_comparison`
+
 Masking pixels
 --------------
 .. autosummary::
@@ -70,4 +85,3 @@ Map data manipulation
    remove_dipole
    remove_monopole
    get_interp_val
-
