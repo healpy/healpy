@@ -53,11 +53,12 @@ nside/npix/resolution
 Notes on downgrade quality
 --------------------------
 
-For simple resolution changes, :func:`ud_grade` remains available and fast.
-However, for downgrade workflows it can preserve the map less faithfully than
-:func:`healpy.sphtfunc.harmonic_ud_grade`, because ``harmonic_ud_grade`` first
-band-limits the map in spherical-harmonic space before synthesizing it at the
-target ``nside``.
+For simple resolution changes, :func:`ud_grade` remains available and fast. It
+is usually the right choice for masks, hit-count maps, and compact
+pixel-localized features. For diffuse or band-limited downgrade workflows,
+:func:`healpy.sphtfunc.harmonic_ud_grade` can preserve the map more faithfully
+because it first band-limits the map in spherical-harmonic space before
+synthesizing it at the target ``nside``.
 
 See :func:`healpy.sphtfunc.harmonic_ud_grade` for the API and the following
 tutorial notebooks for worked comparisons:

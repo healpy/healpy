@@ -50,10 +50,3 @@ Other tools
    beam2bl
    bl2beam
    effective_resolution_fwhm
-
-Tutorial notebooks
-------------------
-
-See also:
-
-* :doc:`healpy_harmonic_ud_grade_comparison`
