@@ -497,39 +497,24 @@ static char max_pixrad_signatures[] = {
   NPY_INT64, NPY_DOUBLE
 };
 
-#if PY_MAJOR_VERSION >= 3
 static PyModuleDef moduledef = {
   PyModuleDef_HEAD_INIT,
   "_healpy_pixel_lib",
   NULL, -1, NULL
 };
-#endif
 
-#if PY_MAJOR_VERSION < 3
-#define FREE_MODULE_AND_FAIL do { return; } while(0)
-#else
 #define FREE_MODULE_AND_FAIL do { Py_DECREF(m); return NULL; } while(0)
-#endif
 
 PyMODINIT_FUNC
-#if PY_MAJOR_VERSION < 3
-init_healpy_pixel_lib(void)
-#else
 PyInit__healpy_pixel_lib(void)
-#endif
 {
   PyObject *m;
 
   import_array();
   import_ufunc();
 
-#if PY_MAJOR_VERSION < 3
-  m = Py_InitModule3("_healpy_pixel_lib", NULL, docstring);
-	if (!m) return;
-#else
 	m = PyModule_Create(&moduledef);
 	if (!m) return NULL;
-#endif
 
   if (PyModule_AddObject(m, "_ang2pix_ring", PyUFunc_FromFuncAndData(
       ang2pix_ring_functions, blank_data,
@@ -674,7 +659,5 @@ PyInit__healpy_pixel_lib(void)
   if (PyModule_AddObject(m, "UNSEEN", PyFloat_FromDouble(Healpix_undef)) < 0)
     FREE_MODULE_AND_FAIL;
 
-#if PY_MAJOR_VERSION >= 3
   return m;
-#endif
 }
