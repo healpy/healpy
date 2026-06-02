@@ -23,7 +23,7 @@ authors = [
 ]
 license = {text = "GPL-2.0-only"}
 requires-python = ">=3.10"
-dependencies = ["numpy>=1.19", "astropy"]
+dependencies = ["numpy>=2.0.0", "astropy"]
 
 [project.optional-dependencies]
 all = ["matplotlib", "scipy"]
@@ -62,7 +62,7 @@ issues = "https://github.com/healpy/healpy/issues"
 requires = ["setuptools>=77",
             "setuptools-scm>=8.0",
             "cython>=0.16",
-            "numpy>=2.0.0rc1",
+            "numpy>=2.0.0",
             "pykg-config"]
 
 build-backend = 'setuptools.build_meta'

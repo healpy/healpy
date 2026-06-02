@@ -387,13 +387,13 @@ static void
 }
 
 
-static char *docstring = CP_(
+static char *docstring =
   "This module contains basic ufunc related to healpix pixelisation\n"
   "scheme, such as ang2pix, ring<->nest swapping, etc.\n"
   "\n"
   "Available ufunc: _ang2pix_ring, _ang2pix_nest, _pix2ang_ring,\n"
   "                 _pix2ang_nest, _ring2nest, _nest2ring,\n"
-  "                 _get_interpol_ring, _get_interpol_nest.");
+  "                 _get_interpol_ring, _get_interpol_nest.";
 
 /* to define the ufunc */
 static PyUFuncGenericFunction ang2pix_ring_functions[] = {
@@ -455,209 +455,208 @@ static PyUFuncGenericFunction max_pixrad_functions[] = {
 };
 
 
-static void * blank_data[] = { (void *)NULL };
+static void *const blank_data[] = { (void *)NULL };
 
-static char ang2pix_signatures[] = {
+static const char ang2pix_signatures[] = {
   NPY_INT64, NPY_DOUBLE, NPY_DOUBLE, NPY_INT64
 };
-static char pix2ang_signatures[] = {
+static const char pix2ang_signatures[] = {
   NPY_INT64, NPY_INT64, NPY_DOUBLE, NPY_DOUBLE
 };
-static char xyf2pix_signatures[] = {
+static const char xyf2pix_signatures[] = {
   NPY_INT64, NPY_INT64, NPY_INT64, NPY_INT64, NPY_INT64
 };
-static char pix2xyf_signatures[] = {
+static const char pix2xyf_signatures[] = {
   NPY_INT64, NPY_INT64, NPY_INT64, NPY_INT64, NPY_INT64
 };
-static char pix2vec_signatures[] = {
+static const char pix2vec_signatures[] = {
   NPY_INT64, NPY_INT64, NPY_DOUBLE, NPY_DOUBLE, NPY_DOUBLE
 };
-static char vec2pix_signatures[] = {
+static const char vec2pix_signatures[] = {
   NPY_INT64, NPY_DOUBLE, NPY_DOUBLE, NPY_DOUBLE, NPY_INT64
 };
-static char ring2nest_signatures[] = {
+static const char ring2nest_signatures[] = {
   NPY_INT64, NPY_INT64, NPY_INT64
 };
-static char get_interpol_signatures[] = {
+static const char get_interpol_signatures[] = {
   NPY_INT64, NPY_DOUBLE, NPY_DOUBLE,
   NPY_INT64, NPY_INT64, NPY_INT64, NPY_INT64,
   NPY_DOUBLE, NPY_DOUBLE, NPY_DOUBLE, NPY_DOUBLE
 };
-static char get_neighbors_ring_signatures[] = {
+static const char get_neighbors_ring_signatures[] = {
   NPY_INT64, NPY_INT64, // input
   NPY_INT64, NPY_INT64, NPY_INT64, NPY_INT64, // output
   NPY_INT64, NPY_INT64, NPY_INT64, NPY_INT64 // output
 };
-static char get_neighbors_nest_signatures[] = {
+static const char get_neighbors_nest_signatures[] = {
   NPY_INT64, NPY_INT64, // input
   NPY_INT64, NPY_INT64, NPY_INT64, NPY_INT64, // output
   NPY_INT64, NPY_INT64, NPY_INT64, NPY_INT64 // output
 };
-static char max_pixrad_signatures[] = {
+static const char max_pixrad_signatures[] = {
   NPY_INT64, NPY_DOUBLE
 };
+
+static int m_exec(PyObject *module) {
+  if (PyModule_AddObjectRef(module, "_ang2pix_ring", PyUFunc_FromFuncAndData(
+      ang2pix_ring_functions, blank_data,
+      ang2pix_signatures, 1,
+      3, 1, PyUFunc_None, "_ang2pix_ring",
+      "nside,theta,phi [rad] -> ipix (RING)",0)) < 0)
+    return -1;
+
+  if (PyModule_AddObjectRef(module, "_ang2pix_nest", PyUFunc_FromFuncAndData(
+      ang2pix_nest_functions, blank_data,
+      ang2pix_signatures, 1,
+      3, 1, PyUFunc_None, "_ang2pix_nest",
+      "nside,theta,phi [rad] -> ipix (NEST)",0)) < 0)
+    return -1;
+
+  if (PyModule_AddObjectRef(module, "_pix2ang_ring", PyUFunc_FromFuncAndData(
+      pix2ang_ring_functions, blank_data,
+      pix2ang_signatures, 1,
+      2, 2, PyUFunc_None, "_pix2ang_ring",
+      "nside,ipix -> theta,phi [rad] (RING)",0)) < 0)
+    return -1;
+
+  if (PyModule_AddObjectRef(module, "_pix2ang_nest", PyUFunc_FromFuncAndData(
+      pix2ang_nest_functions, blank_data,
+      pix2ang_signatures, 1,
+      2, 2, PyUFunc_None, "_pix2ang_nest",
+      "nside,ipix -> theta,phi [rad] (NEST)",0)) < 0)
+    return -1;
+
+  //=========
+
+  if (PyModule_AddObjectRef(module, "_xyf2pix_ring", PyUFunc_FromFuncAndData(
+      xyf2pix_ring_functions, blank_data,
+      xyf2pix_signatures, 1,
+      4, 1, PyUFunc_None, "_xyf2pix_ring",
+      "nside,x,y,face -> ipix (RING)",0)) < 0)
+    return -1;
+
+  if (PyModule_AddObjectRef(module, "_xyf2pix_nest", PyUFunc_FromFuncAndData(
+      xyf2pix_nest_functions, blank_data,
+      xyf2pix_signatures, 1,
+      4, 1, PyUFunc_None, "_xyf2pix_nest",
+      "nside,x,y,face -> ipix (NEST)",0)) < 0)
+    return -1;
+
+  if (PyModule_AddObjectRef(module, "_pix2xyf_ring", PyUFunc_FromFuncAndData(
+      pix2xyf_ring_functions, blank_data,
+      pix2xyf_signatures, 1,
+      2, 3, PyUFunc_None, "_pix2xyf_ring",
+      "nside,ipix -> x,y,face (RING)",0)) < 0)
+    return -1;
+
+  if (PyModule_AddObjectRef(module, "_pix2xyf_nest", PyUFunc_FromFuncAndData(
+      pix2xyf_nest_functions, blank_data,
+      pix2xyf_signatures, 1,
+      2, 3, PyUFunc_None, "_pix2xyf_nest",
+      "nside,ipix -> x,y,face (NEST)",0)) < 0)
+    return -1;
+
+  //=========
+
+  if (PyModule_AddObjectRef(module, "_vec2pix_ring", PyUFunc_FromFuncAndData(
+      vec2pix_ring_functions, blank_data,
+      vec2pix_signatures, 1,
+      4, 1, PyUFunc_None, "_vec2pix_ring",
+      "nside,x,y,z -> ipix (RING)",0)) < 0)
+    return -1;
+
+  if (PyModule_AddObjectRef(module, "_vec2pix_nest", PyUFunc_FromFuncAndData(
+      vec2pix_nest_functions, blank_data,
+      vec2pix_signatures, 1,
+      4, 1, PyUFunc_None, "_vec2pix_nest",
+      "nside,x,y,z -> ipix (NEST)",0)) < 0)
+    return -1;
+
+  if (PyModule_AddObjectRef(module, "_pix2vec_ring", PyUFunc_FromFuncAndData(
+      pix2vec_ring_functions, blank_data,
+      pix2vec_signatures, 1,
+      2, 3, PyUFunc_None, "_pix2vec_ring",
+      "nside,ipix -> x,y,z (RING)",0)) < 0)
+    return -1;
+
+  if (PyModule_AddObjectRef(module, "_pix2vec_nest", PyUFunc_FromFuncAndData(
+      pix2vec_nest_functions, blank_data,
+      pix2vec_signatures, 1,
+      2, 3, PyUFunc_None, "_pix2vec_nest",
+      "nside,ipix -> x,y,z (NEST)",0)) < 0)
+    return -1;
+
+  //=============
+
+  if (PyModule_AddObjectRef(module, "_ring2nest", PyUFunc_FromFuncAndData(
+      ring2nest_functions, blank_data,
+      ring2nest_signatures, 1,
+      2, 1, PyUFunc_None, "_ring2nest",
+      "ipix(ring) -> ipix(nest)",0)) < 0)
+    return -1;
+
+  if (PyModule_AddObjectRef(module, "_nest2ring", PyUFunc_FromFuncAndData(
+      nest2ring_functions, blank_data,
+      ring2nest_signatures, 1,
+      2, 1, PyUFunc_None, "_nest2ring",
+      "ipix(nest) -> ipix(ring)",0)) < 0)
+    return -1;
+
+  if (PyModule_AddObjectRef(module, "_get_interpol_ring", PyUFunc_FromFuncAndData(
+      get_interpol_ring_functions, blank_data,
+      get_interpol_signatures, 1,
+      3, 8, PyUFunc_None, "_get_interpol_ring",
+      "nside,theta,phi->4 nearest pixels+4weights",0)) < 0)
+    return -1;
+
+  if (PyModule_AddObjectRef(module, "_get_interpol_nest", PyUFunc_FromFuncAndData(
+      get_interpol_nest_functions, blank_data,
+      get_interpol_signatures, 1,
+      3, 8, PyUFunc_None, "_get_interpol_nest",
+      "nside,theta,phi->4 nearest pixels+4weights",0)) < 0)
+    return -1;
+
+  if (PyModule_AddObjectRef(module, "_get_neighbors_ring", PyUFunc_FromFuncAndData(
+      get_neighbors_ring_functions, blank_data,
+      get_neighbors_ring_signatures, 1,
+      2, 8, PyUFunc_None, "_get_neigbors_ring",
+      "nside, ipix [rad] -> 8 neighbors",0)) < 0)
+    return -1;
+
+  if (PyModule_AddObjectRef(module, "_get_neighbors_nest", PyUFunc_FromFuncAndData(
+      get_neighbors_nest_functions, blank_data,
+      get_neighbors_nest_signatures, 1,
+      2, 8, PyUFunc_None, "_get_neigbors_nest",
+      "nside, ipix [rad] -> 8 neighbors",0)) < 0)
+    return -1;
+
+
+  if (PyModule_AddObjectRef(module, "_max_pixrad", PyUFunc_FromFuncAndData(
+      max_pixrad_functions, blank_data,
+      max_pixrad_signatures, 1,
+      1, 1, PyUFunc_None, "max_pixrad",
+      "nside -> max_distance to pixel corners from center)",0)) < 0)
+    return -1;
+
+  if (PyModule_AddObjectRef(module, "UNSEEN", PyFloat_FromDouble(Healpix_undef)) < 0)
+    return -1;
+
+  return 0;
+}
 
 static PyModuleDef moduledef = {
   PyModuleDef_HEAD_INIT,
   "_healpy_pixel_lib",
-  NULL, -1, NULL
+  docstring, 0, NULL, (PyModuleDef_Slot []) {
+        {Py_mod_exec, (void *) m_exec},
+        {NULL, NULL}
+  }
 };
-
-#define FREE_MODULE_AND_FAIL do { Py_DECREF(m); return NULL; } while(0)
 
 PyMODINIT_FUNC
 PyInit__healpy_pixel_lib(void)
 {
-  PyObject *m;
-
   import_array();
   import_ufunc();
-
-	m = PyModule_Create(&moduledef);
-	if (!m) return NULL;
-
-  if (PyModule_AddObject(m, "_ang2pix_ring", PyUFunc_FromFuncAndData(
-      ang2pix_ring_functions, blank_data,
-      ang2pix_signatures, 1,
-      3, 1, PyUFunc_None, CP_("_ang2pix_ring"),
-      CP_("nside,theta,phi [rad] -> ipix (RING)"),0)) < 0)
-    FREE_MODULE_AND_FAIL;
-
-  if (PyModule_AddObject(m, "_ang2pix_nest", PyUFunc_FromFuncAndData(
-      ang2pix_nest_functions, blank_data,
-      ang2pix_signatures, 1,
-      3, 1, PyUFunc_None, CP_("_ang2pix_nest"),
-      CP_("nside,theta,phi [rad] -> ipix (NEST)"),0)) < 0)
-    FREE_MODULE_AND_FAIL;
-
-  if (PyModule_AddObject(m, "_pix2ang_ring", PyUFunc_FromFuncAndData(
-      pix2ang_ring_functions, blank_data,
-      pix2ang_signatures, 1,
-      2, 2, PyUFunc_None, CP_("_pix2ang_ring"),
-      CP_("nside,ipix -> theta,phi [rad] (RING)"),0)) < 0)
-    FREE_MODULE_AND_FAIL;
-
-  if (PyModule_AddObject(m, "_pix2ang_nest", PyUFunc_FromFuncAndData(
-      pix2ang_nest_functions, blank_data,
-      pix2ang_signatures, 1,
-      2, 2, PyUFunc_None, CP_("_pix2ang_nest"),
-      CP_("nside,ipix -> theta,phi [rad] (NEST)"),0)) < 0)
-    FREE_MODULE_AND_FAIL;
-
-  //=========
-
-  if (PyModule_AddObject(m, "_xyf2pix_ring", PyUFunc_FromFuncAndData(
-      xyf2pix_ring_functions, blank_data,
-      xyf2pix_signatures, 1,
-      4, 1, PyUFunc_None, CP_("_xyf2pix_ring"),
-      CP_("nside,x,y,face -> ipix (RING)"),0)) < 0)
-    FREE_MODULE_AND_FAIL;
-
-  if (PyModule_AddObject(m, "_xyf2pix_nest", PyUFunc_FromFuncAndData(
-      xyf2pix_nest_functions, blank_data,
-      xyf2pix_signatures, 1,
-      4, 1, PyUFunc_None, CP_("_xyf2pix_nest"),
-      CP_("nside,x,y,face -> ipix (NEST)"),0)) < 0)
-    FREE_MODULE_AND_FAIL;
-
-  if (PyModule_AddObject(m, "_pix2xyf_ring", PyUFunc_FromFuncAndData(
-      pix2xyf_ring_functions, blank_data,
-      pix2xyf_signatures, 1,
-      2, 3, PyUFunc_None, CP_("_pix2xyf_ring"),
-      CP_("nside,ipix -> x,y,face (RING)"),0)) < 0)
-    FREE_MODULE_AND_FAIL;
-
-  if (PyModule_AddObject(m, "_pix2xyf_nest", PyUFunc_FromFuncAndData(
-      pix2xyf_nest_functions, blank_data,
-      pix2xyf_signatures, 1,
-      2, 3, PyUFunc_None, CP_("_pix2xyf_nest"),
-      CP_("nside,ipix -> x,y,face (NEST)"),0)) < 0)
-    FREE_MODULE_AND_FAIL;
-
-  //=========
-
-  if (PyModule_AddObject(m, "_vec2pix_ring", PyUFunc_FromFuncAndData(
-      vec2pix_ring_functions, blank_data,
-      vec2pix_signatures, 1,
-      4, 1, PyUFunc_None, CP_("_vec2pix_ring"),
-      CP_("nside,x,y,z -> ipix (RING)"),0)) < 0)
-    FREE_MODULE_AND_FAIL;
-
-  if (PyModule_AddObject(m, "_vec2pix_nest", PyUFunc_FromFuncAndData(
-      vec2pix_nest_functions, blank_data,
-      vec2pix_signatures, 1,
-      4, 1, PyUFunc_None, CP_("_vec2pix_nest"),
-      CP_("nside,x,y,z -> ipix (NEST)"),0)) < 0)
-    FREE_MODULE_AND_FAIL;
-
-  if (PyModule_AddObject(m, "_pix2vec_ring", PyUFunc_FromFuncAndData(
-      pix2vec_ring_functions, blank_data,
-      pix2vec_signatures, 1,
-      2, 3, PyUFunc_None, CP_("_pix2vec_ring"),
-      CP_("nside,ipix -> x,y,z (RING)"),0)) < 0)
-    FREE_MODULE_AND_FAIL;
-
-  if (PyModule_AddObject(m, "_pix2vec_nest", PyUFunc_FromFuncAndData(
-      pix2vec_nest_functions, blank_data,
-      pix2vec_signatures, 1,
-      2, 3, PyUFunc_None, CP_("_pix2vec_nest"),
-      CP_("nside,ipix -> x,y,z (NEST)"),0)) < 0)
-    FREE_MODULE_AND_FAIL;
-
-  //=============
-
-  if (PyModule_AddObject(m, "_ring2nest", PyUFunc_FromFuncAndData(
-      ring2nest_functions, blank_data,
-      ring2nest_signatures, 1,
-      2, 1, PyUFunc_None, CP_("_ring2nest"),
-      CP_("ipix(ring) -> ipix(nest)"),0)) < 0)
-    FREE_MODULE_AND_FAIL;
-
-  if (PyModule_AddObject(m, "_nest2ring", PyUFunc_FromFuncAndData(
-      nest2ring_functions, blank_data,
-      ring2nest_signatures, 1,
-      2, 1, PyUFunc_None, CP_("_nest2ring"),
-      CP_("ipix(nest) -> ipix(ring)"),0)) < 0)
-    FREE_MODULE_AND_FAIL;
-
-  if (PyModule_AddObject(m, "_get_interpol_ring", PyUFunc_FromFuncAndData(
-      get_interpol_ring_functions, blank_data,
-      get_interpol_signatures, 1,
-      3, 8, PyUFunc_None, CP_("_get_interpol_ring"),
-      CP_("nside,theta,phi->4 nearest pixels+4weights"),0)) < 0)
-    FREE_MODULE_AND_FAIL;
-
-  if (PyModule_AddObject(m, "_get_interpol_nest", PyUFunc_FromFuncAndData(
-      get_interpol_nest_functions, blank_data,
-      get_interpol_signatures, 1,
-      3, 8, PyUFunc_None, CP_("_get_interpol_nest"),
-      CP_("nside,theta,phi->4 nearest pixels+4weights"),0)) < 0)
-    FREE_MODULE_AND_FAIL;
-
-  if (PyModule_AddObject(m, "_get_neighbors_ring", PyUFunc_FromFuncAndData(
-      get_neighbors_ring_functions, blank_data,
-      get_neighbors_ring_signatures, 1,
-      2, 8, PyUFunc_None, CP_("_get_neigbors_ring"),
-      CP_("nside, ipix [rad] -> 8 neighbors"),0)) < 0)
-    FREE_MODULE_AND_FAIL;
-
-  if (PyModule_AddObject(m, "_get_neighbors_nest", PyUFunc_FromFuncAndData(
-      get_neighbors_nest_functions, blank_data,
-      get_neighbors_nest_signatures, 1,
-      2, 8, PyUFunc_None, CP_("_get_neigbors_nest"),
-      CP_("nside, ipix [rad] -> 8 neighbors"),0)) < 0)
-    FREE_MODULE_AND_FAIL;
-
-
-  if (PyModule_AddObject(m, "_max_pixrad", PyUFunc_FromFuncAndData(
-      max_pixrad_functions, blank_data,
-      max_pixrad_signatures, 1,
-      1, 1, PyUFunc_None, CP_("max_pixrad"),
-      CP_("nside -> max_distance to pixel corners from center)"),0)) < 0)
-    FREE_MODULE_AND_FAIL;
-
-  if (PyModule_AddObject(m, "UNSEEN", PyFloat_FromDouble(Healpix_undef)) < 0)
-    FREE_MODULE_AND_FAIL;
-
-  return m;
+  return PyModuleDef_Init(&moduledef);
 }
