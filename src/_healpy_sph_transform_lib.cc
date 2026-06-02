@@ -886,7 +886,7 @@ static PyObject *healpy_synalm(PyObject *self, PyObject *args,
         {
           if( cls[i] == NULL )
             mat[i] = 0.0;
-          else if( PyArray_DIM(cls[i],0) < l )
+          else if( PyArray_DIM(cls[i],0) <= l )
             mat[i] = 0.0;
           else
             {

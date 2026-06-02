@@ -762,3 +762,18 @@ def test_synfast_lmax_with_none():
     np.random.seed(42)
     maps_zeros = hp.sphtfunc.synfast(c_ell_zeros, nside, verbose=False)
     assert maps_zeros.shape == (3, 12*nside**2), "Should work with zeros array"
+
+
+def test_synalm_truncated_cl_uses_zero_beyond_end():
+    lmax = 16
+    cl_storage = np.full(lmax + 1, 1e-5, dtype=np.float64)
+    cl_storage[lmax] = 1e6
+    cl_truncated = cl_storage[:-1]
+
+    np.random.seed(42)
+    alm_truncated = hp.synalm(cl_truncated, lmax=lmax)
+
+    np.random.seed(42)
+    alm_zero_padded = hp.synalm(np.concatenate((cl_truncated, [0.0])), lmax=lmax)
+
+    np.testing.assert_allclose(alm_truncated, alm_zero_padded)
