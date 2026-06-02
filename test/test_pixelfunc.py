@@ -4,7 +4,7 @@ from healpy._pixelfunc import pix2ring, isnsideok
 import numpy as np
 import unittest
 from healpy._query_disc import query_strip
-from healpy.pixelfunc import ring2nest
+from healpy.pixelfunc import ring2nest, pix2xyf, xyf2pix
 
 
 class TestPixelFunc(unittest.TestCase):
@@ -287,3 +287,18 @@ class TestPixelFunc(unittest.TestCase):
         actual_result = query_strip(nside, theta1, theta2, nest=True)
 
         np.testing.assert_array_equal(actual_result, expected_result)
+
+    def test_xyf2pix_pix2xyf_int64_roundtrip(self):
+        """Regression for cross-platform int64 ufunc behavior and xyf2pix round-trip."""
+        nside = 16
+        ipix = np.array([0, 427, 1440, 1520, 3068], dtype=np.int64)
+
+        for nest in (True, False):
+            x, y, face = pix2xyf(nside, ipix, nest=nest)
+            self.assertEqual(x.dtype, np.int64)
+            self.assertEqual(y.dtype, np.int64)
+            self.assertEqual(face.dtype, np.int64)
+
+            roundtrip = xyf2pix(nside, x, y, face, nest=nest)
+            self.assertEqual(roundtrip.dtype, np.int64)
+            np.testing.assert_array_equal(roundtrip, ipix)
