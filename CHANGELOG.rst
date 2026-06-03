@@ -1,5 +1,7 @@
 Unreleased
 
+* Fix off-by-one in ``synalm`` Cℓ boundary check that caused out-of-bounds reads when ``l == len(cl)`` https://github.com/healpy/healpy/pull/1108
+
 Release 1.20.0b1 29 May 2026
 
 * Added ``harmonic_ud_grade`` to change map NSIDE via spherical-harmonic transforms, providing an artifact-resistant alternative to pixel-space ``ud_grade`` for diffuse signals. The new API supports pixel-window and beam transfer corrections, direct :math:`a_{\\ell m}` input, API cross-links from ``ud_grade``, and a tutorial notebook comparing downgrade workflows https://github.com/healpy/healpy/pull/1081
