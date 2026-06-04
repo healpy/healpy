@@ -27,5 +27,10 @@ Commits follow a short, imperative summary (`Fix query_disc strip for NEST`). Gr
 
 **Never push directly to `main` without explicit user approval.** Always show the proposed changes and ask for confirmation before pushing to any protected branch.
 
+## CI Workflows
+- **Tests** (`.github/workflows/tests.yml`): Runs on every push to `main` and on pull requests. Matrix: Python 3.10–3.13 with stable astropy, plus one job with astropy pre-release (`continue-on-error: true`). Uses ccache to speed up C++ recompilation on repeat runs. Total job time ~4–5m cold, ~2m with ccache hits.
+- **Build & Publish** (`.github/workflows/cibuildwheel.yml`): Builds source dist and binary wheels for multiple platforms. Runs cibuildwheel smoke tests inside each wheel. Publishes to PyPI on GitHub release.
+- **Editable Install Check** (`.github/workflows/uv-editable-install.yml`): Verifies `uv pip install -e .` succeeds on PRs.
+
 ## Release Process
 Follow the checklist in `RELEASE.md` for tagging, wheel builds, and PyPI uploads. Confirm CI artifacts match the documented version bump and update communication channels as described there.
