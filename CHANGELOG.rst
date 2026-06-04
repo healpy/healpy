@@ -1,5 +1,6 @@
 Unreleased
 
+* CI: Added test workflow (`.github/workflows/tests.yml`) running the full test suite on Python 3.10–3.13 with ccache, plus an astropy pre-release job https://github.com/healpy/healpy/pull/1109
 * Fix off-by-one in ``synalm`` Cℓ boundary check that caused out-of-bounds reads when ``l == len(cl)`` https://github.com/healpy/healpy/pull/1108
 
 Release 1.20.0b1 29 May 2026
