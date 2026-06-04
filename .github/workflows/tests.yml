@@ -1,0 +1,65 @@
+name: Tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    # Weekly on Tuesday at 9 AM Pacific (16:00 UTC)
+    - cron: '0 16 * * 2'
+
+jobs:
+  test:
+    name: Python ${{ matrix.python-version }}${{ matrix.astropy-prerelease && ' (astropy pre-release)' || '' }}
+    runs-on: ubuntu-latest
+    continue-on-error: ${{ matrix.astropy-prerelease }}
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
+        astropy-prerelease: [false]
+        include:
+          - python-version: "3.13"
+            astropy-prerelease: true
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          submodules: recursive
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - uses: astral-sh/setup-uv@v7
+
+      - name: Setup ccache
+        uses: hendrikmuhs/ccache-action@v1.2.18
+        with:
+          key: ${{ runner.os }}-py${{ matrix.python-version }}
+          max-size: 256M
+
+      - name: Install dependencies
+        env:
+          CC: "ccache gcc"
+          CXX: "ccache g++"
+        run: |
+          uv venv .venv
+          if [ "${{ matrix.astropy-prerelease }}" = "true" ]; then
+            uv pip install --python .venv/bin/python --pre ".[test]" "astropy>=8.0.0.dev"
+          else
+            uv pip install --python .venv/bin/python ".[test]"
+          fi
+
+      - name: Run doctests
+        run: |
+          source .venv/bin/activate
+          pytest --doctest-plus --doctest-cython --pyargs healpy
+
+      - name: Run test suite
+        run: |
+          source .venv/bin/activate
+          pytest test/
