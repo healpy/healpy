@@ -36,7 +36,16 @@ jobs:
 
       - uses: astral-sh/setup-uv@v7
 
+      - name: Setup ccache
+        uses: hendrikmuhs/ccache-action@v1.2
+        with:
+          key: ${{ runner.os }}-py${{ matrix.python-version }}
+          max-size: 256M
+
       - name: Install dependencies
+        env:
+          CC: "ccache gcc"
+          CXX: "ccache g++"
         run: |
           uv venv .venv
           if [ "${{ matrix.astropy-prerelease }}" = "true" ]; then
