@@ -293,6 +293,13 @@ class Rotator(object):
         return self._do_rotation
 
     def get_inverse(self):
+        """Return a new Rotator representing the inverse rotation.
+
+        Returns
+        -------
+        inv_rot : Rotator
+            A new Rotator object that performs the inverse of this rotation.
+        """
         rots = self._rots[::-1]
         coords = self._coords[::-1]
         invs = [not i for i in self._invs[::-1]]
@@ -436,7 +443,17 @@ class Rotator(object):
         ----------
         m : np.ndarray
             Input map, single array is considered I, array with 3 rows:[I,Q,U]
-        other arguments : see map2alm
+        use_pixel_weights : bool, optional
+            If True, use pixel by pixel weighting in the map2alm step.
+            Default: True.
+        lmax : int, optional
+            Maximum l for the spherical harmonics transform. Default: 3*nside-1.
+        mmax : int, optional
+            Maximum m for the spherical harmonics transform. Default: lmax.
+        datapath : str or None, optional
+            If given, the directory where to find the pixel weights data.
+        verbose : bool, optional
+            Deprecated, has no effect.
 
         Returns
         -------
@@ -587,7 +604,7 @@ def rotateDirection(rotmat, theta, phi=None, do_rot=True, lonlat=False):
     theta : float, scalar or array-like
       The angle theta (scalar or shape (N,))
       or both angles (scalar or shape (2, N)) if phi is not given.
-    phi : float, scalar or array-like, optionnal
+    phi : float, scalar or array-like, optional
       The angle phi (scalar or shape (N,)).
     do_rot : bool, optional
       if True, really perform the operation, if False do nothing.
@@ -663,7 +680,7 @@ def dir2vec(theta, phi=None, lonlat=False):
     theta : float, scalar or array-like
       The angle theta (scalar or shape (N,))
       or both angles (scalar or shape (2, N)) if phi is not given.
-    phi : float, scalar or array-like, optionnal
+    phi : float, scalar or array-like, optional
       The angle phi (scalar or shape (N,)).
     lonlat : bool
       If True, input angles are assumed to be longitude and latitude in degree,

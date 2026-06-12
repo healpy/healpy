@@ -1,4 +1,4 @@
-.. healpy.visufunc:
+.. healpy.zoomtool:
 
 .. currentmodule:: healpy.zoomtool
 
@@ -12,3 +12,4 @@ Interactive map visualization
    :toctree: generated/
 
    mollzoom
+   set_g_clim

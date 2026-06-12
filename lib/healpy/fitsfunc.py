@@ -48,6 +48,10 @@ allowed_paths = (str, pathlib.Path)
 
 @deprecated(since="1.15.0")
 class HealpixFitsWarning(Warning):
+    """Warning class for FITS I/O issues in healpy.
+
+    .. deprecated:: 1.15.0
+    """
     pass
 
 
@@ -551,6 +555,8 @@ def write_alm(
       data type in the output file (must be a numpy dtype). Default: *alms*.real.dtype
     mmax_in : int, optional
       maximum m in the input array
+    overwrite : bool, optional
+      If True, overwrite the output file if it already exists. Default: False.
     """
 
     if not cb.is_seq_of_seq(alms):

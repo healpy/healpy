@@ -722,7 +722,7 @@ def ang2vec(theta, phi, lonlat=False):
 
     Parameters
     ----------
-    theta : float, scalar or arry-like
+    theta : float, scalar or array-like
       colatitude in radians measured southward from north pole (in [0,pi]).
     phi : float, scalar or array-like
       longitude in radians measured eastward (in [0, 2*pi]).
@@ -1259,6 +1259,9 @@ def isnsideok(nside, nest=False):
     ----------
     nside : int, scalar or array-like
       integer value to be tested
+    nest : bool, optional
+      if True, check if nside is valid for NESTED scheme (must be power of 2).
+      If False (default), RING scheme allows non-power-of-2 nside values.
 
     Returns
     -------

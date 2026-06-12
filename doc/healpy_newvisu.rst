@@ -14,7 +14,7 @@ Map projections
 .. autosummary::
    :toctree: generated/
 
-    projview
+   projview
 
 Tracing lines or points
 -----------------------

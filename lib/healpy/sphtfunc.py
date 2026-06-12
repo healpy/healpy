@@ -44,6 +44,11 @@ from ._sphtools import map2alm_spin_healpy as map2alm_spin
 
 
 class FutureChangeWarning(UserWarning):
+    """Warning class for upcoming breaking changes in healpy.
+
+    Issued when a feature's behavior will change in a future release.
+    Users should update their code to avoid future errors.
+    """
     pass
 
 
@@ -254,7 +259,7 @@ def map2alm(
 
     Pixel weights provide the most accurate transform, so you should always use them if
     possible. However they are not included in healpy and will be automatically downloaded
-    and cached in ~/.astropy the first time you compute a trasform at a specific nside.
+    and cached in ~/.astropy the first time you compute a transform at a specific nside.
 
     If datapath is specified, healpy will first check that local folder before downloading
     the weights.
@@ -292,7 +297,7 @@ def map2alm(
     use_pixel_weights: bool, optional
       If True, use pixel by pixel weighting, healpy will automatically download the weights, if needed
     verbose : bool, optional
-      Deprecated, has not effect.
+      Deprecated, has no effect.
 
     Returns
     -------
@@ -538,6 +543,8 @@ def alm2map(
       smoothing (if alm(s) are complex128 contiguous arrays).
       Otherwise, input alms are not modified. A copy is made if needed to
       apply beam smoothing or pixel window.
+    verbose : bool, optional
+      Deprecated, has no effect.
 
     Returns
     -------
@@ -1708,7 +1715,7 @@ def smoothalm(
       If True, the alm's are modified inplace if they are contiguous arrays
       of type complex128. Otherwise, a copy of alm is made. Default: True.
     verbose : bool, optional
-      Deprecated, has not effect.
+      Deprecated, has no effect.
 
     Returns
     -------
@@ -1836,7 +1843,7 @@ def smoothing(
       If given, the directory where to find the pixel weights data.
       See the docstring of `map2alm` for details on how to set it up
     verbose : bool, optional
-      Deprecated, has not effect.
+      Deprecated, has no effect.
     nest : bool, optional
       If True, the input map ordering is assumed to be NESTED. Default: False (RING)
       This function will temporary reorder the NESTED map into RING to perform the

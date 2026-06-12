@@ -187,6 +187,8 @@ def mollview(
       that scale with DPI ('large' for most text). To exactly reproduce plots from 
       previous versions, use: ``fontsize={'xlabel': 14, 'ylabel': 14, 'title': 14, 
       'cbar_label': 14}``
+    nlocs : int, optional
+      Number of colorbar tick locations. Default: 2
 
     See Also
     --------
@@ -431,7 +433,7 @@ def gnomview(
       The maximum range value
     flip : {'astro', 'geo'}, optional
       Defines the convention of projection : 'astro' (default, east towards left, west towards right)
-      or 'geo' (east towards roght, west towards left)
+      or 'geo' (east towards right, west towards left)
     remove_dip : bool, optional
       If :const:`True`, remove the dipole+monopole
     remove_mono : bool, optional
@@ -441,12 +443,17 @@ def gnomview(
       Removes points in latitude range [-gal_cut, +gal_cut]
     format : str, optional
       The format of the scale label. Default: '%g'
+    cbar : bool, optional
+      Display the colorbar. Default: True
     cmap : a color map
        The colormap to use (see matplotlib.cm)
     badcolor : str
       Color to use to plot bad values
     bgcolor : str
       Color to use for background
+    norm : {'hist', 'log', None}
+      Color normalization, hist= histogram equalized color mapping,
+      log= logarithmic color mapping, default: None (linear color mapping)
     hold : bool, optional
       If True, replace the current Axes by a GnomonicAxes.
       use this if you want to have multiple maps on the same
@@ -737,12 +744,16 @@ def cartview(
       A text describing the unit of the data. Default: ''
     xsize : int, optional
       The size of the image. Default: 800
+    ysize : None or int, optional
+      The vertical size of the image. Default: None= xsize
+    zat : float, optional
+      The zenith angle of the center of the projection in degrees. Default: None
     lonra : sequence, optional
       Range in longitude. Default: [-180,180]
     latra : sequence, optional
       Range in latitude. Default: [-90,90]
     title : str, optional
-      The title of the plot. Default: 'Mollweide view'
+      The title of the plot. Default: 'Cartesian view'
     nest : bool, optional
       If True, ordering scheme is NESTED. Default: False (RING)
     min : float, optional
@@ -751,7 +762,7 @@ def cartview(
       The maximum range value
     flip : {'astro', 'geo'}, optional
       Defines the convention of projection : 'astro' (default, east towards left, west towards right)
-      or 'geo' (east towards roght, west towards left)
+      or 'geo' (east towards right, west towards left)
     remove_dip : bool, optional
       If :const:`True`, remove the dipole+monopole
     remove_mono : bool, optional
@@ -768,6 +779,8 @@ def cartview(
     norm : {'hist', 'log', None}, optional
       Color normalization, hist= histogram equalized color mapping,
       log= logarithmic color mapping, default: None (linear color mapping)
+    aspect : str or None, optional
+      Aspect ratio of the axes. Default: None (auto)
     cmap : a color map
        The colormap to use (see matplotlib.cm)
     badcolor : str
@@ -1045,7 +1058,7 @@ def orthview(
       The maximum range value
     flip : {'astro', 'geo'}, optional
       Defines the convention of projection : 'astro' (default, east towards left, west towards right)
-      or 'geo' (east towards roght, west towards left)
+      or 'geo' (east towards right, west towards left)
     remove_dip : bool, optional
       If :const:`True`, remove the dipole+monopole
     remove_mono : bool, optional
@@ -1329,7 +1342,9 @@ def azeqview(
     xsize : int, optional
       The size of the image. Default: 800
     ysize : None or int, optional
-      The size of the image. Default: None= xsize
+      The vertical size of the image. Default: None= xsize
+    zat : float, optional
+      The zenith angle of the center of the projection in degrees. Default: None
     reso : float, optional
       Resolution (in arcmin). Default: 1.5 arcmin
     lamb : bool, optional
@@ -1348,7 +1363,7 @@ def azeqview(
       The maximum range value
     flip : {'astro', 'geo'}, optional
       Defines the convention of projection : 'astro' (default, east towards left, west towards right)
-      or 'geo' (east towards roght, west towards left)
+      or 'geo' (east towards right, west towards left)
     remove_dip : bool, optional
       If :const:`True`, remove the dipole+monopole
     remove_mono : bool, optional
@@ -1365,6 +1380,8 @@ def azeqview(
     norm : {'hist', 'log', None}
       Color normalization, hist= histogram equalized color mapping,
       log= logarithmic color mapping, default: None (linear color mapping)
+    aspect : str or None, optional
+      Aspect ratio of the axes. Default: None (auto)
     cmap : a color map
        The colormap to use (see matplotlib.cm)
     badcolor : str
