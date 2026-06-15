@@ -211,12 +211,13 @@ def write_map(
       internally from the numpy datatype to the fits convention. If a list,
       the length must correspond to the number of map arrays.
       Default: use the data type of the input array(s)
+
       .. note::
-      this changed in 1.15.0, previous versions saved in float32
-      by default
+         this changed in 1.15.0, previous versions saved in float32
+         by default
     overwrite : bool, optional
       If True, existing file is silently overwritten. Otherwise trying to write
-      an existing file raises an OSError (IOError for Python 2).
+      an existing file raises an OSError.
     """
     if not hasattr(m, "__len__"):
         raise TypeError("The map must be a sequence")

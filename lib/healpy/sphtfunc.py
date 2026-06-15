@@ -180,6 +180,9 @@ def anafast(
     use_pixel_weights: bool, optional
       If True, use pixel by pixel weighting, healpy will automatically download the weights, if needed
       See the map2alm docs for details about weighting
+    use_weights : bool, optional
+      If True, use ring weighting. Default: False.
+      See the map2alm docs for details about weighting
 
     Returns
     -------
@@ -1334,6 +1337,8 @@ def synalm(cls, lmax=None, mmax=None, new=False, verbose=True):
       (e.g. TT, EE, BB, TE, EB, TB or TT, EE, BB, TE if 4 cl as input).
       If False, use the old ordering, ie by row
       (e.g. TT, TE, TB, EE, EB, BB or TT, TE, EE, BB if 4 cl as input).
+    verbose : bool, optional
+      Deprecated, has no effect.
 
     Returns
     -------
@@ -1456,6 +1461,8 @@ def synfast(
       (e.g. TT, EE, BB, TE, EB, TB or TT, EE, BB, TE if 4 cl as input).
       If False, use the old ordering, ie by row
       (e.g. TT, TE, TB, EE, EB, BB or TT, TE, EE, BB if 4 cl as input).
+    verbose : bool, optional
+      Deprecated, has no effect.
 
     Returns
     -------
@@ -1622,7 +1629,7 @@ def alm2cl(alms1, alms2=None, lmax=None, mmax=None, lmax_out=None, nspec=None):
 
     Parameters
     ----------
-    alm : complex, array or sequence of arrays
+    alms1 : complex, array or sequence of arrays
       The alm from which to compute the power spectrum. If n>=2 arrays are given,
       computes both auto- and cross-spectra.
     alms2 : complex, array or sequence of 3 arrays, optional
