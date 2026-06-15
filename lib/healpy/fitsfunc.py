@@ -168,10 +168,10 @@ def write_map(
     """Writes a healpix map into a healpix FITS file.
 
     .. warning::
-    Starting from healpy 1.15.0, if you do not specify `dtype`,
-    the map will be written to disk with the same precision it is stored in memory.
-    Previously, by default `healpy` wrote maps in `float32`.
-    To reproduce the same behaviour of `healpy` 1.14.0 and below, set `dtype=np.float32`.
+       Starting from healpy 1.15.0, if you do not specify `dtype`,
+       the map will be written to disk with the same precision it is stored in memory.
+       Previously, by default `healpy` wrote maps in `float32`.
+       To reproduce the same behaviour of `healpy` 1.14.0 and below, set `dtype=np.float32`.
 
     Parameters
     ----------

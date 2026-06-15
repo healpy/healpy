@@ -184,11 +184,11 @@ def projview(
       Either one of 'G', 'E' or 'C' (where 'E' stands for the Ecliptic, 'G' for 
       the Galactic, and 'C' for the Celestial or equatorial) to describe the coordinate
       system of the map, or a sequence of 2 of these to rotate the map from the first 
-      to the second coordinate system. default: 'G'
+      to the second coordinate system. Default: None
     unit : str, optional
       A text describing the unit of the data. Default: ''
     xsize : int, optional
-      The size of the image. Default: 800
+      The size of the image. Default: 1000
     width : float, optional
         Sets the width of the figure. Use override_plot_properties for more.
         Overrides the default width of the figure
@@ -200,7 +200,7 @@ def projview(
       The maximum range value
     flip : {'astro', 'geo'}, optional
       Defines the convention of projection : 'astro' (default, east towards
-      left, west towards right) or 'geo' (east towards roght, west towards left)
+      left, west towards right) or 'geo' (east towards right, west towards left)
       It creates the `healpy_flip` attribute on the Axes to save the convention
       in the figure.
     format : str, optional
@@ -286,8 +286,8 @@ def projview(
     cbar_ticks : list
       custom ticks on the colorbar
     show_tickmarkers : bool, optional
-      Preserve tickmarkers for the full bar with labels specified by ticks
-      default: None
+      Preserve tickmarkers for the full bar with labels specified by ticks.
+      Default: False
     extend : str, optional
       Whether to extend the colorbar to mark where min or max tick is less than
       the min or max of the data. Options are "min", "max", "neither", or "both"

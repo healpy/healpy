@@ -1519,6 +1519,11 @@ class Alm(object):
         i : int or None
           The index for which to compute the l and m.
           If None, the function return l and m for i=0..Alm.getsize(lmax)
+
+        Returns
+        -------
+        l, m : int or array of int
+          The l and m values corresponding to the given index.
         """
         szalm = Alm.getsize(lmax, lmax)
         if i is None:
@@ -2184,6 +2189,11 @@ def check_max_nside(nside):
     ----------
     nside : int
         nside of the map that is being checked
+
+    Returns
+    -------
+    int
+        Returns 0 if the check passes. Raises ValueError otherwise.
     """
 
     if nside > MAX_NSIDE:

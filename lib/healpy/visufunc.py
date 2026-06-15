@@ -442,7 +442,7 @@ def gnomview(
       Symmetric galactic cut for the dipole/monopole fit.
       Removes points in latitude range [-gal_cut, +gal_cut]
     format : str, optional
-      The format of the scale label. Default: '%g'
+      The format of the scale label. Default: '%.3g'
     cbar : bool, optional
       Display the colorbar. Default: True
     cmap : a color map
@@ -771,7 +771,7 @@ def cartview(
       Symmetric galactic cut for the dipole/monopole fit.
       Removes points in latitude range [-gal_cut, +gal_cut]
     format : str, optional
-      The format of the scale label. Default: '%g'
+      The format of the scale label. Default: '%.3g'
     cbar : bool, optional
       Display the colorbar. Default: True
     notext : bool, optional
@@ -1372,7 +1372,7 @@ def azeqview(
       Symmetric galactic cut for the dipole/monopole fit.
       Removes points in latitude range [-gal_cut, +gal_cut]
     format : str, optional
-      The format of the scale label. Default: '%g'
+      The format of the scale label. Default: '%.3g'
     cbar : bool, optional
       Display the colorbar. Default: True
     notext : bool, optional
