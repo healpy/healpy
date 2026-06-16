@@ -17,6 +17,8 @@ conversion from/to sky coordinates
    vec2pix
    vec2ang
    ang2vec
+   xyf2pix
+   pix2xyf
    get_all_neighbours
    get_interp_weights
    get_interp_val
@@ -39,6 +41,8 @@ nside/npix/resolution
    npix2nside
    nside2order
    order2nside
+   npix2order
+   order2npix
    nside2resol
    nside2pixarea
    max_pixrad
@@ -84,4 +88,3 @@ Map data manipulation
    fit_monopole
    remove_dipole
    remove_monopole
-   get_interp_val

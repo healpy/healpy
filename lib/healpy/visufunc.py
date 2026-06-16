@@ -15,15 +15,15 @@
 #  along with Healpy; if not, write to the Free Software
 #  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #
-#  For more information about Healpy, see http://code.google.com/p/healpy
+#  For more information about Healpy, see https://github.com/healpy/healpy
 #
 
 """
 =====================================================
-visufunc.py : Healpix visualization functions
+visufunc.py : HEALPix visualization functions
 =====================================================
 
-This module provides functions to display Healpix map.
+This module provides functions to display HEALPix map.
 
 Map projections
 ---------------
@@ -103,7 +103,7 @@ def mollview(
     alpha=None,
     fontsize=None,
 ):
-    """Plot a healpix map (given as an array) in Mollweide projection.
+    """Plot a HEALPix map (given as an array) in Mollweide projection.
 
     Parameters
     ----------
@@ -153,7 +153,7 @@ def mollview(
       If True, no text is printed around the map
     norm : {'hist', 'log', None}
       Color normalization, hist= histogram equalized color mapping,
-      log= logarithmic color mapping, default: None (linear color mapping)
+      log= logarithmic color mapping, Default: None (linear color mapping)
     cmap : a color map
        The colormap to use (see matplotlib.cm)
     badcolor : str
@@ -187,6 +187,8 @@ def mollview(
       that scale with DPI ('large' for most text). To exactly reproduce plots from 
       previous versions, use: ``fontsize={'xlabel': 14, 'ylabel': 14, 'title': 14, 
       'cbar_label': 14}``
+    nlocs : int, optional
+      Number of colorbar tick locations. Default: 2
 
     See Also
     --------
@@ -394,7 +396,7 @@ def gnomview(
     alpha=None,
     fontsize=None,
 ):
-    """Plot a healpix map (given as an array) in Gnomonic projection.
+    """Plot a HEALPix map (given as an array) in Gnomonic projection.
 
     Parameters
     ----------
@@ -431,7 +433,7 @@ def gnomview(
       The maximum range value
     flip : {'astro', 'geo'}, optional
       Defines the convention of projection : 'astro' (default, east towards left, west towards right)
-      or 'geo' (east towards roght, west towards left)
+      or 'geo' (east towards right, west towards left)
     remove_dip : bool, optional
       If :const:`True`, remove the dipole+monopole
     remove_mono : bool, optional
@@ -440,13 +442,18 @@ def gnomview(
       Symmetric galactic cut for the dipole/monopole fit.
       Removes points in latitude range [-gal_cut, +gal_cut]
     format : str, optional
-      The format of the scale label. Default: '%g'
+      The format of the scale label. Default: '%.3g'
+    cbar : bool, optional
+      Display the colorbar. Default: True
     cmap : a color map
        The colormap to use (see matplotlib.cm)
     badcolor : str
       Color to use to plot bad values
     bgcolor : str
       Color to use for background
+    norm : {'hist', 'log', None}
+      Color normalization, hist= histogram equalized color mapping,
+      log= logarithmic color mapping, Default: None (linear color mapping)
     hold : bool, optional
       If True, replace the current Axes by a GnomonicAxes.
       use this if you want to have multiple maps on the same
@@ -714,7 +721,7 @@ def cartview(
     alpha=None,
     fontsize=None,
 ):
-    """Plot a healpix map (given as an array) in Cartesian projection.
+    """Plot a HEALPix map (given as an array) in Cartesian projection.
 
     Parameters
     ----------
@@ -737,12 +744,16 @@ def cartview(
       A text describing the unit of the data. Default: ''
     xsize : int, optional
       The size of the image. Default: 800
+    ysize : None or int, optional
+      The vertical size of the image. Default: None= xsize
+    zat : float, optional
+      The zenith angle of the center of the projection in degrees. Default: None
     lonra : sequence, optional
       Range in longitude. Default: [-180,180]
     latra : sequence, optional
       Range in latitude. Default: [-90,90]
     title : str, optional
-      The title of the plot. Default: 'Mollweide view'
+      The title of the plot. Default: 'Cartesian view'
     nest : bool, optional
       If True, ordering scheme is NESTED. Default: False (RING)
     min : float, optional
@@ -751,7 +762,7 @@ def cartview(
       The maximum range value
     flip : {'astro', 'geo'}, optional
       Defines the convention of projection : 'astro' (default, east towards left, west towards right)
-      or 'geo' (east towards roght, west towards left)
+      or 'geo' (east towards right, west towards left)
     remove_dip : bool, optional
       If :const:`True`, remove the dipole+monopole
     remove_mono : bool, optional
@@ -760,14 +771,16 @@ def cartview(
       Symmetric galactic cut for the dipole/monopole fit.
       Removes points in latitude range [-gal_cut, +gal_cut]
     format : str, optional
-      The format of the scale label. Default: '%g'
+      The format of the scale label. Default: '%.3g'
     cbar : bool, optional
       Display the colorbar. Default: True
     notext : bool, optional
       If True, no text is printed around the map
     norm : {'hist', 'log', None}, optional
       Color normalization, hist= histogram equalized color mapping,
-      log= logarithmic color mapping, default: None (linear color mapping)
+      log= logarithmic color mapping, Default: None (linear color mapping)
+    aspect : str or None, optional
+      Aspect ratio of the axes. Default: None (auto)
     cmap : a color map
        The colormap to use (see matplotlib.cm)
     badcolor : str
@@ -1011,7 +1024,7 @@ def orthview(
     alpha=None,
     fontsize=None,
 ):
-    """Plot a healpix map (given as an array) in Orthographic projection.
+    """Plot a HEALPix map (given as an array) in Orthographic projection.
 
     Parameters
     ----------
@@ -1045,7 +1058,7 @@ def orthview(
       The maximum range value
     flip : {'astro', 'geo'}, optional
       Defines the convention of projection : 'astro' (default, east towards left, west towards right)
-      or 'geo' (east towards roght, west towards left)
+      or 'geo' (east towards right, west towards left)
     remove_dip : bool, optional
       If :const:`True`, remove the dipole+monopole
     remove_mono : bool, optional
@@ -1063,7 +1076,7 @@ def orthview(
       If True, no text is printed around the map
     norm : {'hist', 'log', None}
       Color normalization, hist= histogram equalized color mapping,
-      log= logarithmic color mapping, default: None (linear color mapping)
+      log= logarithmic color mapping, Default: None (linear color mapping)
     cmap : a color map
        The colormap to use (see matplotlib.cm)
     badcolor : str
@@ -1304,7 +1317,7 @@ def azeqview(
     alpha=None,
     fontsize=None,
 ):
-    """Plot a healpix map (given as an array) in Azimuthal equidistant projection
+    """Plot a HEALPix map (given as an array) in Azimuthal equidistant projection
     or Lambert azimuthal equal-area projection.
 
     Parameters
@@ -1329,7 +1342,9 @@ def azeqview(
     xsize : int, optional
       The size of the image. Default: 800
     ysize : None or int, optional
-      The size of the image. Default: None= xsize
+      The vertical size of the image. Default: None= xsize
+    zat : float, optional
+      The zenith angle of the center of the projection in degrees. Default: None
     reso : float, optional
       Resolution (in arcmin). Default: 1.5 arcmin
     lamb : bool, optional
@@ -1348,7 +1363,7 @@ def azeqview(
       The maximum range value
     flip : {'astro', 'geo'}, optional
       Defines the convention of projection : 'astro' (default, east towards left, west towards right)
-      or 'geo' (east towards roght, west towards left)
+      or 'geo' (east towards right, west towards left)
     remove_dip : bool, optional
       If :const:`True`, remove the dipole+monopole
     remove_mono : bool, optional
@@ -1357,14 +1372,16 @@ def azeqview(
       Symmetric galactic cut for the dipole/monopole fit.
       Removes points in latitude range [-gal_cut, +gal_cut]
     format : str, optional
-      The format of the scale label. Default: '%g'
+      The format of the scale label. Default: '%.3g'
     cbar : bool, optional
       Display the colorbar. Default: True
     notext : bool, optional
       If True, no text is printed around the map
     norm : {'hist', 'log', None}
       Color normalization, hist= histogram equalized color mapping,
-      log= logarithmic color mapping, default: None (linear color mapping)
+      log= logarithmic color mapping, Default: None (linear color mapping)
+    aspect : str or None, optional
+      Aspect ratio of the axes. Default: None (auto)
     cmap : a color map
        The colormap to use (see matplotlib.cm)
     badcolor : str

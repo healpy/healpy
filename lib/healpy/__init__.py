@@ -15,10 +15,10 @@
 #  along with Healpy; if not, write to the Free Software
 #  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #
-#  For more information about Healpy, see http://code.google.com/p/healpy
+#  For more information about Healpy, see https://github.com/healpy/healpy
 #
-"""HealPy is a package to manipulate Healpix maps (ang2pix, pix2ang) and
-compute spherical harmonics tranforms on them.
+"""healpy is a package to manipulate HEALPix maps (ang2pix, pix2ang) and
+compute spherical harmonics transforms on them.
 """
 
 from .version import __version__

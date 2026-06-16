@@ -30,7 +30,7 @@ Spherical harmonic transform tools
 ----------------------------------
 .. autosummary::
    :toctree: generated/
-   
+
    smoothing
    smoothalm
    harmonic_ud_grade
@@ -49,4 +49,6 @@ Other tools
    gauss_beam
    beam2bl
    bl2beam
+   blm_gauss
    effective_resolution_fwhm
+   check_max_nside

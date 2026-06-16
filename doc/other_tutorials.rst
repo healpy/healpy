@@ -30,4 +30,4 @@ Power spectra
 -------------
 
 * `Read and process Planck CMB power spectra <https://zonca.dev/2020/09/planck-spectra-healpy.html>`_
-* `Compute Planck CMB Temperature power specrum with anafast <https://zonca.dev/2021/02/compute-planck-spectra-healpy-anafast.html>`_
+* `Compute Planck CMB Temperature power spectrum with anafast <https://zonca.dev/2021/02/compute-planck-spectra-healpy-anafast.html>`_
