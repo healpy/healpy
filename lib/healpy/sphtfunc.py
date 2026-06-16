@@ -15,7 +15,7 @@
 #  along with Healpy; if not, write to the Free Software
 #  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #
-#  For more information about Healpy, see http://code.google.com/p/healpy
+#  For more information about Healpy, see https://github.com/healpy/healpy
 #
 import logging
 import warnings
@@ -159,11 +159,11 @@ def anafast(
       The number of spectra to return. If None, returns all, otherwise
       returns cls[:nspec]
     lmax : int, scalar, optional
-      Maximum l of the power spectrum (default: 3*nside-1)
+      Maximum l of the power spectrum (Default: 3*nside-1)
     mmax : int, scalar, optional
-      Maximum m of the alm (default: lmax)
+      Maximum m of the alm (Default: lmax)
     iter : int, scalar, optional
-      Number of iteration (default: 3)
+      Number of iterations (Default: 3)
     alm : bool, scalar, optional
       If True, returns both cl and alm, otherwise only cl is returned
     pol : bool, optional
@@ -283,7 +283,7 @@ def map2alm(
     mmax : int, scalar, optional
       Maximum m of the alm. Default: lmax
     iter : int, scalar, optional
-      Number of iteration (default: 3)
+      Number of iterations (Default: 3)
     pol : bool, optional
       If True, assumes input maps are TQU. Output will be TEB alm's.
       (input must be 1 or 3 maps)
@@ -1333,9 +1333,9 @@ def synalm(cls, lmax=None, mmax=None, new=False, verbose=True):
     mmax : int, scalar, optional
       The mmax (if None or <0, =lmax)
     new : bool, optional
-      If True, use the new ordering of cl's, ie by diagonal
+      If True, use the new ordering of cl's, i.e. by diagonal
       (e.g. TT, EE, BB, TE, EB, TB or TT, EE, BB, TE if 4 cl as input).
-      If False, use the old ordering, ie by row
+      If False, use the old ordering, i.e. by row
       (e.g. TT, TE, TB, EE, EB, BB or TT, TE, EE, BB if 4 cl as input).
     verbose : bool, optional
       Deprecated, has no effect.
@@ -1457,9 +1457,9 @@ def synfast(
       The sigma of the Gaussian used to smooth the map (applied on alm)
       [in radians]
     new : bool, optional
-      If True, use the new ordering of cl's, ie by diagonal
+      If True, use the new ordering of cl's, i.e. by diagonal
       (e.g. TT, EE, BB, TE, EB, TB or TT, EE, BB, TE if 4 cl as input).
-      If False, use the old ordering, ie by row
+      If False, use the old ordering, i.e. by row
       (e.g. TT, TE, TB, EE, EB, BB or TT, TE, EE, BB if 4 cl as input).
     verbose : bool, optional
       Deprecated, has no effect.
@@ -1841,7 +1841,7 @@ def smoothing(
       treated independently (input can be any number of alms).
       If there is only one input map, it has no effect. Default: True.
     iter : int, scalar, optional
-      Number of iteration (default: 3)
+      Number of iterations (Default: 3)
     lmax : int, scalar, optional
       Maximum l of the power spectrum. Default: 3*nside-1
     mmax : int, scalar, optional
@@ -1947,7 +1947,7 @@ def pixwin(nside, pol=False, lmax=None, datapath=None):
     pol : bool, optional
       If True, return also the polar pixel window. Default: False
     lmax : int, optional
-        Maximum l of the power spectrum (default: 3*nside-1)
+        Maximum l of the power spectrum (Default: 3*nside-1)
     datapath : None or str, optional
         If given, the directory where to find the pixel window function file.
         If not found locally, will be downloaded and cached using astropy.

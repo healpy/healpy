@@ -208,24 +208,24 @@ def projview(
     cbar : bool, optional
       Display the colorbar. Default: True
     cmap : str, optional
-        Specify the colormap. default: Viridis
+        Specify the colormap. Default: Viridis
     badcolor: str, optional
-        Specify the color of bad pixels. default: Grey
+        Specify the color of bad pixels. Default: Grey
     bgcolor: str, optional
-        Specify the color of the background. default: White
+        Specify the color of the background. Default: White
     norm : {'hist', 'log', 'symlog', 'symlog2', None}
       Color normalization:
       hist = histogram equalized color mapping.
       log = logarithmic color mapping.
       symlog = symmetric logarithmic, linear between -linthresh and linthresh.
-      symlog2 = similar to symlog, used for plack log colormap.
-      default: None (linear color mapping)
+      symlog2 = similar to symlog, used for Planck log colormap.
+      Default: None (linear color mapping)
     norm_dict : dict, optional
         Parameters for normalization:
         default is set to {"linthresh": 1, "base": 10, "linscale": 0.1}
         where linthresh determines the linear regime of symlog norm,
         and linscale sets the size of the linear regime on the cbar.
-        default: None
+        Default: None
     graticule : bool
       add graticule
     graticule_labels : bool

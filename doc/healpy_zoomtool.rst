@@ -4,7 +4,7 @@
 
 
 :mod:`zoomtool` -- Interactive visualisation
-================================
+============================================
 
 Interactive map visualization
 -----------------------------

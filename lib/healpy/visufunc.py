@@ -15,7 +15,7 @@
 #  along with Healpy; if not, write to the Free Software
 #  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #
-#  For more information about Healpy, see http://code.google.com/p/healpy
+#  For more information about Healpy, see https://github.com/healpy/healpy
 #
 
 """
@@ -153,7 +153,7 @@ def mollview(
       If True, no text is printed around the map
     norm : {'hist', 'log', None}
       Color normalization, hist= histogram equalized color mapping,
-      log= logarithmic color mapping, default: None (linear color mapping)
+      log= logarithmic color mapping, Default: None (linear color mapping)
     cmap : a color map
        The colormap to use (see matplotlib.cm)
     badcolor : str
@@ -453,7 +453,7 @@ def gnomview(
       Color to use for background
     norm : {'hist', 'log', None}
       Color normalization, hist= histogram equalized color mapping,
-      log= logarithmic color mapping, default: None (linear color mapping)
+      log= logarithmic color mapping, Default: None (linear color mapping)
     hold : bool, optional
       If True, replace the current Axes by a GnomonicAxes.
       use this if you want to have multiple maps on the same
@@ -778,7 +778,7 @@ def cartview(
       If True, no text is printed around the map
     norm : {'hist', 'log', None}, optional
       Color normalization, hist= histogram equalized color mapping,
-      log= logarithmic color mapping, default: None (linear color mapping)
+      log= logarithmic color mapping, Default: None (linear color mapping)
     aspect : str or None, optional
       Aspect ratio of the axes. Default: None (auto)
     cmap : a color map
@@ -1076,7 +1076,7 @@ def orthview(
       If True, no text is printed around the map
     norm : {'hist', 'log', None}
       Color normalization, hist= histogram equalized color mapping,
-      log= logarithmic color mapping, default: None (linear color mapping)
+      log= logarithmic color mapping, Default: None (linear color mapping)
     cmap : a color map
        The colormap to use (see matplotlib.cm)
     badcolor : str
@@ -1379,7 +1379,7 @@ def azeqview(
       If True, no text is printed around the map
     norm : {'hist', 'log', None}
       Color normalization, hist= histogram equalized color mapping,
-      log= logarithmic color mapping, default: None (linear color mapping)
+      log= logarithmic color mapping, Default: None (linear color mapping)
     aspect : str or None, optional
       Aspect ratio of the axes. Default: None (auto)
     cmap : a color map
