@@ -407,7 +407,7 @@ class Rotator(object):
         return np.arctan2(sinalpha, cosalpha)
 
     def rotate_alm(self, alm, lmax=None, mmax=None, inplace=False):
-        """Rotate Alms with the transform defined in the Rotator object
+        """Rotate alm with the transform defined in the Rotator object.
 
         see the docstring of the rotate_alm function defined
         in the healpy package, this function **returns** the rotated alms,
@@ -431,7 +431,7 @@ class Rotator(object):
         datapath=None,
         verbose=None,
     ):
-        """Rotate a HEALPix map to a new reference frame in spherical harmonics space
+        """Rotate a HEALPix map to a new reference frame in spherical harmonics space.
 
         This is generally the best strategy to rotate/change reference frame of maps.
         If the input map is band-limited, i.e. it can be represented exactly by
@@ -476,7 +476,7 @@ class Rotator(object):
         )
 
     def rotate_map_pixel(self, m):
-        """Rotate a HEALPix map to a new reference frame in pixel space
+        """Rotate a HEALPix map to a new reference frame in pixel space.
 
         It is generally better to rotate in spherical harmonics space, see
         the rotate_map_alms method. A case where pixel space rotation is
@@ -553,7 +553,7 @@ class Rotator(object):
 
 
 def rotateVector(rotmat, vec, vy=None, vz=None, do_rot=True):
-    """Rotate a vector (or a list of vectors) using the rotation matrix
+    """Rotate a vector (or a list of vectors) using the rotation matrix.
     given as first argument.
 
     Parameters
@@ -594,7 +594,7 @@ def rotateVector(rotmat, vec, vy=None, vz=None, do_rot=True):
 
 
 def rotateDirection(rotmat, theta, phi=None, do_rot=True, lonlat=False):
-    """Rotate the vector described by angles theta,phi using the rotation matrix
+    """Rotate the vector described by angles theta, phi using the rotation matrix.
     given as first argument.
 
     Parameters

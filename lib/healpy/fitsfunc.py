@@ -56,7 +56,7 @@ class HealpixFitsWarning(Warning):
 
 
 def read_cl(filename):
-    """Reads Cl from a healpix file, as IDL fits2cl.
+    """Reads Cl from a HEALPix file, as IDL fits2cl.
 
     Parameters
     ----------
@@ -83,7 +83,7 @@ def read_cl(filename):
 
 
 def write_cl(filename, cl, dtype=None, overwrite=False, column_names=None, extra_header=()):
-    """Writes Cl into a healpix file, as IDL cl2fits.
+    """Writes Cl into a HEALPix file, as IDL cl2fits.
 
     Parameters
     ----------
@@ -165,7 +165,7 @@ def write_map(
     extra_header=(),
     overwrite=False,
 ):
-    """Writes a healpix map into a healpix FITS file.
+    """Writes a HEALPix map into a HEALPix FITS file.
 
     .. warning::
        Starting from healpy 1.15.0, if you do not specify `dtype`,
@@ -341,7 +341,7 @@ def read_map(
     verbose=True,
     memmap=False,
 ):
-    """Read a healpix map from a fits file.  Partial-sky files,
+    """Read a HEALPix map from a fits file.  Partial-sky files,
     if properly identified, are expanded to full size and filled with UNSEEN.
 
     .. warning::
@@ -631,7 +631,7 @@ def read_alm(filename, hdu=1, return_mmax=False):
     with 3 columns (index, real and imaginary) for each HDU.
 
     In the fits file, the alm are assumed to be written
-    with explicit index scheme, index = l**2+l+m+1, while healpix cxx
+    with explicit index scheme, index = l**2+l+m+1, while HEALPix C++
     uses index = m*(2*lmax+1-m)/2+l. The conversion is done in this
     function.
 

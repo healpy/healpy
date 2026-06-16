@@ -103,7 +103,7 @@ def mollview(
     alpha=None,
     fontsize=None,
 ):
-    """Plot a healpix map (given as an array) in Mollweide projection.
+    """Plot a HEALPix map (given as an array) in Mollweide projection.
 
     Parameters
     ----------
@@ -396,7 +396,7 @@ def gnomview(
     alpha=None,
     fontsize=None,
 ):
-    """Plot a healpix map (given as an array) in Gnomonic projection.
+    """Plot a HEALPix map (given as an array) in Gnomonic projection.
 
     Parameters
     ----------
@@ -721,7 +721,7 @@ def cartview(
     alpha=None,
     fontsize=None,
 ):
-    """Plot a healpix map (given as an array) in Cartesian projection.
+    """Plot a HEALPix map (given as an array) in Cartesian projection.
 
     Parameters
     ----------
@@ -1024,7 +1024,7 @@ def orthview(
     alpha=None,
     fontsize=None,
 ):
-    """Plot a healpix map (given as an array) in Orthographic projection.
+    """Plot a HEALPix map (given as an array) in Orthographic projection.
 
     Parameters
     ----------
@@ -1317,7 +1317,7 @@ def azeqview(
     alpha=None,
     fontsize=None,
 ):
-    """Plot a healpix map (given as an array) in Azimuthal equidistant projection
+    """Plot a HEALPix map (given as an array) in Azimuthal equidistant projection
     or Lambert azimuthal equal-area projection.
 
     Parameters

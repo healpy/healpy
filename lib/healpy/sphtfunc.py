@@ -57,7 +57,7 @@ MAX_NSIDE = (
     8192  # The maximum nside up to which most operations (e.g. map2alm) will work
 )
 
-# Planck 2013 XXIII Table 1: the 100 GHz channel at Nside=64 has FWHM = 160 arcmin.
+# Planck 2013 XXIII Table 1: the 100 GHz channel at NSIDE=64 has FWHM = 160 arcmin.
 # The FWHM-to-pixel-size ratio K = 160 arcmin / nside2resol(64) ≈ 2.91
 # is used consistently across all Planck resolution levels. Private constant
 # (implementation detail of harmonic_ud_grade / effective_resolution_fwhm).
@@ -2057,7 +2057,7 @@ def load_sample_spectra():
 
 
 def gauss_beam(fwhm, lmax=512, pol=False):
-    """Gaussian beam window function
+    """Gaussian beam window function.
 
     Computes the spherical transform of an axisimmetric gaussian beam
 
