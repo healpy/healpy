@@ -76,7 +76,7 @@ class Rotator(object):
 
     This class provides tools for spherical rotations. It is meant to be used
     in the healpy library for plotting, and for this reason reflects the
-    convention used in the Healpix IDL library.
+    convention used in the HEALPix IDL library.
 
     Parameters
     ----------
@@ -1194,7 +1194,7 @@ def euler_matrix_new(a1, a2, a3, X=True, Y=False, ZYX=False, deg=False):
 
 
     MODIFICATION HISTORY:
-       March 2002, EH, Caltech, rewritting of euler_matrix
+       March 2002, EH, Caltech, rewriting of euler_matrix
 
        convention   euler_matrix_new           euler_matrix
       X:       M_new(a,b,c,/X)  =  M_old(-a,-b,-c,/X) = Transpose( M_old(c, b, a,/X))

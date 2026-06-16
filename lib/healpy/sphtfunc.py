@@ -135,7 +135,7 @@ def anafast(
     gal_cut=0,
     use_pixel_weights=False,
 ):
-    """Computes the power spectrum of a Healpix map, or the cross-spectrum
+    """Computes the power spectrum of a HEALPix map, or the cross-spectrum
     between two maps if *map2* is given.
     No removal of monopole or dipole is performed. The input maps must be
     in ring-ordering.
@@ -246,7 +246,7 @@ def map2alm(
     use_pixel_weights=False,
     verbose=True,
 ):
-    """Computes the alm of a Healpix map. The input maps must all be
+    """Computes the alm of a HEALPix map. The input maps must all be
     in ring ordering.
 
     For recommendations about how to set `lmax`, `iter`, and weights, see the
@@ -382,7 +382,7 @@ def map2alm_lsq(maps, lmax, mmax, pol=True, tol=1e-10, maxiter=20):
     """Runs an iterative map analysis up to (lmax, mmax) and returns the result
     including its quality.
 
-    Healpix map analysis is often interpreted as "compute the `alm` for which
+    HEALPix map analysis is often interpreted as "compute the `alm` for which
     `alm2map(alm) == map`". Unfortunately this inversion problem is not solvable
     in many cases, since `alm` typically has fewer elements than `map`, which
     makes the equation system overdetermined, so that a solution only exists
@@ -510,7 +510,7 @@ def alm2map(
     inplace=False,
     verbose=True,
 ):
-    """Computes a Healpix map given the alm.
+    """Computes a HEALPix map given the alm.
 
     The alm are given as a complex array. You can specify lmax
     and mmax, or they will be computed from array size (assuming
@@ -552,7 +552,7 @@ def alm2map(
     Returns
     -------
     maps : array or list of arrays
-      A Healpix map in RING scheme at nside or a list of T,Q,U maps (if
+      A HEALPix map in RING scheme at nside or a list of T,Q,U maps (if
       polarized input)
 
     Notes
@@ -1988,7 +1988,7 @@ def pixwin(nside, pol=False, lmax=None, datapath=None):
 
 
 def alm2map_der1(alm, nside, lmax=None, mmax=None):
-    """Computes a Healpix map and its first derivatives given the alm.
+    """Computes a HEALPix map and its first derivatives given the alm.
 
     The alm are given as a complex array. You can specify lmax
     and mmax, or they will be computed from array size (assuming

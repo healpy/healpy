@@ -17,7 +17,7 @@
 #
 #  For more information about Healpy, see https://github.com/healpy/healpy
 #
-"""Provides input and output functions for Healpix maps, alm, and cl.
+"""Provides input and output functions for HEALPix maps, alm, and cl.
 """
 from __future__ import division
 

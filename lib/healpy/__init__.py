@@ -17,8 +17,8 @@
 #
 #  For more information about Healpy, see https://github.com/healpy/healpy
 #
-"""HealPy is a package to manipulate Healpix maps (ang2pix, pix2ang) and
-compute spherical harmonics tranforms on them.
+"""healpy is a package to manipulate HEALPix maps (ang2pix, pix2ang) and
+compute spherical harmonics transforms on them.
 """
 
 from .version import __version__

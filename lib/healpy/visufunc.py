@@ -20,10 +20,10 @@
 
 """
 =====================================================
-visufunc.py : Healpix visualization functions
+visufunc.py : HEALPix visualization functions
 =====================================================
 
-This module provides functions to display Healpix map.
+This module provides functions to display HEALPix map.
 
 Map projections
 ---------------

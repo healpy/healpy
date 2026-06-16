@@ -19,10 +19,10 @@
 #
 """
 =====================================================
-pixelfunc.py : Healpix pixelization related functions
+pixelfunc.py : HEALPix pixelization related functions
 =====================================================
 
-This module provides functions related to Healpix pixelization scheme.
+This module provides functions related to HEALPix pixelization scheme.
 
 conversion from/to sky coordinates
 ----------------------------------
@@ -684,7 +684,7 @@ def pix2vec(nside, ipix, nest=False):
     nside : int, scalar or array-like
       The healpix nside parameter, must be a power of 2, less than 2**30
     ipix : int, scalar or array-like
-      Healpix pixel number
+      HEALPix pixel number
     nest : bool, optional
       if True, assume NESTED pixel ordering, otherwise, RING pixel ordering
 
