@@ -15,7 +15,7 @@
 #  along with Healpy; if not, write to the Free Software
 #  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #
-#  For more information about Healpy, see http://code.google.com/p/healpy
+#  For more information about Healpy, see https://github.com/healpy/healpy
 #
 import logging
 import warnings
@@ -44,6 +44,11 @@ from ._sphtools import map2alm_spin_healpy as map2alm_spin
 
 
 class FutureChangeWarning(UserWarning):
+    """Warning class for upcoming breaking changes in healpy.
+
+    Issued when a feature's behavior will change in a future release.
+    Users should update their code to avoid future errors.
+    """
     pass
 
 
@@ -52,7 +57,7 @@ MAX_NSIDE = (
     8192  # The maximum nside up to which most operations (e.g. map2alm) will work
 )
 
-# Planck 2013 XXIII Table 1: the 100 GHz channel at Nside=64 has FWHM = 160 arcmin.
+# Planck 2013 XXIII Table 1: the 100 GHz channel at NSIDE=64 has FWHM = 160 arcmin.
 # The FWHM-to-pixel-size ratio K = 160 arcmin / nside2resol(64) ≈ 2.91
 # is used consistently across all Planck resolution levels. Private constant
 # (implementation detail of harmonic_ud_grade / effective_resolution_fwhm).
@@ -130,7 +135,7 @@ def anafast(
     gal_cut=0,
     use_pixel_weights=False,
 ):
-    """Computes the power spectrum of a Healpix map, or the cross-spectrum
+    """Computes the power spectrum of a HEALPix map, or the cross-spectrum
     between two maps if *map2* is given.
     No removal of monopole or dipole is performed. The input maps must be
     in ring-ordering.
@@ -154,11 +159,11 @@ def anafast(
       The number of spectra to return. If None, returns all, otherwise
       returns cls[:nspec]
     lmax : int, scalar, optional
-      Maximum l of the power spectrum (default: 3*nside-1)
+      Maximum l of the power spectrum (Default: 3*nside-1)
     mmax : int, scalar, optional
-      Maximum m of the alm (default: lmax)
+      Maximum m of the alm (Default: lmax)
     iter : int, scalar, optional
-      Number of iteration (default: 3)
+      Number of iterations (Default: 3)
     alm : bool, scalar, optional
       If True, returns both cl and alm, otherwise only cl is returned
     pol : bool, optional
@@ -174,6 +179,9 @@ def anafast(
       pixels at latitude in [-gal_cut;+gal_cut] are not taken into account
     use_pixel_weights: bool, optional
       If True, use pixel by pixel weighting, healpy will automatically download the weights, if needed
+      See the map2alm docs for details about weighting
+    use_weights : bool, optional
+      If True, use ring weighting. Default: False.
       See the map2alm docs for details about weighting
 
     Returns
@@ -238,7 +246,7 @@ def map2alm(
     use_pixel_weights=False,
     verbose=True,
 ):
-    """Computes the alm of a Healpix map. The input maps must all be
+    """Computes the alm of a HEALPix map. The input maps must all be
     in ring ordering.
 
     For recommendations about how to set `lmax`, `iter`, and weights, see the
@@ -254,7 +262,7 @@ def map2alm(
 
     Pixel weights provide the most accurate transform, so you should always use them if
     possible. However they are not included in healpy and will be automatically downloaded
-    and cached in ~/.astropy the first time you compute a trasform at a specific nside.
+    and cached in ~/.astropy the first time you compute a transform at a specific nside.
 
     If datapath is specified, healpy will first check that local folder before downloading
     the weights.
@@ -275,7 +283,7 @@ def map2alm(
     mmax : int, scalar, optional
       Maximum m of the alm. Default: lmax
     iter : int, scalar, optional
-      Number of iteration (default: 3)
+      Number of iterations (Default: 3)
     pol : bool, optional
       If True, assumes input maps are TQU. Output will be TEB alm's.
       (input must be 1 or 3 maps)
@@ -292,7 +300,7 @@ def map2alm(
     use_pixel_weights: bool, optional
       If True, use pixel by pixel weighting, healpy will automatically download the weights, if needed
     verbose : bool, optional
-      Deprecated, has not effect.
+      Deprecated, has no effect.
 
     Returns
     -------
@@ -374,7 +382,7 @@ def map2alm_lsq(maps, lmax, mmax, pol=True, tol=1e-10, maxiter=20):
     """Runs an iterative map analysis up to (lmax, mmax) and returns the result
     including its quality.
 
-    Healpix map analysis is often interpreted as "compute the `alm` for which
+    HEALPix map analysis is often interpreted as "compute the `alm` for which
     `alm2map(alm) == map`". Unfortunately this inversion problem is not solvable
     in many cases, since `alm` typically has fewer elements than `map`, which
     makes the equation system overdetermined, so that a solution only exists
@@ -502,7 +510,7 @@ def alm2map(
     inplace=False,
     verbose=True,
 ):
-    """Computes a Healpix map given the alm.
+    """Computes a HEALPix map given the alm.
 
     The alm are given as a complex array. You can specify lmax
     and mmax, or they will be computed from array size (assuming
@@ -538,11 +546,13 @@ def alm2map(
       smoothing (if alm(s) are complex128 contiguous arrays).
       Otherwise, input alms are not modified. A copy is made if needed to
       apply beam smoothing or pixel window.
+    verbose : bool, optional
+      Deprecated, has no effect.
 
     Returns
     -------
     maps : array or list of arrays
-      A Healpix map in RING scheme at nside or a list of T,Q,U maps (if
+      A HEALPix map in RING scheme at nside or a list of T,Q,U maps (if
       polarized input)
 
     Notes
@@ -1323,10 +1333,12 @@ def synalm(cls, lmax=None, mmax=None, new=False, verbose=True):
     mmax : int, scalar, optional
       The mmax (if None or <0, =lmax)
     new : bool, optional
-      If True, use the new ordering of cl's, ie by diagonal
+      If True, use the new ordering of cl's, i.e. by diagonal
       (e.g. TT, EE, BB, TE, EB, TB or TT, EE, BB, TE if 4 cl as input).
-      If False, use the old ordering, ie by row
+      If False, use the old ordering, i.e. by row
       (e.g. TT, TE, TB, EE, EB, BB or TT, TE, EE, BB if 4 cl as input).
+    verbose : bool, optional
+      Deprecated, has no effect.
 
     Returns
     -------
@@ -1445,10 +1457,12 @@ def synfast(
       The sigma of the Gaussian used to smooth the map (applied on alm)
       [in radians]
     new : bool, optional
-      If True, use the new ordering of cl's, ie by diagonal
+      If True, use the new ordering of cl's, i.e. by diagonal
       (e.g. TT, EE, BB, TE, EB, TB or TT, EE, BB, TE if 4 cl as input).
-      If False, use the old ordering, ie by row
+      If False, use the old ordering, i.e. by row
       (e.g. TT, TE, TB, EE, EB, BB or TT, TE, EE, BB if 4 cl as input).
+    verbose : bool, optional
+      Deprecated, has no effect.
 
     Returns
     -------
@@ -1512,6 +1526,11 @@ class Alm(object):
         i : int or None
           The index for which to compute the l and m.
           If None, the function return l and m for i=0..Alm.getsize(lmax)
+
+        Returns
+        -------
+        l, m : int or array of int
+          The l and m values corresponding to the given index.
         """
         szalm = Alm.getsize(lmax, lmax)
         if i is None:
@@ -1610,7 +1629,7 @@ def alm2cl(alms1, alms2=None, lmax=None, mmax=None, lmax_out=None, nspec=None):
 
     Parameters
     ----------
-    alm : complex, array or sequence of arrays
+    alms1 : complex, array or sequence of arrays
       The alm from which to compute the power spectrum. If n>=2 arrays are given,
       computes both auto- and cross-spectra.
     alms2 : complex, array or sequence of 3 arrays, optional
@@ -1708,7 +1727,7 @@ def smoothalm(
       If True, the alm's are modified inplace if they are contiguous arrays
       of type complex128. Otherwise, a copy of alm is made. Default: True.
     verbose : bool, optional
-      Deprecated, has not effect.
+      Deprecated, has no effect.
 
     Returns
     -------
@@ -1822,7 +1841,7 @@ def smoothing(
       treated independently (input can be any number of alms).
       If there is only one input map, it has no effect. Default: True.
     iter : int, scalar, optional
-      Number of iteration (default: 3)
+      Number of iterations (Default: 3)
     lmax : int, scalar, optional
       Maximum l of the power spectrum. Default: 3*nside-1
     mmax : int, scalar, optional
@@ -1836,7 +1855,7 @@ def smoothing(
       If given, the directory where to find the pixel weights data.
       See the docstring of `map2alm` for details on how to set it up
     verbose : bool, optional
-      Deprecated, has not effect.
+      Deprecated, has no effect.
     nest : bool, optional
       If True, the input map ordering is assumed to be NESTED. Default: False (RING)
       This function will temporary reorder the NESTED map into RING to perform the
@@ -1928,7 +1947,7 @@ def pixwin(nside, pol=False, lmax=None, datapath=None):
     pol : bool, optional
       If True, return also the polar pixel window. Default: False
     lmax : int, optional
-        Maximum l of the power spectrum (default: 3*nside-1)
+        Maximum l of the power spectrum (Default: 3*nside-1)
     datapath : None or str, optional
         If given, the directory where to find the pixel window function file.
         If not found locally, will be downloaded and cached using astropy.
@@ -1969,7 +1988,7 @@ def pixwin(nside, pol=False, lmax=None, datapath=None):
 
 
 def alm2map_der1(alm, nside, lmax=None, mmax=None):
-    """Computes a Healpix map and its first derivatives given the alm.
+    """Computes a HEALPix map and its first derivatives given the alm.
 
     The alm are given as a complex array. You can specify lmax
     and mmax, or they will be computed from array size (assuming
@@ -2038,7 +2057,7 @@ def load_sample_spectra():
 
 
 def gauss_beam(fwhm, lmax=512, pol=False):
-    """Gaussian beam window function
+    """Gaussian beam window function.
 
     Computes the spherical transform of an axisimmetric gaussian beam
 
@@ -2177,6 +2196,11 @@ def check_max_nside(nside):
     ----------
     nside : int
         nside of the map that is being checked
+
+    Returns
+    -------
+    int
+        Returns 0 if the check passes. Raises ValueError otherwise.
     """
 
     if nside > MAX_NSIDE:

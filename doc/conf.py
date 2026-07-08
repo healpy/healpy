@@ -44,7 +44,7 @@ master_doc = "index"
 
 # General substitutions.
 project = u"healpy"
-copyright = u"CC/BY/4.0/International"
+copyright = u"Documentation: CC/BY/4.0/International, Software: GPL-2.0+"
 
 # The default replacements for |version| and |release|, also used in various
 # other places throughout the built documents.
