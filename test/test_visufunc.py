@@ -39,6 +39,18 @@ class TestNoCrash(unittest.TestCase):
     def test_mollview_nocrash(self):
         mollview(self.m)
 
+    def test_mollview_corners_masked(self):
+        # Regression test: corners of the Mollweide projection (outside the
+        # ellipse boundary) must be masked (-inf), not filled with map values.
+        # This was broken with NumPy 2.2.x + Python 3.14 due to scalar boolean
+        # indexing of numpy arrays (w = mask == False producing scalar True
+        # when mask is np.ma.nomask).
+        img = mollview(self.m, return_projected_map=True)
+        assert np.isneginf(img[0, 0]), "Top-left corner should be masked (-inf)"
+        assert np.isneginf(img[0, -1]), "Top-right corner should be masked (-inf)"
+        assert np.isneginf(img[-1, 0]), "Bottom-left corner should be masked (-inf)"
+        assert np.isneginf(img[-1, -1]), "Bottom-right corner should be masked (-inf)"
+
     def test_mollview_no_arguments(self):
         # Test that mollview() can be called with no arguments
         # This should create a blank map without errors
