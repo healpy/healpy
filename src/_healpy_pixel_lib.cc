@@ -644,13 +644,16 @@ static int m_exec(PyObject *module) {
   return 0;
 }
 
+static PyModuleDef_Slot moduledef_slots[] = {
+  {Py_mod_exec, (void *) m_exec},
+  {0, NULL}
+};
+
 static PyModuleDef moduledef = {
   PyModuleDef_HEAD_INIT,
   "_healpy_pixel_lib",
-  docstring, 0, NULL, (PyModuleDef_Slot []) {
-        {Py_mod_exec, (void *) m_exec},
-        {NULL, NULL}
-  }
+  docstring, 0, NULL, moduledef_slots,
+  NULL, NULL, NULL
 };
 
 PyMODINIT_FUNC
