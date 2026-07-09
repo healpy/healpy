@@ -25,7 +25,13 @@ sys.path.append(os.path.abspath("../lib/healpy"))
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 
-extensions = ["sphinx.ext.autosummary", "sphinx.ext.autodoc", "numpydoc", "nbsphinx"]
+extensions = [
+    "sphinx.ext.autosummary",
+    "sphinx.ext.autodoc",
+    "numpydoc",
+    "nbsphinx",
+    "sphinxnotebookgist",
+]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["templates/"]
@@ -38,7 +44,7 @@ master_doc = "index"
 
 # General substitutions.
 project = u"healpy"
-copyright = u"CC/BY/4.0/International"
+copyright = u"Documentation: CC/BY/4.0/International, Software: GPL-2.0+"
 
 # The default replacements for |version| and |release|, also used in various
 # other places throughout the built documents.
@@ -89,7 +95,7 @@ exclude_patterns = [".build/*", "templates/*", "ext/*.rst"]
 # -----------------------
 
 
-# html_theme = 'default'
+html_theme = "sphinx_book_theme"
 
 # The style sheet to use for HTML and HTML Help pages. A file of that name
 # must exist either in Sphinx' static/ path, or in one of the custom paths

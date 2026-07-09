@@ -40,35 +40,33 @@ class build_external_clib(build_clib):
     def env(self):
         """Construct an environment dictionary suitable for having pkg-config
         pick up .pc files in the build_clib directory."""
+        # Recompute on each call because editable wheel builds can mutate
+        # build directories between subcommands.
+        env = dict(os.environ)
+
         # Test if pkg-config is present. If not, fall back to pykg-config.
         try:
-            env = self._env
-        except AttributeError:
-            env = dict(os.environ)
+            check_output(["pkg-config", "--version"])
+        except OSError as e:
+            if e.errno != errno.ENOENT:
+                raise
+            log.warn("pkg-config is not installed, falling back to pykg-config")
+            env["PKG_CONFIG"] = shutil.which("pykg-config.py")
+        else:
+            env["PKG_CONFIG"] = "pkg-config"
 
-            try:
-                check_output(["pkg-config", "--version"])
-            except OSError as e:
-                if e.errno != errno.ENOENT:
-                    raise
-                log.warn("pkg-config is not installed, falling back to pykg-config")
-                env["PKG_CONFIG"] = shutil.which('pykg-config.py')
-            else:
-                env["PKG_CONFIG"] = "pkg-config"
+        build_clib = os.path.realpath(self.build_clib)
+        pkg_config_path = (
+            os.path.join(build_clib, "lib64", "pkgconfig")
+            + ":"
+            + os.path.join(build_clib, "lib", "pkgconfig")
+        )
+        try:
+            pkg_config_path += ":" + env["PKG_CONFIG_PATH"]
+        except KeyError:
+            pass
+        env["PKG_CONFIG_PATH"] = pkg_config_path
 
-            build_clib = os.path.realpath(self.build_clib)
-            pkg_config_path = (
-                os.path.join(build_clib, "lib64", "pkgconfig")
-                + ":"
-                + os.path.join(build_clib, "lib", "pkgconfig")
-            )
-            try:
-                pkg_config_path += ":" + env["PKG_CONFIG_PATH"]
-            except KeyError:
-                pass
-            env["PKG_CONFIG_PATH"] = pkg_config_path
-
-            self._env = env
         return env
 
     def pkgconfig(self, *packages):

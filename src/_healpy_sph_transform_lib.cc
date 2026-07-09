@@ -886,7 +886,7 @@ static PyObject *healpy_synalm(PyObject *self, PyObject *args,
         {
           if( cls[i] == NULL )
             mat[i] = 0.0;
-          else if( PyArray_DIM(cls[i],0) < l )
+          else if( PyArray_DIM(cls[i],0) <= l )
             mat[i] = 0.0;
           else
             {
@@ -1003,26 +1003,16 @@ static PyMethodDef methods[] = {
   {NULL, NULL, 0, NULL} /* Sentinel */
 };
 
-#if PY_MAJOR_VERSION >= 3
 static PyModuleDef moduledef = {
   PyModuleDef_HEAD_INIT,
   "_healpy_sph_transform_lib",
   NULL, -1, methods
 };
-#endif
 
 PyMODINIT_FUNC
-#if PY_MAJOR_VERSION < 3
-init_healpy_sph_transform_lib(void)
-#else
 PyInit__healpy_sph_transform_lib(void)
-#endif
 {
   import_array();
 
-#if PY_MAJOR_VERSION < 3
-  Py_InitModule("_healpy_sph_transform_lib", methods);
-#else
   return PyModule_Create(&moduledef);
-#endif
 }

@@ -15,7 +15,7 @@
 #  along with Healpy; if not, write to the Free Software
 #  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #
-#  For more information about Healpy, see http://code.google.com/p/healpy
+#  For more information about Healpy, see https://github.com/healpy/healpy
 #
 import numpy as np
 import logging
@@ -76,7 +76,7 @@ class Rotator(object):
 
     This class provides tools for spherical rotations. It is meant to be used
     in the healpy library for plotting, and for this reason reflects the
-    convention used in the Healpix IDL library.
+    convention used in the HEALPix IDL library.
 
     Parameters
     ----------
@@ -293,6 +293,13 @@ class Rotator(object):
         return self._do_rotation
 
     def get_inverse(self):
+        """Return a new Rotator representing the inverse rotation.
+
+        Returns
+        -------
+        inv_rot : Rotator
+            A new Rotator object that performs the inverse of this rotation.
+        """
         rots = self._rots[::-1]
         coords = self._coords[::-1]
         invs = [not i for i in self._invs[::-1]]
@@ -400,7 +407,7 @@ class Rotator(object):
         return np.arctan2(sinalpha, cosalpha)
 
     def rotate_alm(self, alm, lmax=None, mmax=None, inplace=False):
-        """Rotate Alms with the transform defined in the Rotator object
+        """Rotate alm with the transform defined in the Rotator object.
 
         see the docstring of the rotate_alm function defined
         in the healpy package, this function **returns** the rotated alms,
@@ -424,7 +431,7 @@ class Rotator(object):
         datapath=None,
         verbose=None,
     ):
-        """Rotate a HEALPix map to a new reference frame in spherical harmonics space
+        """Rotate a HEALPix map to a new reference frame in spherical harmonics space.
 
         This is generally the best strategy to rotate/change reference frame of maps.
         If the input map is band-limited, i.e. it can be represented exactly by
@@ -436,7 +443,17 @@ class Rotator(object):
         ----------
         m : np.ndarray
             Input map, single array is considered I, array with 3 rows:[I,Q,U]
-        other arguments : see map2alm
+        use_pixel_weights : bool, optional
+            If True, use pixel by pixel weighting in the map2alm step.
+            Default: True.
+        lmax : int, optional
+            Maximum l for the spherical harmonics transform. Default: 3*nside-1.
+        mmax : int, optional
+            Maximum m for the spherical harmonics transform. Default: lmax.
+        datapath : str or None, optional
+            If given, the directory where to find the pixel weights data.
+        verbose : bool, optional
+            Deprecated, has no effect.
 
         Returns
         -------
@@ -459,7 +476,7 @@ class Rotator(object):
         )
 
     def rotate_map_pixel(self, m):
-        """Rotate a HEALPix map to a new reference frame in pixel space
+        """Rotate a HEALPix map to a new reference frame in pixel space.
 
         It is generally better to rotate in spherical harmonics space, see
         the rotate_map_alms method. A case where pixel space rotation is
@@ -536,7 +553,7 @@ class Rotator(object):
 
 
 def rotateVector(rotmat, vec, vy=None, vz=None, do_rot=True):
-    """Rotate a vector (or a list of vectors) using the rotation matrix
+    """Rotate a vector (or a list of vectors) using the rotation matrix.
     given as first argument.
 
     Parameters
@@ -577,7 +594,7 @@ def rotateVector(rotmat, vec, vy=None, vz=None, do_rot=True):
 
 
 def rotateDirection(rotmat, theta, phi=None, do_rot=True, lonlat=False):
-    """Rotate the vector described by angles theta,phi using the rotation matrix
+    """Rotate the vector described by angles theta, phi using the rotation matrix.
     given as first argument.
 
     Parameters
@@ -587,7 +604,7 @@ def rotateDirection(rotmat, theta, phi=None, do_rot=True, lonlat=False):
     theta : float, scalar or array-like
       The angle theta (scalar or shape (N,))
       or both angles (scalar or shape (2, N)) if phi is not given.
-    phi : float, scalar or array-like, optionnal
+    phi : float, scalar or array-like, optional
       The angle phi (scalar or shape (N,)).
     do_rot : bool, optional
       if True, really perform the operation, if False do nothing.
@@ -663,7 +680,7 @@ def dir2vec(theta, phi=None, lonlat=False):
     theta : float, scalar or array-like
       The angle theta (scalar or shape (N,))
       or both angles (scalar or shape (2, N)) if phi is not given.
-    phi : float, scalar or array-like, optionnal
+    phi : float, scalar or array-like, optional
       The angle phi (scalar or shape (N,)).
     lonlat : bool
       If True, input angles are assumed to be longitude and latitude in degree,
@@ -1177,7 +1194,7 @@ def euler_matrix_new(a1, a2, a3, X=True, Y=False, ZYX=False, deg=False):
 
 
     MODIFICATION HISTORY:
-       March 2002, EH, Caltech, rewritting of euler_matrix
+       March 2002, EH, Caltech, rewriting of euler_matrix
 
        convention   euler_matrix_new           euler_matrix
       X:       M_new(a,b,c,/X)  =  M_old(-a,-b,-c,/X) = Transpose( M_old(c, b, a,/X))

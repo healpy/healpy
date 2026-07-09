@@ -15,7 +15,7 @@
 #  along with Healpy; if not, write to the Free Software
 #  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #
-#  For more information about Healpy, see http://code.google.com/p/healpy
+#  For more information about Healpy, see https://github.com/healpy/healpy
 #
 """This module provides classes for some spherical projection.
 To be used when calling SphereProjAxes class.
@@ -176,7 +176,7 @@ class SphericalProj(object):
         else:
             matype = np.ma.array
         if type(x) is matype and x.mask is not np.ma.nomask:
-            w = x.mask == False
+            w = ~x.mask
         else:
             w = slice(None)
         img = np.zeros(x.shape, np.float64) - np.inf
@@ -299,7 +299,7 @@ class GnomonicProj(SphericalProj):
                 x = flip * vec[1] / vec[0]
                 y = vec[2] / vec[0]
         else:
-            w = mask == False
+            w = slice(None) if mask is np.ma.nomask else ~mask
             x = np.zeros(vec[0].shape) + np.nan
             y = np.zeros(vec[0].shape) + np.nan
             x[w] = flip * vec[1][w] / vec[0][w]
@@ -443,7 +443,7 @@ class MollweideProj(SphericalProj):
                 else:
                     return vec
         else:
-            w = mask == False
+            w = slice(None) if mask is np.ma.nomask else ~mask
             vec = (
                 np.zeros(x.shape) + np.nan,
                 np.zeros(x.shape) + np.nan,
@@ -1159,7 +1159,7 @@ class AzimuthalProj(SphericalProj):
                 else:
                     return vec
         else:
-            w = mask == False
+            w = slice(None) if mask is np.ma.nomask else ~mask
             vec = (
                 np.zeros(x.shape) + np.nan,
                 np.zeros(x.shape) + np.nan,

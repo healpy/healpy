@@ -15,9 +15,9 @@
 #  along with Healpy; if not, write to the Free Software
 #  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #
-#  For more information about Healpy, see http://code.google.com/p/healpy
+#  For more information about Healpy, see https://github.com/healpy/healpy
 #
-"""Provides input and output functions for Healpix maps, alm, and cl.
+"""Provides input and output functions for HEALPix maps, alm, and cl.
 """
 from __future__ import division
 
@@ -48,11 +48,15 @@ allowed_paths = (str, pathlib.Path)
 
 @deprecated(since="1.15.0")
 class HealpixFitsWarning(Warning):
+    """Warning class for FITS I/O issues in healpy.
+
+    .. deprecated:: 1.15.0
+    """
     pass
 
 
 def read_cl(filename):
-    """Reads Cl from a healpix file, as IDL fits2cl.
+    """Reads Cl from a HEALPix file, as IDL fits2cl.
 
     Parameters
     ----------
@@ -79,7 +83,7 @@ def read_cl(filename):
 
 
 def write_cl(filename, cl, dtype=None, overwrite=False, column_names=None, extra_header=()):
-    """Writes Cl into a healpix file, as IDL cl2fits.
+    """Writes Cl into a HEALPix file, as IDL cl2fits.
 
     Parameters
     ----------
@@ -161,13 +165,13 @@ def write_map(
     extra_header=(),
     overwrite=False,
 ):
-    """Writes a healpix map into a healpix FITS file.
+    """Writes a HEALPix map into a HEALPix FITS file.
 
     .. warning::
-    Starting from healpy 1.15.0, if you do not specify `dtype`,
-    the map will be written to disk with the same precision it is stored in memory.
-    Previously, by default `healpy` wrote maps in `float32`.
-    To reproduce the same behaviour of `healpy` 1.14.0 and below, set `dtype=np.float32`.
+       Starting from healpy 1.15.0, if you do not specify `dtype`,
+       the map will be written to disk with the same precision it is stored in memory.
+       Previously, by default `healpy` wrote maps in `float32`.
+       To reproduce the same behaviour of `healpy` 1.14.0 and below, set `dtype=np.float32`.
 
     Parameters
     ----------
@@ -207,12 +211,13 @@ def write_map(
       internally from the numpy datatype to the fits convention. If a list,
       the length must correspond to the number of map arrays.
       Default: use the data type of the input array(s)
+
       .. note::
-      this changed in 1.15.0, previous versions saved in float32
-      by default
+         this changed in 1.15.0, previous versions saved in float32
+         by default
     overwrite : bool, optional
       If True, existing file is silently overwritten. Otherwise trying to write
-      an existing file raises an OSError (IOError for Python 2).
+      an existing file raises an OSError.
     """
     if not hasattr(m, "__len__"):
         raise TypeError("The map must be a sequence")
@@ -336,7 +341,7 @@ def read_map(
     verbose=True,
     memmap=False,
 ):
-    """Read a healpix map from a fits file.  Partial-sky files,
+    """Read a HEALPix map from a fits file.  Partial-sky files,
     if properly identified, are expanded to full size and filled with UNSEEN.
 
     .. warning::
@@ -551,6 +556,8 @@ def write_alm(
       data type in the output file (must be a numpy dtype). Default: *alms*.real.dtype
     mmax_in : int, optional
       maximum m in the input array
+    overwrite : bool, optional
+      If True, overwrite the output file if it already exists. Default: False.
     """
 
     if not cb.is_seq_of_seq(alms):
@@ -624,7 +631,7 @@ def read_alm(filename, hdu=1, return_mmax=False):
     with 3 columns (index, real and imaginary) for each HDU.
 
     In the fits file, the alm are assumed to be written
-    with explicit index scheme, index = l**2+l+m+1, while healpix cxx
+    with explicit index scheme, index = l**2+l+m+1, while HEALPix C++
     uses index = m*(2*lmax+1-m)/2+l. The conversion is done in this
     function.
 

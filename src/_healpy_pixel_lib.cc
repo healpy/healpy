@@ -113,7 +113,7 @@ template<Healpix_Ordering_Scheme scheme>static void
       if (nside!=oldnside)
         { oldnside=nside; hb.SetNside(nside, scheme); }
       try {
-        *(int64 *)op = hb.xyf2pix((int)*(long *)ip2,(int)*(long *)ip3,(int)*(long *)ip4);
+        *(int64 *)op = hb.xyf2pix((int)*(int64 *)ip2,(int)*(int64 *)ip3,(int)*(int64 *)ip4);
       } catch(PlanckError &e) {
         *(int64 *)op = -1;
       }
@@ -141,13 +141,13 @@ template<Healpix_Ordering_Scheme scheme> static void
       try {
         int x, y, f;
         hb.pix2xyf(*(int64 *)ip2, x, y, f);
-        *(long *)op1 = x;
-        *(long *)op2 = y;
-        *(long *)op3 = f;
+        *(int64 *)op1 = x;
+        *(int64 *)op2 = y;
+        *(int64 *)op3 = f;
       } catch (PlanckError & e) {
-        *(long *)op1 = -1;
-        *(long *)op2 = -1;
-        *(long *)op3 = -1;
+        *(int64 *)op1 = -1;
+        *(int64 *)op2 = -1;
+        *(int64 *)op3 = -1;
       }
     }
 }
@@ -464,10 +464,10 @@ static char pix2ang_signatures[] = {
   NPY_INT64, NPY_INT64, NPY_DOUBLE, NPY_DOUBLE
 };
 static char xyf2pix_signatures[] = {
-  NPY_INT64, NPY_LONG, NPY_LONG, NPY_LONG, NPY_INT64
+  NPY_INT64, NPY_INT64, NPY_INT64, NPY_INT64, NPY_INT64
 };
 static char pix2xyf_signatures[] = {
-  NPY_INT64, NPY_INT64, NPY_LONG, NPY_LONG, NPY_LONG
+  NPY_INT64, NPY_INT64, NPY_INT64, NPY_INT64, NPY_INT64
 };
 static char pix2vec_signatures[] = {
   NPY_INT64, NPY_INT64, NPY_DOUBLE, NPY_DOUBLE, NPY_DOUBLE
@@ -497,39 +497,24 @@ static char max_pixrad_signatures[] = {
   NPY_INT64, NPY_DOUBLE
 };
 
-#if PY_MAJOR_VERSION >= 3
 static PyModuleDef moduledef = {
   PyModuleDef_HEAD_INIT,
   "_healpy_pixel_lib",
   NULL, -1, NULL
 };
-#endif
 
-#if PY_MAJOR_VERSION < 3
-#define FREE_MODULE_AND_FAIL do { return; } while(0)
-#else
 #define FREE_MODULE_AND_FAIL do { Py_DECREF(m); return NULL; } while(0)
-#endif
 
 PyMODINIT_FUNC
-#if PY_MAJOR_VERSION < 3
-init_healpy_pixel_lib(void)
-#else
 PyInit__healpy_pixel_lib(void)
-#endif
 {
   PyObject *m;
 
   import_array();
   import_ufunc();
 
-#if PY_MAJOR_VERSION < 3
-  m = Py_InitModule3("_healpy_pixel_lib", NULL, docstring);
-	if (!m) return;
-#else
 	m = PyModule_Create(&moduledef);
 	if (!m) return NULL;
-#endif
 
   if (PyModule_AddObject(m, "_ang2pix_ring", PyUFunc_FromFuncAndData(
       ang2pix_ring_functions, blank_data,
@@ -674,7 +659,5 @@ PyInit__healpy_pixel_lib(void)
   if (PyModule_AddObject(m, "UNSEEN", PyFloat_FromDouble(Healpix_undef)) < 0)
     FREE_MODULE_AND_FAIL;
 
-#if PY_MAJOR_VERSION >= 3
   return m;
-#endif
 }

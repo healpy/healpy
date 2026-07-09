@@ -1,4 +1,18 @@
 Unreleased
+|
+* Docs: comprehensive documentation fixes — consistent HEALPix/healpy capitalization, corrected default values, missing parameter docs, broken RST formatting, dead Google Code URLs replaced with GitHub, typos, and grammar https://github.com/healpy/healpy/pull/1113
+* CI: Added test workflow (`.github/workflows/tests.yml`) running the full test suite on Python 3.10–3.13 with ccache, plus an astropy pre-release job https://github.com/healpy/healpy/pull/1109
+* Fix off-by-one in ``synalm`` Cℓ boundary check that caused out-of-bounds reads when ``l == len(cl)`` https://github.com/healpy/healpy/pull/1108
+* Fix scalar boolean array indexing in ``projector.py`` projection functions (``mollview``, ``gnomview``, ``azeqview``) that caused corrupted masked output and ``"must not happen"`` assertion errors with NumPy 2.2.x + Python 3.14 https://github.com/healpy/healpy/pull/1112
+
+Release 1.20.0b1 29 May 2026
+
+* Added ``harmonic_ud_grade`` to change map NSIDE via spherical-harmonic transforms, providing an artifact-resistant alternative to pixel-space ``ud_grade`` for diffuse signals. The new API supports pixel-window and beam transfer corrections, direct :math:`a_{\\ell m}` input, API cross-links from ``ud_grade``, and a tutorial notebook comparing downgrade workflows https://github.com/healpy/healpy/pull/1081
+* Added `return_ranges` parameter to `query_disc`, `query_polygon`, and `query_strip` functions to return pixel ranges instead of individual pixel indices, reducing memory usage from O(N) to O(√N) for large queries https://github.com/healpy/healpy/pull/1077
+* CI: build Linux wheels with manylinux_2_28 for x86_64/aarch64 to avoid SciPy source builds failing on missing OpenBLAS https://github.com/healpy/healpy/pull/1075
+* Docs: clarify pkg-config fallback guidance and remove pykg-config reference https://github.com/healpy/healpy/pull/1074
+* Fix `uv pip install -e .` editable builds by recomputing pkg-config environment paths in `setup.py`, and add CI coverage for the uv editable install path https://github.com/healpy/healpy/pull/1085
+* Fix `mollview`/`projview` handling of matplotlib colormap objects so `badcolor` and `bgcolor` are applied consistently, and ensure `projview` masks `UNSEEN` pixels correctly https://github.com/healpy/healpy/issues/1084
 
 Release 1.19.0 1 Dec 2025
 

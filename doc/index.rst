@@ -52,13 +52,13 @@ or customize their format::
 
 For more details see the `Python documentation <https://docs.python.org/3/library/logging.html>`_.
 
-All the `verbose` keywords (except :py:func:remove_dipole) are now deprecated and
+All the `verbose` keywords (except :py:func:`remove_dipole`) are now deprecated and
 will be removed in the future.
 You can disable deprecation warnings with::
 
     import warnings
-    from astropy.utils.exceptions import AstropyDeprecationWarning
-    warnings.simplefilter('ignore', category=AstropyDeprecationWarning)
+    from healpy.utils.deprecation import HealpyDeprecationWarning
+    warnings.simplefilter('ignore', category=HealpyDeprecationWarning)
 
 Changelog
 ---------
@@ -75,7 +75,7 @@ Citing
 
 3. at the first use of the `HEALPix` acronym, a footnote placed in the main body
    of the paper referring to the `HEALPix` web site, currently
-   http://healpix.sf.net
+   https://healpix.sourceforge.net
 
 Tutorial
 --------

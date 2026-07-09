@@ -11,3 +11,5 @@ Other functions
 
    dist2holes
    hotspots
+   ringinfo
+   pix2ring

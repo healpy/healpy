@@ -1,6 +1,6 @@
 import numpy as np
 import pytest
-import requests
+import shutil
 
 import healpy as hp
 from astropy.utils import data
@@ -57,13 +57,14 @@ def test_pixelweights_local_datapath(tmp_path, create_reference_alm):
     lmax, input_alm, m = create_reference_alm
     datapath = tmp_path / "datapath" / "full_weights"
     datapath.mkdir(parents=True)
-    pixel_weights_file = requests.get(
-        "https://github.com/healpy/healpy-data/"
-        "blob/master/full_weights/"
-        "healpix_full_weights_nside_0064.fits?raw=true"
-    )
-    with open(datapath / "healpix_full_weights_nside_0064.fits", "wb") as f:
-        f.write(pixel_weights_file.content)
+    try:
+        with data.conf.set_temp("dataurl", "https://healpy.github.io/healpy-data/"):
+            source_pixel_weights = data.get_pkg_data_filename(
+                "full_weights/healpix_full_weights_nside_0064.fits", package="healpy"
+            )
+    except Exception as exc:
+        pytest.skip(f"Could not fetch reference pixel weights: {exc}")
+    shutil.copy(source_pixel_weights, datapath / "healpix_full_weights_nside_0064.fits")
 
     alm = hp.map2alm(
         m, use_pixel_weights=True, datapath=tmp_path / "datapath", lmax=lmax

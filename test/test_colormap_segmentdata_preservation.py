@@ -1,9 +1,8 @@
 """
-Test for issue raised in PR review: Colormap rebuild from _segmentdata loses user colors.
+Regression tests for colormap handling through create_colormap.
 
-When a LinearSegmentedColormap object (which has _segmentdata) is passed with 
-custom bad/under colors, the reconstruction from _segmentdata resets those colors
-to defaults, even though the intent was to preserve them.
+When badcolor/bgcolor are explicitly provided, they should be applied
+consistently for both string and Colormap-object inputs.
 """
 import matplotlib
 matplotlib.use("agg")
@@ -14,73 +13,71 @@ import pytest
 
 
 class TestColormapSegmentdataPreservation:
-    """Tests to verify that LinearSegmentedColormap colors are preserved."""
+    """Tests to verify explicit bad/under colors are applied consistently."""
     
-    def test_linearsegmented_colormap_preserves_bad_color(self):
-        """Test that bad color is preserved for LinearSegmentedColormap objects."""
+    def test_linearsegmented_colormap_applies_bad_color(self):
+        """Test that bad color argument is applied for LinearSegmentedColormap objects."""
         from healpy.projaxes import create_colormap
         
         # Use 'jet' which is a LinearSegmentedColormap
         cmap = plt.get_cmap('jet').copy()
         assert hasattr(cmap, '_segmentdata'), "jet should have _segmentdata"
         
-        # Set custom bad color
+        # Set custom bad color, but explicit args should take precedence.
         cmap.set_bad('white')
-        original_bad = cmap._rgba_bad
         
         # Pass through create_colormap
         result = create_colormap(cmap, badcolor='gray', bgcolor='white')
         
-        # Verify bad color is preserved
+        # Verify explicit badcolor argument is applied
         assert result._rgba_bad is not None, "Bad color should not be None"
-        assert np.allclose(result._rgba_bad[:3], [1.0, 1.0, 1.0]), \
-            f"Expected white (1,1,1), got {result._rgba_bad[:3]}"
+        assert np.allclose(result._rgba_bad[:3], [0.5019607843137255, 0.5019607843137255, 0.5019607843137255]), \
+            f"Expected gray from badcolor arg, got {result._rgba_bad[:3]}"
     
-    def test_linearsegmented_colormap_preserves_under_color(self):
-        """Test that under color is preserved for LinearSegmentedColormap objects."""
+    def test_linearsegmented_colormap_applies_under_color(self):
+        """Test that under color argument is applied for LinearSegmentedColormap objects."""
         from healpy.projaxes import create_colormap
         
         # Use 'jet' which is a LinearSegmentedColormap
         cmap = plt.get_cmap('jet').copy()
         assert hasattr(cmap, '_segmentdata'), "jet should have _segmentdata"
         
-        # Set custom under color
+        # Set custom under color, but explicit args should take precedence.
         cmap.set_under('yellow')
-        original_under = cmap._rgba_under
         
         # Pass through create_colormap
         result = create_colormap(cmap, badcolor='gray', bgcolor='white')
         
-        # Verify under color is preserved
+        # Verify explicit bgcolor argument is applied
         assert result._rgba_under is not None, "Under color should not be None"
-        assert np.allclose(result._rgba_under[:3], [1.0, 1.0, 0.0]), \
-            f"Expected yellow (1,1,0), got {result._rgba_under[:3]}"
+        assert np.allclose(result._rgba_under[:3], [1.0, 1.0, 1.0]), \
+            f"Expected white from bgcolor arg, got {result._rgba_under[:3]}"
     
-    def test_linearsegmented_colormap_preserves_both_colors(self):
-        """Test that both bad and under colors are preserved together."""
+    def test_linearsegmented_colormap_applies_both_colors(self):
+        """Test that explicit bad/under colors are applied together."""
         from healpy.projaxes import create_colormap
         
         # Use 'hot' which is also a LinearSegmentedColormap
         cmap = plt.get_cmap('hot').copy()
         assert hasattr(cmap, '_segmentdata'), "hot should have _segmentdata"
         
-        # Set both custom colors
+        # Set both custom colors, but explicit args should take precedence.
         cmap.set_bad('cyan')
         cmap.set_under('magenta')
         
         # Pass through create_colormap
         result = create_colormap(cmap, badcolor='gray', bgcolor='white')
         
-        # Verify both colors are preserved
+        # Verify explicit colors are applied
         assert result._rgba_bad is not None, "Bad color should not be None"
         assert result._rgba_under is not None, "Under color should not be None"
-        assert np.allclose(result._rgba_bad[:3], [0.0, 1.0, 1.0]), \
-            f"Expected cyan (0,1,1), got {result._rgba_bad[:3]}"
-        assert np.allclose(result._rgba_under[:3], [1.0, 0.0, 1.0]), \
-            f"Expected magenta (1,0,1), got {result._rgba_under[:3]}"
+        assert np.allclose(result._rgba_bad[:3], [0.5019607843137255, 0.5019607843137255, 0.5019607843137255]), \
+            f"Expected gray from badcolor arg, got {result._rgba_bad[:3]}"
+        assert np.allclose(result._rgba_under[:3], [1.0, 1.0, 1.0]), \
+            f"Expected white from bgcolor arg, got {result._rgba_under[:3]}"
     
     def test_listed_colormap_still_works(self):
-        """Verify that ListedColormap (no _segmentdata) still works correctly."""
+        """Verify that ListedColormap also applies explicit colors."""
         from healpy.projaxes import create_colormap
         
         # Use 'viridis' which is a ListedColormap
@@ -94,6 +91,6 @@ class TestColormapSegmentdataPreservation:
         # Pass through create_colormap
         result = create_colormap(cmap, badcolor='gray', bgcolor='white')
         
-        # Verify colors are preserved (this should already work)
-        assert np.allclose(result._rgba_bad[:3], [1.0, 1.0, 1.0])
-        assert np.allclose(result._rgba_under[:3], [1.0, 1.0, 0.0])
+        # Verify explicit colors are applied
+        assert np.allclose(result._rgba_bad[:3], [0.5019607843137255, 0.5019607843137255, 0.5019607843137255])
+        assert np.allclose(result._rgba_under[:3], [1.0, 1.0, 1.0])

@@ -15,7 +15,7 @@
 #  along with Healpy; if not, write to the Free Software
 #  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #
-#  For more information about Healpy, see http://code.google.com/p/healpy
+#  For more information about Healpy, see https://github.com/healpy/healpy
 #
 
 import logging
@@ -55,8 +55,8 @@ def mollzoom(
 ):
     """Interactive mollweide plot with zoomed gnomview.
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     map : float, array-like shape (Npix,)
       An array containing the map,
       supports masked maps, see the `ma` function.
@@ -88,7 +88,7 @@ def mollzoom(
       The maximum range value
     flip : {'astro', 'geo'}, optional
       Defines the convention of projection : 'astro' (default, east towards left, west towards right)
-      or 'geo' (east towards roght, west towards left)
+      or 'geo' (east towards right, west towards left)
     remove_dip : bool, optional
       If :const:`True`, remove the dipole+monopole
     remove_mono : bool, optional

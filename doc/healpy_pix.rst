@@ -17,6 +17,8 @@ conversion from/to sky coordinates
    vec2pix
    vec2ang
    ang2vec
+   xyf2pix
+   pix2xyf
    get_all_neighbours
    get_interp_weights
    get_interp_val
@@ -39,6 +41,8 @@ nside/npix/resolution
    npix2nside
    nside2order
    order2nside
+   npix2order
+   order2npix
    nside2resol
    nside2pixarea
    max_pixrad
@@ -49,6 +53,21 @@ nside/npix/resolution
    get_nside
    maptype
    ud_grade
+
+Notes on downgrade quality
+--------------------------
+
+For simple resolution changes, :func:`ud_grade` remains available and fast. It
+is usually the right choice for masks, hit-count maps, and compact
+pixel-localized features. For diffuse or band-limited downgrade workflows,
+:func:`healpy.sphtfunc.harmonic_ud_grade` can preserve the map more faithfully
+because it first band-limits the map in spherical-harmonic space before
+synthesizing it at the target ``nside``.
+
+See :func:`healpy.sphtfunc.harmonic_ud_grade` for the API and the following
+tutorial notebooks for worked comparisons:
+
+* :doc:`healpy_harmonic_ud_grade_comparison`
 
 Masking pixels
 --------------
@@ -69,5 +88,3 @@ Map data manipulation
    fit_monopole
    remove_dipole
    remove_monopole
-   get_interp_val
-

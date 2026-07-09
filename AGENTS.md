@@ -14,8 +14,23 @@ Follow PEP 8 with 4-space indentation and descriptive, lower_snake_case function
 ## Testing Guidelines
 Extend or create tests alongside code under `test/`, mirroring the module name (`test_pixelfunc.py` exercises `pixelfunc`). Prefer `pytest.mark.parametrize` for coverage over loops. New features should include doctest-ready examples so the `--doctest-plus` stage exercises them. When a change alters numerical tolerance, adjust the relevant assertion message and justify the threshold in a code comment. Keep optional dependencies (matplotlib, scipy) guarded with `pytest.importorskip`.
 
+## Notebook Visualization Guidelines
+When authoring comparison notebooks:
+- Prefer `projview` over `mollview`.
+- For side-by-side map comparisons, use a shared **linear** color scale across panels.
+- Compute common `vmin`/`vmax` from all compared maps and round them to readable values before plotting.
+- Include physical units on all plot axes, colorbars, and titles where applicable.
+- For power-spectrum plots, use LaTeX labels and write multipoles with `\ell` (for example `$C_\\ell$` vs `$\ell$`).
+
 ## Commit & Pull Request Guidelines
 Commits follow a short, imperative summary (`Fix query_disc strip for NEST`). Group related file changes together and update `CHANGELOG.rst` for user-visible behavior. Before opening a pull request, rerun the full pytest matrix and document output or screenshots for visual routines. Create and manage PRs via the GitHub CLI (`gh pr create`, `gh pr status`) so reviewers get a consistent template. Reference related issues with GitHub keywords, describe the scientific motivation, and mention any doc or data updates. Maintain PRs in sync with `main` to avoid stale generated C files.
+
+**Never push directly to `main` without explicit user approval.** Always show the proposed changes and ask for confirmation before pushing to any protected branch.
+
+## CI Workflows
+- **Tests** (`.github/workflows/tests.yml`): Runs on every push to `main` and on pull requests. Matrix: Python 3.10–3.13 with stable astropy, plus one job with astropy pre-release (`continue-on-error: true`). Uses ccache to speed up C++ recompilation on repeat runs. Total job time ~4–5m cold, ~2m with ccache hits.
+- **Build & Publish** (`.github/workflows/cibuildwheel.yml`): Builds source dist and binary wheels for multiple platforms. Runs cibuildwheel smoke tests inside each wheel. Publishes to PyPI on GitHub release.
+- **Editable Install Check** (`.github/workflows/uv-editable-install.yml`): Verifies `uv pip install -e .` succeeds on PRs.
 
 ## Release Process
 Follow the checklist in `RELEASE.md` for tagging, wheel builds, and PyPI uploads. Confirm CI artifacts match the documented version bump and update communication channels as described there.

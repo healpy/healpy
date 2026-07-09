@@ -1,7 +1,7 @@
 __all__ = ["projview", "newprojplot"]
 
 import numpy as np
-from .pixelfunc import ang2pix, npix2nside, remove_dipole, remove_monopole
+from .pixelfunc import ang2pix, mask_bad, npix2nside, remove_dipole, remove_monopole
 from .rotator import Rotator
 from .projaxes import get_color_table
 import matplotlib.pyplot as plt
@@ -150,7 +150,7 @@ def projview(
     dpi=None,
     **kwargs,
 ):
-    """Plot a healpix map (given as an array) in the chosen projection.
+    """Plot a HEALPix map (given as an array) in the chosen projection.
 
     See examples of using this function in the documentation under "Other
     tutorials". Overplot points or lines using :func:`newprojplot`.
@@ -184,11 +184,11 @@ def projview(
       Either one of 'G', 'E' or 'C' (where 'E' stands for the Ecliptic, 'G' for 
       the Galactic, and 'C' for the Celestial or equatorial) to describe the coordinate
       system of the map, or a sequence of 2 of these to rotate the map from the first 
-      to the second coordinate system. default: 'G'
+      to the second coordinate system. Default: None
     unit : str, optional
       A text describing the unit of the data. Default: ''
     xsize : int, optional
-      The size of the image. Default: 800
+      The size of the image. Default: 1000
     width : float, optional
         Sets the width of the figure. Use override_plot_properties for more.
         Overrides the default width of the figure
@@ -200,7 +200,7 @@ def projview(
       The maximum range value
     flip : {'astro', 'geo'}, optional
       Defines the convention of projection : 'astro' (default, east towards
-      left, west towards right) or 'geo' (east towards roght, west towards left)
+      left, west towards right) or 'geo' (east towards right, west towards left)
       It creates the `healpy_flip` attribute on the Axes to save the convention
       in the figure.
     format : str, optional
@@ -208,24 +208,24 @@ def projview(
     cbar : bool, optional
       Display the colorbar. Default: True
     cmap : str, optional
-        Specify the colormap. default: Viridis
+        Specify the colormap. Default: Viridis
     badcolor: str, optional
-        Specify the color of bad pixels. default: Grey
+        Specify the color of bad pixels. Default: Grey
     bgcolor: str, optional
-        Specify the color of the background. default: White
+        Specify the color of the background. Default: White
     norm : {'hist', 'log', 'symlog', 'symlog2', None}
       Color normalization:
       hist = histogram equalized color mapping.
       log = logarithmic color mapping.
       symlog = symmetric logarithmic, linear between -linthresh and linthresh.
-      symlog2 = similar to symlog, used for plack log colormap.
-      default: None (linear color mapping)
+      symlog2 = similar to symlog, used for Planck log colormap.
+      Default: None (linear color mapping)
     norm_dict : dict, optional
         Parameters for normalization:
         default is set to {"linthresh": 1, "base": 10, "linscale": 0.1}
         where linthresh determines the linear regime of symlog norm,
         and linscale sets the size of the linear regime on the cbar.
-        default: None
+        Default: None
     graticule : bool
       add graticule
     graticule_labels : bool
@@ -286,8 +286,8 @@ def projview(
     cbar_ticks : list
       custom ticks on the colorbar
     show_tickmarkers : bool, optional
-      Preserve tickmarkers for the full bar with labels specified by ticks
-      default: None
+      Preserve tickmarkers for the full bar with labels specified by ticks.
+      Default: False
     extend : str, optional
       Whether to extend the colorbar to mark where min or max tick is less than
       the min or max of the data. Options are "min", "max", "neither", or "both"
@@ -628,7 +628,7 @@ def projview(
     ret = None
     if m is not None:
         nside = npix2nside(len(m))
-        w = ~(np.isnan(m) | np.isinf(m))
+        w = ~(np.isnan(m) | np.isinf(m) | mask_bad(m))
         if m is not None:
             # auto min and max
             if min is None:
@@ -641,6 +641,7 @@ def projview(
         )
         grid_pix = ang2pix(nside, THETA, PHI, nest=nest)
         grid_map = m[grid_pix]
+        grid_map = np.ma.masked_where(mask_bad(grid_map), grid_map)
 
         # Flip the grid_map vertically for Lambert projection
         # matplotlib's Lambert projection interprets Y-axis in reverse order
