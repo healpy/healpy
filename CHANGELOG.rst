@@ -1,5 +1,6 @@
 Unreleased
 |
+* **Performance**: Optimized ``almxfl`` for better cache locality by swapping the loop order (m outer, l inner), giving a ~2-3x speedup for large datasets https://github.com/healpy/healpy/issues/964
 * Docs: comprehensive documentation fixes — consistent HEALPix/healpy capitalization, corrected default values, missing parameter docs, broken RST formatting, dead Google Code URLs replaced with GitHub, typos, and grammar https://github.com/healpy/healpy/pull/1113
 * CI: Added test workflow (`.github/workflows/tests.yml`) running the full test suite on Python 3.10–3.13 with ccache, plus an astropy pre-release job https://github.com/healpy/healpy/pull/1109
 * Fix off-by-one in ``synalm`` Cℓ boundary check that caused out-of-bounds reads when ``l == len(cl)`` https://github.com/healpy/healpy/pull/1108
