@@ -973,7 +973,7 @@ static PyObject *healpy_synalm(PyObject *self, PyObject *args,
   return NULL;
 }
 
-PyObject *healpy_getn(PyObject *self, PyObject *args)
+static PyObject *healpy_getn(PyObject *self, PyObject *args)
 {
   long s;
   healpyAssertType (PyArg_ParseTuple(args, "l", &s),
@@ -1006,13 +1006,12 @@ static PyMethodDef methods[] = {
 static PyModuleDef moduledef = {
   PyModuleDef_HEAD_INIT,
   "_healpy_sph_transform_lib",
-  NULL, -1, methods
+  NULL, 0, methods
 };
 
 PyMODINIT_FUNC
 PyInit__healpy_sph_transform_lib(void)
 {
   import_array();
-
-  return PyModule_Create(&moduledef);
+  return PyModuleDef_Init(&moduledef);
 }
