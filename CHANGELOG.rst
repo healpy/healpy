@@ -5,7 +5,7 @@ Unreleased
 * CI: Added test workflow (`.github/workflows/tests.yml`) running the full test suite on Python 3.10–3.13 with ccache, plus an astropy pre-release job https://github.com/healpy/healpy/pull/1109
 * Fix off-by-one in ``synalm`` Cℓ boundary check that caused out-of-bounds reads when ``l == len(cl)`` https://github.com/healpy/healpy/pull/1108
 * Fix scalar boolean array indexing in ``projector.py`` projection functions (``mollview``, ``gnomview``, ``azeqview``) that caused corrupted masked output and ``"must not happen"`` assertion errors with NumPy 2.2.x + Python 3.14 https://github.com/healpy/healpy/pull/1112
-* **BREAKING**: Bump minimum NumPy version to 2.0.0 and compile extensions against the NumPy 2.0 ABI. The last stable release supporting NumPy 1.x is 1.19.0. Replaced soft-deprecated ``PyModule_AddObject`` with ``PyModule_AddObjectRef`` and converted single-phase C extension init to two-phase (``Py_mod_exec``) init. https://github.com/healpy/healpy/pull/1106
+* **BREAKING**: Bump minimum NumPy version to 2.0.0 and compile extensions against the NumPy 2.0 ABI. The last stable release supporting NumPy 1.x is 1.19.0. https://github.com/healpy/healpy/pull/1106
 
 Release 1.20.0b1 29 May 2026
 
