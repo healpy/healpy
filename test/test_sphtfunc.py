@@ -335,9 +335,15 @@ class TestSphtFunc(unittest.TestCase):
         lmax = 64
         nalm = hp.Alm.getsize(lmax)
         alm = np.zeros([3, nalm], dtype=complex)
+        # Initialize every a_lm from ell == 2 upward, including the m == ell
+        # diagonal (hence range(ell + 1)). The monopole and dipole (ell < 2)
+        # are left at zero, as in the Fortran reference. The original test used
+        # range(ell), which skips the diagonal, so its a_lm never matched the
+        # Fortran reference -- a discrepancy the test hid by overwriting the
+        # computed values with the reference (``mine = np.array(ref)``).
         for i in range(3):
-            for ell in range(lmax + 1):
-                for m in range(ell):
+            for ell in range(2, lmax + 1):
+                for m in range(ell + 1):
                     ind = hp.Alm.getidx(lmax, ell, m)
                     alm[i, ind] = (i + 1) * 10 + ell + 1j * m
         psi = np.pi / 3.0
@@ -397,10 +403,9 @@ class TestSphtFunc(unittest.TestCase):
                 for m in range(0, ell + 1, 21):
                     ind = hp.Alm.getidx(lmax, ell, m)
                     mine.append(alm[i, ind])
+        mine = np.array(mine)
 
-        mine = np.array(ref)
-
-        np.testing.assert_allclose(ref, mine, rtol=1e-10)
+        np.testing.assert_allclose(ref, mine, rtol=1e-6)
 
     def test_accept_ma_allows_only_keywords(self):
         """Test whether 'smoothing' wrapped with accept_ma works with only
