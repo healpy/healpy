@@ -1,7 +1,7 @@
 Unreleased
 |
 
-* Fix ``test_rotate_alm2`` which compared healpy's ``rotate_alm`` against the Fortran library. The test initialized ``a_lm`` with ``range(ell)``, skipping the ``m == ell`` diagonal, then hid the resulting mismatch by overwriting the computed values with the reference (``mine = np.array(ref)``). The initialization now includes the diagonal, matching the Fortran reference. https://github.com/healpy/healpy/pull/703
+* Fixed ``test_rotate_alm2``: the ``a_lm`` initialization now includes the ``m == ell`` diagonal, matching the Fortran reference (the test previously compared the reference to itself) https://github.com/healpy/healpy/pull/1118
 * **Performance**: Optimized ``almxfl`` for better cache locality by swapping the loop order (m outer, l inner), giving a ~2-3x speedup for large datasets https://github.com/healpy/healpy/issues/964
 * Docs: comprehensive documentation fixes — consistent HEALPix/healpy capitalization, corrected default values, missing parameter docs, broken RST formatting, dead Google Code URLs replaced with GitHub, typos, and grammar https://github.com/healpy/healpy/pull/1113
 * CI: Added test workflow (`.github/workflows/tests.yml`) running the full test suite on Python 3.10–3.13 with ccache, plus an astropy pre-release job https://github.com/healpy/healpy/pull/1109
