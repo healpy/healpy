@@ -1,6 +1,8 @@
 Unreleased
 |
 
+Release 1.20.0 22 Jul 2026
+
 * Fixed ``test_rotate_alm2``: the ``a_lm`` initialization now includes the ``m == ell`` diagonal, matching the Fortran reference (the test previously compared the reference to itself) https://github.com/healpy/healpy/pull/1118
 * **Performance**: Optimized ``almxfl`` for better cache locality by swapping the loop order (m outer, l inner), giving a ~2-3x speedup for large datasets https://github.com/healpy/healpy/issues/964
 * Docs: comprehensive documentation fixes — consistent HEALPix/healpy capitalization, corrected default values, missing parameter docs, broken RST formatting, dead Google Code URLs replaced with GitHub, typos, and grammar https://github.com/healpy/healpy/pull/1113
