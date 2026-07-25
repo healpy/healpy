@@ -169,6 +169,7 @@ class build_external_clib(build_clib):
                 "/bin/sh",
                 os.path.join(os.path.realpath(local_source), "configure"),
                 "--prefix=" + build_clib,
+                "--exec-prefix=" + os.environ["WASM_LIBRARY_DIR"],
                 "--disable-curl",
                 "--with-pic",
                 "--disable-maintainer-mode",
