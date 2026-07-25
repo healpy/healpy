@@ -174,6 +174,14 @@ class build_external_clib(build_clib):
                 "--disable-maintainer-mode",
             ]
 
+            # On Emscripten, cfitsio's configure-time zlib check runs a host
+            # binary that cannot be executed, so disable it as recommended for
+            # cross-builds; the cross-compiled zlib is still linked in. The
+            # Fortran wrappers need f2c and are unused by healpy, so drop them.
+            # The other subprojects ignore these unknown options.
+            if is_emscripten():
+                cmd += ["--without-zlib-check", "--without-fortran"]
+
             log.info("%s", " ".join(cmd))
             check_call(
                 cmd,
