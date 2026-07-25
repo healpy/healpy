@@ -178,9 +178,16 @@ class build_external_clib(build_clib):
             # binary that cannot be executed, so disable it as recommended for
             # cross-builds; the cross-compiled zlib is still linked in. The
             # Fortran wrappers need f2c and are unused by healpy, so drop them.
+            # Emscripten 6 added OpenMP support, so healpix_cxx's AC_OPENMP
+            # check succeeds and -fopenmp lands in CFLAGS/CXXFLAGS, but
+            # -fopenmp implies pthreads there and the link then fails.
             # The other subprojects ignore these unknown options.
             if is_emscripten():
-                cmd += ["--without-zlib-check", "--without-fortran"]
+                cmd += [
+                    "--without-zlib-check",
+                    "--without-fortran",
+                    "--disable-openmp",
+                ]
 
             log.info("%s", " ".join(cmd))
             check_call(
