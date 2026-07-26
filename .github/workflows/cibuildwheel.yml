@@ -69,7 +69,7 @@ jobs:
           set -euo pipefail
 
           python -m pip install --upgrade pip
-          python -m pip install "cibuildwheel==3.3.0"
+          python -m pip install "cibuildwheel==4.1.1"
 
           max_attempts=3
           attempt=1
