@@ -7,7 +7,7 @@ import sys
 import shlex
 import shutil
 from Cython.Distutils import build_ext
-from sysconfig import get_config_vars
+from sysconfig import get_config_vars, get_platform
 from subprocess import check_output, CalledProcessError, check_call
 from setuptools import setup, Extension
 from setuptools.command.build_clib import build_clib
@@ -25,6 +25,10 @@ to also run the doctests:
 if "test" in sys.argv:
     print(TEST_HELP)
     sys.exit(1)
+
+
+def is_emscripten():
+    return get_platform().startswith("emscripten")
 
 
 class build_external_clib(build_clib):
@@ -170,6 +174,21 @@ class build_external_clib(build_clib):
                 "--disable-maintainer-mode",
             ]
 
+            # On Emscripten, cfitsio's configure-time zlib check runs a host
+            # binary that cannot be executed, so disable it as recommended for
+            # cross-builds; the cross-compiled zlib is still linked in. The
+            # Fortran wrappers need f2c and are unused by healpy, so drop them.
+            # Emscripten 6 added OpenMP support, so healpix_cxx's AC_OPENMP
+            # check succeeds and -fopenmp lands in CFLAGS/CXXFLAGS, but
+            # -fopenmp implies pthreads there and the link then fails.
+            # The other subprojects ignore these unknown options.
+            if is_emscripten():
+                cmd += [
+                    "--without-zlib-check",
+                    "--without-fortran",
+                    "--disable-openmp",
+                ]
+
             log.info("%s", " ".join(cmd))
             check_call(
                 cmd,
@@ -179,6 +198,13 @@ class build_external_clib(build_clib):
 
             # Run make install.
             cmd = ["make", "install"]
+
+            # On Emscripten, these binaries fail to link with duplicate symbols.
+            # healpy only needs the libraries and headers, so skip the programs
+            # entirely by emptying the automake variables that list them.
+            if is_emscripten():
+                cmd += ["bin_PROGRAMS=", "noinst_PROGRAMS="]
+
             log.info("%s", " ".join(cmd))
             check_call(cmd, cwd=build_temp, env=env)
 

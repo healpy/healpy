@@ -1,5 +1,6 @@
 Unreleased
-|
+
+* Build: skip the unused cfitsio and healpix_cxx command line utilities when building for Emscripten/WebAssembly. They fail to link on WebAssembly with duplicate symbols.
 
 Release 1.20.0 22 Jul 2026
 
