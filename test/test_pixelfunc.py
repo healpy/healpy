@@ -272,6 +272,40 @@ class TestPixelFunc(unittest.TestCase):
         self.assertTrue(np.allclose(theta_scalar, np.pi / 2 + np.deg2rad(80)))
         self.assertTrue(np.allclose(phi_scalar, np.deg2rad(lon_scalar) + np.pi))
 
+    def test_latauto_leaves_input_arrays_unchanged(self):
+        """latauto must fold copies, not the caller's arrays."""
+        for latbounce in (True, False):
+            lat = np.array([-100.0, -90.0, 0.0, 90.0, 100.0])
+            lon = np.array([0.0, 60.0, 90.0, 0.0, 180.0])
+            lat_before = lat.copy()
+            lon_before = lon.copy()
+
+            lonlat2thetaphi(lon, lat, latauto=True, latbounce=latbounce)
+
+            np.testing.assert_array_equal(lat, lat_before)
+            np.testing.assert_array_equal(lon, lon_before)
+
+            ang2pix(16, lon, lat, lonlat=True, latauto=True, latbounce=latbounce)
+
+            np.testing.assert_array_equal(lat, lat_before)
+            np.testing.assert_array_equal(lon, lon_before)
+
+    def test_latauto_accepts_read_only_input(self):
+        """latauto must work on read-only arrays and bounce at the poles."""
+        lat = np.array([100.0, -100.0])
+        lon = np.array([10.0, 20.0])
+        lat.flags.writeable = False
+        lon.flags.writeable = False
+
+        theta, phi = lonlat2thetaphi(lon, lat, latauto=True)
+        # 100 deg bounces back to 80 deg, -100 deg to -80 deg
+        self.assertTrue(np.allclose(theta, np.pi / 2 - np.deg2rad([80.0, -80.0])))
+        self.assertTrue(np.allclose(phi, np.deg2rad([10.0, 20.0])))
+
+        theta, phi = lonlat2thetaphi(lon, lat, latauto=True, latbounce=False)
+        self.assertTrue(np.allclose(theta, np.pi / 2 - np.deg2rad([80.0, -80.0])))
+        self.assertTrue(np.allclose(phi, np.deg2rad([190.0, 200.0])))
+
     def test_query_strip_nest(self):
         # Test query_strip with nest=True, which was previously crashing
         nside = 2

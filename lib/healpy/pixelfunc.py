@@ -179,14 +179,16 @@ def lonlat2thetaphi(lon, lat, latauto=False, latbounce=True):
       The co-latitude and longitude in radians
     """
     if latauto:
-        lat = np.asarray(lat)
+        # np.asarray does not copy an ndarray input, so folding in place would
+        # modify the caller's arrays and fail outright on read-only input.
+        lat = np.array(lat, copy=True)
         if not latbounce:
-            lon = np.asarray(lon)
+            lon = np.array(lon, copy=True)
             lon[lat > 90] = lon[lat > 90] + 180
             lon[lat < -90] = lon[lat < -90] + 180
         lat[lat > 90] = 180 - lat[lat > 90]
         lat[lat < -90] = -(180 + lat[lat < -90])
-          
+
     return np.pi / 2.0 - np.radians(lat), np.radians(lon)
 
 

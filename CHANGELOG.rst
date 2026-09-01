@@ -1,6 +1,8 @@
 Unreleased
 |
 
+* Fixed ``lonlat2thetaphi(..., latauto=True)`` (and therefore ``ang2pix(..., latauto=True)``) modifying the caller's ``lat``/``lon`` arrays in place and raising ``ValueError`` on read-only input https://github.com/healpy/healpy/pull/1122
+
 Release 1.20.0 22 Jul 2026
 
 * Fixed ``test_rotate_alm2``: the ``a_lm`` initialization now includes the ``m == ell`` diagonal, matching the Fortran reference (the test previously compared the reference to itself) https://github.com/healpy/healpy/pull/1118
