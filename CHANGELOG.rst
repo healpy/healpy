@@ -1,7 +1,7 @@
 Unreleased
 |
 
-* Fixed ``lonlat2thetaphi(..., latauto=True)`` modifying caller-owned coordinate arrays and rejecting read-only arrays. Latitude folding now reuses the newly allocated result buffers instead of making full-size input copies.
+* Fixed ``lonlat2thetaphi(..., latauto=True)`` modifying caller-owned coordinate arrays and rejecting read-only arrays. Latitude folding now reuses the newly allocated result buffers instead of making full-size input copies. https://github.com/healpy/healpy/pull/1123
 
 Release 1.20.0 22 Jul 2026
 
