@@ -185,17 +185,21 @@ def lonlat2thetaphi(lon, lat, latauto=False, latbounce=True):
     folding is performed in the newly allocated output arrays.
     """
     if latauto:
-        latitude = np.asarray(lat)
-        theta = np.asarray(np.radians(latitude))
+        # np.asarray may alias caller-owned memory, so keep lat read-only. theta is
+        # newly allocated by np.radians and can be safely folded in place.
+        lat = np.asarray(lat)
+        theta = np.asarray(np.radians(lat))
 
-        fold_mask = np.asarray(latitude > 90)
+        fold_mask = np.asarray(lat > 90)
         theta[fold_mask] = np.pi - theta[fold_mask]
 
         fold_mask = np.asarray(theta < -np.pi / 2)
         theta[fold_mask] = -(np.pi + theta[fold_mask])
 
         if not latbounce:
-            fold_mask = np.asarray((latitude > 90) | (latitude < -90))
+            # theta is already folded, so use the untouched input latitudes to find
+            # pole crossings that require a 180-degree longitude shift.
+            fold_mask = np.asarray((lat > 90) | (lat < -90))
 
         # Preserve scalar returns; arrays can reuse the theta allocation.
         if theta.ndim == 0:
@@ -203,6 +207,7 @@ def lonlat2thetaphi(lon, lat, latauto=False, latbounce=True):
         else:
             np.subtract(np.pi / 2.0, theta, out=theta)
 
+        # Convert before shifting longitude so narrow integer inputs cannot overflow.
         phi = np.asarray(np.radians(lon))
         if not latbounce:
             phi[fold_mask] += np.pi
