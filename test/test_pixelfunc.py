@@ -272,6 +272,129 @@ class TestPixelFunc(unittest.TestCase):
         self.assertTrue(np.allclose(theta_scalar, np.pi / 2 + np.deg2rad(80)))
         self.assertTrue(np.allclose(phi_scalar, np.deg2rad(lon_scalar) + np.pi))
 
+    def test_latauto_leaves_input_arrays_unchanged(self):
+        """latauto must fold outputs, not the caller's arrays."""
+        for latbounce in (True, False):
+            with self.subTest(latbounce=latbounce):
+                lat = np.array([-100.0, -90.0, 0.0, 90.0, 100.0])
+                lon = np.array([0.0, 60.0, 90.0, 0.0, 180.0])
+                lat_before = lat.copy()
+                lon_before = lon.copy()
+
+                theta, phi = lonlat2thetaphi(
+                    lon, lat, latauto=True, latbounce=latbounce
+                )
+
+                np.testing.assert_array_equal(lat, lat_before)
+                np.testing.assert_array_equal(lon, lon_before)
+                self.assertFalse(np.shares_memory(theta, lat))
+                self.assertFalse(np.shares_memory(phi, lon))
+
+                ang2pix(
+                    16,
+                    lon,
+                    lat,
+                    lonlat=True,
+                    latauto=True,
+                    latbounce=latbounce,
+                )
+
+                np.testing.assert_array_equal(lat, lat_before)
+                np.testing.assert_array_equal(lon, lon_before)
+
+    def test_latauto_accepts_read_only_input(self):
+        """latauto must work on read-only arrays and bounce at the poles."""
+        lat = np.array([100.0, -100.0])
+        lon = np.array([10.0, 20.0])
+        lat.flags.writeable = False
+        lon.flags.writeable = False
+
+        theta, phi = lonlat2thetaphi(lon, lat, latauto=True)
+        np.testing.assert_allclose(theta, np.pi / 2 - np.deg2rad([80.0, -80.0]))
+        np.testing.assert_allclose(phi, np.deg2rad([10.0, 20.0]))
+
+        theta, phi = lonlat2thetaphi(lon, lat, latauto=True, latbounce=False)
+        np.testing.assert_allclose(theta, np.pi / 2 - np.deg2rad([80.0, -80.0]))
+        np.testing.assert_allclose(phi, np.deg2rad([190.0, 200.0]))
+
+    def test_latauto_accepts_read_only_strided_input(self):
+        """Folding supports read-only, non-contiguous coordinate views."""
+        lat_storage = np.array(
+            [-100.0, 999.0, -90.0, 999.0, 0.0, 999.0, 90.0, 999.0, 100.0]
+        )
+        lon_storage = np.array(
+            [0.0, 999.0, 60.0, 999.0, 90.0, 999.0, 0.0, 999.0, 180.0]
+        )
+        lat_storage.flags.writeable = False
+        lon_storage.flags.writeable = False
+        lat = lat_storage[::2]
+        lon = lon_storage[::2]
+        self.assertFalse(lat.flags.writeable)
+        self.assertFalse(lon.flags.writeable)
+
+        theta, phi = lonlat2thetaphi(lon, lat, latauto=True, latbounce=False)
+
+        np.testing.assert_allclose(theta, np.deg2rad([170.0, 180.0, 90.0, 0.0, 10.0]))
+        np.testing.assert_allclose(phi, np.deg2rad([180.0, 60.0, 90.0, 0.0, 360.0]))
+        np.testing.assert_array_equal(
+            lat_storage,
+            [-100.0, 999.0, -90.0, 999.0, 0.0, 999.0, 90.0, 999.0, 100.0],
+        )
+        np.testing.assert_array_equal(
+            lon_storage,
+            [0.0, 999.0, 60.0, 999.0, 90.0, 999.0, 0.0, 999.0, 180.0],
+        )
+
+    def test_latauto_preserves_array_output_dtype(self):
+        """Output buffers use the dtype selected by NumPy's radians ufunc."""
+        for dtype in (np.int16, np.float32, np.float64):
+            with self.subTest(dtype=dtype):
+                lat = np.array([-100, 100], dtype=dtype)
+                lon = np.array([10, 20], dtype=dtype)
+
+                theta, phi = lonlat2thetaphi(lon, lat, latauto=True, latbounce=False)
+
+                self.assertEqual(theta.dtype, np.radians(lat).dtype)
+                self.assertEqual(phi.dtype, np.radians(lon).dtype)
+                np.testing.assert_allclose(
+                    theta,
+                    np.deg2rad([170.0, 10.0]),
+                    rtol=1e-6,
+                    atol=1e-6,
+                )
+                np.testing.assert_allclose(
+                    phi,
+                    np.deg2rad([190.0, 200.0]),
+                    rtol=1e-6,
+                    atol=1e-6,
+                )
+
+    def test_latauto_scalar_returns_scalars(self):
+        """Using zero-dimensional work buffers must not change scalar returns."""
+        for dtype in (int, np.float32, np.float64):
+            with self.subTest(dtype=dtype):
+                theta, phi = lonlat2thetaphi(
+                    dtype(10),
+                    dtype(-100),
+                    latauto=True,
+                    latbounce=False,
+                )
+
+                self.assertTrue(np.isscalar(theta))
+                self.assertTrue(np.isscalar(phi))
+                self.assertAlmostEqual(theta, np.deg2rad(170.0), places=6)
+                self.assertAlmostEqual(phi, np.deg2rad(190.0), places=6)
+
+    def test_latauto_avoids_integer_overflow_when_adjusting_longitude(self):
+        """Longitude adjustment takes place in the floating output buffer."""
+        lat = np.array([100], dtype=np.int16)
+        lon = np.array([32700], dtype=np.int16)
+
+        _, phi = lonlat2thetaphi(lon, lat, latauto=True, latbounce=False)
+
+        np.testing.assert_allclose(phi, np.deg2rad([32880.0]), rtol=1e-6)
+        np.testing.assert_array_equal(lon, [32700])
+
     def test_query_strip_nest(self):
         # Test query_strip with nest=True, which was previously crashing
         nside = 2
