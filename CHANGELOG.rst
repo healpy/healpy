@@ -1,6 +1,8 @@
 Unreleased
 |
 
+* Fixed ``rotate_alm`` in-place update when the input is ``complex128`` but not C-contiguous: copy rotated coefficients back if ``np.ascontiguousarray`` made a copy https://github.com/healpy/healpy/issues/702
+
 Release 1.20.0 22 Jul 2026
 
 * Fixed ``test_rotate_alm2``: the ``a_lm`` initialization now includes the ``m == ell`` diagonal, matching the Fortran reference (the test previously compared the reference to itself) https://github.com/healpy/healpy/pull/1118
