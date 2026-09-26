@@ -595,6 +595,8 @@ def rotate_alm(alm not None, double psi=0, double theta=0, double phi=0, matrix=
             c_rotate_alm(AI[0], psi, theta, phi)
         else:
             c_rotate_alm(AI[0], rotation_matrix)
+        if ai is not alm[0]:
+            alm[0][:] = ai
         del AI
     else:
         ag = np.ascontiguousarray(alm[1], dtype=np.complex128)
@@ -605,6 +607,12 @@ def rotate_alm(alm not None, double psi=0, double theta=0, double phi=0, matrix=
             c_rotate_alm(AI[0], AG[0], AC[0], psi, theta, phi)
         else:
             c_rotate_alm(AI[0], AG[0], AC[0], rotation_matrix)
+        if ai is not alm[0]:
+            alm[0][:] = ai
+        if ag is not alm[1]:
+            alm[1][:] = ag
+        if ac is not alm[2]:
+            alm[2][:] = ac
         del AI, AG, AC
 
 
