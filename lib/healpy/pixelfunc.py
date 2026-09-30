@@ -167,26 +167,54 @@ def lonlat2thetaphi(lon, lat, latauto=False, latbounce=True):
       Longitude in degrees
     lat : int or array-like
       Latitude in degrees
-    latauto: bool, optional
-      If True, automatically adjust latitudes to be within [-90, 90] range
-    latbounce: bool, optional
+    latauto : bool, optional
+      If True, automatically adjust latitudes to be within [-90, 90] range.
+    latbounce : bool, optional
       If True, longitude is not affected, as if scanning and bouncing back at the pole.
-      If False, longitude is adjusted by 180 degrees, as if scanning through the pole. Needs latauto=True.
+      If False, longitude is adjusted by 180 degrees, as if scanning through
+      the pole. Requires ``latauto=True``.
 
     Returns
     -------
     theta, phi : float, scalar or array-like
       The co-latitude and longitude in radians
+
+    Notes
+    -----
+    Input arrays are never modified. When ``latauto`` is enabled, latitude
+    folding is performed in the newly allocated output arrays.
     """
     if latauto:
+        # np.asarray may alias caller-owned memory, so keep lat read-only. theta is
+        # newly allocated by np.radians and can be safely folded in place.
         lat = np.asarray(lat)
+        theta = np.asarray(np.radians(lat))
+
+        fold_mask = np.asarray(lat > 90)
+        theta[fold_mask] = np.pi - theta[fold_mask]
+
+        fold_mask = np.asarray(theta < -np.pi / 2)
+        theta[fold_mask] = -(np.pi + theta[fold_mask])
+
         if not latbounce:
-            lon = np.asarray(lon)
-            lon[lat > 90] = lon[lat > 90] + 180
-            lon[lat < -90] = lon[lat < -90] + 180
-        lat[lat > 90] = 180 - lat[lat > 90]
-        lat[lat < -90] = -(180 + lat[lat < -90])
-          
+            # theta is already folded, so use the untouched input latitudes to find
+            # pole crossings that require a 180-degree longitude shift.
+            fold_mask = np.asarray((lat > 90) | (lat < -90))
+
+        # Preserve scalar returns; arrays can reuse the theta allocation.
+        if theta.ndim == 0:
+            theta = np.pi / 2.0 - theta[()]
+        else:
+            np.subtract(np.pi / 2.0, theta, out=theta)
+
+        # Convert before shifting longitude so narrow integer inputs cannot overflow.
+        phi = np.asarray(np.radians(lon))
+        if not latbounce:
+            phi[fold_mask] += np.pi
+        if phi.ndim == 0:
+            phi = phi[()]
+        return theta, phi
+
     return np.pi / 2.0 - np.radians(lat), np.radians(lon)
 
 
