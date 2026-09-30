@@ -1,9 +1,10 @@
-import os.path
 import unittest
 import numpy as np
 
 from healpy import line_integral_convolution as lic
 from healpy import read_map
+
+from .helpers import DATAPATH
 
 
 class TestLIC(unittest.TestCase):
@@ -31,9 +32,8 @@ class TestLIC(unittest.TestCase):
         lic(np.empty(12), np.empty(12), modulate=True)
 
     def test_lic_regression(self):
-        path = os.path.dirname(os.path.realpath(__file__))
         Q, U = read_map(
-            os.path.join(path, "data", "wmap_band_iqumap_r9_7yr_W_v4_udgraded32.fits"),
+            DATAPATH / "wmap_band_iqumap_r9_7yr_W_v4_udgraded32.fits",
             (1, 2), dtype=np.float64
         )
         lic_result = lic(Q, U, step_radian=0.01)
