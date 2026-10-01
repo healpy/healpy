@@ -1,5 +1,6 @@
 Unreleased
-|
+
+* Build: skip the unused cfitsio and healpix_cxx command line utilities when building for Emscripten/WebAssembly. They fail to link on WebAssembly with duplicate symbols.
 
 * Dev: Centralize the test data directory in a ``DATAPATH`` constant (`test/helpers.py`), replacing repeated ``os.path.dirname(os.path.realpath(__file__))`` boilerplate in the test suite https://github.com/healpy/healpy/issues/504
 * Fixed ``rotate_alm`` in-place update when the input is ``complex128`` but not C-contiguous: copy rotated coefficients back if ``np.ascontiguousarray`` made a copy https://github.com/healpy/healpy/issues/702
