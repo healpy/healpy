@@ -509,6 +509,7 @@ def alm2map(
     pol=True,
     inplace=False,
     verbose=True,
+    datapath=None,
 ):
     """Computes a HEALPix map given the alm.
 
@@ -548,6 +549,10 @@ def alm2map(
       apply beam smoothing or pixel window.
     verbose : bool, optional
       Deprecated, has no effect.
+    datapath : None or str, optional
+        If given, the directory where to find the pixel window function file.
+        If not found locally, will be downloaded and cached using astropy.
+        See the docstring of `map2alm` for details on how to set it up
 
     Returns
     -------
@@ -573,7 +578,7 @@ def alm2map(
         lonely = False
 
     if pixwin:
-        pw = globals()["pixwin"](nside, True)
+        pw = globals()["pixwin"](nside, True, datapath=datapath)
         alms_new = []
         for ialm, alm in enumerate(alms):
             pixelwindow = pw[1] if ialm >= 1 and pol else pw[0]
