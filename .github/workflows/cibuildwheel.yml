@@ -41,9 +41,9 @@ jobs:
         include:
           - os: ubuntu-22.04
           - os: ubuntu-22.04-arm
-          - os: macos-14
-            macos_target: "14.0"
           - os: macos-15
+            macos_target: "14.0"
+          - os: macos-latest
             macos_target: "15.0"
 
     steps:
