@@ -1,10 +1,13 @@
 Unreleased
 |
 
+Release 1.20.1 3 Oct 2026
+
 * Dev: Centralize the test data directory in a ``DATAPATH`` constant (`test/helpers.py`), replacing repeated ``os.path.dirname(os.path.realpath(__file__))`` boilerplate in the test suite https://github.com/healpy/healpy/issues/504
 * Fixed ``rotate_alm`` in-place update when the input is ``complex128`` but not C-contiguous: copy rotated coefficients back if ``np.ascontiguousarray`` made a copy https://github.com/healpy/healpy/issues/702
 * Fixed ``lonlat2thetaphi(..., latauto=True)`` modifying caller-owned coordinate arrays and rejecting read-only arrays. Latitude folding now reuses the newly allocated result buffers instead of making full-size input copies. https://github.com/healpy/healpy/pull/1123
 * Added ``column_units`` argument to ``write_cl`` to store units in the FITS ``TUNITn`` keywords, as a single string applied to all columns or per-column list. ``write_cl`` now also raises a ``ValueError`` when the number of ``column_names`` does not match the number of ``cl`` arrays (previously, with a 1-D ``cl``, extra names were silently ignored) https://github.com/healpy/healpy/pull/828
+* **Note**: this is the last release providing macOS 14 arm64 wheels (``macosx_14_0_arm64``). GitHub retires its macOS 14 hosted runner on 2 Nov 2026 and the Homebrew OpenMP runtime used to build wheels now requires macOS 15, so from the next release arm64 wheels target macOS 15 (see https://github.com/healpy/healpy/issues/1130 and https://github.com/healpy/healpy/pull/1129). macOS x86_64 wheels continue to support macOS 13.6+.
 
 Release 1.20.0 22 Jul 2026
 
