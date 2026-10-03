@@ -42,8 +42,6 @@ jobs:
           - os: ubuntu-22.04
           - os: ubuntu-22.04-arm
           - os: macos-15
-            macos_target: "14.0"
-          - os: macos-15
             macos_target: "15.0"
 
     steps:
@@ -91,7 +89,7 @@ jobs:
           done
       - uses: actions/upload-artifact@v7
         with:
-          name: wheels-${{ matrix.macos_target || matrix.os }}
+          name: ${{ matrix.os }}
           path: wheelhouse/*
 
   publish:
