@@ -4,6 +4,7 @@ Unreleased
 * Dev: Centralize the test data directory in a ``DATAPATH`` constant (`test/helpers.py`), replacing repeated ``os.path.dirname(os.path.realpath(__file__))`` boilerplate in the test suite https://github.com/healpy/healpy/issues/504
 * Fixed ``rotate_alm`` in-place update when the input is ``complex128`` but not C-contiguous: copy rotated coefficients back if ``np.ascontiguousarray`` made a copy https://github.com/healpy/healpy/issues/702
 * Fixed ``lonlat2thetaphi(..., latauto=True)`` modifying caller-owned coordinate arrays and rejecting read-only arrays. Latitude folding now reuses the newly allocated result buffers instead of making full-size input copies. https://github.com/healpy/healpy/pull/1123
+* Added ``column_units`` argument to ``write_cl`` to store units in the FITS ``TUNITn`` keywords, as a single string applied to all columns or per-column list. ``write_cl`` now also raises a ``ValueError`` when the number of ``column_names`` does not match the number of ``cl`` arrays (previously, with a 1-D ``cl``, extra names were silently ignored) https://github.com/healpy/healpy/pull/828
 
 Release 1.20.0 22 Jul 2026
 
