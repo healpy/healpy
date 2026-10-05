@@ -277,9 +277,13 @@ class TestSphtFunc(unittest.TestCase):
                     i[gal_mask] = 0
                     np.testing.assert_allclose(i, o, atol=1e-2)
 
-    def test_alm2map_local_datapath_missing():
+    def test_alm2map_local_datapath_missing(self):
+        rng = np.random.default_rng(seed=42)
+        alm_size = 78
+        nside = 4
+        alm = rng.standard_normal(alm_size) + 1j * rng.standard_normal(alm_size)
         with pytest.raises(ValueError):
-            hp.alm2map(np.zeros(12), use_pixel_weights=True, datapath="datapath/")
+            hp.alm2map(alm, nside, pixwin=True, datapath="datapath/")
 
     def test_rotate_alm(self):
         almigc = hp.map2alm(self.mapiqu)
