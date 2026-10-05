@@ -551,7 +551,7 @@ def alm2map(
       Deprecated, has no effect.
     datapath : None or str, optional
         If given, the directory where to find the pixel window function file.
-        If not found locally, will be downloaded and cached using astropy.
+        If None, the file will be downloaded and cached using astropy.
         See the docstring of `map2alm` for details on how to set it up
 
     Returns
@@ -563,6 +563,8 @@ def alm2map(
     Notes
     -----
     Running map2alm then alm2map will not return exactly the same map if the discretized field you construct on the sphere is not band-limited (for example, if you have a map containing pixel-based noise rather than beam-smoothed noise). If you need a band-limited map, you have to start with random numbers in lm space and transform these via alm2map. With such an input, the accuracy of map2alm->alm2map should be quite good, depending on your choices of lmax, mmax and nside (for some typical values, see e.g., section 5.1 of https://arxiv.org/pdf/1010.2084).
+    
+    Raises a ValueError exception if the pixel window function file is not found at the given datapath.
     """
     if not cb.is_seq(alms):
         raise TypeError("alms must be a sequence")
