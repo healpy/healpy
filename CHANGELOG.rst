@@ -1,5 +1,6 @@
 Unreleased
-|
+
+* Build: skip the unused cfitsio and healpix_cxx command line utilities when building for Emscripten/WebAssembly. They fail to link on WebAssembly with duplicate symbols.
 
 * **BREAKING**: macOS arm64 wheels now target macOS 15 (previously 14). The macOS 14 GitHub-hosted runner image was retired by GitHub, and the Homebrew-provided OpenMP runtime used to build wheels only supports macOS 15+, so macOS 14 Apple-Silicon wheels can no longer be produced. macOS x86_64 wheels still support macOS 13.6+. https://github.com/healpy/healpy/pull/1129
 
