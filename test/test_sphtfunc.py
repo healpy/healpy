@@ -277,6 +277,14 @@ class TestSphtFunc(unittest.TestCase):
                     i[gal_mask] = 0
                     np.testing.assert_allclose(i, o, atol=1e-2)
 
+    def test_alm2map_local_datapath_missing(self, tmp_path):
+        rng = np.random.default_rng(seed=42)
+        alm_size = 78
+        nside = 4
+        alm = rng.standard_normal(alm_size) + 1j * rng.standard_normal(alm_size)
+        with pytest.raises(ValueError, match="Pixel window file not found"):
+            hp.alm2map(alm, nside, pixwin=True, datapath=tmp_path)
+
     def test_rotate_alm(self):
         almigc = hp.map2alm(self.mapiqu)
         alms = [almigc[0], almigc[0:2], almigc, np.vstack(almigc)]
