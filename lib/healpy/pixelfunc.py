@@ -2037,7 +2037,10 @@ def _ud_grade_core(m, nside_out, pess=False, power=None, dtype=None):
     if nside_out > nside_in:
         rat2 = npix_out // npix_in
         fact = np.ones(rat2, dtype=type_out) * ratio
-        map_out = np.outer(m, fact).reshape(npix_out)
+        map_out = np.outer(m, fact)
+        if power:
+            map_out[mask_bad(m)] = UNSEEN
+        map_out = map_out.reshape(npix_out)
     elif nside_out < nside_in:
         rat2 = npix_in // npix_out
         mr = m.reshape(npix_out, rat2)

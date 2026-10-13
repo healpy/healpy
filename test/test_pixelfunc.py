@@ -183,6 +183,16 @@ class TestPixelFunc(unittest.TestCase):
         except IndexError:
             self.fail("IndexError raised")
 
+    def test_ud_grade_upgrade_with_power_preserves_unseen(self):
+        m = np.full(12, 8.0, dtype=np.float64)
+        m[0] = UNSEEN
+
+        result = ud_grade(m, 2, order_out="NEST", power=-2)
+
+        np.testing.assert_array_equal(result[4:], np.full(44, 2.0))
+        np.testing.assert_array_equal(result[:4], np.full(4, UNSEEN))
+        self.assertEqual(mask_bad(result).sum(), 4)
+
     def test_isnsideok(self):
         """Test the isnsideok."""
         self.assertTrue(isnsideok(nside=1, nest=False))
