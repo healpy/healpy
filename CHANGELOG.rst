@@ -7,6 +7,7 @@ Unreleased
 * Added a new ``datapath`` parameter to ``alm2map`` which exposes the pixwin ``datapath`` functionality, thus allowing the use of a local copy of ``healpy-data`` https://github.com/healpy/healpy/pull/1128
 * Declare support for Python 3.15 in packaging, tests, and wheels
 * **BREAKING**: macOS arm64 wheels now target macOS 15 (previously 14). The macOS 14 GitHub-hosted runner image was retired by GitHub, and the Homebrew-provided OpenMP runtime used to build wheels only supports macOS 15+, so macOS 14 Apple-Silicon wheels can no longer be produced. macOS x86_64 wheels still support macOS 13.6+. https://github.com/healpy/healpy/pull/1129
+* Docs: fixed ``pixwin`` ``datapath`` docstring, which incorrectly claimed a download fallback when ``datapath`` is given: the file must exist at ``datapath`` or a ``ValueError`` is raised; download and caching via astropy only happens when ``datapath`` is ``None``. Also fixed ``test_pixwin_local_datapath``, which always skipped because it downloaded the pixel window file without setting healpy's ``DATAURL``, and added a test asserting the ``ValueError`` for a missing file at ``datapath`` https://github.com/healpy/healpy/issues/1138
 
 Release 1.20.1 3 Oct 2026
 

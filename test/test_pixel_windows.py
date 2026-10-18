@@ -20,13 +20,14 @@ def test_pixwin_download(monkeypatch):
 def test_pixwin_local_datapath(tmp_path):
     """Test that pixwin loads the file from a local datapath if provided."""
     import healpy as hp
+    from healpy.sphtfunc import DATAURL
 
     nside = 32
     datapath = tmp_path / "pixel_window_functions"
     datapath.mkdir(parents=True)
     filename = f"pixel_window_functions/pixel_window_n{nside:04d}.fits"
     try:
-        with astro_data.conf.set_temp("remote_timeout", 30):
+        with astro_data.conf.set_temp("dataurl", DATAURL):
             cached_path = astro_data.get_pkg_data_filename(
                 filename, package="healpy"
             )
@@ -37,3 +38,11 @@ def test_pixwin_local_datapath(tmp_path):
     pw = hp.pixwin(nside, datapath=tmp_path)
     assert pw is not None
     assert len(pw) == 3 * nside - 1 + 1
+
+
+def test_pixwin_missing_datapath_raises(tmp_path):
+    """Test that pixwin raises ValueError if the file is missing at the given datapath."""
+    import healpy as hp
+
+    with pytest.raises(ValueError, match="Pixel window file not found"):
+        hp.pixwin(32, datapath=tmp_path)
