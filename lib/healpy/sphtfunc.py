@@ -1961,7 +1961,7 @@ def pixwin(nside, pol=False, lmax=None, datapath=None):
         Maximum l of the power spectrum (Default: 3*nside-1)
     datapath : None or str, optional
         If given, the directory where to find the pixel window function file.
-        If not found locally, will be downloaded and cached using astropy.
+        If None, the file will be downloaded and cached using astropy.
         See the docstring of `map2alm` for details on how to set it up
 
     Returns
