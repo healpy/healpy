@@ -1,7 +1,7 @@
 Unreleased
 |
 
-* Added a new ``datapath`` parameter to ``alm2map`` which exposes the pixwin ``datapath`` functionality thus allow the use of a local copy of healpy-data
+* Added a new ``datapath`` parameter to ``alm2map`` which exposes the pixwin ``datapath`` functionality, thus allowing the use of a local copy of ``healpy-data`` https://github.com/healpy/healpy/pull/1128
 * Declare support for Python 3.15 in packaging, tests, and wheels
 * **BREAKING**: macOS arm64 wheels now target macOS 15 (previously 14). The macOS 14 GitHub-hosted runner image was retired by GitHub, and the Homebrew-provided OpenMP runtime used to build wheels only supports macOS 15+, so macOS 14 Apple-Silicon wheels can no longer be produced. macOS x86_64 wheels still support macOS 13.6+. https://github.com/healpy/healpy/pull/1129
 

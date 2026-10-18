@@ -551,8 +551,9 @@ def alm2map(
       Deprecated, has no effect.
     datapath : None or str, optional
       If given, the directory where to find the pixel window function file.
+      Only used when `pixwin` is True, otherwise it is ignored.
       If None, the file will be downloaded and cached using astropy.
-      See the docstring of `map2alm` for details on how to set it up
+      See the docstring of `map2alm` for details on how to set it up.
 
     Returns
     -------
