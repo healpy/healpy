@@ -82,16 +82,24 @@ def read_cl(filename):
         return cl
 
 
-def write_cl(filename, cl, dtype=None, overwrite=False, column_names=None, extra_header=()):
+def write_cl(
+    filename,
+    cl,
+    dtype=None,
+    overwrite=False,
+    column_names=None,
+    column_units=None,
+    extra_header=(),
+):
     """Writes Cl into a HEALPix file, as IDL cl2fits.
 
     Parameters
     ----------
-    filename : str
+    filename : str or pathlib.Path
       the fits file name
     cl : array
       the cl array to write to file
-    dtype : np.dtype (optional)
+    dtype : np.dtype, optional
       The datatype in which the columns will be stored. If not supplied,
       the dtype of the input cl will be used. This changed in `healpy` 1.15.0,
       in previous versions, cl by default were saved in `float64`.
@@ -102,42 +110,91 @@ def write_cl(filename, cl, dtype=None, overwrite=False, column_names=None, extra
       Column name or list of column names. If None, uses default names:
       ["TEMPERATURE", "GRADIENT", "CURL", "G-T", "C-T", "C-G"] for the first 6 columns,
       and "COLUMN_N" for columns beyond 6.
+    column_units : str or list, optional
+      Units for each column, or same units for all columns.
+      If None, no units are stored in the FITS header. A single string is
+      applied to all columns; a list must have the same length as the number
+      of columns (1 for a single Cl vector, or ``len(cl)`` for multiple).
+      Each element must be a string or ``None``; ``None`` means no unit for
+      that column.
     extra_header : list, optional
       Extra records to add to FITS header.
+
+    Examples
+    --------
+    >>> import os
+    >>> import tempfile
+    >>> import numpy as np
+    >>> cl = np.arange(1026, dtype=np.float64)
+    >>> filename = os.path.join(tempfile.mkdtemp(), "cl.fits")
+    >>> write_cl(filename, cl, column_units="K")
+    >>> np.allclose(cl, read_cl(filename))
+    True
+    >>> os.remove(filename)
     """
     if dtype is None:
         dtype = cl.dtype if isinstance(cl, np.ndarray) else cl[0].dtype
 
     # check the dtype and convert it
     fitsformat = getformat(dtype)
-    
-    # Determine column names
-    if column_names is None:
-        default_names = ["TEMPERATURE", "GRADIENT", "CURL", "G-T", "C-T", "C-G"]
-        if len(np.shape(cl)) == 2:
-            n_cols = len(cl)
-            if n_cols <= 6:
-                column_names = default_names[:n_cols]
-            else:
-                # For more than 6 columns, use default names for first 6 and COLUMN_N for rest
-                column_names = default_names + ["COLUMN_%d" % n for n in range(7, n_cols + 1)]
-        else:
-            column_names = ["TEMPERATURE"]
-    elif isinstance(column_names, str):
-        column_names = [column_names]
-    
-    if len(np.shape(cl)) == 2:
-        if len(column_names) != len(cl):
-            raise ValueError("Number of column names must match number of cl arrays")
-        cols = [
-            pf.Column(name=column_name, format="%s" % fitsformat, array=column_cl)
-            for column_name, column_cl in zip(column_names, cl)
-        ]
-    elif len(np.shape(cl)) == 1:
-        # we write only TT
-        cols = [pf.Column(name=column_names[0], format="%s" % fitsformat, array=cl)]
+
+    # Determine the number of columns and column names
+    if np.ndim(cl) == 2:
+        n_cols = len(cl)
+    elif np.ndim(cl) == 1:
+        n_cols = 1
     else:
         raise RuntimeError("write_cl: Expected one or more vectors of equal length")
+
+    if column_names is None:
+        default_names = ["TEMPERATURE", "GRADIENT", "CURL", "G-T", "C-T", "C-G"]
+        if n_cols <= 6:
+            column_names = default_names[:n_cols]
+        else:
+            # For more than 6 columns, use default names for first 6 and COLUMN_N for rest
+            column_names = default_names + [
+                "COLUMN_%d" % n for n in range(7, n_cols + 1)
+            ]
+    elif isinstance(column_names, str):
+        column_names = [column_names]
+
+    if len(column_names) != n_cols:
+        raise ValueError("Number of column names must match number of cl arrays")
+
+    # Normalize column units: None or a string applies to all columns, a
+    # sequence applies one element per column.
+    if column_units is None or isinstance(column_units, str):
+        column_units = [column_units] * n_cols
+    else:
+        try:
+            n_units = len(column_units)
+        except TypeError:
+            raise ValueError(
+                "Column units must be a string, a list of strings, or None"
+            ) from None
+        if n_units != n_cols:
+            raise ValueError("Number of column units must match number of cl arrays")
+    for unit in column_units:
+        if unit is not None and not isinstance(unit, str):
+            raise ValueError("Column units must be strings or None")
+
+    if np.ndim(cl) == 2:
+        cols = [
+            pf.Column(
+                name=column_name, format="%s" % fitsformat, array=column_cl, unit=unit
+            )
+            for column_name, column_cl, unit in zip(column_names, cl, column_units)
+        ]
+    else:
+        # we write only TT
+        cols = [
+            pf.Column(
+                name=column_names[0],
+                format="%s" % fitsformat,
+                array=cl,
+                unit=column_units[0],
+            )
+        ]
 
     tbhdu = pf.BinTableHDU.from_columns(cols)
     # add needed keywords
