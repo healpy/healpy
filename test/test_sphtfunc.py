@@ -753,3 +753,12 @@ def test_synalm_truncated_cl_uses_zero_beyond_end():
     alm_zero_padded = hp.synalm(np.concatenate((cl_truncated, [0.0])), lmax=lmax)
 
     np.testing.assert_allclose(alm_truncated, alm_zero_padded)
+
+
+def test_alm2map_local_datapath_missing(tmp_path):
+    rng = np.random.default_rng(seed=42)
+    alm_size = 78
+    nside = 4
+    alm = rng.standard_normal(alm_size) + 1j * rng.standard_normal(alm_size)
+    with pytest.raises(ValueError, match="Pixel window file not found"):
+        hp.alm2map(alm, nside, pixwin=True, datapath=tmp_path)
