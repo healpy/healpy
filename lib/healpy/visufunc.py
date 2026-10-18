@@ -62,6 +62,8 @@ __all__ = [
 ]
 
 from . import projaxes as PA
+from . import newvisufunc as NV
+import warnings
 import numpy as np
 from . import pixelfunc
 import matplotlib
@@ -1674,6 +1676,16 @@ def delgraticules():
             # pylab.show()
 
 
+_projview_support_note = """
+**projview support**: this function also works on the axes created by
+:func:`healpy.projview`. In that case the input coordinates are interpreted
+in the coordinate frame of the map displayed by ``projview``: the ``rot``
+and ``coord`` transformations of the view are applied automatically (the
+``rot`` and ``coord`` keywords are not accepted); use ``direct=True`` to
+skip the view rotation.
+"""
+
+
 def projplot(*args, **kwds):
     import pylab
 
@@ -1684,6 +1696,14 @@ def projplot(*args, **kwds):
         ax = pylab.gca()
         if isinstance(ax, PA.SphericalProjAxes):
             ret = ax.projplot(*args, **kwds)
+        elif NV._is_projview_axes(ax):
+            ret = NV._projview_plot(ax, *args, **kwds)
+        else:
+            warnings.warn(
+                "The current axes is not a healpy map (create one with e.g. "
+                "mollview or projview), projplot will not draw anything",
+                RuntimeWarning,
+            )
     finally:
         pylab.draw()
         if wasinteractive:
@@ -1692,7 +1712,9 @@ def projplot(*args, **kwds):
     return ret
 
 
-projplot.__doc__ = PA.SphericalProjAxes.projplot.__doc__
+projplot.__doc__ = (PA.SphericalProjAxes.projplot.__doc__ or "") + (
+    _projview_support_note
+)
 
 
 def projscatter(*args, **kwds):
@@ -1705,6 +1727,14 @@ def projscatter(*args, **kwds):
         ax = pylab.gca()
         if isinstance(ax, PA.SphericalProjAxes):
             ret = ax.projscatter(*args, **kwds)
+        elif NV._is_projview_axes(ax):
+            ret = NV._projview_scatter(ax, *args, **kwds)
+        else:
+            warnings.warn(
+                "The current axes is not a healpy map (create one with e.g. "
+                "mollview or projview), projscatter will not draw anything",
+                RuntimeWarning,
+            )
     finally:
         pylab.draw()
         if wasinteractive:
@@ -1713,7 +1743,9 @@ def projscatter(*args, **kwds):
     return ret
 
 
-projscatter.__doc__ = PA.SphericalProjAxes.projscatter.__doc__
+projscatter.__doc__ = (PA.SphericalProjAxes.projscatter.__doc__ or "") + (
+    _projview_support_note
+)
 
 
 def projtext(*args, **kwds):
@@ -1726,6 +1758,14 @@ def projtext(*args, **kwds):
         ax = pylab.gca()
         if isinstance(ax, PA.SphericalProjAxes):
             ret = ax.projtext(*args, **kwds)
+        elif NV._is_projview_axes(ax):
+            ret = NV._projview_text(ax, *args, **kwds)
+        else:
+            warnings.warn(
+                "The current axes is not a healpy map (create one with e.g. "
+                "mollview or projview), projtext will not draw anything",
+                RuntimeWarning,
+            )
     finally:
         pylab.draw()
         if wasinteractive:
@@ -1734,4 +1774,6 @@ def projtext(*args, **kwds):
     return ret
 
 
-projtext.__doc__ = PA.SphericalProjAxes.projtext.__doc__
+projtext.__doc__ = (PA.SphericalProjAxes.projtext.__doc__ or "") + (
+    _projview_support_note
+)
