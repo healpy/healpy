@@ -1677,12 +1677,15 @@ def delgraticules():
 
 
 _projview_support_note = """
-**projview support**: this function also works on the axes created by
-:func:`healpy.projview`. In that case the input coordinates are interpreted
-in the coordinate frame of the map displayed by ``projview``: the ``rot``
-and ``coord`` transformations of the view are applied automatically (the
-``rot`` and ``coord`` keywords are not accepted); use ``direct=True`` to
-skip the view rotation.
+
+Support for projview figures
+----------------------------
+This function also works on the axes created by :func:`healpy.projview`.
+In that case the input coordinates are interpreted in the coordinate frame
+of the map displayed by ``projview``: the ``rot`` and ``coord``
+transformations of the view are applied automatically (the ``rot`` and
+``coord`` keywords are not accepted); use ``direct=True`` to skip the view
+rotation.
 """
 
 
