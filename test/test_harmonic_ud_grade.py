@@ -2,6 +2,7 @@ import re
 
 import numpy as np
 import pytest
+from urllib.error import URLError
 
 import healpy as hp
 
@@ -120,6 +121,125 @@ def test_harmonic_ud_grade_missing_pixel_weights_file_raises(tmp_path):
             use_pixel_weights=True,
             datapath=str(tmp_path),
         )
+
+
+def test_harmonic_ud_grade_pixwin_datapath_missing_raises(tmp_path):
+    """Missing pixel-window file with pixwin=True raises ValueError from pixwin.
+
+    Proves that ``harmonic_ud_grade`` threads its ``datapath`` argument
+    through to ``pixwin``: previously the pixel-window files were always
+    fetched over the network, ignoring ``datapath`` and breaking offline
+    use (issue #1133).
+    """
+    nside_in = 32
+    nside_out = 16
+    input_map = np.ones(hp.nside2npix(nside_in), dtype=np.float64)
+    expected_path = tmp_path / "pixel_window_functions" / "pixel_window_n0032.fits"
+
+    with pytest.raises(
+        ValueError,
+        match=r"Pixel window file not found at " + re.escape(str(expected_path)),
+    ):
+        hp.harmonic_ud_grade(
+            input_map,
+            nside_out=nside_out,
+            use_pixel_weights=False,
+            pixwin=True,
+            fwhm_out=0,
+            datapath=str(tmp_path),
+        )
+
+
+def test_harmonic_ud_grade_pixwin_datapath_missing_raises_alm_input(tmp_path):
+    """input_type='alm' also threads datapath through to the pixel windows.
+
+    The a_lm path skips map2alm (so no pixel weights) but still applies
+    the pixel-window transfer when ``pixwin=True``; a missing local file
+    must raise instead of triggering a download.
+    """
+    nside_in = 32
+    nside_out = 16
+    lmax = 3 * nside_out - 1
+    alm = np.zeros(hp.Alm.getsize(lmax), dtype=np.complex128)
+    alm[hp.Alm.getidx(lmax, 5, 0)] = 1.0
+    expected_path = tmp_path / "pixel_window_functions" / "pixel_window_n0032.fits"
+
+    with pytest.raises(
+        ValueError,
+        match=r"Pixel window file not found at " + re.escape(str(expected_path)),
+    ):
+        hp.harmonic_ud_grade(
+            alm,
+            nside_out=nside_out,
+            nside_in=nside_in,
+            input_type="alm",
+            pixwin=True,
+            fwhm_out=0,
+            datapath=str(tmp_path),
+        )
+
+
+def _stage_healpy_data_file(tmp_path, filename):
+    """Download-and-cache a healpy-data file and copy it under tmp_path.
+
+    Returns the destination path, or skips the test when the download is
+    unavailable (offline CI).
+    """
+    from pathlib import Path
+
+    from astropy.utils import data as astro_data
+
+    try:
+        with astro_data.conf.set_temp(
+            "dataurl", "https://healpy.github.io/healpy-data/"
+        ), astro_data.conf.set_temp("remote_timeout", 30):
+            cached_path = astro_data.get_pkg_data_filename(filename, package="healpy")
+    except (OSError, URLError) as exc:
+        pytest.skip(f"data download unavailable: {exc}")
+    dest = tmp_path / filename
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    dest.write_bytes(Path(cached_path).read_bytes())
+    return dest
+
+
+def test_harmonic_ud_grade_offline_with_local_datapath(tmp_path, monkeypatch):
+    """harmonic_ud_grade runs fully offline when given a local datapath.
+
+    With the default ``pixwin=True`` and ``use_pixel_weights=True``, both
+    the pixel-weight and the pixel-window files must be read from
+    ``datapath``.  Network downloads are disabled via monkeypatch to prove
+    that no astropy fetch is attempted.
+    """
+    nside_in = 32
+    nside_out = 16
+    input_map = np.ones(hp.nside2npix(nside_in), dtype=np.float64)
+
+    _stage_healpy_data_file(
+        tmp_path, "full_weights/healpix_full_weights_nside_0032.fits"
+    )
+    _stage_healpy_data_file(
+        tmp_path, "pixel_window_functions/pixel_window_n0032.fits"
+    )
+    _stage_healpy_data_file(
+        tmp_path, "pixel_window_functions/pixel_window_n0016.fits"
+    )
+
+    import unittest.mock
+
+    with unittest.mock.patch(
+        "healpy.sphtfunc.data.get_pkg_data_filename",
+        side_effect=AssertionError("network access attempted"),
+    ):
+        output = hp.harmonic_ud_grade(
+            input_map,
+            nside_out=nside_out,
+            use_pixel_weights=True,
+            pixwin=True,
+            fwhm_out=0,
+            datapath=str(tmp_path),
+        )
+
+    assert output.shape == (hp.nside2npix(nside_out),)
 
 
 # ------------------------------------------------------------------
@@ -785,10 +905,12 @@ def test_input_type_alm_teb_mismatched_sizes_raises():
 def test_input_type_alm_warns_on_ignored_args():
     """input_type='alm' warns when args that only apply to the map path are set.
 
-    The ``iter``, ``use_weights``, ``use_pixel_weights``, and ``datapath``
-    arguments are only used by the map2alm step. When ``input_type='alm'``
-    skips that step, setting any of these to a non-default value is a
-    debugging pitfall and must emit a UserWarning.
+    The ``iter``, ``use_weights``, and ``use_pixel_weights`` arguments are
+    only used by the map2alm step. When ``input_type='alm'`` skips that
+    step, setting any of these to a non-default value is a debugging
+    pitfall and must emit a UserWarning.  ``datapath`` must NOT warn: it
+    is still used in the alm path to locate the pixel-window files when
+    ``pixwin=True`` (the default).
     """
     nside_in = 32
     nside_out = 16
@@ -814,17 +936,21 @@ def test_input_type_alm_warns_on_ignored_args():
     with pytest.warns(UserWarning, match="use_pixel_weights.*ignored.*input_type='alm'"):
         hp.harmonic_ud_grade(alm, use_pixel_weights=False, **common)
 
-    # datapath (default None)
-    with pytest.warns(UserWarning, match="datapath.*ignored.*input_type='alm'"):
+    # datapath is used for pixel-window files in the alm path, so it must
+    # not trigger the ignored-args warning.
+    import warnings
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
         hp.harmonic_ud_grade(alm, datapath="/tmp", **common)
 
 
 def test_input_type_alm_no_warning_when_defaults():
     """input_type='alm' is silent when only default values are passed for ignored args.
 
-    Default values for ``iter``, ``use_weights``, ``use_pixel_weights``,
-    and ``datapath`` must not trigger the ignored-args warning — otherwise
-    every alm-path call would be noisy.
+    Default values for ``iter``, ``use_weights``, and ``use_pixel_weights``
+    must not trigger the ignored-args warning — otherwise every alm-path
+    call would be noisy.
     """
     nside_in = 32
     nside_out = 16

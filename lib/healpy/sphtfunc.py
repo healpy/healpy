@@ -651,15 +651,19 @@ def _extract_beam_column(beam_window, polar_component):
 
 
 
-def _pixwin_TP(nside, lmax):
+def _pixwin_TP(nside, lmax, datapath=None):
     """Return (pw_T, pw_P) at this nside up to lmax, with a single I/O call.
 
     This wrapper exists because ``harmonic_ud_grade`` has a parameter named
     ``pixwin`` (bool) that shadows the module-level ``pixwin`` function.
     Calling the function directly inside ``harmonic_ud_grade`` would raise
     ``TypeError: 'bool' object is not callable``.
+
+    ``datapath`` is forwarded to :func:`pixwin` so callers that already
+    hold a local HEALPix data directory (e.g. ``harmonic_ud_grade``) can
+    read the pixel-window files offline instead of downloading them.
     """
-    pw_T, pw_P = pixwin(nside, pol=True, lmax=lmax)
+    pw_T, pw_P = pixwin(nside, pol=True, lmax=lmax, datapath=datapath)
     return pw_T, pw_P
 
 
@@ -902,10 +906,13 @@ def harmonic_ud_grade(
       ``use_pixel_weights=True`` unless you specifically need
       ring-weighted behavior for compatibility with another tool.
     datapath : str, optional
-      Directory where to find the HEALPix pixel-weight FITS files
-      (``full_weights/healpix_full_weights_nside_NNNN.fits``).  If
+      Directory where to find the HEALPix data files: the pixel-weight
+      FITS files (``full_weights/healpix_full_weights_nside_NNNN.fits``)
+      and, when ``pixwin=True``, the pixel-window functions
+      (``pixel_window_functions/pixel_window_nNNNN.fits``).  If
       ``None`` (default), the files are downloaded automatically and
-      cached via astropy.
+      cached via astropy.  Pass a local directory to run on systems
+      without internet access (e.g. HPC clusters).
     use_pixel_weights : bool, optional
       If True (default), use per-pixel ``map2alm`` weights for the
       most accurate SHT.  Unlike plain ``map2alm`` (which silently
@@ -925,8 +932,9 @@ def harmonic_ud_grade(
       :math:`a_{\ell m}` from a previous SHT and want to avoid a
       redundant forward transform.  When ``input_type='alm'``,
       ``nside_in`` must be provided explicitly, and the ``iter``,
-      ``use_weights``, ``use_pixel_weights``, and ``datapath``
-      parameters are ignored.
+      ``use_weights``, and ``use_pixel_weights`` parameters are
+      ignored (``datapath`` is still used to locate the pixel-window
+      files when ``pixwin=True``).
 
     Returns
     -------
@@ -1070,11 +1078,12 @@ def harmonic_ud_grade(
         # Warn about args that only apply to the map2alm step we are skipping.
         # Compare against the documented defaults so silent (default) calls
         # stay quiet but explicit non-default settings flag a likely mistake.
+        # Note: datapath is NOT listed — with the default pixwin=True it is
+        # still used in the alm path to locate the pixel-window files.
         for name, value, default in (
             ("iter", iter, None),
             ("use_weights", use_weights, False),
             ("use_pixel_weights", use_pixel_weights, True),
-            ("datapath", datapath, None),
         ):
             if value != default:
                 warnings.warn(
@@ -1242,8 +1251,8 @@ def harmonic_ud_grade(
                      or beam_window_in is not None or beam_window_out is not None)
     if need_transfer:
         if pixwin:
-            pw_in_T, pw_in_P = _pixwin_TP(nside_in, lmax)
-            pw_out_T, pw_out_P = _pixwin_TP(nside_out, lmax)
+            pw_in_T, pw_in_P = _pixwin_TP(nside_in, lmax, datapath=datapath)
+            pw_out_T, pw_out_P = _pixwin_TP(nside_out, lmax, datapath=datapath)
         else:
             pw_in_T = pw_out_T = pw_in_P = pw_out_P = None
 
