@@ -154,6 +154,40 @@ def test_lambert_with_real_data(map_data):
     plt.close()
 
 
+def test_lambert_north_at_top():
+    """Test that the Lambert projection displays the map with north at the top.
+
+    matplotlib's Lambert axes is equator-centered with the latitude axis
+    increasing upwards, so no vertical flip of the map is needed; the flip
+    introduced for #869 was rendering the sky upside-down.
+    """
+    nside = 32
+    npix = hp.nside2npix(nside)
+
+    theta, phi = hp.pix2ang(nside, np.arange(npix))
+    lat = 90 - np.degrees(theta)
+    # +1 in the north, -1 in the south: with the default viridis colormap
+    # the north (yellow) is much brighter than the south (purple)
+    test_map = np.where(lat > 0, 1.0, -1.0)
+
+    hp.newvisufunc.projview(
+        test_map,
+        projection_type="lambert",
+        cbar=False,
+    )
+    fig = plt.gcf()
+    fig.canvas.draw()
+    buf = np.asarray(fig.canvas.buffer_rgba())[:, :, :3]
+    height = buf.shape[0]
+    top_brightness = buf[: height // 4].mean()
+    bottom_brightness = buf[3 * height // 4 :].mean()
+    assert top_brightness > bottom_brightness, (
+        "Lambert projection appears upside-down (south at the top): "
+        f"top quarter brightness {top_brightness:.1f} vs bottom "
+        f"{bottom_brightness:.1f}"
+    )
+
+
 if __name__ == "__main__":
     # Run basic tests without pytest
     print("Testing Lambert projection fix...")

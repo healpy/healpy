@@ -1,6 +1,9 @@
 Unreleased
 |
 
+* Fixed ``projplot``, ``projscatter`` and ``projtext`` silently doing nothing on figures created by ``projview``: they now draw on the matplotlib axes created by ``projview``, interpreting input coordinates in the frame of the displayed map (the ``rot``/``coord`` transformation of the view is applied automatically), and warn instead of silently returning ``None`` when the current axes is not a healpy map https://github.com/healpy/healpy/issues/1132
+* ``newprojplot`` now applies the ``rot``/``coord`` transformation of the ``projview`` figure automatically, wraps longitudes into [-180, 180) degrees and splits paths at the 180 deg meridian so they do not draw spurious lines across the map
+* Fixed ``projview`` with ``projection_type='lambert'`` displaying the sky upside-down: the temporary vertical flip of the map introduced for #869 is not needed, matplotlib's Lambert axes already renders latitude increasing upwards https://github.com/healpy/healpy/issues/1132
 * Added a new ``datapath`` parameter to ``alm2map`` which exposes the pixwin ``datapath`` functionality, thus allowing the use of a local copy of ``healpy-data`` https://github.com/healpy/healpy/pull/1128
 * Declare support for Python 3.15 in packaging, tests, and wheels
 * **BREAKING**: macOS arm64 wheels now target macOS 15 (previously 14). The macOS 14 GitHub-hosted runner image was retired by GitHub, and the Homebrew-provided OpenMP runtime used to build wheels only supports macOS 15+, so macOS 14 Apple-Silicon wheels can no longer be produced. macOS x86_64 wheels still support macOS 13.6+. https://github.com/healpy/healpy/pull/1129
