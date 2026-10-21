@@ -151,6 +151,15 @@ class build_external_clib(build_clib):
             if "CXXFLAGS" in env:
                 cxxflags = opt + " " + env["CXXFLAGS"]
 
+            # Emscripten has no zlib in its sysroot. Its zlib port provides
+            # zlib.h for compiling cfitsio; the port itself is only ever
+            # linked into main modules, so the zlib symbols stay undefined in
+            # libcfitsio.so and are resolved at load time from the Pyodide
+            # main module, which links the same port and exports everything.
+            if is_emscripten():
+                cflags += " -sUSE_ZLIB=1"
+                cxxflags += " -sUSE_ZLIB=1"
+
             # Use a subdirectory of build_temp as the build directory.
             build_temp = os.path.realpath(os.path.join(self.build_temp, library))
 
@@ -169,7 +178,6 @@ class build_external_clib(build_clib):
                 "/bin/sh",
                 os.path.join(os.path.realpath(local_source), "configure"),
                 "--prefix=" + build_clib,
-                "--exec-prefix=" + os.environ["WASM_LIBRARY_DIR"],
                 "--disable-curl",
                 "--with-pic",
                 "--disable-maintainer-mode",
@@ -177,12 +185,16 @@ class build_external_clib(build_clib):
 
             # On Emscripten, cfitsio's configure-time zlib check runs a host
             # binary that cannot be executed, so disable it as recommended for
-            # cross-builds; the cross-compiled zlib is still linked in. The
+            # cross-builds; zlib comes from the Pyodide runtime instead (see
+            # the -sUSE_ZLIB=1 note above). The
             # Fortran wrappers need f2c and are unused by healpy, so drop them.
             # Emscripten 6 added OpenMP support, so healpix_cxx's AC_OPENMP
-            # check succeeds and -fopenmp lands in CFLAGS/CXXFLAGS, but
-            # -fopenmp implies pthreads there and the link then fails.
-            # The other subprojects ignore these unknown options.
+            # check succeeds and -fopenmp lands in CFLAGS/CXXFLAGS, but -fopenmp
+            # implies pthreads there and the link then fails. The other
+            # subprojects ignore these unknown options.
+            # The resulting shared libraries stay in build_clib; the
+            # cibuildwheel repair step (pyproject.toml) vendors them into the
+            # wheel with auditwheel-emscripten.
             if is_emscripten():
                 cmd += [
                     "--without-zlib-check",
@@ -196,6 +208,16 @@ class build_external_clib(build_clib):
                 cwd=build_temp,
                 env=dict(env, CC=cc, CXX=cxx, CFLAGS=cflags, CXXFLAGS=cxxflags),
             )
+
+            # libtool's C++ tag records every library the compiler driver
+            # mentions while linking a test program ("postdeps") and appends
+            # them to each C++ link. With emcc that list includes -lc and
+            # other Emscripten system libraries, which wasm-ld then resolves
+            # to the non-PIC archives and refuses to link into a side module.
+            # Side modules import those symbols from the Pyodide main module
+            # anyway, so drop the recorded dependencies.
+            if is_emscripten():
+                self._clear_libtool_hidden_libdeps(os.path.join(build_temp, "libtool"))
 
             # Run make install.
             cmd = ["make", "install"]
@@ -213,6 +235,23 @@ class build_external_clib(build_clib):
 
         return build_args
         # Done!
+
+    @staticmethod
+    def _clear_libtool_hidden_libdeps(libtool_path):
+        """Empty the predeps/postdeps settings in a generated libtool script,
+        see build_library()."""
+        if not os.path.exists(libtool_path):
+            return
+        keys = ("predeps", "postdeps", "predep_objects", "postdep_objects")
+        with open(libtool_path) as f:
+            lines = f.readlines()
+        with open(libtool_path, "w") as f:
+            for line in lines:
+                key = line.split("=", 1)[0]
+                if key in keys:
+                    log.info("clearing libtool %s in %s", key, libtool_path)
+                    line = key + '=""\n'
+                f.write(line)
 
     @staticmethod
     def _list_files_recursive(path, skip=(".*", "*.o", "autom4te.cache")):
