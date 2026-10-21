@@ -425,3 +425,44 @@ class TestPixelFunc(unittest.TestCase):
             roundtrip = xyf2pix(nside, x, y, face, nest=nest)
             self.assertEqual(roundtrip.dtype, np.int64)
             np.testing.assert_array_equal(roundtrip, ipix)
+
+    def test_ud_grade_upgrade_power_preserves_unseen(self):
+        """Regression test: upgrading with ``power`` must not scale UNSEEN.
+
+        The children of a missing pixel stay UNSEEN (still recognized by
+        ``mask_bad``), while good pixels are scaled by
+        ``(nside_out/nside_in)**power``.
+        """
+        for dtype in (np.float64, np.float32):
+            for power, expected in ((-2, 2.0), (2, 32.0)):
+                with self.subTest(dtype=dtype, power=power):
+                    m = np.full(12, 8.0, dtype=dtype)
+                    m[0] = UNSEEN
+                    out = ud_grade(m, 2, order_out="NEST", power=power)
+                    np.testing.assert_array_equal(
+                        out[:4], np.full(4, UNSEEN, dtype=dtype)
+                    )
+                    np.testing.assert_allclose(out[4:], expected)
+                    self.assertEqual(int(mask_bad(out).sum()), 4)
+
+    def test_ud_grade_upgrade_power_minus2_sum_invariant(self):
+        """power=-2 upgrades keep the sum over good pixels invariant (hitmaps)."""
+        m = np.ones(12 * 16)
+        m[3] = UNSEEN
+        out = ud_grade(m, 8, order_out="NEST", power=-2)
+        self.assertTrue(np.isclose(out[~mask_bad(out)].sum(), m[m != UNSEEN].sum()))
+
+    def test_ud_grade_downgrade_power_preserves_unseen(self):
+        """Downgrading with ``power`` keeps UNSEEN and scales good pixels."""
+        # fully masked superpixel (NEST children 0-3) stays UNSEEN
+        m = np.full(48, 8.0)
+        m[0:4] = UNSEEN
+        out = ud_grade(m, 1, order_in="NEST", order_out="NEST", power=-2)
+        self.assertTrue(mask_bad(out)[0])
+        self.assertEqual(int(mask_bad(out).sum()), 1)
+        np.testing.assert_allclose(out[1:], np.full(11, 32.0))
+        # partially masked superpixel: mean of good children scaled by power
+        m_part = np.full(48, 8.0)
+        m_part[0] = UNSEEN
+        out_part = ud_grade(m_part, 1, order_in="NEST", order_out="NEST", power=-2)
+        np.testing.assert_allclose(out_part, np.full(12, 32.0))

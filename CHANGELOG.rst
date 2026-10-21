@@ -1,6 +1,7 @@
 Unreleased
 |
 
+* Fixed ``ud_grade`` scaling the ``UNSEEN`` sentinel value when upgrading a map with a non-zero ``power``: pixels marked as ``UNSEEN`` now stay ``UNSEEN`` in the output instead of being multiplied by ``(nside_out/nside_in)**power``, so missing pixels remain recognized by ``mask_bad`` https://github.com/healpy/healpy/issues/1142
 * Fixed ``projplot``, ``projscatter`` and ``projtext`` silently doing nothing on figures created by ``projview``: they now draw on the matplotlib axes created by ``projview``, interpreting input coordinates in the frame of the displayed map (the ``rot``/``coord`` transformation of the view is applied automatically), and warn instead of silently returning ``None`` when the current axes is not a healpy map https://github.com/healpy/healpy/issues/1132
 * ``newprojplot`` now applies the ``rot``/``coord`` transformation of the ``projview`` figure automatically, wraps longitudes into [-180, 180) degrees and splits paths at the 180 deg meridian so they do not draw spurious lines across the map
 * Fixed ``projview`` with ``projection_type='lambert'`` displaying the sky upside-down: the temporary vertical flip of the map introduced for #869 is not needed, matplotlib's Lambert axes already renders latitude increasing upwards https://github.com/healpy/healpy/issues/1132
