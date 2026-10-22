@@ -160,6 +160,20 @@ class build_external_clib(build_clib):
                 cflags += " -sUSE_ZLIB=1"
                 cxxflags += " -sUSE_ZLIB=1"
 
+            # cfitsio's fitsio2.h derives the host byte order from a fixed
+            # list of architecture macros. WebAssembly is not in that list,
+            # so it falls through to the "assume big endian" default and all
+            # binary FITS data is byte-swapped the wrong way. BYTESWAPPED
+            # cannot be overridden from outside (fitsio2.h defines it
+            # unconditionally, and pre-including the header breaks the
+            # "#undef TBYTE" dance in cfileio.c), so instead make fitsio2.h's
+            # own detection pick its "generic 32-bit little-endian PC" branch:
+            # BYTESWAPPED TRUE, LONGSIZE 32, which is exactly wasm32. __EMX__
+            # is one of the macros selecting that branch and is not looked at
+            # by clang, musl or anything else in the Emscripten sysroot.
+            if is_emscripten() and library == "cfitsio":
+                cflags += " -D__EMX__"
+
             # Use a subdirectory of build_temp as the build directory.
             build_temp = os.path.realpath(os.path.join(self.build_temp, library))
 
