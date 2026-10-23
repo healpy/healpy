@@ -1970,6 +1970,7 @@ def ud_grade(
       power=-2 keeps the sum of the map invariant (useful for hitmaps),
       power=2 divides the mean by another factor of (nside_in/nside_out)**2
       (useful for variance maps)
+      Pixels marked as UNSEEN are not scaled and remain UNSEEN in the output.
     dtype : type
       the type of the output map
 
@@ -2038,6 +2039,14 @@ def _ud_grade_core(m, nside_out, pess=False, power=None, dtype=None):
         rat2 = npix_out // npix_in
         fact = np.ones(rat2, dtype=type_out) * ratio
         map_out = np.outer(m, fact).reshape(npix_out)
+        if power:
+            # Scaling by power corrupts the UNSEEN sentinel value, restore it
+            # in the children of missing pixels so they are still marked as bad
+            bad = mask_bad(m)
+            if np.any(bad):
+                map_out = map_out.reshape(npix_in, rat2)
+                map_out[bad] = UNSEEN
+                map_out = map_out.reshape(npix_out)
     elif nside_out < nside_in:
         rat2 = npix_in // npix_out
         mr = m.reshape(npix_out, rat2)
