@@ -6,6 +6,8 @@ from urllib.error import URLError
 
 import healpy as hp
 
+from .helpers import requires_network
+
 
 def _single_mode_map(nside, ell, emm=0):
     """Create a map containing a single spherical-harmonic mode.
@@ -247,6 +249,7 @@ def test_harmonic_ud_grade_offline_with_local_datapath(tmp_path, monkeypatch):
 # ------------------------------------------------------------------
 
 
+@requires_network
 def test_pixwin_changes_result():
     """pixwin=True produces a different result from pixwin=False.
 
@@ -756,6 +759,7 @@ def test_input_type_alm_matches_map_input():
     np.testing.assert_allclose(m_out_map, m_out_alm, atol=1e-12)
 
 
+@requires_network
 def test_input_type_alm_with_pixwin():
     """input_type='alm' with pixwin=True applies pixel-window transfer.
 
@@ -789,6 +793,7 @@ def test_input_type_alm_with_pixwin():
     assert not np.allclose(m_out_pw, m_out_no_pw, atol=1e-10)
 
 
+@requires_network
 def test_input_type_alm_polarized():
     """input_type='alm' with polarized 3-component TEB input produces TQU output.
 
@@ -816,6 +821,7 @@ def test_input_type_alm_polarized():
     assert not np.allclose(output[0], output[1])
 
 
+@requires_network
 def test_input_type_alm_does_not_mutate_input():
     """input_type='alm' must not modify the caller's input arrays.
 

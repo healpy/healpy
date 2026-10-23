@@ -4,7 +4,10 @@ import pytest
 from astropy.utils import data as astro_data
 from urllib.error import URLError
 
+from .helpers import requires_network
 
+
+@requires_network
 def test_pixwin_download(monkeypatch):
     """Test that pixwin downloads and caches the file using astropy if not present locally."""
     import healpy as hp
