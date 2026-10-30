@@ -13,3 +13,4 @@ Other functions
    hotspots
    ringinfo
    pix2ring
+   superpixels
