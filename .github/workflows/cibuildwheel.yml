@@ -24,9 +24,15 @@ jobs:
         with:
           submodules: true
 
-      - uses: docker://python
+      - uses: actions/setup-python@v7
         with:
-          args: 'sh -c "git config --global --add safe.directory /github/workspace && pip install build && python -m build --sdist"'
+          python-version: "3.x"
+
+      - name: Install Python dependencies
+        run: pip install build
+
+      - name: Build sdist
+        run: python -m build --sdist
 
       - uses: actions/upload-artifact@v7
         with:
@@ -49,11 +55,8 @@ jobs:
         with:
           submodules: true
 
-      - uses: actions/setup-python@v7
-        with:
-          python-version: "3.x"
-
-      - name: Build wheels (with retries)
+      - name: Build wheels
+        uses: pypa/cibuildwheel@v4.3.5
         env:
           CIBW_BUILD: "cp310-* cp311-* cp312-* cp313-* cp314-* cp315-*"
           CIBW_MANYLINUX_X86_64_IMAGE: quay.io/pypa/manylinux_2_28_x86_64
@@ -62,31 +65,6 @@ jobs:
           CIBW_TEST_ENVIRONMENT_LINUX: "MPLLOCALFREETYPE=1 MPLCONFIGDIR=/tmp"
           CIBW_ARCHS_MACOS: "arm64 x86_64"
           MACOSX_DEPLOYMENT_TARGET: ${{ matrix.macos_target || '' }}
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          python -m pip install --upgrade pip
-          python -m pip install "cibuildwheel==4.3.1"
-
-          max_attempts=3
-          attempt=1
-          while [ "$attempt" -le "$max_attempts" ]; do
-            echo "Running cibuildwheel (attempt ${attempt}/${max_attempts})"
-            if python -m cibuildwheel --output-dir wheelhouse; then
-              exit 0
-            fi
-
-            if [ "$attempt" -eq "$max_attempts" ]; then
-              echo "cibuildwheel failed after ${max_attempts} attempts"
-              exit 1
-            fi
-
-            sleep_seconds=$((attempt * 60))
-            echo "Retrying in ${sleep_seconds}s..."
-            sleep "$sleep_seconds"
-            attempt=$((attempt + 1))
-          done
       - uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.os }}
@@ -101,20 +79,8 @@ jobs:
     steps:
       - uses: actions/download-artifact@v8
         with:
-          merge-multiple: false
+          merge-multiple: true
           path: dist
-
-      - name: Collect distributions
-        run: |
-          mkdir -p upload
-          while IFS= read -r file; do
-            base="$(basename "$file")"
-            if [ -e "upload/$base" ]; then
-              echo "Skipping duplicate $base from $file"
-              continue
-            fi
-            cp "$file" "upload/$base"
-          done < <(find dist -type f -print | sort)
 
       - uses: pypa/gh-action-pypi-publish@release/v1
         with:
