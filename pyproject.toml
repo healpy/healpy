@@ -9,7 +9,6 @@ classifiers = [
     "Intended Audience :: Science/Research",
     "Operating System :: POSIX",
     "Programming Language :: C++",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
@@ -23,7 +22,7 @@ authors = [
     { name = "A. Zonca" },
 ]
 license = {text = "GPL-2.0-only"}
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 dependencies = ["numpy>=2.0.0", "astropy"]
 
 [project.optional-dependencies]
@@ -60,7 +59,7 @@ issues = "https://github.com/healpy/healpy/issues"
 
 requires = ["setuptools>=77",
             "setuptools-scm>=8.0",
-            "cython>=0.16",
+            "cython>=3.1",
             "numpy>=2.0.0",
             "pykg-config"]
 
@@ -86,7 +85,7 @@ healpy = ["data/*.fits",
 "*" = ["*.cc", "*.cpp", "*.h", "*.pxd", "*.pyx"]
 
 [tool.cibuildwheel]
-build = "cp310-* cp311-* cp312-* cp313-* cp314-* cp315-*"
+build = "cp311-* cp312-* cp313-* cp314-* cp315-*"
 enable = ["cpython-prerelease"]
 test-command = [
     "pytest --doctest-plus --doctest-cython --pyargs healpy",

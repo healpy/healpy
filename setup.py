@@ -293,6 +293,7 @@ class custom_build_ext(build_ext):
 ext_kwargs = dict(
     extra_compile_args=["-std=c++11"],
     define_macros=[
+        ("Py_LIMITED_API", 0x030B0000),
         ('NPY_TARGET_VERSION', 'NPY_2_0_API_VERSION'),
         ('NPY_NO_DEPRECATED_API', 'NPY_2_0_API_VERSION'),
     ],
@@ -372,4 +373,5 @@ setup(
             **ext_kwargs
         ),
     ],
+    options={"bdist_wheel": {"py_limited_api": "cp311"}},
 )
