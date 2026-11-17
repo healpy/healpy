@@ -87,7 +87,6 @@ healpy = ["data/*.fits",
 
 [tool.cibuildwheel]
 build = "cp310-* cp311-* cp312-* cp313-* cp314-* cp315-*"
-enable = ["cpython-prerelease"]
 test-command = [
     "pytest --doctest-plus --doctest-cython --pyargs healpy",
     "pytest {project}/test"
@@ -104,10 +103,9 @@ CPPFLAGS = "-I$(brew --prefix libomp)/include"
 LDFLAGS = "-L$(brew --prefix libomp)/lib"
 
 [[tool.cibuildwheel.overrides]]
-# Keep Intel wheels compatible with macOS 13-era systems.
-select = "*macosx_x86_64"
+select = "*macosx*"
 inherit.environment = "append"
-environment.MACOSX_DEPLOYMENT_TARGET = "13.6"
+environment.MACOSX_DEPLOYMENT_TARGET = "15.0"
 
 [tool.setuptools_scm]
 write_to = "lib/healpy/version.py"
