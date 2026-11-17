@@ -24,11 +24,24 @@ class TestLIC(unittest.TestCase):
         )
 
     def test_lic_no_crash(self):
-        lic(np.empty(12), np.empty(12))
-        lic(np.empty(12), np.empty(12), ell=-1)
-        lic(np.empty(12), np.empty(12), ell=10)
-        lic(np.empty(12), np.empty(12), texture=np.empty(12))
-        lic(np.empty(12), np.empty(12), modulate=True)
+        # Non-finite values in the maps abort the C++ kernel, so use
+        # initialized finite maps rather than np.empty().
+        Q = np.linspace(-1.0, 1.0, 12)
+        U = np.linspace(1.0, -1.0, 12)
+        texture = np.linspace(0.0, 1.0, 12)
+        results = {
+            "default": lic(Q, U),
+            "ell=-1": lic(Q, U, ell=-1),
+            "ell=10": lic(Q, U, ell=10),
+            "texture": lic(Q, U, texture=texture),
+            "modulate": lic(Q, U, modulate=True),
+        }
+        # The kernel normalizes its output to the range [0, 1].
+        for name, result in results.items():
+            with self.subTest(config=name):
+                self.assertEqual(result.shape, Q.shape)
+                self.assertTrue(np.isfinite(result).all())
+                self.assertTrue(((result >= 0.0) & (result <= 1.0)).all())
 
     def test_lic_regression(self):
         path = os.path.dirname(os.path.realpath(__file__))
