@@ -103,6 +103,20 @@ CXX = "$(brew --prefix llvm@15)/bin/clang++"
 CPPFLAGS = "-I$(brew --prefix libomp)/include"
 LDFLAGS = "-L$(brew --prefix libomp)/lib"
 
+[tool.cibuildwheel.pyodide]
+build-frontend = "pyodide-build"
+# setup.py installs the cross-compiled cfitsio, healpix_cxx and sharp shared
+# libraries into build_clib (build/temp.emscripten_*-cpython-*/lib). `pyodide
+# build` does not vendor them, so the repair step copies them into the wheel
+# with auditwheel-emscripten (shipped with pyodide-build). Stale build
+# directories from other identifiers are removed first so the glob is unique.
+before-build = "rm -rf {project}/build/temp.emscripten_*"
+repair-wheel-command = "pyodide auditwheel repair --libdir {project}/build/temp.emscripten_* --output-dir {dest_dir} {wheel}"
+test-command = [
+    "pytest --doctest-plus --pyargs healpy",
+    "pytest {project}/test",
+]
+
 [[tool.cibuildwheel.overrides]]
 # Keep Intel wheels compatible with macOS 13-era systems.
 select = "*macosx_x86_64"

@@ -5,6 +5,8 @@ import shutil
 import healpy as hp
 from astropy.utils import data
 
+from .helpers import requires_network
+
 
 @pytest.fixture
 def create_reference_alm():
@@ -17,6 +19,7 @@ def create_reference_alm():
     return lmax, input_alm, m
 
 
+@requires_network
 def test_astropy_download_file():
     data.conf.dataurl = "https://healpy.github.io/healpy-data/"
     print(

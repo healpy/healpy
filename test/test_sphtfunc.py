@@ -11,7 +11,7 @@ import healpy as hp
 
 import warnings
 
-from .helpers import DATAPATH
+from .helpers import DATAPATH, requires_network
 
 # disable new order warnings in tests
 warnings.filterwarnings("ignore")
@@ -426,6 +426,7 @@ class TestSphtFunc(unittest.TestCase):
         # hp.check_max_nside will return 0 if no exceptions are raised
         self.assertEqual(hp.check_max_nside(1024), 0)
 
+    @requires_network
     def test_pixwin_base(self):
         # Base case
         nsides = [2**p for p in np.arange(1, 14)]
@@ -435,10 +436,12 @@ class TestSphtFunc(unittest.TestCase):
         with self.assertRaises(URLError):
             hp.pixwin(15)
 
+    @requires_network
     def test_pixwin_pol(self):
         pixwin = hp.pixwin(128, pol=True)
         self.assertEqual(len(pixwin), 2)
 
+    @requires_network
     def test_pixwin_lmax(self):
         nside = 128
         pixwin = hp.pixwin(nside, lmax=None)

@@ -651,11 +651,13 @@ def pix2xyf(nside, ipix, nest=False):
     >>> hp.pix2xyf(16, 1440)
     (8, 8, 4)
 
-    >>> hp.pix2xyf(16, [1440,  427, 1520,    0, 3068])
-    (array([ 8,  8,  8, 15,  0]), array([ 8,  8,  7, 15,  0]), array([4, 0, 5, 0, 8]))
+    >>> x, y, face = hp.pix2xyf(16, [1440,  427, 1520,    0, 3068])
+    >>> print(x, y, face)
+    [ 8  8  8 15  0] [ 8  8  7 15  0] [4 0 5 0 8]
 
-    >>> hp.pix2xyf([1, 2, 4, 8], 11)
-    (array([0, 1, 3, 7]), array([0, 0, 2, 6]), array([11,  3,  3,  3]))
+    >>> x, y, face = hp.pix2xyf([1, 2, 4, 8], 11)
+    >>> print(x, y, face)
+    [0 1 3 7] [0 0 2 6] [11  3  3  3]
     """
     check_nside(nside, nest=nest)
     if nest:
