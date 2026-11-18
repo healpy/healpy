@@ -1,30 +1,10 @@
 # Steps to release `healpy`
 
-## Synchronize the C++ library
-
-The HEALPix C++ library is available on Sourceforge under SVN, we maintain a read only mirror at <https://github.com/healpy/healpixmirror> so that we can embed into `healpy` with `git submodule`.
-
-We should **only update the C++ sources after HEALPix has been released**, otherwise there could be incompatibilities for users that compile HEALPix separately.
-
-Once new version of HEALPix C++ has been released, we can update `healpixmirror` with:
-
-    git svn rebase
-    git push
-
-then in `healpy`:
-
-    cd cextern/healpix
-    git pull master
-    cd ..
-    git add cextern/healpix
-    git commit -m "Updated HEALPix C++ to 3.5.0"
-
 ## Github
 
 * Review recent pull requests and update `CHANGELOG.rst`
 * Create a git tag
 * Draft a new release on Github using the same version name of the tag, in the description just put `See [CHANGELOG.rst](./CHANGELOG.rst)` so we don't duplicate
-* Once the source `tar.gz` is uploaded to PyPI, download it and attach it to the Github release, this avoids people downloading the automatically created Github release dump which does not include the source of the submodules.
 
 ## PyPI - binary wheels, source
 

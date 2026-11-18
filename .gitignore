@@ -16,10 +16,12 @@ src/_sphtools.cpp
 src/_hotspots.cpp
 src/_line_integral_convolution.cpp
 src/_masktools.cpp
-lib/healpy/version.py
 *.egg-info
 dist
 .eggs
 .idea
 .pytest_cache
+.wraplock
 .vscode
+packagecache
+subprojects/*-*.*.*

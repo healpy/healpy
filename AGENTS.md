@@ -1,7 +1,7 @@
 # Repository Guidelines
 
 ## Project Structure & Module Organization
-Python interfaces live under `lib/healpy`, organized by functionality (`pixelfunc.py`, `visufunc.py`, `rotator.py`, etc.). Cython and C++ performance kernels are in `src/` (e.g., `_pixelfunc.pyx`, `_healpy_sph_transform_lib.cc`). End-to-end tests sit in `test/`, with shared fixtures in `lib/healpy/conftest.py`. Documentation sources are in `doc/`, and vendored HEALPix dependencies reside in `cextern/`. Keep ancillary scripts in `bin/` and avoid introducing new top-level directories without discussion.
+Python interfaces live under `lib/healpy`, organized by functionality (`pixelfunc.py`, `visufunc.py`, `rotator.py`, etc.). Cython and C++ performance kernels are in `src/` (e.g., `_pixelfunc.pyx`, `_healpy_sph_transform_lib.cc`). End-to-end tests sit in `test/`, with shared fixtures in `lib/healpy/conftest.py`. Documentation sources are in `doc/`. The build is driven by Meson (`meson.build`); vendored HEALPix, cfitsio, and libsharp sources are fetched on demand as Meson subprojects (see `subprojects/*.wrap`) when a suitable system installation is not found via `pkg-config`. Keep ancillary scripts in `bin/` and avoid introducing new top-level directories without discussion.
 
 ## Build, Test, and Development Commands
 Install editable dependencies with `python -m pip install -e .[all,test]` and ensure `cython` is available before building extensions. Produce a distribution bundle via `python -m build`. Run the full suite locally with `pytest --doctest-plus --doctest-cython --pyargs healpy && pytest test/`. To iterate on a single module, target the file: `pytest test/test_pixelfunc.py -k ring2nest`. Regenerate documentation using `make -C doc html`, which writes to `doc/.build/html`.
