@@ -739,7 +739,7 @@ def _build_harmonic_transfer(lmax, pw_in, pw_out, bl_in, bl_out):
     return fl
 
 
-def _apply_harmonic_transfer(alm, fl_T, fl_P=None):
+def _apply_harmonic_transfer(alm, fl_T, fl_P=None, mmax=None):
     """Return a new alm with per-ℓ transfer function(s) applied.
 
     The caller's ``alm`` is never modified — a fresh array (or list of
@@ -765,27 +765,29 @@ def _apply_harmonic_transfer(alm, fl_T, fl_P=None):
     fl_P : ndarray, optional
         Polarization transfer function for E and B components. Used only
         for the TEB case (``len(alm) == 3``).
+    mmax : int, optional
+        Maximum m defining the input alm layout.
     """
     if len(alm) == 3 and isinstance(alm, (list, tuple, np.ndarray)):
         if fl_P is not None:
             return [
-                almxfl(alm[0], fl_T),
-                almxfl(alm[1], fl_P),
-                almxfl(alm[2], fl_P),
+                almxfl(alm[0], fl_T, mmax=mmax),
+                almxfl(alm[1], fl_P, mmax=mmax),
+                almxfl(alm[2], fl_P, mmax=mmax),
             ]
         # TEB triplet but no separate polarization transfer: apply fl_T
         # to all three components (e.g. pixel-window-only case where
         # T and P windows are identical).
         return [
-            almxfl(alm[0], fl_T),
-            almxfl(alm[1], fl_T),
-            almxfl(alm[2], fl_T),
+            almxfl(alm[0], fl_T, mmax=mmax),
+            almxfl(alm[1], fl_T, mmax=mmax),
+            almxfl(alm[2], fl_T, mmax=mmax),
         ]
     if isinstance(alm, np.ndarray) and alm.ndim == 1:
-        return almxfl(alm, fl_T)
+        return almxfl(alm, fl_T, mmax=mmax)
     # list/tuple with len != 3, or 2D ndarray with != 3 rows.
     # Apply fl_T to each element (spin-0 fallback).
-    return [almxfl(a, fl_T) for a in alm]
+    return [almxfl(a, fl_T, mmax=mmax) for a in alm]
 
 
 def harmonic_ud_grade(
@@ -1278,14 +1280,14 @@ def harmonic_ud_grade(
             fl_P = None
 
     if input_type == "alm":
-        if alm_lmax > lmax:
+        if alm_lmax > lmax or mmax != alm_lmax:
             # resize_alm coerces a TEB list/tuple to a 2D ndarray internally and
             # returns a Python list of 1D arrays; that's fine downstream because
             # _apply_harmonic_transfer and alm2map both accept either shape, and
             # is_polarized was already determined before this point.
             alm = resize_alm(alm, alm_lmax, alm_lmax, lmax, mmax)
         if need_transfer:
-            alm = _apply_harmonic_transfer(alm, fl_T, fl_P)
+            alm = _apply_harmonic_transfer(alm, fl_T, fl_P, mmax=mmax)
         output = alm2map(
             alm, nside=nside_out, lmax=lmax, mmax=mmax, pixwin=False, pol=is_polarized
         )
@@ -1303,7 +1305,7 @@ def harmonic_ud_grade(
             use_pixel_weights=use_pixel_weights,
         )
         if need_transfer:
-            alm = _apply_harmonic_transfer(alm, fl_T, fl_P)
+            alm = _apply_harmonic_transfer(alm, fl_T, fl_P, mmax=mmax)
         output = alm2map(
             alm, nside=nside_out, lmax=lmax, mmax=mmax, pixwin=False, pol=pol
         )
@@ -1321,7 +1323,7 @@ def harmonic_ud_grade(
                 use_pixel_weights=use_pixel_weights,
             )
             if need_transfer:
-                alm = _apply_harmonic_transfer(alm, fl_T)
+                alm = _apply_harmonic_transfer(alm, fl_T, mmax=mmax)
             output.append(
                 alm2map(
                     alm, nside=nside_out, lmax=lmax, mmax=mmax, pixwin=False, pol=False
