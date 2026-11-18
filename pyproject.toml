@@ -62,13 +62,12 @@ build-backend = 'mesonpy'
 requires = [
     "meson>=1.4.0",
     "meson-python>=0.18",
-    "cython>=0.16",
+    "cython>=3.1",
     "numpy>=2.0.0",
     "setuptools_scm>=6.2",
 ]
 
 [tool.cibuildwheel]
-build = "cp311-* cp312-* cp313-* cp314-* cp315-*"
 skip = [
     "*win32",
 ]
@@ -77,6 +76,14 @@ test-command = [
     "pytest {project}/test"
 ]
 test-extras = ["test"]
+
+# Python 3.14t did not support the limited API, and Cython does not yet
+# support the limited API on Python 3.15t (abi3t).
+# See https://github.com/cython/cython/issues/7276
+[[tool.cibuildwheel.overrides]]
+select = "cp3??t-*"
+inherit.config-settings = "append"
+config-settings.setup-args = "-Dpython.allow_limited_api=false"
 
 [tool.cibuildwheel.macos]
 before-all = "brew install libomp"
@@ -89,3 +96,4 @@ repair-wheel-command = "delvewheel repair --ignore-existing -w {dest_dir} -v {wh
 
 [tool.meson-python]
 allow-windows-internal-shared-libs = true
+limited-api = true
