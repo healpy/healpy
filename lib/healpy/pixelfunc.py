@@ -2051,7 +2051,7 @@ def _ud_grade_core(m, nside_out, pess=False, power=None, dtype=None):
         rat2 = npix_in // npix_out
         mr = m.reshape(npix_out, rat2)
         goods = ~(mask_bad(mr) | (~np.isfinite(mr)))
-        map_out = np.sum(mr * goods, axis=1).astype(type_out)
+        map_out = np.sum(mr, axis=1, where=goods).astype(type_out)
         nhit = goods.sum(axis=1)
         if pess:
             badout = np.where(nhit != rat2)
