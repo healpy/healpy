@@ -1,7 +1,7 @@
 Unreleased
 |
 
-* Fixed ``write_map`` treating a string column name as separate characters, including the default ``TEMPERATURE`` name. https://github.com/healpy/healpy/pull/PRNUM
+* Fixed ``write_map`` treating a string column name as separate characters, including the default ``TEMPERATURE`` name. https://github.com/healpy/healpy/pull/1153
 
 * Fixed ``ud_grade`` scaling the ``UNSEEN`` sentinel value when upgrading a map with a non-zero ``power``: pixels marked as ``UNSEEN`` now stay ``UNSEEN`` in the output instead of being multiplied by ``(nside_out/nside_in)**power``, so missing pixels remain recognized by ``mask_bad`` https://github.com/healpy/healpy/issues/1142
 * Fixed ``projplot``, ``projscatter`` and ``projtext`` silently doing nothing on figures created by ``projview``: they now draw on the matplotlib axes created by ``projview``, interpreting input coordinates in the frame of the displayed map (the ``rot``/``coord`` transformation of the view is applied automatically), and warn instead of silently returning ``None`` when the current axes is not a healpy map https://github.com/healpy/healpy/issues/1132
