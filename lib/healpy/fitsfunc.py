@@ -299,8 +299,9 @@ def write_map(
         column_names = standard_column_names.get(
             len(m), ["COLUMN_%d" % n for n in range(1, len(m) + 1)]
         )
-    else:
-        assert len(column_names) == len(m), "Length column_names != number of maps"
+    if isinstance(column_names, str):
+        column_names = [column_names]
+    assert len(column_names) == len(m), "Length column_names != number of maps"
 
     if column_units is None or isinstance(column_units, str):
         column_units = [column_units] * len(m)
