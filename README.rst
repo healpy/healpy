@@ -63,7 +63,7 @@ https://healpy.readthedocs.io/en/latest/tutorial.html, or execute it on `mybinde
 Requirements
 ------------
 
-* `Python <http://www.python.org>`_ 3.10, 3.11, 3.12, 3.13, or 3.14
+* `Python <http://www.python.org>`_ 3.11, 3.12, 3.13, 3.14, or 3.15
 
 * `Numpy <http://numpy.scipy.org/>`_ (tested with version >=1.19)
 
