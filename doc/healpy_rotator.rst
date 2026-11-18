@@ -14,7 +14,9 @@ Rotation
    Rotator
    rotateVector
    rotateDirection
-   
+   rotate_alm
+   rotate_map_alms
+   rotate_map_pixel
 
 Geometrical helpers
 -------------------

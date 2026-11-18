@@ -4,7 +4,7 @@ from healpy._pixelfunc import pix2ring, isnsideok
 import numpy as np
 import unittest
 from healpy._query_disc import query_strip
-from healpy.pixelfunc import ring2nest
+from healpy.pixelfunc import ring2nest, pix2xyf, xyf2pix
 
 
 class TestPixelFunc(unittest.TestCase):
@@ -272,6 +272,129 @@ class TestPixelFunc(unittest.TestCase):
         self.assertTrue(np.allclose(theta_scalar, np.pi / 2 + np.deg2rad(80)))
         self.assertTrue(np.allclose(phi_scalar, np.deg2rad(lon_scalar) + np.pi))
 
+    def test_latauto_leaves_input_arrays_unchanged(self):
+        """latauto must fold outputs, not the caller's arrays."""
+        for latbounce in (True, False):
+            with self.subTest(latbounce=latbounce):
+                lat = np.array([-100.0, -90.0, 0.0, 90.0, 100.0])
+                lon = np.array([0.0, 60.0, 90.0, 0.0, 180.0])
+                lat_before = lat.copy()
+                lon_before = lon.copy()
+
+                theta, phi = lonlat2thetaphi(
+                    lon, lat, latauto=True, latbounce=latbounce
+                )
+
+                np.testing.assert_array_equal(lat, lat_before)
+                np.testing.assert_array_equal(lon, lon_before)
+                self.assertFalse(np.shares_memory(theta, lat))
+                self.assertFalse(np.shares_memory(phi, lon))
+
+                ang2pix(
+                    16,
+                    lon,
+                    lat,
+                    lonlat=True,
+                    latauto=True,
+                    latbounce=latbounce,
+                )
+
+                np.testing.assert_array_equal(lat, lat_before)
+                np.testing.assert_array_equal(lon, lon_before)
+
+    def test_latauto_accepts_read_only_input(self):
+        """latauto must work on read-only arrays and bounce at the poles."""
+        lat = np.array([100.0, -100.0])
+        lon = np.array([10.0, 20.0])
+        lat.flags.writeable = False
+        lon.flags.writeable = False
+
+        theta, phi = lonlat2thetaphi(lon, lat, latauto=True)
+        np.testing.assert_allclose(theta, np.pi / 2 - np.deg2rad([80.0, -80.0]))
+        np.testing.assert_allclose(phi, np.deg2rad([10.0, 20.0]))
+
+        theta, phi = lonlat2thetaphi(lon, lat, latauto=True, latbounce=False)
+        np.testing.assert_allclose(theta, np.pi / 2 - np.deg2rad([80.0, -80.0]))
+        np.testing.assert_allclose(phi, np.deg2rad([190.0, 200.0]))
+
+    def test_latauto_accepts_read_only_strided_input(self):
+        """Folding supports read-only, non-contiguous coordinate views."""
+        lat_storage = np.array(
+            [-100.0, 999.0, -90.0, 999.0, 0.0, 999.0, 90.0, 999.0, 100.0]
+        )
+        lon_storage = np.array(
+            [0.0, 999.0, 60.0, 999.0, 90.0, 999.0, 0.0, 999.0, 180.0]
+        )
+        lat_storage.flags.writeable = False
+        lon_storage.flags.writeable = False
+        lat = lat_storage[::2]
+        lon = lon_storage[::2]
+        self.assertFalse(lat.flags.writeable)
+        self.assertFalse(lon.flags.writeable)
+
+        theta, phi = lonlat2thetaphi(lon, lat, latauto=True, latbounce=False)
+
+        np.testing.assert_allclose(theta, np.deg2rad([170.0, 180.0, 90.0, 0.0, 10.0]))
+        np.testing.assert_allclose(phi, np.deg2rad([180.0, 60.0, 90.0, 0.0, 360.0]))
+        np.testing.assert_array_equal(
+            lat_storage,
+            [-100.0, 999.0, -90.0, 999.0, 0.0, 999.0, 90.0, 999.0, 100.0],
+        )
+        np.testing.assert_array_equal(
+            lon_storage,
+            [0.0, 999.0, 60.0, 999.0, 90.0, 999.0, 0.0, 999.0, 180.0],
+        )
+
+    def test_latauto_preserves_array_output_dtype(self):
+        """Output buffers use the dtype selected by NumPy's radians ufunc."""
+        for dtype in (np.int16, np.float32, np.float64):
+            with self.subTest(dtype=dtype):
+                lat = np.array([-100, 100], dtype=dtype)
+                lon = np.array([10, 20], dtype=dtype)
+
+                theta, phi = lonlat2thetaphi(lon, lat, latauto=True, latbounce=False)
+
+                self.assertEqual(theta.dtype, np.radians(lat).dtype)
+                self.assertEqual(phi.dtype, np.radians(lon).dtype)
+                np.testing.assert_allclose(
+                    theta,
+                    np.deg2rad([170.0, 10.0]),
+                    rtol=1e-6,
+                    atol=1e-6,
+                )
+                np.testing.assert_allclose(
+                    phi,
+                    np.deg2rad([190.0, 200.0]),
+                    rtol=1e-6,
+                    atol=1e-6,
+                )
+
+    def test_latauto_scalar_returns_scalars(self):
+        """Using zero-dimensional work buffers must not change scalar returns."""
+        for dtype in (int, np.float32, np.float64):
+            with self.subTest(dtype=dtype):
+                theta, phi = lonlat2thetaphi(
+                    dtype(10),
+                    dtype(-100),
+                    latauto=True,
+                    latbounce=False,
+                )
+
+                self.assertTrue(np.isscalar(theta))
+                self.assertTrue(np.isscalar(phi))
+                self.assertAlmostEqual(theta, np.deg2rad(170.0), places=6)
+                self.assertAlmostEqual(phi, np.deg2rad(190.0), places=6)
+
+    def test_latauto_avoids_integer_overflow_when_adjusting_longitude(self):
+        """Longitude adjustment takes place in the floating output buffer."""
+        lat = np.array([100], dtype=np.int16)
+        lon = np.array([32700], dtype=np.int16)
+
+        _, phi = lonlat2thetaphi(lon, lat, latauto=True, latbounce=False)
+
+        np.testing.assert_allclose(phi, np.deg2rad([32880.0]), rtol=1e-6)
+        np.testing.assert_array_equal(lon, [32700])
+
     def test_query_strip_nest(self):
         # Test query_strip with nest=True, which was previously crashing
         nside = 2
@@ -287,3 +410,59 @@ class TestPixelFunc(unittest.TestCase):
         actual_result = query_strip(nside, theta1, theta2, nest=True)
 
         np.testing.assert_array_equal(actual_result, expected_result)
+
+    def test_xyf2pix_pix2xyf_int64_roundtrip(self):
+        """Regression for cross-platform int64 ufunc behavior and xyf2pix round-trip."""
+        nside = 16
+        ipix = np.array([0, 427, 1440, 1520, 3068], dtype=np.int64)
+
+        for nest in (True, False):
+            x, y, face = pix2xyf(nside, ipix, nest=nest)
+            self.assertEqual(x.dtype, np.int64)
+            self.assertEqual(y.dtype, np.int64)
+            self.assertEqual(face.dtype, np.int64)
+
+            roundtrip = xyf2pix(nside, x, y, face, nest=nest)
+            self.assertEqual(roundtrip.dtype, np.int64)
+            np.testing.assert_array_equal(roundtrip, ipix)
+
+    def test_ud_grade_upgrade_power_preserves_unseen(self):
+        """Regression test: upgrading with ``power`` must not scale UNSEEN.
+
+        The children of a missing pixel stay UNSEEN (still recognized by
+        ``mask_bad``), while good pixels are scaled by
+        ``(nside_out/nside_in)**power``.
+        """
+        for dtype in (np.float64, np.float32):
+            for power, expected in ((-2, 2.0), (2, 32.0)):
+                with self.subTest(dtype=dtype, power=power):
+                    m = np.full(12, 8.0, dtype=dtype)
+                    m[0] = UNSEEN
+                    out = ud_grade(m, 2, order_out="NEST", power=power)
+                    np.testing.assert_array_equal(
+                        out[:4], np.full(4, UNSEEN, dtype=dtype)
+                    )
+                    np.testing.assert_allclose(out[4:], expected)
+                    self.assertEqual(int(mask_bad(out).sum()), 4)
+
+    def test_ud_grade_upgrade_power_minus2_sum_invariant(self):
+        """power=-2 upgrades keep the sum over good pixels invariant (hitmaps)."""
+        m = np.ones(12 * 16)
+        m[3] = UNSEEN
+        out = ud_grade(m, 8, order_out="NEST", power=-2)
+        self.assertTrue(np.isclose(out[~mask_bad(out)].sum(), m[m != UNSEEN].sum()))
+
+    def test_ud_grade_downgrade_power_preserves_unseen(self):
+        """Downgrading with ``power`` keeps UNSEEN and scales good pixels."""
+        # fully masked superpixel (NEST children 0-3) stays UNSEEN
+        m = np.full(48, 8.0)
+        m[0:4] = UNSEEN
+        out = ud_grade(m, 1, order_in="NEST", order_out="NEST", power=-2)
+        self.assertTrue(mask_bad(out)[0])
+        self.assertEqual(int(mask_bad(out).sum()), 1)
+        np.testing.assert_allclose(out[1:], np.full(11, 32.0))
+        # partially masked superpixel: mean of good children scaled by power
+        m_part = np.full(48, 8.0)
+        m_part[0] = UNSEEN
+        out_part = ud_grade(m_part, 1, order_in="NEST", order_out="NEST", power=-2)
+        np.testing.assert_allclose(out_part, np.full(12, 32.0))

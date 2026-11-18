@@ -1,5 +1,37 @@
 Unreleased
+|
 
+* Fixed ``ud_grade`` scaling the ``UNSEEN`` sentinel value when upgrading a map with a non-zero ``power``: pixels marked as ``UNSEEN`` now stay ``UNSEEN`` in the output instead of being multiplied by ``(nside_out/nside_in)**power``, so missing pixels remain recognized by ``mask_bad`` https://github.com/healpy/healpy/issues/1142
+* Fixed ``projplot``, ``projscatter`` and ``projtext`` silently doing nothing on figures created by ``projview``: they now draw on the matplotlib axes created by ``projview``, interpreting input coordinates in the frame of the displayed map (the ``rot``/``coord`` transformation of the view is applied automatically), and warn instead of silently returning ``None`` when the current axes is not a healpy map https://github.com/healpy/healpy/issues/1132
+* ``newprojplot`` now applies the ``rot``/``coord`` transformation of the ``projview`` figure automatically, wraps longitudes into [-180, 180) degrees and splits paths at the 180 deg meridian so they do not draw spurious lines across the map
+* Fixed ``projview`` with ``projection_type='lambert'`` displaying the sky upside-down: the temporary vertical flip of the map introduced for #869 is not needed, matplotlib's Lambert axes already renders latitude increasing upwards https://github.com/healpy/healpy/issues/1132
+* Added a new ``datapath`` parameter to ``alm2map`` which exposes the pixwin ``datapath`` functionality, thus allowing the use of a local copy of ``healpy-data`` https://github.com/healpy/healpy/pull/1128
+* Declare support for Python 3.15 in packaging, tests, and wheels
+* Fixed ``harmonic_ud_grade`` ignoring its ``datapath`` argument when reading the pixel-window functions (``pixwin=True``, the default): ``datapath`` is now threaded through to ``pixwin``, so ``harmonic_ud_grade`` works on systems without internet access https://github.com/healpy/healpy/issues/1133
+* **BREAKING**: macOS arm64 wheels now target macOS 15 (previously 14). The macOS 14 GitHub-hosted runner image was retired by GitHub, and the Homebrew-provided OpenMP runtime used to build wheels only supports macOS 15+, so macOS 14 Apple-Silicon wheels can no longer be produced. macOS x86_64 wheels still support macOS 13.6+. https://github.com/healpy/healpy/pull/1129
+* Docs: fixed ``pixwin`` ``datapath`` docstring, which incorrectly claimed a download fallback when ``datapath`` is given: the file must exist at ``datapath`` or a ``ValueError`` is raised; download and caching via astropy only happens when ``datapath`` is ``None``. Also fixed ``test_pixwin_local_datapath``, which always skipped because it downloaded the pixel window file without setting healpy's ``DATAURL``, and added a test asserting the ``ValueError`` for a missing file at ``datapath`` https://github.com/healpy/healpy/issues/1138
+
+Release 1.20.1 3 Oct 2026
+
+* Dev: Centralize the test data directory in a ``DATAPATH`` constant (`test/helpers.py`), replacing repeated ``os.path.dirname(os.path.realpath(__file__))`` boilerplate in the test suite https://github.com/healpy/healpy/issues/504
+* Fixed ``rotate_alm`` in-place update when the input is ``complex128`` but not C-contiguous: copy rotated coefficients back if ``np.ascontiguousarray`` made a copy https://github.com/healpy/healpy/issues/702
+* Fixed ``lonlat2thetaphi(..., latauto=True)`` modifying caller-owned coordinate arrays and rejecting read-only arrays. Latitude folding now reuses the newly allocated result buffers instead of making full-size input copies. https://github.com/healpy/healpy/pull/1123
+* Added ``column_units`` argument to ``write_cl`` to store units in the FITS ``TUNITn`` keywords, as a single string applied to all columns or per-column list. ``write_cl`` now also raises a ``ValueError`` when the number of ``column_names`` does not match the number of ``cl`` arrays (previously, with a 1-D ``cl``, extra names were silently ignored) https://github.com/healpy/healpy/pull/828
+* **Note**: this is the last release providing macOS 14 arm64 wheels (``macosx_14_0_arm64``). GitHub retires its macOS 14 hosted runner on 2 Nov 2026 and the Homebrew OpenMP runtime used to build wheels now requires macOS 15, so from the next release arm64 wheels target macOS 15 (see https://github.com/healpy/healpy/issues/1130 and https://github.com/healpy/healpy/pull/1129). macOS x86_64 wheels continue to support macOS 13.6+.
+
+Release 1.20.0 22 Jul 2026
+
+* Fixed ``test_rotate_alm2``: the ``a_lm`` initialization now includes the ``m == ell`` diagonal, matching the Fortran reference (the test previously compared the reference to itself) https://github.com/healpy/healpy/pull/1118
+* **Performance**: Optimized ``almxfl`` for better cache locality by swapping the loop order (m outer, l inner), giving a ~2-3x speedup for large datasets https://github.com/healpy/healpy/issues/964
+* Docs: comprehensive documentation fixes — consistent HEALPix/healpy capitalization, corrected default values, missing parameter docs, broken RST formatting, dead Google Code URLs replaced with GitHub, typos, and grammar https://github.com/healpy/healpy/pull/1113
+* CI: Added test workflow (`.github/workflows/tests.yml`) running the full test suite on Python 3.10–3.13 with ccache, plus an astropy pre-release job https://github.com/healpy/healpy/pull/1109
+* Fix off-by-one in ``synalm`` Cℓ boundary check that caused out-of-bounds reads when ``l == len(cl)`` https://github.com/healpy/healpy/pull/1108
+* Fix scalar boolean array indexing in ``projector.py`` projection functions (``mollview``, ``gnomview``, ``azeqview``) that caused corrupted masked output and ``"must not happen"`` assertion errors with NumPy 2.2.x + Python 3.14 https://github.com/healpy/healpy/pull/1112
+* **BREAKING**: Bump minimum NumPy version to 2.0.0 and compile extensions against the NumPy 2.0 ABI. The last stable release supporting NumPy 1.x is 1.19.0. https://github.com/healpy/healpy/pull/1106
+
+Release 1.20.0b1 29 May 2026
+
+* Added ``harmonic_ud_grade`` to change map NSIDE via spherical-harmonic transforms, providing an artifact-resistant alternative to pixel-space ``ud_grade`` for diffuse signals. The new API supports pixel-window and beam transfer corrections, direct :math:`a_{\\ell m}` input, API cross-links from ``ud_grade``, and a tutorial notebook comparing downgrade workflows https://github.com/healpy/healpy/pull/1081
 * Added `return_ranges` parameter to `query_disc`, `query_polygon`, and `query_strip` functions to return pixel ranges instead of individual pixel indices, reducing memory usage from O(N) to O(√N) for large queries https://github.com/healpy/healpy/pull/1077
 * CI: build Linux wheels with manylinux_2_28 for x86_64/aarch64 to avoid SciPy source builds failing on missing OpenBLAS https://github.com/healpy/healpy/pull/1075
 * Docs: clarify pkg-config fallback guidance and remove pykg-config reference https://github.com/healpy/healpy/pull/1074

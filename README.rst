@@ -11,6 +11,9 @@ Healpy, a python wrapper for healpix
 .. image:: https://github.com/healpy/healpy/actions/workflows/cibuildwheel.yml/badge.svg
    :target: https://github.com/healpy/healpy/actions/workflows/cibuildwheel.yml
 
+.. image:: https://github.com/healpy/healpy/actions/workflows/tests.yml/badge.svg
+   :target: https://github.com/healpy/healpy/actions/workflows/tests.yml
+
 .. image:: https://readthedocs.org/projects/healpy/badge/?version=latest
    :target: https://readthedocs.org/projects/healpy/?badge=latest
    :alt: Documentation Status

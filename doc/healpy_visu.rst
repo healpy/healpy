@@ -15,6 +15,7 @@ Map projections
    gnomview
    cartview
    orthview
+   azeqview
 
 Graticules
 ----------

@@ -1,5 +1,4 @@
 import astropy.io.fits as pf
-import os
 import numpy as np
 from copy import deepcopy
 from itertools import chain
@@ -12,6 +11,8 @@ import healpy as hp
 
 import warnings
 
+from .helpers import DATAPATH
+
 # disable new order warnings in tests
 warnings.filterwarnings("ignore")
 
@@ -19,54 +20,36 @@ warnings.filterwarnings("ignore")
 class TestSphtFunc(unittest.TestCase):
     def setUp(self):
         self.lmax = 64
-        self.path = os.path.dirname(os.path.realpath(__file__))
         self.map1 = [
             hp.ma(m)
             for m in hp.read_map(
-                os.path.join(
-                    self.path, "data", "wmap_band_iqumap_r9_7yr_W_v4_udgraded32.fits"
-                ),
+                DATAPATH / "wmap_band_iqumap_r9_7yr_W_v4_udgraded32.fits",
                 (0, 1, 2),
             )
         ]
         self.map2 = [
             hp.ma(m)
             for m in hp.read_map(
-                os.path.join(
-                    self.path, "data", "wmap_band_iqumap_r9_7yr_V_v4_udgraded32.fits"
-                ),
+                DATAPATH / "wmap_band_iqumap_r9_7yr_V_v4_udgraded32.fits",
                 (0, 1, 2),
             )
         ]
         self.mask = hp.read_map(
-            os.path.join(
-                self.path,
-                "data",
-                "wmap_temperature_analysis_mask_r9_7yr_v4_udgraded32.fits",
-            )
+            DATAPATH / "wmap_temperature_analysis_mask_r9_7yr_v4_udgraded32.fits"
         ).astype(np.bool_)
         for m in chain(self.map1, self.map2):
             m.mask = np.logical_not(self.mask)
         self.cla = hp.read_cl(
-            os.path.join(
-                self.path,
-                "data",
-                "cl_wmap_band_iqumap_r9_7yr_W_v4_udgraded32_II_lmax64_rmmono_3iter.fits",
-            )
+            DATAPATH
+            / "cl_wmap_band_iqumap_r9_7yr_W_v4_udgraded32_II_lmax64_rmmono_3iter.fits"
         )
         self.cl_fortran_nomask = hp.read_cl(
-            os.path.join(
-                self.path,
-                "data",
-                "cl_wmap_band_iqumap_r9_7yr_W_v4_udgraded32_II_lmax64_rmmono_3iter_nomask.fits",
-            )
+            DATAPATH
+            / "cl_wmap_band_iqumap_r9_7yr_W_v4_udgraded32_II_lmax64_rmmono_3iter_nomask.fits"
         )
         with pf.open(
-            os.path.join(
-                self.path,
-                "data",
-                "cl_wmap_band_iqumap_r9_7yr_W_v4_udgraded32_IQU_lmax64_rmmono_3iter.fits",
-            )
+            DATAPATH
+            / "cl_wmap_band_iqumap_r9_7yr_W_v4_udgraded32_IQU_lmax64_rmmono_3iter.fits"
         ) as cls_file:
             # fix for pyfits to read the file with duplicate column names
             for i in range(2, 6):
@@ -114,11 +97,8 @@ class TestSphtFunc(unittest.TestCase):
         )
         self.assertEqual(len(cl), self.lmax + 1)
         clx = hp.read_cl(
-            os.path.join(
-                self.path,
-                "data",
-                "cl_wmap_band_iqumap_r9_7yr_WVxspec_v4_udgraded32_II_lmax64_rmmono_3iter.fits",
-            )
+            DATAPATH
+            / "cl_wmap_band_iqumap_r9_7yr_WVxspec_v4_udgraded32_II_lmax64_rmmono_3iter.fits"
         )
         np.testing.assert_array_almost_equal(cl, clx, decimal=8)
 
@@ -129,7 +109,7 @@ class TestSphtFunc(unittest.TestCase):
         seed = 12345
         np.random.seed(seed)
         map_pregen = hp.read_map(
-            os.path.join(self.path, "data", "map_synfast_seed%d.fits" % seed), (0, 1, 2)
+            DATAPATH / ("map_synfast_seed%d.fits" % seed), (0, 1, 2)
         )
         sim_map = hp.synfast(
             self.cliqu,
@@ -147,11 +127,7 @@ class TestSphtFunc(unittest.TestCase):
             [m.data for m in self.map1], fwhm=np.radians(10), lmax=self.lmax
         )
         smoothed_f90 = hp.read_map(
-            os.path.join(
-                self.path,
-                "data",
-                "wmap_band_iqumap_r9_7yr_W_v4_udgraded32_smoothed10deg_fortran.fits",
-            ),
+            DATAPATH / "wmap_band_iqumap_r9_7yr_W_v4_udgraded32_smoothed10deg_fortran.fits",
             (0, 1, 2),
             np.float64,
         )
@@ -161,11 +137,8 @@ class TestSphtFunc(unittest.TestCase):
         smoothed = hp.smoothing(self.map1, fwhm=np.radians(10), lmax=self.lmax)
         smoothed_f90 = hp.ma(
             hp.read_map(
-                os.path.join(
-                    self.path,
-                    "data",
-                    "wmap_band_iqumap_r9_7yr_W_v4_udgraded32_masked_smoothed10deg_fortran.fits",
-                ),
+                DATAPATH
+                / "wmap_band_iqumap_r9_7yr_W_v4_udgraded32_masked_smoothed10deg_fortran.fits",
                 (0, 1, 2),
                 np.float64,
             )
@@ -177,9 +150,7 @@ class TestSphtFunc(unittest.TestCase):
         )
 
     def test_gauss_beam(self):
-        with pf.open(
-            os.path.join(self.path, "data", "gaussbeam_10arcmin_lmax512_pol.fits")
-        ) as f:
+        with pf.open(DATAPATH / "gaussbeam_10arcmin_lmax512_pol.fits") as f:
             idl_gauss_beam = np.array(f[0].data).T
         gauss_beam = hp.gauss_beam(np.radians(10.0 / 60.0), lmax=512, pol=True)
         np.testing.assert_allclose(idl_gauss_beam, gauss_beam)
@@ -335,9 +306,15 @@ class TestSphtFunc(unittest.TestCase):
         lmax = 64
         nalm = hp.Alm.getsize(lmax)
         alm = np.zeros([3, nalm], dtype=complex)
+        # Initialize every a_lm from ell == 2 upward, including the m == ell
+        # diagonal (hence range(ell + 1)). The monopole and dipole (ell < 2)
+        # are left at zero, as in the Fortran reference. The original test used
+        # range(ell), which skips the diagonal, so its a_lm never matched the
+        # Fortran reference -- a discrepancy the test hid by overwriting the
+        # computed values with the reference (``mine = np.array(ref)``).
         for i in range(3):
-            for ell in range(lmax + 1):
-                for m in range(ell):
+            for ell in range(2, lmax + 1):
+                for m in range(ell + 1):
                     ind = hp.Alm.getidx(lmax, ell, m)
                     alm[i, ind] = (i + 1) * 10 + ell + 1j * m
         psi = np.pi / 3.0
@@ -397,10 +374,9 @@ class TestSphtFunc(unittest.TestCase):
                 for m in range(0, ell + 1, 21):
                     ind = hp.Alm.getidx(lmax, ell, m)
                     mine.append(alm[i, ind])
+        mine = np.array(mine)
 
-        mine = np.array(ref)
-
-        np.testing.assert_allclose(ref, mine, rtol=1e-10)
+        np.testing.assert_allclose(ref, mine, rtol=1e-6)
 
     def test_accept_ma_allows_only_keywords(self):
         """Test whether 'smoothing' wrapped with accept_ma works with only
@@ -762,3 +738,27 @@ def test_synfast_lmax_with_none():
     np.random.seed(42)
     maps_zeros = hp.sphtfunc.synfast(c_ell_zeros, nside, verbose=False)
     assert maps_zeros.shape == (3, 12*nside**2), "Should work with zeros array"
+
+
+def test_synalm_truncated_cl_uses_zero_beyond_end():
+    lmax = 16
+    cl_storage = np.full(lmax + 1, 1e-5, dtype=np.float64)
+    cl_storage[lmax] = 1e6
+    cl_truncated = cl_storage[:-1]
+
+    np.random.seed(42)
+    alm_truncated = hp.synalm(cl_truncated, lmax=lmax)
+
+    np.random.seed(42)
+    alm_zero_padded = hp.synalm(np.concatenate((cl_truncated, [0.0])), lmax=lmax)
+
+    np.testing.assert_allclose(alm_truncated, alm_zero_padded)
+
+
+def test_alm2map_local_datapath_missing(tmp_path):
+    rng = np.random.default_rng(seed=42)
+    alm_size = 78
+    nside = 4
+    alm = rng.standard_normal(alm_size) + 1j * rng.standard_normal(alm_size)
+    with pytest.raises(ValueError, match="Pixel window file not found"):
+        hp.alm2map(alm, nside, pixwin=True, datapath=tmp_path)

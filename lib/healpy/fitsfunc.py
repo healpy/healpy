@@ -15,9 +15,9 @@
 #  along with Healpy; if not, write to the Free Software
 #  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #
-#  For more information about Healpy, see http://code.google.com/p/healpy
+#  For more information about Healpy, see https://github.com/healpy/healpy
 #
-"""Provides input and output functions for Healpix maps, alm, and cl.
+"""Provides input and output functions for HEALPix maps, alm, and cl.
 """
 from __future__ import division
 
@@ -48,11 +48,15 @@ allowed_paths = (str, pathlib.Path)
 
 @deprecated(since="1.15.0")
 class HealpixFitsWarning(Warning):
+    """Warning class for FITS I/O issues in healpy.
+
+    .. deprecated:: 1.15.0
+    """
     pass
 
 
 def read_cl(filename):
-    """Reads Cl from a healpix file, as IDL fits2cl.
+    """Reads Cl from a HEALPix file, as IDL fits2cl.
 
     Parameters
     ----------
@@ -78,16 +82,24 @@ def read_cl(filename):
         return cl
 
 
-def write_cl(filename, cl, dtype=None, overwrite=False, column_names=None, extra_header=()):
-    """Writes Cl into a healpix file, as IDL cl2fits.
+def write_cl(
+    filename,
+    cl,
+    dtype=None,
+    overwrite=False,
+    column_names=None,
+    column_units=None,
+    extra_header=(),
+):
+    """Writes Cl into a HEALPix file, as IDL cl2fits.
 
     Parameters
     ----------
-    filename : str
+    filename : str or pathlib.Path
       the fits file name
     cl : array
       the cl array to write to file
-    dtype : np.dtype (optional)
+    dtype : np.dtype, optional
       The datatype in which the columns will be stored. If not supplied,
       the dtype of the input cl will be used. This changed in `healpy` 1.15.0,
       in previous versions, cl by default were saved in `float64`.
@@ -98,42 +110,91 @@ def write_cl(filename, cl, dtype=None, overwrite=False, column_names=None, extra
       Column name or list of column names. If None, uses default names:
       ["TEMPERATURE", "GRADIENT", "CURL", "G-T", "C-T", "C-G"] for the first 6 columns,
       and "COLUMN_N" for columns beyond 6.
+    column_units : str or list, optional
+      Units for each column, or same units for all columns.
+      If None, no units are stored in the FITS header. A single string is
+      applied to all columns; a list must have the same length as the number
+      of columns (1 for a single Cl vector, or ``len(cl)`` for multiple).
+      Each element must be a string or ``None``; ``None`` means no unit for
+      that column.
     extra_header : list, optional
       Extra records to add to FITS header.
+
+    Examples
+    --------
+    >>> import os
+    >>> import tempfile
+    >>> import numpy as np
+    >>> cl = np.arange(1026, dtype=np.float64)
+    >>> filename = os.path.join(tempfile.mkdtemp(), "cl.fits")
+    >>> write_cl(filename, cl, column_units="K")
+    >>> np.allclose(cl, read_cl(filename))
+    True
+    >>> os.remove(filename)
     """
     if dtype is None:
         dtype = cl.dtype if isinstance(cl, np.ndarray) else cl[0].dtype
 
     # check the dtype and convert it
     fitsformat = getformat(dtype)
-    
-    # Determine column names
-    if column_names is None:
-        default_names = ["TEMPERATURE", "GRADIENT", "CURL", "G-T", "C-T", "C-G"]
-        if len(np.shape(cl)) == 2:
-            n_cols = len(cl)
-            if n_cols <= 6:
-                column_names = default_names[:n_cols]
-            else:
-                # For more than 6 columns, use default names for first 6 and COLUMN_N for rest
-                column_names = default_names + ["COLUMN_%d" % n for n in range(7, n_cols + 1)]
-        else:
-            column_names = ["TEMPERATURE"]
-    elif isinstance(column_names, str):
-        column_names = [column_names]
-    
-    if len(np.shape(cl)) == 2:
-        if len(column_names) != len(cl):
-            raise ValueError("Number of column names must match number of cl arrays")
-        cols = [
-            pf.Column(name=column_name, format="%s" % fitsformat, array=column_cl)
-            for column_name, column_cl in zip(column_names, cl)
-        ]
-    elif len(np.shape(cl)) == 1:
-        # we write only TT
-        cols = [pf.Column(name=column_names[0], format="%s" % fitsformat, array=cl)]
+
+    # Determine the number of columns and column names
+    if np.ndim(cl) == 2:
+        n_cols = len(cl)
+    elif np.ndim(cl) == 1:
+        n_cols = 1
     else:
         raise RuntimeError("write_cl: Expected one or more vectors of equal length")
+
+    if column_names is None:
+        default_names = ["TEMPERATURE", "GRADIENT", "CURL", "G-T", "C-T", "C-G"]
+        if n_cols <= 6:
+            column_names = default_names[:n_cols]
+        else:
+            # For more than 6 columns, use default names for first 6 and COLUMN_N for rest
+            column_names = default_names + [
+                "COLUMN_%d" % n for n in range(7, n_cols + 1)
+            ]
+    elif isinstance(column_names, str):
+        column_names = [column_names]
+
+    if len(column_names) != n_cols:
+        raise ValueError("Number of column names must match number of cl arrays")
+
+    # Normalize column units: None or a string applies to all columns, a
+    # sequence applies one element per column.
+    if column_units is None or isinstance(column_units, str):
+        column_units = [column_units] * n_cols
+    else:
+        try:
+            n_units = len(column_units)
+        except TypeError:
+            raise ValueError(
+                "Column units must be a string, a list of strings, or None"
+            ) from None
+        if n_units != n_cols:
+            raise ValueError("Number of column units must match number of cl arrays")
+    for unit in column_units:
+        if unit is not None and not isinstance(unit, str):
+            raise ValueError("Column units must be strings or None")
+
+    if np.ndim(cl) == 2:
+        cols = [
+            pf.Column(
+                name=column_name, format="%s" % fitsformat, array=column_cl, unit=unit
+            )
+            for column_name, column_cl, unit in zip(column_names, cl, column_units)
+        ]
+    else:
+        # we write only TT
+        cols = [
+            pf.Column(
+                name=column_names[0],
+                format="%s" % fitsformat,
+                array=cl,
+                unit=column_units[0],
+            )
+        ]
 
     tbhdu = pf.BinTableHDU.from_columns(cols)
     # add needed keywords
@@ -161,13 +222,13 @@ def write_map(
     extra_header=(),
     overwrite=False,
 ):
-    """Writes a healpix map into a healpix FITS file.
+    """Writes a HEALPix map into a HEALPix FITS file.
 
     .. warning::
-    Starting from healpy 1.15.0, if you do not specify `dtype`,
-    the map will be written to disk with the same precision it is stored in memory.
-    Previously, by default `healpy` wrote maps in `float32`.
-    To reproduce the same behaviour of `healpy` 1.14.0 and below, set `dtype=np.float32`.
+       Starting from healpy 1.15.0, if you do not specify `dtype`,
+       the map will be written to disk with the same precision it is stored in memory.
+       Previously, by default `healpy` wrote maps in `float32`.
+       To reproduce the same behaviour of `healpy` 1.14.0 and below, set `dtype=np.float32`.
 
     Parameters
     ----------
@@ -207,12 +268,13 @@ def write_map(
       internally from the numpy datatype to the fits convention. If a list,
       the length must correspond to the number of map arrays.
       Default: use the data type of the input array(s)
+
       .. note::
-      this changed in 1.15.0, previous versions saved in float32
-      by default
+         this changed in 1.15.0, previous versions saved in float32
+         by default
     overwrite : bool, optional
       If True, existing file is silently overwritten. Otherwise trying to write
-      an existing file raises an OSError (IOError for Python 2).
+      an existing file raises an OSError.
     """
     if not hasattr(m, "__len__"):
         raise TypeError("The map must be a sequence")
@@ -336,7 +398,7 @@ def read_map(
     verbose=True,
     memmap=False,
 ):
-    """Read a healpix map from a fits file.  Partial-sky files,
+    """Read a HEALPix map from a fits file.  Partial-sky files,
     if properly identified, are expanded to full size and filled with UNSEEN.
 
     .. warning::
@@ -551,6 +613,8 @@ def write_alm(
       data type in the output file (must be a numpy dtype). Default: *alms*.real.dtype
     mmax_in : int, optional
       maximum m in the input array
+    overwrite : bool, optional
+      If True, overwrite the output file if it already exists. Default: False.
     """
 
     if not cb.is_seq_of_seq(alms):
@@ -624,7 +688,7 @@ def read_alm(filename, hdu=1, return_mmax=False):
     with 3 columns (index, real and imaginary) for each HDU.
 
     In the fits file, the alm are assumed to be written
-    with explicit index scheme, index = l**2+l+m+1, while healpix cxx
+    with explicit index scheme, index = l**2+l+m+1, while HEALPix C++
     uses index = m*(2*lmax+1-m)/2+l. The conversion is done in this
     function.
 

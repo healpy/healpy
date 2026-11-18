@@ -10,19 +10,15 @@ import healpy as hp
 import matplotlib
 matplotlib.use('Agg')  # Use non-interactive backend
 import matplotlib.pyplot as plt
-import os.path
+
+from .helpers import DATAPATH
 
 
 @pytest.fixture
 def map_data():
     """Fixture providing WMAP test data."""
-    path = os.path.dirname(os.path.realpath(__file__))
     return hp.read_map(
-        os.path.join(
-            path,
-            "data",
-            "wmap_band_iqumap_r9_7yr_W_v4_udgraded32_masked_smoothed10deg_fortran.fits",
-        )
+        DATAPATH / "wmap_band_iqumap_r9_7yr_W_v4_udgraded32_masked_smoothed10deg_fortran.fits",
     )
 
 
@@ -156,6 +152,40 @@ def test_lambert_with_real_data(map_data):
         coord=["G"],
     )
     plt.close()
+
+
+def test_lambert_north_at_top():
+    """Test that the Lambert projection displays the map with north at the top.
+
+    matplotlib's Lambert axes is equator-centered with the latitude axis
+    increasing upwards, so no vertical flip of the map is needed; the flip
+    introduced for #869 was rendering the sky upside-down.
+    """
+    nside = 32
+    npix = hp.nside2npix(nside)
+
+    theta, phi = hp.pix2ang(nside, np.arange(npix))
+    lat = 90 - np.degrees(theta)
+    # +1 in the north, -1 in the south: with the default viridis colormap
+    # the north (yellow) is much brighter than the south (purple)
+    test_map = np.where(lat > 0, 1.0, -1.0)
+
+    hp.newvisufunc.projview(
+        test_map,
+        projection_type="lambert",
+        cbar=False,
+    )
+    fig = plt.gcf()
+    fig.canvas.draw()
+    buf = np.asarray(fig.canvas.buffer_rgba())[:, :, :3]
+    height = buf.shape[0]
+    top_brightness = buf[: height // 4].mean()
+    bottom_brightness = buf[3 * height // 4 :].mean()
+    assert top_brightness > bottom_brightness, (
+        "Lambert projection appears upside-down (south at the top): "
+        f"top quarter brightness {top_brightness:.1f} vs bottom "
+        f"{bottom_brightness:.1f}"
+    )
 
 
 if __name__ == "__main__":

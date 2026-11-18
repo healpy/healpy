@@ -150,10 +150,12 @@ def projview(
     dpi=None,
     **kwargs,
 ):
-    """Plot a healpix map (given as an array) in the chosen projection.
+    """Plot a HEALPix map (given as an array) in the chosen projection.
 
     See examples of using this function in the documentation under "Other
-    tutorials". Overplot points or lines using :func:`newprojplot`.
+    tutorials". Overplot points, lines or text using :func:`newprojplot` or
+    the :func:`projplot`, :func:`projscatter` and :func:`projtext` functions,
+    which also support the axes created by this function.
 
     .. warning::
         this function is work in progress, the aim is to reimplement the healpy
@@ -184,11 +186,11 @@ def projview(
       Either one of 'G', 'E' or 'C' (where 'E' stands for the Ecliptic, 'G' for 
       the Galactic, and 'C' for the Celestial or equatorial) to describe the coordinate
       system of the map, or a sequence of 2 of these to rotate the map from the first 
-      to the second coordinate system. default: 'G'
+      to the second coordinate system. Default: None
     unit : str, optional
       A text describing the unit of the data. Default: ''
     xsize : int, optional
-      The size of the image. Default: 800
+      The size of the image. Default: 1000
     width : float, optional
         Sets the width of the figure. Use override_plot_properties for more.
         Overrides the default width of the figure
@@ -200,7 +202,7 @@ def projview(
       The maximum range value
     flip : {'astro', 'geo'}, optional
       Defines the convention of projection : 'astro' (default, east towards
-      left, west towards right) or 'geo' (east towards roght, west towards left)
+      left, west towards right) or 'geo' (east towards right, west towards left)
       It creates the `healpy_flip` attribute on the Axes to save the convention
       in the figure.
     format : str, optional
@@ -208,24 +210,24 @@ def projview(
     cbar : bool, optional
       Display the colorbar. Default: True
     cmap : str, optional
-        Specify the colormap. default: Viridis
+        Specify the colormap. Default: Viridis
     badcolor: str, optional
-        Specify the color of bad pixels. default: Grey
+        Specify the color of bad pixels. Default: Grey
     bgcolor: str, optional
-        Specify the color of the background. default: White
+        Specify the color of the background. Default: White
     norm : {'hist', 'log', 'symlog', 'symlog2', None}
       Color normalization:
       hist = histogram equalized color mapping.
       log = logarithmic color mapping.
       symlog = symmetric logarithmic, linear between -linthresh and linthresh.
-      symlog2 = similar to symlog, used for plack log colormap.
-      default: None (linear color mapping)
+      symlog2 = similar to symlog, used for Planck log colormap.
+      Default: None (linear color mapping)
     norm_dict : dict, optional
         Parameters for normalization:
         default is set to {"linthresh": 1, "base": 10, "linscale": 0.1}
         where linthresh determines the linear regime of symlog norm,
         and linscale sets the size of the linear regime on the cbar.
-        default: None
+        Default: None
     graticule : bool
       add graticule
     graticule_labels : bool
@@ -286,8 +288,8 @@ def projview(
     cbar_ticks : list
       custom ticks on the colorbar
     show_tickmarkers : bool, optional
-      Preserve tickmarkers for the full bar with labels specified by ticks
-      default: None
+      Preserve tickmarkers for the full bar with labels specified by ticks.
+      Default: False
     extend : str, optional
       Whether to extend the colorbar to mark where min or max tick is less than
       the min or max of the data. Options are "min", "max", "neither", or "both"
@@ -625,6 +627,12 @@ def projview(
         THETA, PHI = r(THETA.flatten(), PHI.flatten())
         THETA = THETA.reshape(ysize, xsize)
         PHI = PHI.reshape(ysize, xsize)
+    if not return_only_data:
+        # Save the view rotator so the overplot functions (projplot, projscatter,
+        # projtext, newprojplot) can transform coordinates into the display frame;
+        # reset it when the view has no rotation so a rotator from a previous
+        # projview call on the same axes is not left behind.
+        ax.healpy_rotator = r if (coord or rot) else None
     ret = None
     if m is not None:
         nside = npix2nside(len(m))
@@ -642,11 +650,6 @@ def projview(
         grid_pix = ang2pix(nside, THETA, PHI, nest=nest)
         grid_map = m[grid_pix]
         grid_map = np.ma.masked_where(mask_bad(grid_map), grid_map)
-
-        # Flip the grid_map vertically for Lambert projection
-        # matplotlib's Lambert projection interprets Y-axis in reverse order
-        if projection_type == "lambert":
-            grid_map = np.flip(grid_map, axis=0)
 
         # plot
         if return_only_data:  # exit here when dumping the data
@@ -897,6 +900,128 @@ def projview(
     return ret
 
 
+def _is_projview_axes(ax):
+    """Return True if `ax` was created by :func:`projview`."""
+    return hasattr(ax, "healpy_flip")
+
+
+def _projview_lonlat(ax, theta, phi, lonlat=False, direct=False):
+    """Convert theta, phi into the data coordinates (longitude, latitude in
+    radians) of an axes created by :func:`projview`.
+
+    The input coordinates are interpreted in the coordinate frame of the map
+    displayed by ``projview``: the rotation and coordinate transformation
+    used to create the view are applied automatically, unless `direct` is
+    True. The longitude follows the flip convention of the view and is
+    wrapped into [-pi, pi).
+    """
+    if ax.name == "3d":
+        raise ValueError(
+            "Overplotting with projplot, projscatter or projtext is not "
+            "supported on projview figures with projection_type='3d'"
+        )
+    theta = np.asarray(theta)
+    phi = np.asarray(phi)
+    rotator = getattr(ax, "healpy_rotator", None)
+    if rotator is not None and not direct:
+        if lonlat:
+            longitude, latitude = rotator.I(theta, phi, lonlat=True)
+            longitude, latitude = np.deg2rad(longitude), np.deg2rad(latitude)
+        else:
+            theta, phi = rotator.I(theta, phi)
+            longitude, latitude = thetaphi2lonlat(theta, phi)
+    elif lonlat:
+        longitude, latitude = np.deg2rad(theta), np.deg2rad(phi)
+    else:
+        longitude, latitude = thetaphi2lonlat(theta, phi)
+    if getattr(ax, "healpy_flip", "astro") == "astro":
+        longitude = -longitude
+    # wrap into [-pi, pi) so that points close to the boundary are not lost
+    longitude = (longitude + np.pi) % (2 * np.pi) - np.pi
+    return longitude, latitude
+
+
+def _projview_pop_rot_coord(kwds):
+    rot = kwds.pop("rot", None)
+    coord = kwds.pop("coord", None)
+    if rot is not None or coord is not None:
+        raise ValueError(
+            "rot and coord keywords are not supported when overplotting on "
+            "projview axes: the rotation and coordinate transformation given "
+            "to projview are applied automatically. Pre-rotate the "
+            "coordinates with healpy.Rotator if needed."
+        )
+
+
+def _projview_plot(ax, *args, **kwds):
+    fmt = None
+    if len(args) < 1:
+        raise ValueError("No argument given")
+    if len(args) == 1:
+        theta, phi = np.asarray(args[0])
+    elif len(args) == 2:
+        if isinstance(args[1], str):
+            fmt = args[1]
+            theta, phi = np.asarray(args[0])
+        else:
+            theta, phi = np.asarray(args[0]), np.asarray(args[1])
+    elif len(args) == 3:
+        if not isinstance(args[2], str):
+            raise TypeError("Third argument must be a string")
+        theta, phi = np.asarray(args[0]), np.asarray(args[1])
+        fmt = args[2]
+    else:
+        raise TypeError("Three args maximum")
+    lonlat = kwds.pop("lonlat", False)
+    direct = kwds.pop("direct", False)
+    _projview_pop_rot_coord(kwds)
+    longitude, latitude = _projview_lonlat(ax, theta, phi, lonlat=lonlat, direct=direct)
+    longitude = np.atleast_1d(longitude)
+    latitude = np.atleast_1d(latitude)
+    # split the polyline where consecutive points jump by more than pi in
+    # longitude, to avoid spurious lines across the map at the boundary
+    jumps = np.flatnonzero(np.abs(np.diff(longitude)) > np.pi) + 1
+    # only label the first segment, so that paths crossing the boundary
+    # do not generate duplicated legend entries
+    label = kwds.pop("label", None)
+    thelines = []
+    for iseg, (lon_seg, lat_seg) in enumerate(
+        zip(np.split(longitude, jumps), np.split(latitude, jumps))
+    ):
+        seg_kwds = dict(kwds)
+        if iseg == 0 and label is not None:
+            seg_kwds["label"] = label
+        if fmt is None:
+            thelines.extend(ax.plot(lon_seg, lat_seg, **seg_kwds))
+        else:
+            thelines.extend(ax.plot(lon_seg, lat_seg, fmt, **seg_kwds))
+    return thelines
+
+
+def _projview_scatter(ax, theta, phi=None, *args, **kwds):
+    if phi is None:
+        theta, phi = np.asarray(theta)
+    else:
+        theta, phi = np.asarray(theta), np.asarray(phi)
+    lonlat = kwds.pop("lonlat", False)
+    direct = kwds.pop("direct", False)
+    _projview_pop_rot_coord(kwds)
+    longitude, latitude = _projview_lonlat(ax, theta, phi, lonlat=lonlat, direct=direct)
+    return ax.scatter(
+        np.atleast_1d(longitude), np.atleast_1d(latitude), *args, **kwds
+    )
+
+
+def _projview_text(ax, theta, phi, s, **kwds):
+    lonlat = kwds.pop("lonlat", False)
+    direct = kwds.pop("direct", False)
+    _projview_pop_rot_coord(kwds)
+    longitude, latitude = _projview_lonlat(ax, theta, phi, lonlat=lonlat, direct=direct)
+    return ax.text(
+        np.asarray(longitude).item(), np.asarray(latitude).item(), s, **kwds
+    )
+
+
 def newprojplot(theta, phi, fmt=None, lonlat=False, **kwargs):
     """newprojplot is a wrapper around :func:`matplotlib.Axes.plot` to support
     colatitude theta and longitude phi and take into account the longitude convention
@@ -920,7 +1045,14 @@ def newprojplot(theta, phi, fmt=None, lonlat=False, **kwargs):
     Notes
     -----
     Other keywords are passed to :func:`matplotlib.Axes.plot`.
-    
+
+    The rotation and coordinate transformation used to create the view (the
+    ``rot`` and ``coord`` keywords of :func:`projview`) are applied
+    automatically, so ``theta`` and ``phi`` are interpreted in the coordinate
+    frame of the map displayed by ``projview``. Use ``direct=True`` to skip
+    the view rotation and interpret the input coordinates directly in the
+    frame of the figure.
+
     When adding a legend to plots created with geographic projections 
     (e.g., mollweide, hammer, aitoff), you must specify an explicit location 
     to avoid performance issues. For example::
@@ -934,20 +1066,9 @@ def newprojplot(theta, phi, fmt=None, lonlat=False, **kwargs):
     import matplotlib.pyplot as plt
 
     ax = plt.gca()
-    flip = getattr(ax, "healpy_flip", "astro")
-
-    if lonlat:
-        longitude, latitude = np.deg2rad(theta), np.deg2rad(phi)
-    else:
-        longitude, latitude = thetaphi2lonlat(theta, phi)
-
-    if flip == "astro":
-        longitude = longitude * -1
     if fmt is None:
-        ret = plt.plot(longitude, latitude, **kwargs)
-    else:
-        ret = plt.plot(longitude, latitude, fmt, **kwargs)
-    return ret
+        return _projview_plot(ax, theta, phi, lonlat=lonlat, **kwargs)
+    return _projview_plot(ax, theta, phi, fmt, lonlat=lonlat, **kwargs)
 
 
 def CreateRotatedGraticule(rot, t_step=30, p_step=30):

@@ -292,7 +292,10 @@ class custom_build_ext(build_ext):
 
 ext_kwargs = dict(
     extra_compile_args=["-std=c++11"],
-    define_macros=[('NPY_NO_DEPRECATED_API', 'NPY_1_19_API_VERSION')],
+    define_macros=[
+        ('NPY_TARGET_VERSION', 'NPY_2_0_API_VERSION'),
+        ('NPY_NO_DEPRECATED_API', 'NPY_2_0_API_VERSION'),
+    ],
     language="c++",
 )
 

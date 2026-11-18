@@ -15,14 +15,14 @@
 #  along with Healpy; if not, write to the Free Software
 #  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #
-#  For more information about Healpy, see http://code.google.com/p/healpy
+#  For more information about Healpy, see https://github.com/healpy/healpy
 #
 """
 =====================================================
-pixelfunc.py : Healpix pixelization related functions
+pixelfunc.py : HEALPix pixelization related functions
 =====================================================
 
-This module provides functions related to Healpix pixelization scheme.
+This module provides functions related to HEALPix pixelization scheme.
 
 conversion from/to sky coordinates
 ----------------------------------
@@ -47,13 +47,13 @@ conversion between NESTED and RING schemes
   scheme pixel number
 - :func:`ring2nest` converts RING scheme pixel number to NESTED
   scheme pixel number
-- :func:`reorder` reorders a healpix map pixels from one scheme to another
+- :func:`reorder` reorders a HEALPix map pixels from one scheme to another
 
 nside/npix/resolution
 ---------------------
 
-- :func:`nside2npix` converts healpix nside parameter to number of pixel
-- :func:`npix2nside` converts number of pixel to healpix nside parameter
+- :func:`nside2npix` converts HEALPix nside parameter to number of pixel
+- :func:`npix2nside` converts number of pixel to HEALPix nside parameter
 - :func:`nside2order` converts nside to order
 - :func:`order2nside` converts order to nside
 - :func:`nside2resol` converts nside to mean angular resolution
@@ -167,26 +167,54 @@ def lonlat2thetaphi(lon, lat, latauto=False, latbounce=True):
       Longitude in degrees
     lat : int or array-like
       Latitude in degrees
-    latauto: bool, optional
-      If True, automatically adjust latitudes to be within [-90, 90] range
-    latbounce: bool, optional
+    latauto : bool, optional
+      If True, automatically adjust latitudes to be within [-90, 90] range.
+    latbounce : bool, optional
       If True, longitude is not affected, as if scanning and bouncing back at the pole.
-      If False, longitude is adjusted by 180 degrees, as if scanning through the pole. Needs latauto=True.
+      If False, longitude is adjusted by 180 degrees, as if scanning through
+      the pole. Requires ``latauto=True``.
 
     Returns
     -------
     theta, phi : float, scalar or array-like
       The co-latitude and longitude in radians
+
+    Notes
+    -----
+    Input arrays are never modified. When ``latauto`` is enabled, latitude
+    folding is performed in the newly allocated output arrays.
     """
     if latauto:
+        # np.asarray may alias caller-owned memory, so keep lat read-only. theta is
+        # newly allocated by np.radians and can be safely folded in place.
         lat = np.asarray(lat)
+        theta = np.asarray(np.radians(lat))
+
+        fold_mask = np.asarray(lat > 90)
+        theta[fold_mask] = np.pi - theta[fold_mask]
+
+        fold_mask = np.asarray(theta < -np.pi / 2)
+        theta[fold_mask] = -(np.pi + theta[fold_mask])
+
         if not latbounce:
-            lon = np.asarray(lon)
-            lon[lat > 90] = lon[lat > 90] + 180
-            lon[lat < -90] = lon[lat < -90] + 180
-        lat[lat > 90] = 180 - lat[lat > 90]
-        lat[lat < -90] = -(180 + lat[lat < -90])
-          
+            # theta is already folded, so use the untouched input latitudes to find
+            # pole crossings that require a 180-degree longitude shift.
+            fold_mask = np.asarray((lat > 90) | (lat < -90))
+
+        # Preserve scalar returns; arrays can reuse the theta allocation.
+        if theta.ndim == 0:
+            theta = np.pi / 2.0 - theta[()]
+        else:
+            np.subtract(np.pi / 2.0, theta, out=theta)
+
+        # Convert before shifting longitude so narrow integer inputs cannot overflow.
+        phi = np.asarray(np.radians(lon))
+        if not latbounce:
+            phi[fold_mask] += np.pi
+        if phi.ndim == 0:
+            phi = phi[()]
+        return theta, phi
+
     return np.pi / 2.0 - np.radians(lat), np.radians(lon)
 
 
@@ -442,7 +470,7 @@ def ang2pix(nside, theta, phi, nest=False, lonlat=False, latauto=False, latbounc
     Parameters
     ----------
     nside : int, scalar or array-like
-      The healpix nside parameter, must be a power of 2, less than 2**30
+      The HEALPix nside parameter, must be a power of 2, less than 2**30
     theta, phi : float, scalars or array-like
       Angular coordinates of a point on the sphere
     nest : bool, optional
@@ -459,7 +487,7 @@ def ang2pix(nside, theta, phi, nest=False, lonlat=False, latauto=False, latbounc
     Returns
     -------
     pix : int or array of int
-      The healpix pixel numbers. Scalar if all input are scalar, array otherwise.
+      The HEALPix pixel numbers. Scalar if all input are scalar, array otherwise.
       Usual numpy broadcasting rules apply.
 
     See Also
@@ -508,7 +536,7 @@ def pix2ang(nside, ipix, nest=False, lonlat=False):
     Parameters
     ----------
     nside : int or array-like
-      The healpix nside parameter, must be a power of 2, less than 2**30
+      The HEALPix nside parameter, must be a power of 2, less than 2**30
     ipix : int or array-like
       Pixel indices
     nest : bool, optional
@@ -560,7 +588,7 @@ def xyf2pix(nside, x, y, face, nest=False):
     Parameters
     ----------
     nside : int, scalar or array-like
-      The healpix nside parameter, must be a power of 2
+      The HEALPix nside parameter, must be a power of 2
     x, y : int, scalars or array-like
       Pixel indices within face
     face : int, scalars or array-like
@@ -571,7 +599,7 @@ def xyf2pix(nside, x, y, face, nest=False):
     Returns
     -------
     pix : int or array of int
-      The healpix pixel numbers. Scalar if all input are scalar, array otherwise.
+      The HEALPix pixel numbers. Scalar if all input are scalar, array otherwise.
       Usual numpy broadcasting rules apply.
 
     See Also
@@ -600,7 +628,7 @@ def pix2xyf(nside, ipix, nest=False):
     Parameters
     ----------
     nside : int or array-like
-      The healpix nside parameter, must be a power of 2
+      The HEALPix nside parameter, must be a power of 2
     ipix : int or array-like
       Pixel indices
     nest : bool, optional
@@ -642,7 +670,7 @@ def vec2pix(nside, x, y, z, nest=False):
     Parameters
     ----------
     nside : int or array-like
-      The healpix nside parameter, must be a power of 2, less than 2**30
+      The HEALPix nside parameter, must be a power of 2, less than 2**30
     x,y,z : floats or array-like
       vector coordinates defining point on the sphere
     nest : bool, optional
@@ -651,7 +679,7 @@ def vec2pix(nside, x, y, z, nest=False):
     Returns
     -------
     ipix : int, scalar or array-like
-      The healpix pixel number corresponding to input vector. Scalar if all input
+      The HEALPix pixel number corresponding to input vector. Scalar if all input
       are scalar, array otherwise. Usual numpy broadcasting rules apply.
 
     See Also
@@ -682,9 +710,9 @@ def pix2vec(nside, ipix, nest=False):
     Parameters
     ----------
     nside : int, scalar or array-like
-      The healpix nside parameter, must be a power of 2, less than 2**30
+      The HEALPix nside parameter, must be a power of 2, less than 2**30
     ipix : int, scalar or array-like
-      Healpix pixel number
+      HEALPix pixel number
     nest : bool, optional
       if True, assume NESTED pixel ordering, otherwise, RING pixel ordering
 
@@ -718,11 +746,11 @@ def pix2vec(nside, ipix, nest=False):
 
 
 def ang2vec(theta, phi, lonlat=False):
-    """ang2vec : convert angles to 3D position vector
+    """ang2vec : convert angles to 3D position vector.
 
     Parameters
     ----------
-    theta : float, scalar or arry-like
+    theta : float, scalar or array-like
       colatitude in radians measured southward from north pole (in [0,pi]).
     phi : float, scalar or array-like
       longitude in radians measured eastward (in [0, 2*pi]).
@@ -748,7 +776,7 @@ def ang2vec(theta, phi, lonlat=False):
 
 
 def vec2ang(vectors, lonlat=False):
-    """vec2ang: vectors [x, y, z] -> theta[rad], phi[rad]
+    """vec2ang: vectors [x, y, z] -> theta[rad], phi[rad].
 
     Parameters
     ----------
@@ -784,7 +812,7 @@ def ring2nest(nside, ipix):
     Parameters
     ----------
     nside : int, scalar or array-like
-      the healpix nside parameter
+      the HEALPix nside parameter
     ipix : int, scalar or array-like
       the pixel number in RING scheme
 
@@ -819,7 +847,7 @@ def nest2ring(nside, ipix):
     Parameters
     ----------
     nside : int, scalar or array-like
-      the healpix nside parameter
+      the HEALPix nside parameter
     ipix : int, scalar or array-like
       the pixel number in NESTED scheme
 
@@ -850,7 +878,7 @@ def nest2ring(nside, ipix):
 
 @accept_ma
 def reorder(map_in, inp=None, out=None, r2n=None, n2r=None):
-    """Reorder a healpix map from RING/NESTED ordering to NESTED/RING
+    """Reorder a HEALPix map from RING/NESTED ordering to NESTED/RING.
 
     Parameters
     ----------
@@ -962,7 +990,7 @@ def nside2npix(nside):
     Parameters
     ----------
     nside : int
-      healpix nside parameter
+      HEALPix nside parameter
 
     Returns
     -------
@@ -991,7 +1019,7 @@ def nside2order(nside):
     Parameters
     ----------
     nside : int
-      healpix nside parameter; an exception is raised if nside is not valid
+      HEALPix nside parameter; an exception is raised if nside is not valid
       (nside must be a power of 2, less than 2**30)
 
     Returns
@@ -1031,7 +1059,7 @@ def nside2resol(nside, arcmin=False):
     Parameters
     ----------
     nside : int
-      healpix nside parameter, must be a power of 2, less than 2**30
+      HEALPix nside parameter, must be a power of 2, less than 2**30
     arcmin : bool
       if True, return resolution in arcmin, otherwise in radian
 
@@ -1071,7 +1099,7 @@ def nside2pixarea(nside, degrees=False):
     Parameters
     ----------
     nside : int
-      healpix nside parameter, must be a power of 2, less than 2**30
+      HEALPix nside parameter, must be a power of 2, less than 2**30
     degrees : bool
       if True, returns pixel area in square degrees, in square radians otherwise
 
@@ -1121,7 +1149,7 @@ def npix2nside(npix):
     Notes
     -----
     Raise a ValueError exception if number of pixel does not correspond to
-    the number of pixel of a healpix map.
+    the number of pixel of a HEALPix map.
 
     Examples
     --------
@@ -1259,6 +1287,9 @@ def isnsideok(nside, nest=False):
     ----------
     nside : int, scalar or array-like
       integer value to be tested
+    nest : bool, optional
+      if True, check if nside is valid for NESTED scheme (must be power of 2).
+      If False (default), RING scheme allows non-power-of-2 nside values.
 
     Returns
     -------
@@ -1297,7 +1328,7 @@ def isnsideok(nside, nest=False):
 
 
 def check_nside(nside, nest=False):
-    """Raises exception is nside is not valid"""
+    """Raises exception if nside is not valid"""
     if not np.all(isnsideok(nside, nest=nest)):
         raise ValueError(
             "%s is not a valid nside parameter (must be a power of 2, less than 2**30)"
@@ -1306,7 +1337,7 @@ def check_nside(nside, nest=False):
 
 
 def isnpixok(npix):
-    """Return :const:`True` if npix is a valid value for healpix map size, :const:`False` otherwise.
+    """Return :const:`True` if npix is a valid value for HEALPix map size, :const:`False` otherwise.
 
     Parameters
     ----------
@@ -1340,7 +1371,7 @@ def get_interp_val(m, theta, phi, nest=False, lonlat=False):
     Parameters
     ----------
     m : array-like, shape (npix,) or (nmaps, npix)
-      a healpix map or sequence thereof, accepts masked arrays
+      a HEALPix map or sequence thereof, accepts masked arrays
     theta, phi : float, scalar or array-like
       angular coordinates of point at which to interpolate the map
     nest : bool
@@ -1405,7 +1436,7 @@ def get_interp_weights(nside, theta, phi=None, nest=False, lonlat=False):
     Parameters
     ----------
     nside : int
-      the healpix nside
+      the HEALPix nside
     theta, phi : float, scalar or array-like
       if phi is not given, theta is interpreted as pixel number,
       otherwise theta[rad],phi[rad] are angular coordinates
@@ -1530,7 +1561,7 @@ def get_all_neighbours(nside, theta, phi=None, nest=False, lonlat=False):
 
 
 def max_pixrad(nside, degrees=False):
-    """Maximum angular distance between any pixel center and its corners
+    """Maximum angular distance between any pixel center and its corners.
 
     Parameters
     ----------
@@ -1865,7 +1896,7 @@ def get_min_valid_nside(npix):
     Returns
     -------
     nside : int
-      a valid healpix nside so that 12 * nside ** 2 >= npix
+      a valid HEALPix nside so that 12 * nside ** 2 >= npix
 
     Examples
     --------
@@ -1890,7 +1921,7 @@ def get_nside(m):
     Returns
     -------
     nside : int
-      the healpix nside parameter of the map (or sequence of maps)
+      the HEALPix nside parameter of the map (or sequence of maps)
 
     Notes
     -----
@@ -1939,6 +1970,7 @@ def ud_grade(
       power=-2 keeps the sum of the map invariant (useful for hitmaps),
       power=2 divides the mean by another factor of (nside_in/nside_out)**2
       (useful for variance maps)
+      Pixels marked as UNSEEN are not scaled and remain UNSEEN in the output.
     dtype : type
       the type of the output map
 
@@ -1953,6 +1985,12 @@ def ud_grade(
     >>> hp.ud_grade(np.arange(48.), 1)
     array([  5.5 ,   7.25,   9.  ,  10.75,  21.75,  21.75,  23.75,  25.75,
             36.5 ,  38.25,  40.  ,  41.75])
+
+    See Also
+    --------
+    harmonic_ud_grade : Change resolution via spherical-harmonic transforms,
+        with pixel-window and beam correction.  Recommended for diffuse
+        signals (CMB, foregrounds) to avoid aliasing and ringing artifacts.
     """
     check_nside(nside_out, nest=order_in != "RING")
     typ = maptype(map_in)
@@ -2001,6 +2039,14 @@ def _ud_grade_core(m, nside_out, pess=False, power=None, dtype=None):
         rat2 = npix_out // npix_in
         fact = np.ones(rat2, dtype=type_out) * ratio
         map_out = np.outer(m, fact).reshape(npix_out)
+        if power:
+            # Scaling by power corrupts the UNSEEN sentinel value, restore it
+            # in the children of missing pixels so they are still marked as bad
+            bad = mask_bad(m)
+            if np.any(bad):
+                map_out = map_out.reshape(npix_in, rat2)
+                map_out[bad] = UNSEEN
+                map_out = map_out.reshape(npix_out)
     elif nside_out < nside_in:
         rat2 = npix_in // npix_out
         mr = m.reshape(npix_out, rat2)

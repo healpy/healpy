@@ -339,6 +339,124 @@ class TestReadWriteCl(unittest.TestCase):
         cl_read = read_cl(self.filename)
         np.testing.assert_array_almost_equal(cl, cl_read)
 
+    def test_write_cl_units_string_single_column(self):
+        cl = np.arange(1025, dtype=np.double)
+        write_cl(self.filename, cl, column_units="K")
+        with pf.open(self.filename) as f:
+            assert f[1].header["TUNIT1"] == "K"
+            assert "TUNIT2" not in f[1].header
+        np.testing.assert_array_almost_equal(cl, read_cl(self.filename))
+
+    def test_write_cl_units_string_multiple_columns(self):
+        cl = [np.arange(1025, dtype=np.double) * (n + 1) for n in range(4)]
+        write_cl(self.filename, cl, column_units="uK_CMB")
+        with pf.open(self.filename) as f:
+            for i in range(4):
+                assert f[1].header["TUNIT%d" % (i + 1)] == "uK_CMB"
+        cl_read = read_cl(self.filename)
+        for cl_column, cl_read_column in zip(cl, cl_read):
+            np.testing.assert_array_almost_equal(cl_column, cl_read_column)
+
+    def test_write_cl_units_list_per_column(self):
+        cl = [np.arange(1025, dtype=np.double) * (n + 1) for n in range(4)]
+        units = ["K", "mK", "uK", "nK"]
+        write_cl(self.filename, cl, column_units=units)
+        with pf.open(self.filename) as f:
+            for i, unit in enumerate(units):
+                assert f[1].header["TUNIT%d" % (i + 1)] == unit
+        cl_read = read_cl(self.filename)
+        for cl_column, cl_read_column in zip(cl, cl_read):
+            np.testing.assert_array_almost_equal(cl_column, cl_read_column)
+
+    def test_write_cl_units_list_single_element(self):
+        cl = np.arange(1025, dtype=np.double)
+        write_cl(self.filename, cl, column_units=["K"])
+        with pf.open(self.filename) as f:
+            assert f[1].header["TUNIT1"] == "K"
+        np.testing.assert_array_almost_equal(cl, read_cl(self.filename))
+
+    def test_write_cl_units_none_writes_no_tunit(self):
+        cl = [np.arange(1025, dtype=np.double) * (n + 1) for n in range(3)]
+        write_cl(self.filename, cl)
+        with pf.open(self.filename) as f:
+            for i in range(1, 4):
+                assert "TUNIT%d" % i not in f[1].header
+        cl_read = read_cl(self.filename)
+        for cl_column, cl_read_column in zip(cl, cl_read):
+            np.testing.assert_array_almost_equal(cl_column, cl_read_column)
+
+    def test_write_cl_units_mixed_none_and_string(self):
+        cl = [np.arange(1025, dtype=np.double) * (n + 1) for n in range(3)]
+        write_cl(self.filename, cl, column_units=[None, "K", "mK"])
+        with pf.open(self.filename) as f:
+            assert "TUNIT1" not in f[1].header
+            assert f[1].header["TUNIT2"] == "K"
+            assert f[1].header["TUNIT3"] == "mK"
+        cl_read = read_cl(self.filename)
+        for cl_column, cl_read_column in zip(cl, cl_read):
+            np.testing.assert_array_almost_equal(cl_column, cl_read_column)
+
+    def test_write_cl_units_polarization_six_components(self):
+        """Units for 6-component polarization Cl (II, IQ, IU, QQ, QU, UU)."""
+        cl = [np.arange(1025, dtype=np.double) * (n + 1) for n in range(6)]
+        names = ["II", "IQ", "IU", "QQ", "QU", "UU"]
+        write_cl(self.filename, cl, column_names=names, column_units="K^2")
+        with pf.open(self.filename) as f:
+            for i in range(6):
+                assert f[1].header["TUNIT%d" % (i + 1)] == "K^2"
+                assert f[1].columns[i].name == names[i]
+        cl_read = read_cl(self.filename)
+        for cl_column, cl_read_column in zip(cl, cl_read):
+            np.testing.assert_array_almost_equal(cl_column, cl_read_column)
+
+    def test_write_cl_units_with_custom_names_and_header(self):
+        cl = [np.arange(1025, dtype=np.double) * (n + 1) for n in range(4)]
+        write_cl(
+            self.filename,
+            cl,
+            column_names=["TT", "EE", "BB", "TE"],
+            column_units=["uK_CMB", "uK_CMB", "uK_CMB", "uK_CMB"],
+            extra_header=[("ORIGIN", "Co-analysis", "Analysis type")],
+        )
+        with pf.open(self.filename) as f:
+            assert f[1].header["ORIGIN"] == "Co-analysis"
+            for i, name in enumerate(["TT", "EE", "BB", "TE"]):
+                assert f[1].columns[i].name == name
+                assert f[1].header["TUNIT%d" % (i + 1)] == "uK_CMB"
+        cl_read = read_cl(self.filename)
+        for cl_column, cl_read_column in zip(cl, cl_read):
+            np.testing.assert_array_almost_equal(cl_column, cl_read_column)
+
+    def test_write_cl_units_ndarray_2d(self):
+        cl = np.arange(4 * 1025, dtype=np.double).reshape(4, 1025)
+        write_cl(self.filename, cl, column_units=["K", "mK", "uK", "nK"])
+        with pf.open(self.filename) as f:
+            for i, unit in enumerate(["K", "mK", "uK", "nK"]):
+                assert f[1].header["TUNIT%d" % (i + 1)] == unit
+        cl_read = read_cl(self.filename)
+        for i in range(4):
+            np.testing.assert_array_almost_equal(cl[i], cl_read[i])
+
+    def test_write_cl_units_length_mismatch_raises(self):
+        cl = [np.arange(1025, dtype=np.double) * (n + 1) for n in range(4)]
+        with self.assertRaises(ValueError):
+            write_cl(self.filename, cl, column_units=["K"])
+        cl = np.arange(1025, dtype=np.double)
+        with self.assertRaises(ValueError):
+            write_cl(self.filename, cl, column_units=["K", "mK"])
+
+    def test_write_cl_units_non_string_raises(self):
+        cl = np.arange(1025, dtype=np.double)
+        with self.assertRaises(ValueError):
+            write_cl(self.filename, cl, column_units=1.0)
+        with self.assertRaises(ValueError):
+            write_cl(self.filename, cl, column_units=[1.0])
+
+    def test_write_cl_1d_column_names_mismatch_raises(self):
+        cl = np.arange(1025, dtype=np.double)
+        with self.assertRaises(ValueError):
+            write_cl(self.filename, cl, column_names=["TT", "EE"])
+
     def test_write_cl_9comp_with_custom_names_and_header(self):
         """Test all new features together: 9 components, custom names, and extra header."""
         cl = [np.arange(1025, dtype=np.double) * (n + 1) for n in range(9)]

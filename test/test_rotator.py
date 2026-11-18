@@ -1,7 +1,5 @@
 from __future__ import division
 
-import os.path
-
 import pytest
 
 import numpy as np
@@ -10,7 +8,7 @@ import healpy as hp
 from healpy import Rotator
 from healpy.rotator import euler, euler_matrix_new
 
-path = os.path.dirname(os.path.realpath(__file__))
+from .helpers import DATAPATH
 
 # A pytest fixture with autouse=True is run before each of the other tests
 @pytest.fixture(autouse=True)
@@ -33,7 +31,7 @@ def test_rotate_map_polarization():
     QU_ecl = gal2ecl.rotate_map_pixel(QU_gal)
 
     expected = hp.ma(
-        hp.read_map(os.path.join(path, "data", "justq_gal2ecl.fits.gz"), [0, 1])
+        hp.read_map(DATAPATH / "justq_gal2ecl.fits.gz", [0, 1])
     )
 
     expected.mask = expected == 0
@@ -47,9 +45,8 @@ def test_rotate_map_polarization():
 
 def test_rotate_map_polarization_alms():
     lmax = 64
-    path = os.path.dirname(os.path.realpath(__file__))
     map1 = hp.read_map(
-        os.path.join(path, "data", "wmap_band_iqumap_r9_7yr_W_v4_udgraded32.fits"),
+        DATAPATH / "wmap_band_iqumap_r9_7yr_W_v4_udgraded32.fits",
         (0, 1, 2),
     )
 
