@@ -12,6 +12,7 @@ Unreleased
 * **BREAKING**: All macOS wheels require macOS 15 or later. https://github.com/healpy/healpy/pull/1129, https://github.com/healpy/healpy/pull/1149
 * Docs: fixed ``pixwin`` ``datapath`` docstring, which incorrectly claimed a download fallback when ``datapath`` is given: the file must exist at ``datapath`` or a ``ValueError`` is raised; download and caching via astropy only happens when ``datapath`` is ``None``. Also fixed ``test_pixwin_local_datapath``, which always skipped because it downloaded the pixel window file without setting healpy's ``DATAURL``, and added a test asserting the ``ValueError`` for a missing file at ``datapath`` https://github.com/healpy/healpy/issues/1138
 * **BREAKING**: Drop support for Python 3.10, which is past end-of-life. https://github.com/healpy/healpy/pull/1151
+* Wheels are now built for Windows. https://github.com/healpy/healpy/pull/1156
 
 Release 1.20.1 3 Oct 2026
 

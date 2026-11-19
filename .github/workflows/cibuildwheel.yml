@@ -49,6 +49,7 @@ jobs:
           - os: ubuntu-22.04-arm
           - os: macos-15
           - os: macos-15-intel
+          - os: windows-2025
 
     steps:
       - uses: actions/checkout@v7
