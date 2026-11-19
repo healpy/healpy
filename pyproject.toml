@@ -6,6 +6,8 @@ classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Environment :: Console",
     "Intended Audience :: Science/Research",
+    "Operating System :: MacOS :: MacOS X",
+    "Operating System :: Microsoft :: Windows",
     "Operating System :: POSIX",
     "Programming Language :: C++",
     "Programming Language :: Python :: 3.11",
@@ -67,6 +69,9 @@ requires = [
 
 [tool.cibuildwheel]
 build = "cp311-* cp312-* cp313-* cp314-* cp315-*"
+skip = [
+    "*win32",
+]
 test-command = [
     "pytest --doctest-plus --doctest-cython --pyargs healpy",
     "pytest {project}/test"
@@ -76,3 +81,11 @@ test-extras = ["test"]
 [tool.cibuildwheel.macos]
 before-all = "brew install libomp"
 environment = { MACOSX_DEPLOYMENT_TARGET="15.0" }
+
+[tool.cibuildwheel.windows]
+# Add --ignore-existing to permit extension modules to depend on DLLs that
+# are already vendored inside the wheel.
+repair-wheel-command = "delvewheel repair --ignore-existing -w {dest_dir} -v {wheel}"
+
+[tool.meson-python]
+allow-windows-internal-shared-libs = true

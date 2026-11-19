@@ -1,4 +1,5 @@
 import re
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -185,15 +186,13 @@ def _stage_healpy_data_file(tmp_path, filename):
     Returns the destination path, or skips the test when the download is
     unavailable (offline CI).
     """
-    from pathlib import Path
-
     from astropy.utils import data as astro_data
 
     try:
         with astro_data.conf.set_temp(
             "dataurl", "https://healpy.github.io/healpy-data/"
         ), astro_data.conf.set_temp("remote_timeout", 30):
-            cached_path = astro_data.get_pkg_data_filename(filename, package="healpy")
+            cached_path = astro_data.get_pkg_data_filename(filename.as_posix(), package="healpy")
     except (OSError, URLError) as exc:
         pytest.skip(f"data download unavailable: {exc}")
     dest = tmp_path / filename
@@ -215,13 +214,13 @@ def test_harmonic_ud_grade_offline_with_local_datapath(tmp_path, monkeypatch):
     input_map = np.ones(hp.nside2npix(nside_in), dtype=np.float64)
 
     _stage_healpy_data_file(
-        tmp_path, "full_weights/healpix_full_weights_nside_0032.fits"
+        tmp_path, Path("full_weights") / "healpix_full_weights_nside_0032.fits"
     )
     _stage_healpy_data_file(
-        tmp_path, "pixel_window_functions/pixel_window_n0032.fits"
+        tmp_path, Path("pixel_window_functions") / "pixel_window_n0032.fits"
     )
     _stage_healpy_data_file(
-        tmp_path, "pixel_window_functions/pixel_window_n0016.fits"
+        tmp_path, Path("pixel_window_functions") / "pixel_window_n0016.fits"
     )
 
     import unittest.mock
