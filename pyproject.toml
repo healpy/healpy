@@ -1,7 +1,6 @@
 [project]
 name = "healpy"
 description = "Healpix tools package for Python"
-dynamic = ["version"]
 readme = "README.rst"
 classifiers = [
     "Development Status :: 5 - Production/Stable",
@@ -9,7 +8,6 @@ classifiers = [
     "Intended Audience :: Science/Research",
     "Operating System :: POSIX",
     "Programming Language :: C++",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
@@ -23,8 +21,9 @@ authors = [
     { name = "A. Zonca" },
 ]
 license = {text = "GPL-2.0-only"}
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 dependencies = ["numpy>=2.0.0", "astropy"]
+dynamic = ["version"]
 
 [project.optional-dependencies]
 all = ["matplotlib", "scipy"]
@@ -57,36 +56,17 @@ documentation = "https://healpy.readthedocs.io"
 issues = "https://github.com/healpy/healpy/issues"
 
 [build-system]
-
-requires = ["setuptools>=77",
-            "setuptools-scm>=8.0",
-            "cython>=0.16",
-            "numpy>=2.0.0",
-            "pykg-config"]
-
-build-backend = 'setuptools.build_meta'
-
-[tool.setuptools]
-script-files = ["bin/healpy_get_wmap_maps.sh"]
-
-[tool.setuptools.packages.find]
-include = ["healpy*"]
-where = ["lib"]
-
-[tool.setuptools.package-data]
-healpy = ["data/*.fits",
-          "data/*_cmap.dat",
-          "data/totcls.dat",
-          "test/data/*.fits",
-          "test/data/*.fits.gz",
-          "test/data/*.sh"]
-
-[tool.setuptools.exclude-package-data]
-# Exclude C/C++/Cython source files from wheels.
-"*" = ["*.cc", "*.cpp", "*.h", "*.pxd", "*.pyx"]
+build-backend = 'mesonpy'
+requires = [
+    "meson>=1.4.0",
+    "meson-python",
+    "cython>=0.16",
+    "numpy>=2.0.0",
+    "setuptools_scm>=6.2",
+]
 
 [tool.cibuildwheel]
-build = "cp310-* cp311-* cp312-* cp313-* cp314-* cp315-*"
+build = "cp311-* cp312-* cp313-* cp314-* cp315-*"
 test-command = [
     "pytest --doctest-plus --doctest-cython --pyargs healpy",
     "pytest {project}/test"
@@ -94,18 +74,5 @@ test-command = [
 test-extras = ["test"]
 
 [tool.cibuildwheel.macos]
-before-all = "brew install autoconf automake libtool llvm@15 libomp"
-
-[tool.cibuildwheel.macos.environment]
-CC = "$(brew --prefix llvm@15)/bin/clang"
-CXX = "$(brew --prefix llvm@15)/bin/clang++"
-CPPFLAGS = "-I$(brew --prefix libomp)/include"
-LDFLAGS = "-L$(brew --prefix libomp)/lib"
-
-[[tool.cibuildwheel.overrides]]
-select = "*macosx*"
-inherit.environment = "append"
-environment.MACOSX_DEPLOYMENT_TARGET = "15.0"
-
-[tool.setuptools_scm]
-write_to = "lib/healpy/version.py"
+before-all = "brew install libomp"
+environment = { MACOSX_DEPLOYMENT_TARGET="15.0" }

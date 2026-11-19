@@ -1,6 +1,7 @@
 Unreleased
 |
 
+* Dev: Removed the unmaintained root ``Dockerfile``, which still used end-of-life Python 3.7, and the orphaned ``requirements.txt`` that only the Dockerfile used https://github.com/healpy/healpy/pull/1155
 * Fixed ``ud_grade`` scaling the ``UNSEEN`` sentinel value when upgrading a map with a non-zero ``power``: pixels marked as ``UNSEEN`` now stay ``UNSEEN`` in the output instead of being multiplied by ``(nside_out/nside_in)**power``, so missing pixels remain recognized by ``mask_bad`` https://github.com/healpy/healpy/issues/1142
 * Fixed ``projplot``, ``projscatter`` and ``projtext`` silently doing nothing on figures created by ``projview``: they now draw on the matplotlib axes created by ``projview``, interpreting input coordinates in the frame of the displayed map (the ``rot``/``coord`` transformation of the view is applied automatically), and warn instead of silently returning ``None`` when the current axes is not a healpy map https://github.com/healpy/healpy/issues/1132
 * ``newprojplot`` now applies the ``rot``/``coord`` transformation of the ``projview`` figure automatically, wraps longitudes into [-180, 180) degrees and splits paths at the 180 deg meridian so they do not draw spurious lines across the map
@@ -10,6 +11,7 @@ Unreleased
 * Fixed ``harmonic_ud_grade`` ignoring its ``datapath`` argument when reading the pixel-window functions (``pixwin=True``, the default): ``datapath`` is now threaded through to ``pixwin``, so ``harmonic_ud_grade`` works on systems without internet access https://github.com/healpy/healpy/issues/1133
 * **BREAKING**: All macOS wheels require macOS 15 or later. https://github.com/healpy/healpy/pull/1129, https://github.com/healpy/healpy/pull/1149
 * Docs: fixed ``pixwin`` ``datapath`` docstring, which incorrectly claimed a download fallback when ``datapath`` is given: the file must exist at ``datapath`` or a ``ValueError`` is raised; download and caching via astropy only happens when ``datapath`` is ``None``. Also fixed ``test_pixwin_local_datapath``, which always skipped because it downloaded the pixel window file without setting healpy's ``DATAURL``, and added a test asserting the ``ValueError`` for a missing file at ``datapath`` https://github.com/healpy/healpy/issues/1138
+* **BREAKING**: Drop support for Python 3.10, which is past end-of-life. https://github.com/healpy/healpy/pull/1151
 
 Release 1.20.1 3 Oct 2026
 
