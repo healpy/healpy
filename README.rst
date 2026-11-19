@@ -101,8 +101,7 @@ However, if you have them installed already, Healpy should detect and reuse
 them instead of building them from source. To use your own installations of
 `HEALPix` and cfitsio, you will also need:
 
-* `pkg-config <http://pkg-config.freedesktop.org>`_ (pykg-config fallback if
-  pkg-config is missing)
+* `pkg-config <http://pkg-config.freedesktop.org>`_
 
 * `HEALPix
   <http://sourceforge.net/projects/healpix/files/Healpix_3.11/autotools_packages/>`_
@@ -125,7 +124,8 @@ Known issues
   against `-lgomp`, then this typically means that Healpy detected an
   already-installed `HEALPix` C++ library that was built with OpenMP support, but
   you are trying to build Healpy with a compiler that does not support OpenMP.
-  Try cleaning the build with `python setup.py clean --all`, and set the
+  Try removing the build directory (see the "Clean" section of `INSTALL.rst
+  <https://github.com/healpy/healpy/blob/main/INSTALL.rst>`_), and set the
   environment variables `CC` and `CXX` to point to an OpenMP-capable compiler,
   such as gcc/g++.
 
