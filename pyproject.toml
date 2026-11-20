@@ -66,6 +66,9 @@ requires = [
 ]
 
 [tool.cibuildwheel]
+skip = [
+    "cp3??t-*",
+]
 test-command = [
     "pytest --doctest-plus --doctest-cython --pyargs healpy",
     "pytest {project}/test"
