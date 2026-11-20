@@ -12,6 +12,7 @@ project(
 )
 
 py = import('python').find_installation(pure: false)
+limited_api = py.language_version()
 
 add_project_arguments(
     '-DNPY_TARGET_VERSION=NPY_2_0_API_VERSION',
@@ -84,6 +85,7 @@ foreach name, sources : {
     py.extension_module(
         name,
         sources,
+        limited_api: limited_api,
         include_directories: inc,
         dependencies: deps,
         install: true,

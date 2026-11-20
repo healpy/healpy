@@ -204,14 +204,14 @@ static PyObject *healpy_map2alm(PyObject *self, PyObject *args,
                       "Array must be C contiguous for this operation.");
 
   /* Check type of data : must be double ('d') */
-  healpyAssertType(PyArray_DESCR(mapIin)->type == 'd',
+  healpyAssertType(PyArray_TYPE(mapIin) == NPY_DOUBLE,
     "Type must be Float64 for this function");
 
   if( polarisation )
     {
-    healpyAssertType(PyArray_DESCR(mapQin)->type == 'd',
+    healpyAssertType(PyArray_TYPE(mapQin) == NPY_DOUBLE,
       "Type must be Float64 for this function");
-    healpyAssertType(PyArray_DESCR(mapUin)->type == 'd',
+    healpyAssertType(PyArray_TYPE(mapUin) == NPY_DOUBLE,
       "Type must be Float64 for this function");
     }
 
@@ -440,13 +440,13 @@ static PyObject *healpy_alm2map(PyObject *self, PyObject *args,
                           "Array must be C contiguous for this operation.");
 
   /* Check type of data : must be double, real ('d') or complex ('D') */
-  healpyAssertType(PyArray_DESCR(almIin)->type == 'D',
+  healpyAssertType(PyArray_TYPE(almIin) == NPY_CDOUBLE,
                       "Type must be Complex for this function");
   if( polarisation )
     {
-      healpyAssertType(PyArray_DESCR(almGin)->type == 'D',
+      healpyAssertType(PyArray_TYPE(almGin) == NPY_CDOUBLE,
                           "Type must be Complex for this function");
-      healpyAssertType(PyArray_DESCR(almCin)->type == 'D',
+      healpyAssertType(PyArray_TYPE(almCin) == NPY_CDOUBLE,
                           "Type must be Complex for this function");
     }
 
@@ -603,7 +603,7 @@ static PyObject *healpy_alm2map_der1(PyObject *self, PyObject *args,
     "Array must be C contiguous for this operation.");
 
   /* Check type of data : must be double, real ('d') or complex ('D') */
-  healpyAssertType(PyArray_DESCR(almIin)->type == 'D',
+  healpyAssertType(PyArray_TYPE(almIin) == NPY_CDOUBLE,
     "Type must be Complex for this function");
 
   /* Check number of dimension : must be 1 */
@@ -817,8 +817,8 @@ static PyObject *healpy_synalm(PyObject *self, PyObject *args,
       if( cls[i] == NULL )
         continue;
       if( (PyArray_NDIM(cls[i]) != 1)
-          //|| ((PyArray_DESCR(cls[i])->type != 'd') && (PyArray_DESCR(cls[i])->type != 'f')) )
-          || (PyArray_DESCR(cls[i])->type != 'd') )
+          //|| ((PyArray_TYPE(cls[i]) != NPY_DOUBLE) && (PyArray_TYPE(cls[i]) != NPY_FLOAT)) )
+          || (PyArray_TYPE(cls[i]) != NPY_DOUBLE) )
         {
           PyErr_SetString(PyExc_TypeError,
                       "Type of cls must be float64 and arrays must be 1D.");
@@ -828,7 +828,7 @@ static PyObject *healpy_synalm(PyObject *self, PyObject *args,
   DBGPRINTF("Check dimension and size of alms\n");
   for( int i=0; i<nalm; i++ )
     {
-      if( (PyArray_NDIM(alms[i]) != 1) || (PyArray_DESCR(alms[i])->type != 'D') )
+      if( (PyArray_NDIM(alms[i]) != 1) || (PyArray_TYPE(alms[i]) != NPY_CDOUBLE) )
         {
           PyErr_SetString(PyExc_TypeError,
                       "Type of alms must be complex128 and arrays must be 1D.");
@@ -890,7 +890,7 @@ static PyObject *healpy_synalm(PyObject *self, PyObject *args,
             mat[i] = 0.0;
           else
             {
-              if( PyArray_DESCR(cls[i])->type == 'f' )
+              if( PyArray_TYPE(cls[i]) == NPY_FLOAT )
                 mat[i] = (double)(*((float*)PyArray_GETPTR1(cls[i],l)));
               else
                 mat[i] = *((double*)PyArray_GETPTR1(cls[i],l));
