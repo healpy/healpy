@@ -70,6 +70,7 @@ requires = [
 [tool.cibuildwheel]
 skip = [
     "*win32",
+    "cp3??t-*",
 ]
 test-command = [
     "pytest --doctest-plus --doctest-cython --pyargs healpy",
