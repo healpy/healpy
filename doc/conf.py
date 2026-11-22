@@ -11,14 +11,6 @@
 # All configuration values have a default value; values that are commented out
 # serve to show the default value.
 
-import sys, os
-from importlib import import_module
-
-# If your extensions are in another directory, add it here. If the directory
-# is relative to the documentation root, use os.path.abspath to make it
-# absolute, like shown here.
-sys.path.append(os.path.abspath("../lib/healpy"))
-
 # General configuration
 # ---------------------
 
@@ -50,10 +42,7 @@ copyright = u"Documentation: CC/BY/4.0/International, Software: GPL-2.0+"
 # other places throughout the built documents.
 #
 # The short X.Y version.
-import healpy
-
-import_module("healpy")
-package = sys.modules["healpy"]
+import healpy as package
 
 # The short X.Y version.
 version = package.__version__.split("-", 1)[0]

@@ -1,7 +1,7 @@
 # Repository Guidelines
 
 ## Project Structure & Module Organization
-Python interfaces live under `lib/healpy`, organized by functionality (`pixelfunc.py`, `visufunc.py`, `rotator.py`, etc.). Cython and C++ performance kernels are in `src/` (e.g., `_pixelfunc.pyx`, `_healpy_sph_transform_lib.cc`). End-to-end tests sit in `test/`, with shared fixtures in `lib/healpy/conftest.py`. Documentation sources are in `doc/`, and vendored HEALPix dependencies reside in `cextern/`. Keep ancillary scripts in `bin/` and avoid introducing new top-level directories without discussion.
+Python interfaces live under `lib/healpy`, organized by functionality (`pixelfunc.py`, `visufunc.py`, `rotator.py`, etc.). Cython and C++ performance kernels are in `src/` (e.g., `_pixelfunc.pyx`, `_healpy_sph_transform_lib.cc`). End-to-end tests sit in `test/`, with shared fixtures in `lib/healpy/conftest.py`. Documentation sources are in `doc/`. The build is driven by Meson (`meson.build`); vendored HEALPix, cfitsio, and libsharp sources are fetched on demand as Meson subprojects (see `subprojects/*.wrap`) when a suitable system installation is not found via `pkg-config`. Keep ancillary scripts in `bin/` and avoid introducing new top-level directories without discussion.
 
 ## Build, Test, and Development Commands
 Install editable dependencies with `python -m pip install -e .[all,test]` and ensure `cython` is available before building extensions. Produce a distribution bundle via `python -m build`. Run the full suite locally with `pytest --doctest-plus --doctest-cython --pyargs healpy && pytest test/`. To iterate on a single module, target the file: `pytest test/test_pixelfunc.py -k ring2nest`. Regenerate documentation using `make -C doc html`, which writes to `doc/.build/html`.
@@ -28,7 +28,7 @@ Commits follow a short, imperative summary (`Fix query_disc strip for NEST`). Gr
 **Never push directly to `main` without explicit user approval.** Always show the proposed changes and ask for confirmation before pushing to any protected branch.
 
 ## CI Workflows
-- **Tests** (`.github/workflows/tests.yml`): Runs on every push to `main` and on pull requests. Matrix: Python 3.10–3.13 with stable astropy, plus one job with astropy pre-release (`continue-on-error: true`). Uses ccache to speed up C++ recompilation on repeat runs. Total job time ~4–5m cold, ~2m with ccache hits.
+- **Tests** (`.github/workflows/tests.yml`): Runs on every push to `main` and on pull requests. Matrix: Python 3.11–3.15 with stable astropy, plus one job with astropy pre-release (`continue-on-error: true`). Uses ccache to speed up C++ recompilation on repeat runs. Total job time ~4–5m cold, ~2m with ccache hits.
 - **Build & Publish** (`.github/workflows/cibuildwheel.yml`): Builds source dist and binary wheels for multiple platforms. Runs cibuildwheel smoke tests inside each wheel. Publishes to PyPI on GitHub release.
 - **Editable Install Check** (`.github/workflows/uv-editable-install.yml`): Verifies `uv pip install -e .` succeeds on PRs.
 

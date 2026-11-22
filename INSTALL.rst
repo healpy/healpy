@@ -36,7 +36,7 @@ instance, if one wishes to install ``healpy`` alongside Spyder and
 ``my_package`` into a newly created environment ``env_healpy``, the command
 will be::
 
-    conda create --name env_healpy python=3.10 healpy spyder my_package
+    conda create --name env_healpy python=3.11 healpy spyder my_package
 
 Binary installation with Pip (recommended for most other Python users)
 ----------------------------------------------------------------------
@@ -146,12 +146,17 @@ or run the test suite with::
 Building against external Healpix and cfitsio
 ---------------------------------------------
 
-Healpy uses pkg-config to detect the presence of the Healpix and cfitsio
-libraries. pkg-config is available on most systems; if it is missing, the
-build falls back to pykg-config.
+Healpy's build system (`Meson <https://mesonbuild.com>`_, via
+`meson-python <https://mesonpy.readthedocs.io>`_) uses ``pkg-config`` to detect
+the presence of the HEALPix C++ and cfitsio libraries on the system. If a
+suitable version is not found, Meson automatically falls back to downloading
+and building its own private copy sources in the ``subprojects/`` directory
+(see ``subprojects/healpix_cxx.wrap`` and ``subprojects/cfitsio.wrap``) — this
+happens transparently and requires no extra steps.
 
-If you want to provide your own external builds of Healpix and cfitsio, then
-download the following packages:
+If you want Healpy to use your own external builds of HEALPix and cfitsio
+instead of the bundled ones, make sure they are discoverable by
+``pkg-config``:
 
 * `pkg-config <http://pkg-config.freedesktop.org>`_
 
@@ -173,22 +178,20 @@ Then, unpack each of the above packages and build them with the usual
 pkg-config visibility in isolated builds
 ----------------------------------------
 
-healpy relies on the system ``pkg-config`` results. If ``pkg-config`` cannot
-see build-tree ``.pc`` files (for example, in isolated build environments), the
-fix is to adjust ``PKG_CONFIG_PATH`` so the generated ``.pc`` files are in
-scope. If ``pkg-config`` is missing, the build falls back to ``pykg-config``,
-which aims to be compatible but can diverge from ``pkg-config`` semantics.
+Healpy relies on the system ``pkg-config`` results to decide whether to use an
+external HEALPix/cfitsio installation or build Meson's bundled subprojects
+instead. If ``pkg-config`` cannot see the ``.pc`` files for your external
+build (for example, in isolated build environments created by ``pip``), adjust
+``PKG_CONFIG_PATH`` so the generated ``.pc`` files are in scope; otherwise
+Meson will silently fall back to building its own copies of HEALPix and
+cfitsio from the bundled subprojects instead of using yours.
 
 Failure scenarios this note does not cover include:
 
-* ``pkg-config`` is missing and ``pykg-config`` is unavailable, or either tool
-  fails for reasons other than "package not found" (syntax errors, incompatible
-  flags).
-* ``.pc`` files depend on ``pkg-config``-specific behaviors (custom variables,
-  ``Requires.private``, system search paths) that alternate parsers such as
-  ``pykg-config`` may not match.
-* ``pkg-config`` resolves to an incompatible prefix or ABI; fix the environment
-  rather than relying on automatic fallbacks.
+* ``pkg-config`` itself is missing or misconfigured; install it from your
+  system package manager.
+* ``pkg-config`` resolves to an incompatible prefix or ABI; fix the
+  environment rather than relying on automatic fallbacks.
 
 Installation on Windows through the "Windows Subsystem for Linux"
 -----------------------------------------------------------------
@@ -230,17 +233,12 @@ Development install
 
 Developers building from a snapshot of the github repository need:
 
-* ``autoconf`` and ``libtool`` (in Debian or Ubuntu:
-  ``sudo apt-get install autoconf automake libtool pkg-config``)
-
 * ``libssl-dev`` (Debian) or ``openssl-dev`` (CentOS)
   is required to build ``cfitsio`` from source
 
-* run ``git submodule init`` and ``git submodule update`` to get the bundled
-  HEALPix sources
-
 The best way to install healpy if you plan to develop is to do a
-`development mode (a.k.a. "editable" install) <https://setuptools.pypa.io/en/latest/userguide/development_mode.html>`_
+`development mode (a.k.a. "editable" install)
+<https://mesonpy.readthedocs.io/en/latest/editable-installs.html>`_
 with pip by adding the ``-e`` flag::
 
     pip install -e .
@@ -265,16 +263,15 @@ the installation command will have this basic form::
 
     CC=gcc CXX=g++ CFLAGS="-fPIC -O3 -march=native" CXXFLAGS="-fPIC -O3 -march=native" pip3 install --user --no-binary healpy healpy
 
-If the install process errors mentioning a different version of automake, rerun it with:
-
-    cd cextern/cfitsio
-    autoreconf
-
 Clean
 -----
 
-When you run "python setup.py", temporary build products are placed in the
-"build" directory. If you want to clean out and remove the ``build`` directory,
-then run::
+Healpy is built with `Meson <https://mesonbuild.com>`_ via `meson-python
+<https://mesonpy.readthedocs.io>`_. By default, ``pip`` creates a fresh build
+directory for each install and discards it afterward, so there is usually
+nothing to clean up manually. If you configured a persistent build directory
+yourself (for example with ``meson setup builddir`` or
+``pip install --config-settings=build-dir=builddir .``), you can force a
+clean rebuild by simply removing it::
 
-    python setup.py clean --all
+    rm -rf builddir

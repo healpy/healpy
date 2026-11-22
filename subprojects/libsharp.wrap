@@ -1,0 +1,6 @@
+[wrap-file]
+directory = libsharp-1.0.0
+patch_directory = libsharp
+source_url = https://sourceforge.net/projects/healpix/files/Healpix_3.60/libsharp-1.0.0.tar.gz
+source_hash = e98293315ee0f8a4c69c627bda36297b45e35e7afc33f510756f212d36c02f92
+source_filename = libsharp-1.0.0.tar.gz

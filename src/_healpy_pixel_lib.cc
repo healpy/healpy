@@ -387,7 +387,7 @@ static void
 }
 
 
-static char *docstring =
+static char docstring[] =
   "This module contains basic ufunc related to healpix pixelisation\n"
   "scheme, such as ang2pix, ring<->nest swapping, etc.\n"
   "\n"
