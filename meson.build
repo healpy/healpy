@@ -38,6 +38,7 @@ py.install_sources(
     'lib/healpy/projector.py',
     'lib/healpy/rotator.py',
     'lib/healpy/sphtfunc.py',
+    'lib/healpy/superpixels.py',
     'lib/healpy/test_pixelfunc_extra.py',
     'lib/healpy/visufunc.py',
     'lib/healpy/zoomtool.py',

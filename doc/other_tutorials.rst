@@ -18,6 +18,14 @@ Pixelization
 
 * `Map data to a HEALPix grid <https://gist.github.com/zonca/680c68c3d60697eb0cb669cf1b41c324>`_.
 
+Superpixels
+-----------
+
+.. toctree::
+   :maxdepth: 1
+
+   superpixels_example
+
 Harmonic Downgrade
 ------------------
 
