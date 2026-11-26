@@ -817,7 +817,6 @@ static PyObject *healpy_synalm(PyObject *self, PyObject *args,
       if( cls[i] == NULL )
         continue;
       if( (PyArray_NDIM(cls[i]) != 1)
-          //|| ((PyArray_TYPE(cls[i]) != NPY_DOUBLE) && (PyArray_TYPE(cls[i]) != NPY_FLOAT)) )
           || (PyArray_TYPE(cls[i]) != NPY_DOUBLE) )
         {
           PyErr_SetString(PyExc_TypeError,
@@ -889,12 +888,7 @@ static PyObject *healpy_synalm(PyObject *self, PyObject *args,
           else if( PyArray_DIM(cls[i],0) <= l )
             mat[i] = 0.0;
           else
-            {
-              if( PyArray_TYPE(cls[i]) == NPY_FLOAT )
-                mat[i] = (double)(*((float*)PyArray_GETPTR1(cls[i],l)));
-              else
-                mat[i] = *((double*)PyArray_GETPTR1(cls[i],l));
-            }
+            mat[i] = *((double*)PyArray_GETPTR1(cls[i],l));
         }
 
       /* Make the Cholesky decomposition */
