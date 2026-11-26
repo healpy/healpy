@@ -18,6 +18,7 @@
 #  For more information about Healpy, see https://github.com/healpy/healpy
 #
 import logging
+from pathlib import Path
 import warnings
 
 log = logging.getLogger("healpy")
@@ -34,7 +35,6 @@ from . import _healpy_sph_transform_lib as sphtlib
 from . import _sphtools as _sphtools
 from . import cookbook as cb
 
-import os.path
 from . import pixelfunc
 
 from .pixelfunc import maptype, UNSEEN, ma_to_array, accept_ma
@@ -52,7 +52,7 @@ class FutureChangeWarning(UserWarning):
     pass
 
 
-DATAPATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
+DATAPATH = Path(__file__).parent / "data"
 MAX_NSIDE = (
     8192  # The maximum nside up to which most operations (e.g. map2alm) will work
 )
@@ -323,10 +323,10 @@ def map2alm(
     if use_pixel_weights:
         if use_weights:
             raise RuntimeError("Either use pixel or ring weights")
-        filename = "full_weights/healpix_full_weights_nside_%04d.fits" % nside
+        filename = Path("full_weights") / f"healpix_full_weights_nside_{nside:04d}.fits"
         if datapath is not None:
-            pixel_weights_filename = os.path.join(datapath, filename)
-            if os.path.exists(pixel_weights_filename):
+            pixel_weights_filename = datapath / filename
+            if pixel_weights_filename.exists():
                 log.info("Accessing pixel weights from %s", pixel_weights_filename)
             else:
                 raise RuntimeError(
@@ -339,7 +339,7 @@ def map2alm(
                     "dataurl_mirror", DATAURL_MIRROR
                 ), data.conf.set_temp("remote_timeout", 30):
                     pixel_weights_filename = data.get_pkg_data_filename(
-                        filename, package="healpy"
+                        filename.as_posix(), package="healpy"
                     )
             except Exception as e:
                 log.warning(
@@ -348,6 +348,11 @@ def map2alm(
                 )
                 use_pixel_weights = False
                 pixel_weights_filename = None # Ensure it's None so it doesn't try to use a non-existent file
+
+    if datapath is not None:
+        datapath = str(datapath)
+    if pixel_weights_filename is not None:
+        pixel_weights_filename = str(pixel_weights_filename)
 
     if pol or info in (0, 1):
         alms = _sphtools.map2alm(
@@ -1221,10 +1226,10 @@ def harmonic_ud_grade(
             beam_window_out = beam_window_out[: lmax + 1, :]
 
     if use_pixel_weights and input_type == "map":
-        filename = "full_weights/healpix_full_weights_nside_%04d.fits" % nside_in
+        filename = Path("full_weights") / f"healpix_full_weights_nside_{nside_in:04d}.fits"
         if datapath is not None:
-            pixel_weights_filename = os.path.join(datapath, filename)
-            if not os.path.exists(pixel_weights_filename):
+            pixel_weights_filename = datapath / filename
+            if not pixel_weights_filename.exists():
                 raise RuntimeError(
                     "Pixel weights are required by default for harmonic_ud_grade, "
                     f"but the file is missing at {pixel_weights_filename}. "
@@ -1235,7 +1240,7 @@ def harmonic_ud_grade(
             with data.conf.set_temp("dataurl", DATAURL), data.conf.set_temp(
                 "dataurl_mirror", DATAURL_MIRROR
             ), data.conf.set_temp("remote_timeout", 30):
-                data.get_pkg_data_filename(filename, package="healpy")
+                data.get_pkg_data_filename(filename.as_posix(), package="healpy")
 
     # Determine polarization state for output alm2map
     if input_type == "alm":
@@ -1986,10 +1991,10 @@ def pixwin(nside, pol=False, lmax=None, datapath=None):
     if not pixelfunc.isnsideok(nside):
         raise ValueError("Wrong nside value (must be a power of two).")
 
-    filename = f"pixel_window_functions/pixel_window_n{nside:04d}.fits"
+    filename = Path("pixel_window_functions") / f"pixel_window_n{nside:04d}.fits"
     if datapath is not None:
-        fname = os.path.join(datapath, filename)
-        if not os.path.isfile(fname):
+        fname = datapath / filename
+        if not fname.is_file():
             raise ValueError(f"Pixel window file not found at {fname}")
     else:
         # Use astropy to download/cache the file
@@ -1997,7 +2002,7 @@ def pixwin(nside, pol=False, lmax=None, datapath=None):
             data.conf.set_temp("dataurl", DATAURL),
             data.conf.set_temp("remote_timeout", 30),
         ):
-            fname = data.get_pkg_data_filename(filename, package="healpy")
+            fname = data.get_pkg_data_filename(filename.as_posix(), package="healpy")
 
     pw = pf.getdata(fname)
     pw_temp, pw_pol = pw.field(0), pw.field(1)
@@ -2069,7 +2074,7 @@ def load_sample_spectra():
       f is the factor ell*(ell+1)/2pi (in general, plots show f * cl)
       cls is a sequence of the power spectra TT, EE, BB and TE
     """
-    cls = np.loadtxt(os.path.join(DATAPATH, "totcls.dat"), unpack=True)
+    cls = np.loadtxt(DATAPATH / "totcls.dat", unpack=True)
     ell = cls[0]
     f = ell * (ell + 1) / 2 / np.pi
     cls[1:, 1:] /= f[1:]
