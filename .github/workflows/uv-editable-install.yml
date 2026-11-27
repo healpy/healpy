@@ -6,9 +6,18 @@ on:
 
 jobs:
   uv-editable-install:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: macos-latest
+          - os: ubuntu-latest
+          - os: windows-latest
 
     steps:
+      - if: runner.os == 'macOS'
+        run: brew install libomp
+
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0
@@ -20,7 +29,7 @@ jobs:
       - uses: astral-sh/setup-uv@v7
 
       - name: Create virtual environment
-        run: uv venv .venv
+        run: uv venv
 
       - name: Install healpy in editable mode
-        run: uv pip install --python .venv/bin/python -e .
+        run: uv pip install -e .
