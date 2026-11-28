@@ -16,7 +16,7 @@ meson.override_dependency(
             'libsharp/sharp_ylmgen_c.c',
             dependencies: [
                 meson.get_compiler('c').find_library('m'),
-                dependency('openmp'),
+                dependency('openmp', required: get_option('openmp')),
             ],
             install: true,
         ),

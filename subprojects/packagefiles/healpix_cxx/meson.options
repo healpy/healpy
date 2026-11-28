@@ -1,0 +1,7 @@
+option(
+    'openmp',
+    type: 'feature',
+    value: 'auto',
+    yield: true,
+    description: 'Build with OpenMP',
+)

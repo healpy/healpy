@@ -43,7 +43,7 @@ meson.override_dependency(
                 dependency('cfitsio'),
                 dependency('libsharp'),
                 dependency('zlib'),
-                dependency('openmp'),
+                dependency('openmp', required: get_option('openmp')),
             ],
             install: true,
         ),

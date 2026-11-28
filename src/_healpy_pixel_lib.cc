@@ -36,32 +36,104 @@
 #include "numpy/ndarrayobject.h"
 
 /*
+   OpenMP
+
+   Each element of these ufunc loops is independent, so loop() splits long
+   inputs across OpenMP threads (OMP_NUM_THREADS controls how many).  Every
+   thread keeps its own Healpix_Base2 and nside cache.  Inputs shorter than
+   HEALPY_OMP_MIN_N run on the calling thread: for them starting the team
+   costs more than the work.
+
+   GNU libgomp cannot start a team in a child created by fork() once the
+   parent has used one (the child waits forever for the parent's pool), and
+   multiprocessing forks by default on Linux before Python 3.14.  The loops
+   therefore only use threads in the process that imported this module; a
+   forked child runs them serially.
+
+   When healpy is built without OpenMP the loops are serial.
+*/
+#ifdef _OPENMP
+#include <omp.h>
+#ifndef _WIN32
+#include <unistd.h>
+static pid_t import_pid;
+#endif
+#endif
+
+#define HEALPY_OMP_MIN_N 1000
+
+static bool use_threads(npy_intp n)
+{
+#ifdef _OPENMP
+  if (n < HEALPY_OMP_MIN_N || omp_get_max_threads() < 2)
+    return false;
+#ifndef _WIN32
+  if (getpid() != import_pid)
+    return false;
+#endif
+  return true;
+#else
+  (void)n;
+  return false;
+#endif
+}
+
+/*
+   Call body(hb, i) for i in [0, n), with hb set to the nside of element i
+   (read from nside_ptr with stride nside_step).
+*/
+template<Healpix_Ordering_Scheme scheme, typename Body> static void
+  loop(npy_intp n, const char *nside_ptr, npy_intp nside_step, Body body)
+{
+#ifdef _OPENMP
+  if (use_threads(n))
+    {
+#pragma omp parallel
+      {
+        Healpix_Base2 hb;
+        int64 oldnside=-1;
+#pragma omp for schedule(static)
+        for(npy_intp i=0; i<n; i++)
+          {
+            int64 nside = *(const int64 *)(nside_ptr+i*nside_step);
+            if (nside!=oldnside)
+              { oldnside=nside; hb.SetNside(nside, scheme); }
+            body(hb, i);
+          }
+      }
+      return;
+    }
+#endif
+  Healpix_Base2 hb;
+  int64 oldnside=-1;
+  for(npy_intp i=0; i<n; i++)
+    {
+      int64 nside = *(const int64 *)(nside_ptr+i*nside_step);
+      if (nside!=oldnside)
+        { oldnside=nside; hb.SetNside(nside, scheme); }
+      body(hb, i);
+    }
+}
+
+/*
    ang2pix
 */
 template<Healpix_Ordering_Scheme scheme>static void
   ufunc_ang2pix(char **args, const npy_intp *dimensions, const npy_intp *steps, void *func)
 {
-  npy_intp n=dimensions[0];
+  npy_intp is2=steps[1],is3=steps[2], os=steps[3];
+  char *ip2=args[1], *ip3=args[2], *op=args[3];
 
-  npy_intp is1=steps[0],is2=steps[1],is3=steps[2], os=steps[3];
-  char *ip1=args[0], *ip2=args[1], *ip3=args[2], *op=args[3];
-
-  Healpix_Base2 hb;
-  int64 oldnside=-1;
-
-  for(npy_intp i=0; i<n; i++, ip1+=is1, ip2+=is2, ip3+=is3, op+=os)
+  loop<scheme>(dimensions[0], args[0], steps[0], [&](const Healpix_Base2 &hb, npy_intp i)
     {
-      int64 nside = *(int64*)ip1;
-      if (nside!=oldnside)
-        { oldnside=nside; hb.SetNside(nside, scheme); }
       try {
-        pointing ptg = pointing(*(double *)ip2,*(double *)ip3);
+        pointing ptg = pointing(*(double *)(ip2+i*is2),*(double *)(ip3+i*is3));
         ptg.normalize();
-        *(int64 *)op = hb.ang2pix(ptg);
+        *(int64 *)(op+i*os) = hb.ang2pix(ptg);
       } catch(PlanckError &e) {
-        *(int64 *)op = -1;
+        *(int64 *)(op+i*os) = -1;
       }
-  }
+    });
 }
 
 /*
@@ -70,27 +142,20 @@ template<Healpix_Ordering_Scheme scheme>static void
 template<Healpix_Ordering_Scheme scheme> static void
   ufunc_pix2ang(char **args, const npy_intp *dimensions, const npy_intp *steps, void *func)
 {
-  register npy_intp i, n=dimensions[0];
-  register npy_intp is1=steps[0],is2=steps[1],os1=steps[2],os2=steps[3];
-  char *ip1=args[0], *ip2=args[1], *op1=args[2], *op2=args[3];
+  npy_intp is2=steps[1],os1=steps[2],os2=steps[3];
+  char *ip2=args[1], *op1=args[2], *op2=args[3];
 
-  Healpix_Base2 hb;
-  int64 oldnside=-1;
-
-  for(i=0; i<n; i++, ip1+=is1, ip2+=is2, op1+=os1, op2+=os2)
+  loop<scheme>(dimensions[0], args[0], steps[0], [&](const Healpix_Base2 &hb, npy_intp i)
     {
-      int64 nside = *(int64*)ip1;
-      if (nside!=oldnside)
-        { oldnside=nside; hb.SetNside(nside, scheme); }
       try {
-        pointing ptg = hb.pix2ang(*(int64 *)ip2);
-        *(double *)op1 = ptg.theta;
-        *(double *)op2 = ptg.phi;
+        pointing ptg = hb.pix2ang(*(int64 *)(ip2+i*is2));
+        *(double *)(op1+i*os1) = ptg.theta;
+        *(double *)(op2+i*os2) = ptg.phi;
       } catch (PlanckError & e) {
-        *(double *)op1 = NAN;
-        *(double *)op2 = NAN;
+        *(double *)(op1+i*os1) = NAN;
+        *(double *)(op2+i*os2) = NAN;
       }
-    }
+    });
 }
 
 /*
@@ -99,25 +164,18 @@ template<Healpix_Ordering_Scheme scheme> static void
 template<Healpix_Ordering_Scheme scheme>static void
   ufunc_xyf2pix(char **args, const npy_intp *dimensions, const npy_intp *steps, void *func)
 {
-  npy_intp n=dimensions[0];
+  npy_intp is2=steps[1],is3=steps[2],is4=steps[3], os=steps[4];
+  char *ip2=args[1], *ip3=args[2], *ip4=args[3], *op=args[4];
 
-  npy_intp is1=steps[0],is2=steps[1],is3=steps[2],is4=steps[3], os=steps[4];
-  char *ip1=args[0], *ip2=args[1], *ip3=args[2], *ip4=args[3], *op=args[4];
-
-  Healpix_Base2 hb;
-  int64 oldnside=-1;
-
-  for(npy_intp i=0; i<n; i++, ip1+=is1, ip2+=is2, ip3+=is3, ip4+=is4, op+=os)
+  loop<scheme>(dimensions[0], args[0], steps[0], [&](const Healpix_Base2 &hb, npy_intp i)
     {
-      int64 nside = *(int64*)ip1;
-      if (nside!=oldnside)
-        { oldnside=nside; hb.SetNside(nside, scheme); }
       try {
-        *(int64 *)op = hb.xyf2pix((int)*(int64 *)ip2,(int)*(int64 *)ip3,(int)*(int64 *)ip4);
+        *(int64 *)(op+i*os) = hb.xyf2pix((int)*(int64 *)(ip2+i*is2),
+          (int)*(int64 *)(ip3+i*is3),(int)*(int64 *)(ip4+i*is4));
       } catch(PlanckError &e) {
-        *(int64 *)op = -1;
+        *(int64 *)(op+i*os) = -1;
       }
-  }
+    });
 }
 
 /*
@@ -126,30 +184,23 @@ template<Healpix_Ordering_Scheme scheme>static void
 template<Healpix_Ordering_Scheme scheme> static void
   ufunc_pix2xyf(char **args, const npy_intp *dimensions, const npy_intp *steps, void *func)
 {
-  register npy_intp i, n=dimensions[0];
-  register npy_intp is1=steps[0],is2=steps[1],os1=steps[2],os2=steps[3],os3=steps[4];
-  char *ip1=args[0], *ip2=args[1], *op1=args[2], *op2=args[3], *op3=args[4];
+  npy_intp is2=steps[1],os1=steps[2],os2=steps[3],os3=steps[4];
+  char *ip2=args[1], *op1=args[2], *op2=args[3], *op3=args[4];
 
-  Healpix_Base2 hb;
-  int64 oldnside=-1;
-
-  for(i=0; i<n; i++, ip1+=is1, ip2+=is2, op1+=os1, op2+=os2, op3+=os3)
+  loop<scheme>(dimensions[0], args[0], steps[0], [&](const Healpix_Base2 &hb, npy_intp i)
     {
-      int64 nside = *(int64*)ip1;
-      if (nside!=oldnside)
-        { oldnside=nside; hb.SetNside(nside, scheme); }
       try {
         int x, y, f;
-        hb.pix2xyf(*(int64 *)ip2, x, y, f);
-        *(int64 *)op1 = x;
-        *(int64 *)op2 = y;
-        *(int64 *)op3 = f;
+        hb.pix2xyf(*(int64 *)(ip2+i*is2), x, y, f);
+        *(int64 *)(op1+i*os1) = x;
+        *(int64 *)(op2+i*os2) = y;
+        *(int64 *)(op3+i*os3) = f;
       } catch (PlanckError & e) {
-        *(int64 *)op1 = -1;
-        *(int64 *)op2 = -1;
-        *(int64 *)op3 = -1;
+        *(int64 *)(op1+i*os1) = -1;
+        *(int64 *)(op2+i*os2) = -1;
+        *(int64 *)(op3+i*os3) = -1;
       }
-    }
+    });
 }
 
 /*
@@ -158,24 +209,17 @@ template<Healpix_Ordering_Scheme scheme> static void
 static void
 ufunc_ring2nest(char **args, const npy_intp *dimensions, const npy_intp *steps, void *func)
 {
-  register npy_intp i, n=dimensions[0];
-  register npy_intp is1=steps[0],is2=steps[1],os=steps[2];
-  char *ip1=args[0], *ip2=args[1], *op=args[2];
+  npy_intp is2=steps[1],os=steps[2];
+  char *ip2=args[1], *op=args[2];
 
-  Healpix_Base2 hb;
-  int64 oldnside=-1;
-
-  for(i=0; i<n; i++, ip1+=is1, ip2+=is2, op+=os)
+  loop<RING>(dimensions[0], args[0], steps[0], [&](const Healpix_Base2 &hb, npy_intp i)
     {
-      int64 nside = *(int64*)ip1;
-      if (nside!=oldnside)
-        { oldnside=nside; hb.SetNside(nside, RING); }
       try {
-        *(int64 *)op = hb.ring2nest(*(int64 *)ip2);
+        *(int64 *)(op+i*os) = hb.ring2nest(*(int64 *)(ip2+i*is2));
       } catch(PlanckError & e) {
-        *(int64 *)op = -1;
+        *(int64 *)(op+i*os) = -1;
       }
-    }
+    });
 }
 
 /*
@@ -184,24 +228,17 @@ ufunc_ring2nest(char **args, const npy_intp *dimensions, const npy_intp *steps, 
 static void
  ufunc_nest2ring (char **args, const npy_intp *dimensions, const npy_intp *steps, void *func)
 {
-  register npy_intp i, n=dimensions[0];
-  register npy_intp is1=steps[0],is2=steps[1],os=steps[2];
-  char *ip1=args[0], *ip2=args[1], *op=args[2];
+  npy_intp is2=steps[1],os=steps[2];
+  char *ip2=args[1], *op=args[2];
 
-  Healpix_Base2 hb;
-  int64 oldnside=-1;
-
-  for(i=0; i<n; i++, ip1+=is1, ip2+=is2, op+=os)
+  loop<NEST>(dimensions[0], args[0], steps[0], [&](const Healpix_Base2 &hb, npy_intp i)
     {
-      int64 nside = *(int64*)ip1;
-      if (nside!=oldnside)
-        { oldnside=nside; hb.SetNside(nside, NEST); }
       try {
-        *(int64 *)op = hb.nest2ring(*(int64 *)ip2);
+        *(int64 *)(op+i*os) = hb.nest2ring(*(int64 *)(ip2+i*is2));
       } catch(PlanckError & e) {
-        *(int64 *)op = -1;
+        *(int64 *)(op+i*os) = -1;
       }
-    }
+    });
 }
 
 
@@ -211,29 +248,22 @@ static void
 template<Healpix_Ordering_Scheme scheme> static void
   ufunc_pix2vec(char **args, const npy_intp *dimensions, const npy_intp *steps, void *func)
 {
-  register npy_intp i, n=dimensions[0];
-  register npy_intp is1=steps[0],is2=steps[1],os1=steps[2],os2=steps[3],os3=steps[4];
-  char *ip1=args[0], *ip2=args[1], *op1=args[2], *op2=args[3], *op3=args[4];
+  npy_intp is2=steps[1],os1=steps[2],os2=steps[3],os3=steps[4];
+  char *ip2=args[1], *op1=args[2], *op2=args[3], *op3=args[4];
 
-  Healpix_Base2 hb;
-  int64 oldnside=-1;
-
-  for(i=0; i<n; i++, ip1+=is1, ip2+=is2, op1+=os1, op2+=os2, op3+=os3)
+  loop<scheme>(dimensions[0], args[0], steps[0], [&](const Healpix_Base2 &hb, npy_intp i)
     {
-      int64 nside = *(int64*)ip1;
-      if (nside!=oldnside)
-        { oldnside=nside; hb.SetNside(nside, scheme); }
       try {
-        vec3 v = hb.pix2vec(*(int64 *)ip2);
-        *(double *)op1 = v.x;
-        *(double *)op2 = v.y;
-        *(double *)op3 = v.z;
+        vec3 v = hb.pix2vec(*(int64 *)(ip2+i*is2));
+        *(double *)(op1+i*os1) = v.x;
+        *(double *)(op2+i*os2) = v.y;
+        *(double *)(op3+i*os3) = v.z;
       } catch (PlanckError & e) {
-        *(double *)op1 = NAN;
-        *(double *)op2 = NAN;
-        *(double *)op3 = NAN;
+        *(double *)(op1+i*os1) = NAN;
+        *(double *)(op2+i*os2) = NAN;
+        *(double *)(op3+i*os3) = NAN;
       }
-    }
+    });
 }
 
 /*
@@ -242,26 +272,19 @@ template<Healpix_Ordering_Scheme scheme> static void
 template<Healpix_Ordering_Scheme scheme> static void
   ufunc_vec2pix(char **args, const npy_intp *dimensions, const npy_intp *steps, void *func)
 {
-  register npy_intp i, n=dimensions[0];
-  register npy_intp is1=steps[0],is2=steps[1],is3=steps[2],is4=steps[3],os1=steps[4];
-  char *ip1=args[0], *ip2=args[1], *ip3=args[2], *ip4=args[3], *op1=args[4];
+  npy_intp is2=steps[1],is3=steps[2],is4=steps[3],os1=steps[4];
+  char *ip2=args[1], *ip3=args[2], *ip4=args[3], *op1=args[4];
 
-  Healpix_Base2 hb;
-  int64 oldnside=-1;
-
-  for(i=0; i<n; i++, ip1+=is1, ip2+=is2, ip3+=is3, ip4+=is4, op1+=os1)
+  loop<scheme>(dimensions[0], args[0], steps[0], [&](const Healpix_Base2 &hb, npy_intp i)
     {
-      int64 nside = *(int64*)ip1;
-      if (nside!=oldnside)
-        { oldnside=nside; hb.SetNside(nside, scheme); }
-      vec3 v (*(double *)ip2,*(double *)ip3,*(double *)ip4);
+      vec3 v (*(double *)(ip2+i*is2),*(double *)(ip3+i*is3),*(double *)(ip4+i*is4));
       try {
         int64 ipix = hb.vec2pix(v);
-        *(int64 *)op1 = ipix;
+        *(int64 *)(op1+i*os1) = ipix;
       } catch (PlanckError &e) {
-        *(int64 *)op1 = -1;
+        *(int64 *)(op1+i*os1) = -1;
       }
-    }
+    });
 }
 
 
@@ -271,49 +294,40 @@ template<Healpix_Ordering_Scheme scheme> static void
 template<Healpix_Ordering_Scheme scheme> static void
   ufunc_get_interpol(char **args, const npy_intp *dimensions, const npy_intp *steps, void *func)
 {
-  register npy_intp i, n=dimensions[0];
-  register npy_intp is1=steps[0],is2=steps[1],is3=steps[2],
+  npy_intp is2=steps[1],is3=steps[2],
     os1=steps[3],os2=steps[4],os3=steps[5],os4=steps[6],
     os5=steps[7],os6=steps[8],os7=steps[9],os8=steps[10];
-  char *ip1=args[0], *ip2=args[1], *ip3=args[2],
+  char *ip2=args[1], *ip3=args[2],
     *op1=args[3],*op2=args[4],*op3=args[5],*op4=args[6],
     *op5=args[7],*op6=args[8],*op7=args[9],*op8=args[10];
 
-  Healpix_Base2 hb;
-  int64 oldnside=-1;
-
-  for(i=0; i<n; i++, ip1+=is1, ip2+=is2, ip3+=is3,
-        op1+=os1,op2+=os2,op3+=os3,op4+=os4,
-        op5+=os5,op6+=os6,op7+=os7,op8+=os8 )
+  loop<scheme>(dimensions[0], args[0], steps[0], [&](const Healpix_Base2 &hb, npy_intp i)
     {
       fix_arr<int64,4> pix;
       fix_arr<double,4> wgt;
-      int64 nside = *(int64*)ip1;
-      if (nside!=oldnside)
-        { oldnside=nside; hb.SetNside(nside, scheme); }
       try {
-        pointing ptg = pointing(*(double*)ip2, *(double*)ip3);
+        pointing ptg = pointing(*(double*)(ip2+i*is2), *(double*)(ip3+i*is3));
         ptg.normalize();
         hb.get_interpol(ptg, pix, wgt);
-        *(int64*)op1 = (int64)pix[0];
-        *(int64*)op2 = (int64)pix[1];
-        *(int64*)op3 = (int64)pix[2];
-        *(int64*)op4 = (int64)pix[3];
-        *(double*)op5 = wgt[0];
-        *(double*)op6 = wgt[1];
-        *(double*)op7 = wgt[2];
-        *(double*)op8 = wgt[3];
+        *(int64*)(op1+i*os1) = (int64)pix[0];
+        *(int64*)(op2+i*os2) = (int64)pix[1];
+        *(int64*)(op3+i*os3) = (int64)pix[2];
+        *(int64*)(op4+i*os4) = (int64)pix[3];
+        *(double*)(op5+i*os5) = wgt[0];
+        *(double*)(op6+i*os6) = wgt[1];
+        *(double*)(op7+i*os7) = wgt[2];
+        *(double*)(op8+i*os8) = wgt[3];
       } catch (PlanckError &e) {
-        *(int64*)op1 = -1;
-        *(int64*)op2 = -1;
-        *(int64*)op3 = -1;
-        *(int64*)op4 = -1;
-        *(double*)op5 = NAN;
-        *(double*)op6 = NAN;
-        *(double*)op7 = NAN;
-        *(double*)op8 = NAN;
+        *(int64*)(op1+i*os1) = -1;
+        *(int64*)(op2+i*os2) = -1;
+        *(int64*)(op3+i*os3) = -1;
+        *(int64*)(op4+i*os4) = -1;
+        *(double*)(op5+i*os5) = NAN;
+        *(double*)(op6+i*os6) = NAN;
+        *(double*)(op7+i*os7) = NAN;
+        *(double*)(op8+i*os8) = NAN;
       }
-    }
+    });
 }
 
 
@@ -323,42 +337,37 @@ template<Healpix_Ordering_Scheme scheme> static void
 template<Healpix_Ordering_Scheme scheme> static void
   ufunc_get_neighbors(char **args, const npy_intp *dimensions, const npy_intp *steps, void *func)
 {
-  register npy_intp i, n=dimensions[0];
-  register npy_intp is1=steps[0],is2=steps[1],
+  npy_intp is2=steps[1],
     os1=steps[2],os2=steps[3],os3=steps[4],os4=steps[5],
     os5=steps[6],os6=steps[7],os7=steps[8],os8=steps[9];
-  char *ip1=args[0], *ip2=args[1],
+  char *ip2=args[1],
     *op1=args[2],*op2=args[3],*op3=args[4],*op4=args[5],
     *op5=args[6],*op6=args[7],*op7=args[8],*op8=args[9];
 
-  Healpix_Base2 hb;
-  for(i=0; i<n; i++, ip1+=is1, ip2+=is2,
-        op1+=os1,op2+=os2,op3+=os3,op4+=os4,
-        op5+=os5,op6+=os6,op7+=os7,op8+=os8 )
+  loop<scheme>(dimensions[0], args[0], steps[0], [&](const Healpix_Base2 &hb, npy_intp i)
     {
       fix_arr<int64,8> pix;
-      hb.SetNside(*(int64*)ip1, scheme);
       try {
-        hb.neighbors(*(int64*)ip2, pix);
-        *(int64*)op1 = (int64)pix[0];
-        *(int64*)op2 = (int64)pix[1];
-        *(int64*)op3 = (int64)pix[2];
-        *(int64*)op4 = (int64)pix[3];
-        *(int64*)op5 = (int64)pix[4];
-        *(int64*)op6 = (int64)pix[5];
-        *(int64*)op7 = (int64)pix[6];
-        *(int64*)op8 = (int64)pix[7];
+        hb.neighbors(*(int64*)(ip2+i*is2), pix);
+        *(int64*)(op1+i*os1) = (int64)pix[0];
+        *(int64*)(op2+i*os2) = (int64)pix[1];
+        *(int64*)(op3+i*os3) = (int64)pix[2];
+        *(int64*)(op4+i*os4) = (int64)pix[3];
+        *(int64*)(op5+i*os5) = (int64)pix[4];
+        *(int64*)(op6+i*os6) = (int64)pix[5];
+        *(int64*)(op7+i*os7) = (int64)pix[6];
+        *(int64*)(op8+i*os8) = (int64)pix[7];
       } catch (PlanckError & e) {
-        *(int64*)op1 = -1;
-        *(int64*)op2 = -1;
-        *(int64*)op3 = -1;
-        *(int64*)op4 = -1;
-        *(int64*)op5 = -1;
-        *(int64*)op6 = -1;
-        *(int64*)op7 = -1;
-        *(int64*)op8 = -1;
+        *(int64*)(op1+i*os1) = -1;
+        *(int64*)(op2+i*os2) = -1;
+        *(int64*)(op3+i*os3) = -1;
+        *(int64*)(op4+i*os4) = -1;
+        *(int64*)(op5+i*os5) = -1;
+        *(int64*)(op6+i*os6) = -1;
+        *(int64*)(op7+i*os7) = -1;
+        *(int64*)(op8+i*os8) = -1;
       }
-    }
+    });
 }
 
 /*
@@ -498,6 +507,10 @@ static const char max_pixrad_signatures[] = {
 };
 
 static int m_exec(PyObject *module) {
+#if defined(_OPENMP) && !defined(_WIN32)
+  import_pid = getpid();
+#endif
+
   if (PyModule_AddObjectRef(module, "_ang2pix_ring", PyUFunc_FromFuncAndData(
       ang2pix_ring_functions, blank_data,
       ang2pix_signatures, 1,

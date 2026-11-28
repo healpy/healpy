@@ -115,10 +115,13 @@ for further instructions, including details on pkg-config visibility.
 Known issues
 ------------
 
-* Building with OpenMP support: the underlying `HEALPix` C++ library can be built
-  to use `OpenMP <http://openmp.org/wp/>`_ to speed up some operations on
-  systems with multiple cores. Most, but not all, modern C/C++ compilers support
-  OpenMP, `the notable exception being clang <http://openmp.llvm.org>`_.
+* Building with OpenMP support: Healpy and the underlying `HEALPix` C++ library
+  use `OpenMP <http://openmp.org/wp/>`_ to speed up some operations (spherical
+  harmonic transforms, and pixel functions such as ``ang2pix`` on large arrays)
+  on systems with multiple cores; ``OMP_NUM_THREADS`` sets the number of
+  threads. OpenMP is used when the compiler supports it, and the build falls
+  back to serial code when it does not. To build without it explicitly, pass
+  ``-Csetup-args=-Dopenmp=disabled`` to ``pip install``.
 
   If your Healpy build fails with an error message about being unable to link
   against `-lgomp`, then this typically means that Healpy detected an
