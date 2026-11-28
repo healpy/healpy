@@ -1,0 +1,6 @@
+option(
+    'openmp',
+    type: 'feature',
+    value: 'auto',
+    description: 'Use OpenMP for the pixel functions and the vendored HEALPix C++ and libsharp libraries',
+)

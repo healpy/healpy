@@ -24,7 +24,7 @@ deps = [
     py.dependency(),
     dependency('numpy', version: '>=2.0.0'),
     dependency('healpix_cxx', version: '>=3.83.0'),
-    dependency('openmp'),
+    dependency('openmp', required: get_option('openmp')),
 ]
 inc = include_directories('src')
 
