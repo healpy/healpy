@@ -239,9 +239,9 @@ Developers building from a snapshot of the github repository need:
 The best way to install healpy if you plan to develop is to do a
 `development mode (a.k.a. "editable" install)
 <https://mesonpy.readthedocs.io/en/latest/editable-installs.html>`_
-with pip by adding the ``-e`` flag::
+with pip by adding the `--no-build-isolation`` and ``-e`` flag::
 
-    pip install -e .
+    pip install --no-build-isolation -e .
 
 In case of compilation errors, see the note above in the ``pip`` section.
 

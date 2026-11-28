@@ -12,16 +12,24 @@ on:
 
 jobs:
   test:
-    name: Python ${{ matrix.python-version }}${{ matrix.astropy-prerelease && ' (astropy pre-release)' || '' }}
-    runs-on: ubuntu-latest
+    name: Python ${{ matrix.python-version }} on ${{ matrix.runs-on }}${{ matrix.astropy-prerelease && ' (astropy pre-release)' || '' }}
+    runs-on: ${{ matrix.runs-on }}
     continue-on-error: ${{ matrix.astropy-prerelease }}
     strategy:
       fail-fast: false
       matrix:
         python-version: ["3.11", "3.12", "3.13", "3.14", "3.15"]
         astropy-prerelease: [false]
+        runs-on: [ubuntu-latest]
         include:
-          - python-version: "3.15"
+          - python-version: "3.12"
+            astropy-prerelease: false
+            runs-on: macos-latest
+          - python-version: "3.12"
+            astropy-prerelease: false
+            runs-on: windows-latest
+          - runs-on: ubuntu-latest
+            python-version: "3.15"
             astropy-prerelease: true
 
     steps:
@@ -33,32 +41,27 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - uses: astral-sh/setup-uv@v7
-
       - name: Setup ccache
         uses: hendrikmuhs/ccache-action@v1.2.25
         with:
           key: ${{ runner.os }}-py${{ matrix.python-version }}
           max-size: 256M
 
-      - name: Install dependencies
+      - name: Install pre-release dependencies
+        if: matrix.astropy-prerelease
+        run: pip install --extra-index-url https://pypi.anaconda.org/astropy/simple astropy --pre
+
+      - name: Install build dependencies
+        run: pip install $(python -c 'from tomllib import load; print(*load(open("pyproject.toml", "rb"))["build-system"]["requires"])')
+
+      - name: Install package in editable mode
         env:
           CC: "ccache gcc"
           CXX: "ccache g++"
-        run: |
-          uv venv .venv
-          if [ "${{ matrix.astropy-prerelease }}" = "true" ]; then
-            uv pip install --python .venv/bin/python --pre ".[test]" "astropy>=8.0.0.dev"
-          else
-            uv pip install --python .venv/bin/python ".[test]"
-          fi
+        run: pip install --no-build-isolation -e ".[test]"
 
       - name: Run doctests
-        run: |
-          source .venv/bin/activate
-          pytest --doctest-plus --doctest-cython --pyargs healpy
+        run: pytest --doctest-plus --doctest-cython --pyargs healpy
 
       - name: Run test suite
-        run: |
-          source .venv/bin/activate
-          pytest test/
+        run: pytest test/
